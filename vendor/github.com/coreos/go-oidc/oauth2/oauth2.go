@@ -188,6 +188,14 @@ func (c *Client) newAuthenticatedRequest(urlToken string, values url.Values) (*h
 			return nil, err
 		}
 	case AuthMethodClientSecretBasic:
+		// https://tools.ietf.org/html/rfc6749
+		// 2.3.1.  Client Password
+		// Including the client credentials in the request-body using the two
+		//    parameters is NOT RECOMMENDED and SHOULD be limited to clients unable
+		//   to directly utilize the HTTP Basic authentication scheme (or other
+		//   password-based HTTP authentication schemes).
+		values.Del("client_id")
+		values.Del("client_secret")
 		req, err = http.NewRequest("POST", urlToken, strings.NewReader(values.Encode()))
 		if err != nil {
 			return nil, err
