@@ -751,7 +751,7 @@ func (s *AuthServer) CreateOIDCAuthRequest(req services.OIDCAuthRequest) (*servi
 	}
 
 	// online is OIDC online scope, "select_account" forces user to always select account
-	req.RedirectURL = oauthClient.AuthCodeURL(req.StateToken, "online", "select_account")
+	req.RedirectURL = oauthClient.AuthCodeURL(req.StateToken, "online", "login")
 
 	// if the connector has an Authentication Context Class Reference (ACR) value set,
 	// update redirect url and add it as a query value.
