@@ -353,7 +353,8 @@ func (p ProviderConfig) Valid() error {
 	if !contains(p.IDTokenSigningAlgValues, "RS256") {
 		return errors.New("id_token_signing_alg_values_supported must include 'RS256'")
 	}
-	if contains(p.TokenEndpointAuthMethodsSupported, "none") {
+
+	if contains(p.TokenEndpointAuthSigningAlgValuesSupported, "none") {
 		return errors.New("token_endpoint_auth_signing_alg_values_supported cannot include 'none'")
 	}
 
@@ -635,7 +636,6 @@ func (r *httpProviderConfigGetter) Get() (cfg ProviderConfig, err error) {
 		return
 	}
 	defer resp.Body.Close()
-
 	if err = json.NewDecoder(resp.Body).Decode(&cfg); err != nil {
 		return
 	}
@@ -644,7 +644,11 @@ func (r *httpProviderConfigGetter) Get() (cfg ProviderConfig, err error) {
 	var ok bool
 	ttl, ok, err = phttp.Cacheable(resp.Header)
 	if err != nil {
-		return
+		// Some OIDC providers set incorrect expiry header,
+		// issue warning and proceed by setting default reasonable time
+		cfg.ExpiresAt = r.clock.Now().UTC().Add(time.Hour)
+		err = nil
+		log.Printf("go-oidc: provider Cache control HTTP headers are incorrect, setting to default 1 hour")
 	} else if ok {
 		cfg.ExpiresAt = r.clock.Now().UTC().Add(ttl)
 	}
