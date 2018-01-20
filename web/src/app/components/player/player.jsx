@@ -42,6 +42,7 @@ class Terminal extends GrvTerminal{
   resize(cols, rows) {           
     // ensure that cursor is visible as xterm hides it on blur event
     this.term.cursorState = 1;
+    this.term.focus();
     super.resize(cols, rows);        
     $(this._el).perfectScrollbar('update');
   }
