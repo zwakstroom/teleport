@@ -21,8 +21,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -360,17 +362,33 @@ func (bk *bk) UpsertItems(bucket []string, items []backend.Item) error {
 	return trace.BadParameter("not implemented")
 }
 
-func (b *bk) UpsertVal(path []string, key string, val []byte, ttl time.Duration) error {
+// KeepAlive updates TTL on the lease ID
+func (b *bk) KeepAlive(leaseID backend.LeaseID) error {
+	if leaseID.IsEmpty() {
+		return trace.BadParameter("missing parameter ID in lease")
+	}
+	id, err := strconv.ParseInt(leaseID.ID, 10, 64)
+	if err != nil {
+		return trace.BadParameter("bad lease ID format: %v", err)
+	}
+	_, err = b.client.KeepAliveOnce(context.Background(), clientv3.LeaseID(id))
+	return convertErr(err)
+}
+
+func (b *bk) UpsertVal(path []string, key string, val []byte, ttl time.Duration) (*backend.LeaseID, error) {
 	var opts []clientv3.OpOption
+	var leaseID backend.LeaseID
 	if ttl > 0 {
 		if ttl/time.Second <= 0 {
-			return trace.BadParameter("TTL should be in seconds, got %v instead", ttl)
+			return nil, trace.BadParameter("TTL should be in seconds, got %v instead", ttl)
 		}
 		lease, err := b.client.Grant(context.Background(), int64(ttl/time.Second))
 		if err != nil {
-			return convertErr(err)
+			return nil, convertErr(err)
 		}
 		opts = []clientv3.OpOption{clientv3.WithLease(lease.ID)}
+		leaseID.ID = fmt.Sprintf("%v", lease.ID)
+		leaseID.TTL = ttl
 	}
 	start := time.Now()
 	_, err := b.client.Put(
@@ -380,7 +398,10 @@ func (b *bk) UpsertVal(path []string, key string, val []byte, ttl time.Duration)
 		opts...)
 	writeLatencies.Observe(time.Since(start).Seconds())
 	writeRequests.Inc()
-	return convertErr(err)
+	if err = convertErr(err); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &leaseID, nil
 }
 
 func (b *bk) GetVal(path []string, key string) ([]byte, error) {

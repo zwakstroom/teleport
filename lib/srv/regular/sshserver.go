@@ -63,10 +63,17 @@ type Server struct {
 	addr      utils.NetAddr
 	hostname  string
 
-	srv           *sshutils.Server
-	hostSigner    ssh.Signer
-	shell         string
-	getRotation   RotationGetter
+	srv         *sshutils.Server
+	hostSigner  ssh.Signer
+	shell       string
+	getRotation RotationGetter
+	// lastReported returns last server reported back
+	// to the auth service
+	reportedServer services.Server
+	// lastLeaseID is a last lease ID reported back
+	// to the auth service
+	serverKeepAlive *services.ServerKeepAlive
+
 	authService   auth.AccessPoint
 	reg           *srv.SessionRegistry
 	sessionServer rsession.Service

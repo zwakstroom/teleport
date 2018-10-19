@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/backend/test"
@@ -122,4 +123,22 @@ func (s *EtcdSuite) TestLock(c *C) {
 
 func (s *EtcdSuite) TestValueAndTTL(c *C) {
 	s.suite.ValueAndTTL(c)
+}
+
+func (s *EtcdSuite) TestKeepAlive(c *C) {
+	bucket := []string{"test", "ttl"}
+	leaseID, err := s.bk.UpsertVal(bucket, "bkey",
+		[]byte("val1"), 2*time.Second)
+	c.Assert(err, IsNil)
+
+	time.Sleep(time.Second)
+
+	err = s.bk.KeepAlive(*leaseID)
+	c.Assert(err, IsNil)
+
+	time.Sleep(2 * time.Second)
+
+	value, err := s.bk.GetVal(bucket, "bkey")
+	c.Assert(err, IsNil)
+	c.Assert(string(value), DeepEquals, "val1")
 }

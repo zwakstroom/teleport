@@ -69,7 +69,7 @@ func (s *Suite) BenchmarkOperations(c *check.C) {
 	value1 := "some backend value, not large enough, but not small enought"
 	for i := 0; i < c.N; i++ {
 		for _, key := range keys {
-			err := s.bk.UpsertVal(bucket, key, []byte(value1), time.Hour)
+			_, err := s.bk.UpsertVal(bucket, key, []byte(value1), time.Hour)
 			c.Assert(err, check.IsNil)
 			bytes, err := s.bk.GetVal(bucket, key)
 			c.Assert(err, check.IsNil)
@@ -89,7 +89,7 @@ func (s *Suite) TestConcurrentOperations(c *check.C) {
 	resultsC := make(chan struct{}, attempts*4)
 	for i := 0; i < attempts; i++ {
 		go func(cnt int) {
-			err := s.bk.UpsertVal(bucket, "key", []byte(value1), time.Hour)
+			_, oerr := s.bk.UpsertVal(bucket, "key", []byte(value1), time.Hour)
 			resultsC <- struct{}{}
 			c.Assert(err, check.IsNil)
 		}(i)

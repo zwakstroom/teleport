@@ -99,7 +99,7 @@ func migrate(rootDir string, b *Backend) error {
 
 		// Upsert key and value (with TTL) into new flat keyspace backend.
 		bucket := strings.Split(flatbucket, string(filepath.Separator))
-		err = b.UpsertVal(bucket, key, value, ttl)
+		_, err = b.UpsertVal(bucket, key, value, ttl)
 		if err != nil {
 			return trace.Wrap(err)
 		}

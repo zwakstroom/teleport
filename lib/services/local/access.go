@@ -95,7 +95,7 @@ func (s *AccessService) UpsertRole(role services.Role, ttl time.Duration) error 
 		ttl = backendTTL
 	}
 
-	err = s.UpsertVal([]string{"roles", role.GetName()}, "params", []byte(data), ttl)
+	_, err = s.UpsertVal([]string{"roles", role.GetName()}, "params", []byte(data), ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}

@@ -53,7 +53,7 @@ func (s *ProvisioningService) UpsertToken(token string, roles teleport.Roles, tt
 		return trace.Wrap(err)
 	}
 
-	err = s.backend.UpsertVal([]string{"tokens"}, token, out, ttl)
+	_, err = s.backend.UpsertVal([]string{"tokens"}, token, out, ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}

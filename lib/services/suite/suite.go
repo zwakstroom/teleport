@@ -274,7 +274,8 @@ func (s *ServicesTestSuite) ServerCRUD(c *C) {
 	c.Assert(len(out), Equals, 0)
 
 	srv := newServer(services.KindNode, "srv1", "127.0.0.1:2022", defaults.Namespace)
-	c.Assert(s.PresenceS.UpsertNode(srv), IsNil)
+	_, err = s.PresenceS.UpsertNode(srv)
+	c.Assert(err, IsNil)
 
 	out, err = s.PresenceS.GetNodes(srv.Metadata.Namespace)
 	c.Assert(err, IsNil)

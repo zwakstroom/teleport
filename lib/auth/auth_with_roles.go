@@ -328,14 +328,21 @@ func (a *AuthWithRoles) UpsertNodes(namespace string, servers []services.Server)
 	return a.authServer.UpsertNodes(namespace, servers)
 }
 
-func (a *AuthWithRoles) UpsertNode(s services.Server) error {
+func (a *AuthWithRoles) UpsertNode(s services.Server) (*services.KeepAliveHandle, error) {
 	if err := a.action(s.GetNamespace(), services.KindNode, services.VerbCreate); err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	if err := a.action(s.GetNamespace(), services.KindNode, services.VerbUpdate); err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	return a.authServer.UpsertNode(s)
+}
+
+func (a *AuthWithRoles) KeepAliveNode(handle services.KeepAliveHandle) error {
+	if err := a.action(defaults.Namespace, services.KindNode, services.VerbUpdate); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.KeepAliveNode(handle)
 }
 
 // filterNodes filters nodes based off the role of the logged in user.

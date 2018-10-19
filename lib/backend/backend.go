@@ -45,8 +45,10 @@ type Backend interface {
 	// if the value already exists, it must return trace.AlreadyExistsError
 	CreateVal(bucket []string, key string, val []byte, ttl time.Duration) error
 	// UpsertVal updates or inserts value with a given TTL into a bucket
-	// ForeverTTL for no TTL
-	UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) error
+	// ForeverTTL for no TTL, returns LeaseID
+	UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) (*LeaseID, error)
+	// KeepAlive is used to keep alive the lease ID
+	KeepAlive(id LeaseID) error
 	// UpsertItems updates or inserts all passed in backend.Items (with a TTL)
 	// into the given bucket.
 	UpsertItems(bucket []string, items []Item) error
@@ -69,6 +71,23 @@ type Backend interface {
 	Close() error
 	// Clock returns clock used by this backend
 	Clock() clockwork.Clock
+}
+
+// LeaseID is ID used for keepalive messages
+type LeaseID struct {
+	// Bucket could be use for additional verification of the lease ID
+	Bucket []string
+	// Key is an object key and could be used for additional verification of the
+	// lease ID
+	Key string
+	// ID is a lease ID
+	ID string
+	// TTL is a TTL, used by some backends that don't store lease ID
+	TTL time.Duration
+}
+
+func (l *LeaseID) IsEmpty() bool {
+	return l.ID == ""
 }
 
 // OpConfig contains operation config

@@ -38,7 +38,10 @@ type Presence interface {
 
 	// UpsertNode registers node presence, permanently if TTL is 0 or for the
 	// specified duration with second resolution if it's >= 1 second.
-	UpsertNode(server Server) error
+	UpsertNode(server Server) (*KeepAliveHandle, error)
+
+	// KeepAliveNode updates node presence information
+	KeepAliveNode(h KeepAliveHandle) error
 
 	// UpsertNodes bulk inserts nodes.
 	UpsertNodes(namespace string, servers []Server) error

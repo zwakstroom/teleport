@@ -591,7 +591,7 @@ func (c *Client) RegisterNewAuthServer(token string) error {
 
 // UpsertNode is used by SSH servers to reprt their presence
 // to the auth servers in form of hearbeat expiring after ttl period.
-func (c *Client) UpsertNode(s services.Server) error {
+func (c *Client) UpsertNode(s services.Server) (*services.KeepAliveHanle, error) {
 	if s.GetNamespace() == "" {
 		return trace.BadParameter("missing node namespace")
 	}
@@ -602,7 +602,20 @@ func (c *Client) UpsertNode(s services.Server) error {
 	args := &upsertServerRawReq{
 		Server: data,
 	}
-	_, err = c.PostJSON(c.Endpoint("namespaces", s.GetNamespace(), "nodes"), args)
+	out, err := c.PostJSON(c.Endpoint("namespaces", s.GetNamespace(), "nodes"), args)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	var handle services.KeepAliveHandle
+	if err := json.Unmarshal(out.Bytes(), &handle); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &handle, nil
+}
+
+// KeepAliveNode updates node keep alive information
+func (c *Client) KeepAliveNode(handle services.KeepAliveHandle) error {
+	_, err := c.PostJSON(c.Endpoint("namespaces", defaults.Namespace, "nodes", "keepalive"), handle)
 	return trace.Wrap(err)
 }
 

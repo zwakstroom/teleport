@@ -69,7 +69,7 @@ func (s *Suite) TestSanitizeBucket(c *check.C) {
 			err = safeBackend.CreateVal(tt.inBucket, tt.inKey, []byte{}, Forever)
 			c.Assert(err != nil, check.Equals, tt.outError, comment)
 
-			err = safeBackend.UpsertVal(tt.inBucket, tt.inKey, []byte{}, Forever)
+			_, err = safeBackend.UpsertVal(tt.inBucket, tt.inKey, []byte{}, Forever)
 			c.Assert(err != nil, check.Equals, tt.outError, comment)
 
 			_, err = safeBackend.GetVal(tt.inBucket, tt.inKey)
@@ -111,8 +111,8 @@ func (n *nopBackend) CreateVal(bucket []string, key string, val []byte, ttl time
 	return nil
 }
 
-func (n *nopBackend) UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) error {
-	return nil
+func (n *nopBackend) UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) (*LeaseID, error) {
+	return &LeaseID{}, nil
 }
 
 func (n *nopBackend) UpsertItems(bucket []string, items []Item) error {
@@ -140,6 +140,10 @@ func (n *nopBackend) AcquireLock(token string, ttl time.Duration) error {
 }
 
 func (n *nopBackend) ReleaseLock(token string) error {
+	return nil
+}
+
+func (n *nopBackend) KeepAlive(id LeaseID) error {
 	return nil
 }
 

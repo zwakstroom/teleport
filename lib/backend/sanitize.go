@@ -93,15 +93,19 @@ func (s *Sanitizer) CreateVal(bucket []string, key string, val []byte, ttl time.
 
 // UpsertVal updates or inserts value with a given TTL into a bucket. Use
 // backend.ForeverTTL for no TTL.
-func (s *Sanitizer) UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) error {
+func (s *Sanitizer) UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) (*LeaseID, error) {
 	if !isSliceSafe(bucket) {
-		return trace.BadParameter(errorMessage)
+		return nil, trace.BadParameter(errorMessage)
 	}
 	if !isStringSafe(key) {
-		return trace.BadParameter(errorMessage)
+		return nil, trace.BadParameter(errorMessage)
 	}
 
 	return s.backend.UpsertVal(bucket, key, val, ttl)
+}
+
+func (s *Sanitizer) KeepAlive(id LeaseID) error {
+	return s.backend.KeepAlive(id)
 }
 
 // UpsertItems updates or inserts all passed in backend.Items (with a TTL)

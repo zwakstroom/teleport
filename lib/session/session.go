@@ -377,7 +377,7 @@ func (s *server) CreateSession(sess Session) error {
 		return trace.Wrap(err)
 	}
 	sess.Parties = nil
-	err = s.bk.UpsertJSONVal(activeBucket(sess.Namespace), string(sess.ID), sess, s.activeSessionTTL)
+	_, err = s.bk.UpsertJSONVal(activeBucket(sess.Namespace), string(sess.ID), sess, s.activeSessionTTL)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -406,7 +406,7 @@ func (s *server) UpdateSession(req UpdateRequest) error {
 	if req.Parties != nil {
 		sess.Parties = *req.Parties
 	}
-	err = s.bk.UpsertJSONVal(activeBucket(req.Namespace), string(req.ID), sess, s.activeSessionTTL)
+	_, err = s.bk.UpsertJSONVal(activeBucket(req.Namespace), string(req.ID), sess, s.activeSessionTTL)
 	if err != nil {
 		return trace.Wrap(err)
 	}

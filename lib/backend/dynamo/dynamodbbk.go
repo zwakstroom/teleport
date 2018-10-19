@@ -484,9 +484,13 @@ func (b *DynamoDBBackend) UpsertItems(bucket []string, items []backend.Item) err
 }
 
 // UpsertVal update or create a key with defined value (refresh TTL if already exist)
-func (b *DynamoDBBackend) UpsertVal(path []string, key string, val []byte, ttl time.Duration) error {
+func (b *DynamoDBBackend) UpsertVal(path []string, key string, val []byte, ttl time.Duration) (*backend.LeaseID, error) {
 	fullPath := b.fullPath(append(path, key)...)
-	return b.createKey(fullPath, val, ttl, true)
+	return &backend.LeaseID{}, b.createKey(fullPath, val, ttl, true)
+}
+
+func (b *DynamoDBBackend) KeepAlive(id backend.LeaseID) error {
+	panic("implement me")
 }
 
 // CompareAndSwapVal compares and swap values in atomic operation

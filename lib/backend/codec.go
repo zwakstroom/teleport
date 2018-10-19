@@ -32,10 +32,10 @@ func (c *JSONCodec) CreateJSONVal(path []string, key string, val interface{}, tt
 	return c.CreateVal(path, key, bytes, ttl)
 }
 
-func (c *JSONCodec) UpsertJSONVal(path []string, key string, val interface{}, ttl time.Duration) error {
+func (c *JSONCodec) UpsertJSONVal(path []string, key string, val interface{}, ttl time.Duration) (*LeaseID, error) {
 	bytes, err := json.Marshal(val)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return c.UpsertVal(path, key, bytes, ttl)
 }

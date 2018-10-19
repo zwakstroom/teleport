@@ -103,7 +103,7 @@ func (s *IdentityService) UpsertUser(user services.User) error {
 		return trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), user.Expiry())
-	err = s.UpsertVal([]string{"web", "users", user.GetName()}, "params", []byte(data), ttl)
+	_, err = s.UpsertVal([]string{"web", "users", user.GetName()}, "params", []byte(data), ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -200,7 +200,7 @@ func (s *IdentityService) UpsertPasswordHash(username string, hash []byte) error
 			return trace.Wrap(err)
 		}
 	}
-	err = s.UpsertVal([]string{"web", "users", username}, "pwd", hash, 0)
+	_, err = s.UpsertVal([]string{"web", "users", username}, "pwd", hash, 0)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -227,7 +227,7 @@ func (s *IdentityService) UpsertHOTP(user string, otp *hotp.HOTP) error {
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal([]string{"web", "users", user}, "hotp", bytes, 0)
+	_, err = s.UpsertVal([]string{"web", "users", user}, "hotp", bytes, 0)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -256,7 +256,7 @@ func (s *IdentityService) GetHOTP(user string) (*hotp.HOTP, error) {
 
 // UpsertTOTP upserts TOTP secret key for a user that can be used to generate and validate tokens.
 func (s *IdentityService) UpsertTOTP(user string, secretKey string) error {
-	err := s.UpsertVal([]string{"web", "users", user}, "totp", []byte(secretKey), 0)
+	_, err := s.UpsertVal([]string{"web", "users", user}, "totp", []byte(secretKey), 0)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -279,7 +279,7 @@ func (s *IdentityService) GetTOTP(user string) (string, error) {
 // UpsertUsedTOTPToken upserts a TOTP token to the backend so it can't be used again
 // during the 30 second window it's valid.
 func (s *IdentityService) UpsertUsedTOTPToken(user string, otpToken string) error {
-	err := s.UpsertVal([]string{"web", "users", user}, "used_totp", []byte(otpToken), 30*time.Second)
+	_, err := s.UpsertVal([]string{"web", "users", user}, "used_totp", []byte(otpToken), 30*time.Second)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -317,7 +317,7 @@ func (s *IdentityService) UpsertWebSession(user, sid string, session services.We
 	}
 	sessionMetadata := session.GetMetadata()
 	ttl := backend.AnyTTL(clockwork.NewRealClock(), session.GetBearerTokenExpiryTime(), sessionMetadata.Expiry())
-	err = s.UpsertVal([]string{"web", "users", user, "sessions"},
+	_, err = s.UpsertVal([]string{"web", "users", user, "sessions"},
 		sid, bytes, ttl)
 	if trace.IsNotFound(err) {
 		return trace.NotFound("user '%v' is not found", user)
@@ -334,7 +334,7 @@ func (s *IdentityService) AddUserLoginAttempt(user string, attempt services.Logi
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	err = s.UpsertVal([]string{"web", "users", user, "attempts"},
+	_, err = s.UpsertVal([]string{"web", "users", user, "attempts"},
 		uuid.New(), bytes, ttl)
 	if trace.IsNotFound(err) {
 		return trace.NotFound("user '%v' is not found", user)
@@ -448,7 +448,7 @@ func (s *IdentityService) UpsertSignupToken(token string, tokenData services.Sig
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal(userTokensPath, token, out, ttl)
+	_, err = s.UpsertVal(userTokensPath, token, out, ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -497,7 +497,7 @@ func (s *IdentityService) UpsertU2FRegisterChallenge(token string, u2fChallenge 
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	err = s.UpsertVal(u2fRegChalPath, token, data, defaults.U2FChallengeTimeout)
+	_, err = s.UpsertVal(u2fRegChalPath, token, data, defaults.U2FChallengeTimeout)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -543,7 +543,7 @@ func (s *IdentityService) UpsertU2FRegistration(user string, u2fReg *u2f.Registr
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal([]string{"web", "users", user}, "u2fregistration", data, backend.Forever)
+	_, err = s.UpsertVal([]string{"web", "users", user}, "u2fregistration", data, backend.Forever)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -592,7 +592,7 @@ func (s *IdentityService) UpsertU2FRegistrationCounter(user string, counter uint
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal([]string{"web", "users", user}, "u2fregistrationcounter", data, backend.Forever)
+	_, err = s.UpsertVal([]string{"web", "users", user}, "u2fregistrationcounter", data, backend.Forever)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -619,7 +619,7 @@ func (s *IdentityService) UpsertU2FSignChallenge(user string, u2fChallenge *u2f.
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	err = s.UpsertVal([]string{"web", "users", user}, "u2fsignchallenge", data, defaults.U2FChallengeTimeout)
+	_, err = s.UpsertVal([]string{"web", "users", user}, "u2fsignchallenge", data, defaults.U2FChallengeTimeout)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -649,7 +649,7 @@ func (s *IdentityService) UpsertOIDCConnector(connector services.OIDCConnector) 
 		return trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), connector.Expiry())
-	err = s.UpsertVal(oidcConnectorsPath, connector.GetName(), data, ttl)
+	_, err = s.UpsertVal(oidcConnectorsPath, connector.GetName(), data, ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -758,7 +758,7 @@ func (s *IdentityService) UpsertSAMLConnector(connector services.SAMLConnector) 
 		return trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), connector.Expiry())
-	err = s.UpsertVal(samlConnectorsPath, connector.GetName(), data, ttl)
+	_, err = s.UpsertVal(samlConnectorsPath, connector.GetName(), data, ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -870,7 +870,7 @@ func (s *IdentityService) UpsertGithubConnector(connector services.GithubConnect
 		return trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), connector.Expiry())
-	if err := s.UpsertVal(githubConnectorsPath, connector.GetName(), bytes, ttl); err != nil {
+	if _, err := s.UpsertVal(githubConnectorsPath, connector.GetName(), bytes, ttl); err != nil {
 		return trace.Wrap(err)
 	}
 	return nil

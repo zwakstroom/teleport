@@ -84,7 +84,7 @@ func (s *ClusterConfigurationService) SetStaticTokens(c services.StaticTokens) e
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal([]string{"cluster_configuration"}, "static_tokens", []byte(data), backend.Forever)
+	_, err = s.UpsertVal([]string{"cluster_configuration"}, "static_tokens", []byte(data), backend.Forever)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -114,7 +114,7 @@ func (s *ClusterConfigurationService) SetAuthPreference(preferences services.Aut
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal([]string{"authentication", "preference"}, "general", []byte(data), backend.Forever)
+	_, err = s.UpsertVal([]string{"authentication", "preference"}, "general", []byte(data), backend.Forever)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -142,7 +142,7 @@ func (s *ClusterConfigurationService) SetClusterConfig(c services.ClusterConfig)
 		return trace.Wrap(err)
 	}
 
-	err = s.UpsertVal([]string{"cluster_configuration"}, "general", []byte(data), backend.Forever)
+	_, err = s.UpsertVal([]string{"cluster_configuration"}, "general", []byte(data), backend.Forever)
 	if err != nil {
 		return trace.Wrap(err)
 	}

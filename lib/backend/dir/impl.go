@@ -229,18 +229,25 @@ func (bk *Backend) CreateVal(bucket []string, key string, val []byte, ttl time.D
 
 // UpsertVal inserts (or updates if it already exists) the value for a key
 // with the given TTL.
-func (bk *Backend) UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) error {
+func (bk *Backend) UpsertVal(bucket []string, key string, val []byte, ttl time.Duration) (*backend.LeaseID, error) {
 	// Open the bucket to work on the items.
 	b, err := bk.openBucket(bk.flatten(bucket), os.O_CREATE|os.O_RDWR)
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	defer b.Close()
 
 	// Update the item in the bucket.
 	b.updateItem(key, val, ttl)
 
-	return nil
+	if ttl == 0 {
+		return &backend.LeaseID{ID: filepath.Join(append(bucket, key)...), TTL: ttl}, nil
+	}
+	return &backend.LeaseID{TTL: ttl}, nil
+}
+
+func (bk *Backend) KeepAlive(id backend.LeaseID) error {
+	panic("implement me")
 }
 
 // UpsertItems inserts (or updates if it already exists) all passed in

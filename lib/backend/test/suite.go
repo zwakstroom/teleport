@@ -74,8 +74,10 @@ func (s *BackendSuite) BasicCRUD(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(keys, HasLen, 0)
 
-	c.Assert(s.B.UpsertVal([]string{"a", "b"}, "bkey", []byte("val1"), 0), IsNil)
-	c.Assert(s.B.UpsertVal([]string{"a", "b"}, "akey", []byte("val2"), 0), IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b"}, "bkey", []byte("val1"), 0)
+	c.Assert(err, IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b"}, "akey", []byte("val2"), 0)
+	c.Assert(err, IsNil)
 
 	_, err = s.B.GetVal([]string{"a"}, "b")
 	c.Assert(trace.IsBadParameter(err), Equals, true, Commentf("%#v", err))
@@ -100,7 +102,8 @@ func (s *BackendSuite) BasicCRUD(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(string(out), Equals, "val1")
 
-	c.Assert(s.B.UpsertVal([]string{"a", "b"}, "bkey", []byte("val-updated"), 0), IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b"}, "bkey", []byte("val-updated"), 0)
+	c.Assert(err, IsNil)
 	out, err = s.B.GetVal([]string{"a", "b"}, "bkey")
 	c.Assert(err, IsNil)
 	c.Assert(string(out), Equals, "val-updated")
@@ -110,8 +113,10 @@ func (s *BackendSuite) BasicCRUD(c *C) {
 	_, err = s.B.GetVal([]string{"a", "b"}, "bkey")
 	c.Assert(trace.IsNotFound(err), Equals, true, Commentf("%#v", err))
 
-	c.Assert(s.B.UpsertVal([]string{"a", "c"}, "xkey", []byte("val3"), 0), IsNil)
-	c.Assert(s.B.UpsertVal([]string{"a", "c"}, "ykey", []byte("val4"), 0), IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "c"}, "xkey", []byte("val3"), 0)
+	c.Assert(err, IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "c"}, "ykey", []byte("val4"), 0)
+	c.Assert(err, IsNil)
 	c.Assert(s.B.DeleteBucket([]string{"a"}, "c"), IsNil)
 	c.Assert(s.B.DeleteBucket([]string{"a"}, "c"), NotNil)
 
@@ -152,8 +157,10 @@ func (s *BackendSuite) CompareAndSwap(c *C) {
 
 // BatchCRUD tests batch CRUD operations.
 func (s *BackendSuite) BatchCRUD(c *C) {
-	c.Assert(s.B.UpsertVal([]string{"a", "b"}, "bkey", []byte("val1"), 0), IsNil)
-	c.Assert(s.B.UpsertVal([]string{"a", "b"}, "akey", []byte("val2"), 0), IsNil)
+	_, err := s.B.UpsertVal([]string{"a", "b"}, "bkey", []byte("val1"), 0)
+	c.Assert(err, IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b"}, "akey", []byte("val2"), 0)
+	c.Assert(err, IsNil)
 
 	items, err := s.B.GetItems([]string{"a", "b"})
 	c.Assert(err, IsNil)
@@ -163,9 +170,12 @@ func (s *BackendSuite) BatchCRUD(c *C) {
 	c.Assert(string(items[1].Value), Equals, "val1")
 	c.Assert(items[1].Key, Equals, "bkey")
 
-	c.Assert(s.B.UpsertVal([]string{"a", "b", "sub1"}, "subkey11", []byte("val11"), 0), IsNil)
-	c.Assert(s.B.UpsertVal([]string{"a", "b", "sub1"}, "subkey12", []byte("val12"), 0), IsNil)
-	c.Assert(s.B.UpsertVal([]string{"a", "b", "sub2", "sub3"}, "subkey31", []byte("val31"), 0), IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b", "sub1"}, "subkey11", []byte("val11"), 0)
+	c.Assert(err, IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b", "sub1"}, "subkey12", []byte("val12"), 0)
+	c.Assert(err, IsNil)
+	_, err = s.B.UpsertVal([]string{"a", "b", "sub2", "sub3"}, "subkey31", []byte("val31"), 0)
+	c.Assert(err, IsNil)
 
 	items, err = s.B.GetItems([]string{"a", "b"}, backend.WithRecursive())
 	c.Assert(err, IsNil)
@@ -191,7 +201,8 @@ func (s *BackendSuite) BatchCRUD(c *C) {
 // Directories checks directories access
 func (s *BackendSuite) Directories(c *C) {
 	bucket := []string{"level1", "level2", "level3"}
-	c.Assert(s.B.UpsertVal(bucket, "key", []byte("val"), 0), IsNil)
+	_, err := s.B.UpsertVal(bucket, "key", []byte("val"), 0)
+	c.Assert(err, IsNil)
 
 	keys, err := s.B.GetKeys(bucket[:2])
 	c.Assert(err, IsNil)
@@ -204,11 +215,13 @@ func (s *BackendSuite) Directories(c *C) {
 
 func (s *BackendSuite) Expiration(c *C) {
 	bucket := []string{"one", "two"}
-	c.Assert(s.B.UpsertVal(bucket, "bkey", []byte("val1"), time.Second), IsNil)
-	c.Assert(s.B.UpsertVal(bucket, "akey", []byte("val2"), 0), IsNil)
+	_, err := s.B.UpsertVal(bucket, "bkey", []byte("val1"), time.Second)
+	c.Assert(err, IsNil)
+
+	_, err = s.B.UpsertVal(bucket, "akey", []byte("val2"), 0)
+	c.Assert(err, IsNil)
 
 	var keys []string
-	var err error
 	for i := 0; i < 4; i++ {
 		time.Sleep(time.Second)
 		keys, err = s.B.GetKeys(bucket)
@@ -222,8 +235,9 @@ func (s *BackendSuite) Expiration(c *C) {
 
 func (s *BackendSuite) ValueAndTTL(c *C) {
 	bucket := []string{"test", "ttl"}
-	c.Assert(s.B.UpsertVal(bucket, "bkey",
-		[]byte("val1"), 2*time.Second), IsNil)
+	_, err := s.B.UpsertVal(bucket, "bkey",
+		[]byte("val1"), 2*time.Second)
+	c.Assert(err, IsNil)
 
 	time.Sleep(time.Second)
 

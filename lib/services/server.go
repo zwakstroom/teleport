@@ -57,6 +57,84 @@ type Server interface {
 	CheckAndSetDefaults() error
 }
 
+// KeepAliveHandle is a keep alive handle
+// used to keep server presence up
+type KeepAliveHandle struct {
+	// LeaseID is a keealive lease ID
+	LeaseID string `json:"lid,omitempty"`
+	// ServerName is a server name
+	ServerName string `json:"server"`
+	// TTL is a TTL of the handle
+	TTL time.Duration `json:"ttl"`
+}
+
+// IsEmpty returns true if keepalive is empty,
+// used to indicate that keepalive is not supported
+func (s *KeepAliveHandle) IsEmpty() bool {
+	return s.LeaseID == ""
+}
+
+const (
+	// Equal means two objects are equal
+	Equal = iota
+	// OnlyTimestampsDifferent is true when only timestamps are different
+	OnlyTimestampsDifferent = iota
+	// Differnt means that some fields are different
+	Different = iota
+)
+
+// CompareServers returns difference between two server
+// objects, Equal (0) if identical, OnlyTimestampsDifferent(1) if only timestamps differ, Different(2) otherwise
+func CompareServers(a, b Server) int {
+	if a.GetName() != b.GetName() {
+		return Different
+	}
+	if a.GetAddr() != b.GetAddr() {
+		return Different
+	}
+	if a.GetHostname() != b.GetHostname() {
+		return Different
+	}
+	if a.GetNamespace() != b.GetNamespace() {
+		return Different
+	}
+	if a.GetPublicAddr() != b.GetPublicAddr() {
+		return Different
+	}
+	r := a.GetRotation()
+	if !r.Matches(b.GetRotation()) {
+		return Different
+	}
+	if !utils.StringMapsEqual(a.GetLabels(), b.GetLabels()) {
+		return Different
+	}
+	if CmdLabelMapsEqual(a.GetCmdLabels(), b.GetCmdLabels()) {
+		return Different
+	}
+	if !a.Expiry().Equal(b.Expiry()) {
+		return OnlyTimestampsDifferent
+	}
+	return Equal
+}
+
+// CmdLabelMapsEqual compares two maps with command labels,
+// returns true if label sets are equal
+func CmdLabelMapsEqual(a, b map[string]CommandLabel) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for key, val := range a {
+		val2, ok := b[key]
+		if !ok {
+			return false
+		}
+		if !val.Equals(val2) {
+			return false
+		}
+	}
+	return true
+}
+
 // ServersToV1 converts list of servers to slice of V1 style ones
 func ServersToV1(in []Server) []ServerV1 {
 	out := make([]ServerV1, len(in))
@@ -374,6 +452,9 @@ type CommandLabel interface {
 	GetCommand() []string
 	// Clone returns label copy
 	Clone() CommandLabel
+	// Equals returns true if label is equal to the other one
+	// false otherwise
+	Equals(CommandLabel) bool
 }
 
 // CommandLabelV2 is a label that has a value as a result of the
@@ -385,6 +466,20 @@ type CommandLabelV2 struct {
 	Command []string `json:"command"` //["/usr/bin/hostname", "--long"]
 	// Result captures standard output
 	Result string `json:"result"`
+}
+
+// Equals returns true if labels are equal, false otherwise
+func (c *CommandLabelV2) Equals(other CommandLabel) bool {
+	if c.GetPeriod() != other.GetPeriod() {
+		return false
+	}
+	if c.GetResult() != other.GetResult() {
+		return false
+	}
+	if !utils.StringSlicesEqual(c.GetCommand(), other.GetCommand()) {
+		return false
+	}
+	return true
 }
 
 // Clone returns label copy

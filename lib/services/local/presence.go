@@ -45,7 +45,8 @@ func NewPresenceService(b backend.Backend) *PresenceService {
 
 // UpsertLocalClusterName upserts local domain
 func (s *PresenceService) UpsertLocalClusterName(name string) error {
-	return s.UpsertVal([]string{localClusterPrefix}, "val", []byte(name), backend.Forever)
+	_, err := s.UpsertVal([]string{localClusterPrefix}, "val", []byte(name), backend.Forever)
+	return trace.Wrap(err)
 }
 
 // GetLocalClusterName upserts local domain
@@ -87,7 +88,7 @@ func (s *PresenceService) UpsertNamespace(n services.Namespace) error {
 		return trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), n.Metadata.Expiry())
-	err = s.UpsertVal([]string{namespacesPrefix, n.Metadata.Name}, "params", []byte(data), ttl)
+	_, err = s.UpsertVal([]string{namespacesPrefix, n.Metadata.Name}, "params", []byte(data), ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -154,7 +155,7 @@ func (s *PresenceService) upsertServer(prefix string, server services.Server) er
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	err = s.UpsertVal([]string{prefix}, server.GetName(), data, ttl)
+	_, err = s.UpsertVal([]string{prefix}, server.GetName(), data, ttl)
 	return trace.Wrap(err)
 }
 
@@ -194,16 +195,30 @@ func (s *PresenceService) GetNodes(namespace string, opts ...services.MarshalOpt
 
 // UpsertNode registers node presence, permanently if TTL is 0 or for the
 // specified duration with second resolution if it's >= 1 second.
-func (s *PresenceService) UpsertNode(server services.Server) error {
+func (s *PresenceService) UpsertNode(server services.Server) (*services.KeepAliveHandle, error) {
 	if server.GetNamespace() == "" {
-		return trace.BadParameter("missing node namespace")
+		return nil, trace.BadParameter("missing node namespace")
 	}
 	data, err := services.GetServerMarshaler().MarshalServer(server)
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), server.Expiry())
-	err = s.UpsertVal([]string{namespacesPrefix, server.GetNamespace(), nodesPrefix}, server.GetName(), data, ttl)
+	leaseID, err := s.UpsertVal([]string{namespacesPrefix, server.GetNamespace(), nodesPrefix}, server.GetName(), data, ttl)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &services.KeepAliveHandle{LeaseID: leaseID.ID, ServerName: server.GetName(), TTL: ttl}, nil
+}
+
+// KeepAliveNode updates node expiry
+func (s *PresenceService) KeepAliveNode(h services.KeepAliveHandle) error {
+	err := s.KeepAlive(backend.LeaseID{
+		ID:     h.LeaseID,
+		TTL:    h.TTL,
+		Bucket: []string{namespacesPrefix, h.ServerName, nodesPrefix},
+		Key:    h.ServerName,
+	})
 	return trace.Wrap(err)
 }
 
@@ -282,7 +297,7 @@ func (s *PresenceService) UpsertReverseTunnel(tunnel services.ReverseTunnel) err
 		return trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), tunnel.Expiry())
-	err = s.UpsertVal([]string{reverseTunnelsPrefix}, tunnel.GetName(), data, ttl)
+	_, err = s.UpsertVal([]string{reverseTunnelsPrefix}, tunnel.GetName(), data, ttl)
 	return trace.Wrap(err)
 }
 
@@ -329,7 +344,7 @@ func (s *PresenceService) UpsertTrustedCluster(trustedCluster services.TrustedCl
 		return nil, trace.Wrap(err)
 	}
 	ttl := backend.TTL(s.Clock(), trustedCluster.Expiry())
-	err = s.UpsertVal([]string{"trustedclusters"}, trustedCluster.GetName(), []byte(data), ttl)
+	_, err = s.UpsertVal([]string{"trustedclusters"}, trustedCluster.GetName(), []byte(data), ttl)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -392,7 +407,7 @@ func (s *PresenceService) UpsertTunnelConnection(conn services.TunnelConnection)
 	}
 	metadata := conn.GetMetadata()
 	ttl := backend.TTL(s.Clock(), metadata.Expiry())
-	err = s.UpsertVal([]string{tunnelConnectionsPrefix, conn.GetClusterName()}, conn.GetName(), bytes, ttl)
+	_, err = s.UpsertVal([]string{tunnelConnectionsPrefix, conn.GetClusterName()}, conn.GetName(), bytes, ttl)
 	if err != nil {
 		return trace.Wrap(err)
 	}
