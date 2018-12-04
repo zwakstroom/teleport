@@ -14,9 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
-import { Component, createElement, PropTypes } from 'react';
+import { Component, Children, createElement } from 'react'
 import hoistStatics from 'hoist-non-react-statics';
+import PropTypes from 'prop-types';
+
+export class Provider extends Component {
+  getChildContext() {
+    return {
+      reactor: this.reactor,
+    }
+  }
+
+  constructor(props, context) {
+    super(props, context)
+    this.reactor = props.reactor
+  }
+
+  render() {
+    return Children.only(this.props.children)
+  }
+}
+
+Provider.propTypes = {
+  reactor: PropTypes.object.isRequired,
+  children: PropTypes.element.isRequired,
+}
+
+Provider.childContextTypes = {
+  reactor: PropTypes.object.isRequired,
+}
 
 const reactorShape = PropTypes.shape({
   dispatch: PropTypes.func.isRequired,
@@ -29,7 +55,7 @@ function getDisplayName(WrappedComponent) {
   return WrappedComponent.displayName || WrappedComponent.name || 'Component'
 }
 
-export default function connect(mapFluxToProps, mapStateToProps) {  
+export function connect(mapFluxToProps, mapStateToProps) {
   mapStateToProps = mapStateToProps ? mapStateToProps : () => ({});
   return function wrapWithConnect(WrappedComponent) {
     class Connect extends Component {
@@ -47,11 +73,11 @@ export default function connect(mapFluxToProps, mapStateToProps) {
         this.subscribe()
       }
 
-      componentWillMount() {
+      UNSAFE_componentWillMount() {
         this.updateState()
         this.subscribe(this.props)
       }
-      
+
       componentWillUnmount() {
         this.unsubscribe()
       }
@@ -97,10 +123,10 @@ export default function connect(mapFluxToProps, mapStateToProps) {
       }
 
       render() {
-        const stateProps = mapStateToProps(this.props);        
+        const stateProps = mapStateToProps(this.props);
         return createElement(WrappedComponent, {
           reactor: this.reactor,
-          ...stateProps,          
+          ...stateProps,
           ...this.props,
           ...this.state,
         })

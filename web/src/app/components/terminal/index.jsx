@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { connect } from 'nuclear-js-react-addons';
+import { connect } from './../nuclear';
 import termGetters from 'app/flux/terminal/getters';
 import { getters as fileGetters } from 'app/flux/fileTransfer';
 import * as terminalActions  from 'app/flux/terminal/actions';

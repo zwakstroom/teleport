@@ -17,7 +17,8 @@ import $ from 'jQuery';
 import initScroll from 'perfect-scrollbar/jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactSlider from 'react-slider';
+import PropTypes from 'prop-types';
+import ReactSlider from '../slider.jsx';
 import GrvTerminal from 'app/lib/term/terminal';
 import { TtyPlayer } from 'app/lib/term/ttyPlayer';
 import Indicator from './../indicator.jsx';
@@ -59,7 +60,7 @@ class Terminal extends GrvTerminal{
 class Content extends React.Component {
 
   static propTypes = {
-    tty: React.PropTypes.object.isRequired
+    tty: PropTypes.object.isRequired
   }
 
   componentDidMount() {

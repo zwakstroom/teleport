@@ -16,7 +16,7 @@ limitations under the License.
 
 import $ from 'jquery'
 import expect from 'expect';
-import ReactTestUtils from 'react-addons-test-utils';
+import ReactTestUtils from 'react-dom/test-utils';
 import reactor from 'app/reactor';
 import session from 'app/services/session';
 import api from 'app/services/api';

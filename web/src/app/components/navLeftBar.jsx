@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import React from 'react';
+import PropTypes from 'prop-types';
 import cfg from 'app/config';
 import * as UserFlux from 'app/flux/user';
 import * as AppStore from 'app/flux/app/appStore';
@@ -63,5 +64,5 @@ export default function NavLeftBar(props) {
 }
 
 NavLeftBar.propTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 }

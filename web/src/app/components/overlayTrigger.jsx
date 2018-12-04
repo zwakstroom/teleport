@@ -17,40 +17,41 @@ limitations under the License.
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Overlay } from 'react-overlays'
+import PropTypes from 'prop-types';
 
-const triggerType = React.PropTypes.oneOf(['click', 'hover', 'focus']);
+const triggerType = PropTypes.oneOf(['click', 'hover', 'focus']);
 
 const propTypes = {
-    
-  trigger: React.PropTypes.oneOfType([
-    triggerType, React.PropTypes.arrayOf(triggerType),
+
+  trigger: PropTypes.oneOfType([
+    triggerType, PropTypes.arrayOf(triggerType),
   ]),
-  
-  delay: React.PropTypes.number,
-  
-  delayShow: React.PropTypes.number,
-  
-  delayHide: React.PropTypes.number,
-  
-  defaultOverlayShown: React.PropTypes.bool,
 
-  overlay: React.PropTypes.node.isRequired,
-  
-  onBlur: React.PropTypes.func,
+  delay: PropTypes.number,
 
-  onClick: React.PropTypes.func,
+  delayShow: PropTypes.number,
 
-  onFocus: React.PropTypes.func,
+  delayHide: PropTypes.number,
 
-  onMouseOut: React.PropTypes.func,
+  defaultOverlayShown: PropTypes.bool,
 
-  onMouseOver: React.PropTypes.func,
+  overlay: PropTypes.node.isRequired,
 
-  target: React.PropTypes.oneOf([null]),
+  onBlur: PropTypes.func,
 
-  onHide: React.PropTypes.oneOf([null]),
+  onClick: PropTypes.func,
 
-  show: React.PropTypes.oneOf([null]),
+  onFocus: PropTypes.func,
+
+  onMouseOut: PropTypes.func,
+
+  onMouseOver: PropTypes.func,
+
+  target: PropTypes.oneOf([null]),
+
+  onHide: PropTypes.oneOf([null]),
+
+  show: PropTypes.oneOf([null]),
 };
 
 const defaultProps = {
@@ -62,8 +63,8 @@ class OverlayTrigger extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.getElement = this.getElement.bind(this);
-    this.handleToggle = this.handleToggle.bind(this);    
-    this.handleHide = this.handleHide.bind(this);    
+    this.handleToggle = this.handleToggle.bind(this);
+    this.handleHide = this.handleHide.bind(this);
     this.state = {
       show: props.defaultOverlayShown,
     };
@@ -76,7 +77,7 @@ class OverlayTrigger extends React.Component {
       this.show();
     }
   }
-    
+
   handleHide() {
     this.hide();
   }
@@ -88,14 +89,14 @@ class OverlayTrigger extends React.Component {
   hide() {
     this.setState({ show: false });
   }
- 
+
   getElement() {
-    return ReactDOM.findDOMNode(this);    
+    return ReactDOM.findDOMNode(this);
   }
 
   render() {
-    let { container = this, placement, overlay } = this.props;                                                
-    return (    
+    let { container = this, placement, overlay } = this.props;
+    return (
       <div onClick={this.handleToggle}>
         {this.props.children}
         <Overlay
@@ -104,11 +105,11 @@ class OverlayTrigger extends React.Component {
           show={this.state.show}
           onHide={this.handleHide}
           target={ () => this.getElement()}
-          container={container} >  
-          {overlay}  
-        </Overlay>  
-      </div>  
-    )    
+          container={container} >
+          {overlay}
+        </Overlay>
+      </div>
+    )
   }
 }
 

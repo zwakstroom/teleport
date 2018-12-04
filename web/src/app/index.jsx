@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 import React from 'react';
 import { Router } from 'react-router';
-import { Provider } from 'nuclear-js-react-addons';
+import { Provider } from './components/nuclear';
 import cfg from './config';
 import history from './services/history';
 import reactor from './reactor';

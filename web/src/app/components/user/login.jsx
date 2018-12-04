@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 import React from 'react';
-import { connect } from 'nuclear-js-react-addons';
+import PropTypes from 'prop-types';
+import { connect } from './../nuclear';
 import $ from 'jQuery';
 import 'app/../assets/js/jquery-validate';
 import actions from 'app/flux/user/actions';
@@ -71,12 +73,12 @@ export class Login extends React.Component {
 export class LoginInputForm extends React.Component {
 
   static propTypes = {
-    authProviders: React.PropTypes.array,
-    auth2faType: React.PropTypes.string,
-    onLoginWithSso: React.PropTypes.func.isRequired,
-    onLoginWithU2f: React.PropTypes.func.isRequired,
-    onLogin: React.PropTypes.func.isRequired,
-    attemp: React.PropTypes.object.isRequired
+    authProviders: PropTypes.array,
+    auth2faType: PropTypes.string,
+    onLoginWithSso: PropTypes.func.isRequired,
+    onLoginWithU2f: PropTypes.func.isRequired,
+    onLogin: PropTypes.func.isRequired,
+    attemp: PropTypes.object.isRequired
   }
 
   constructor(props) {

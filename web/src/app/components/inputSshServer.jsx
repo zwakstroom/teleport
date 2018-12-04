@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 const SSH_STR_REGEX = /(^\w+@(\w|\.|-)+(:\d+)*$)|(^$)/;
@@ -45,7 +46,7 @@ export default class InputSshServer extends React.Component {
     this.prevLoginIndex = DEFAULT_HISTORY_INDEX;
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.clusterId !== this.props.clusterId ||
         nextProps.sshHistory !== this.props.sshHistory) {
       this.setDefaultPrevIndex();

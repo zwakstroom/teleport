@@ -46,7 +46,7 @@ var cfg = {
       baseCfg.rules.svg,
       baseCfg.rules.images,
       baseCfg.rules.jsx({ withHot: true}),
-      baseCfg.rules.css(),
+      baseCfg.rules.css({ dev: true}),
       baseCfg.rules.scss({ dev: true }),
     ]
   },

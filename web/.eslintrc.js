@@ -1,4 +1,6 @@
-{
+const path = require('path');
+
+module.exports = {
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 6,
@@ -55,7 +57,7 @@
   "settings": {
     "import/resolver": {
       "webpack": {
-        "config": "webpack/webpack.dev.config.js"
+        "config": path.join(__dirname, "./webpack/webpack.dev.config.js")
       }
     }
   }

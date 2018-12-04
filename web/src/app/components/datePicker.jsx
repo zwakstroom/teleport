@@ -19,66 +19,68 @@ import $ from 'jQuery';
 import moment from 'moment';
 import {debounce} from 'lodash';
 
-const DateRangePicker = React.createClass({
+
+export class DateRangePicker extends React.Component {
 
   getDates(){
     var startDate = $(this.refs.dpPicker1).datepicker('getDate');
     var endDate = $(this.refs.dpPicker2).datepicker('getDate');
     return [startDate, moment(endDate).endOf('day').toDate()];
-  },
+  }
 
   setDates({startDate, endDate}){
     $(this.refs.dpPicker1).datepicker('setDate', startDate);
     $(this.refs.dpPicker2).datepicker('setDate', endDate);
-  },
+  }
 
-  getDefaultProps() {
-     return {
-       startDate: moment().startOf('month').toDate(),
-       endDate: moment().endOf('month').toDate(),
-       onChange: ()=>{}
-     };
-   },
+  constructor(props){
+    super(props)
+    this.state = {
+      startDate: moment().startOf('month').toDate(),
+      endDate: moment().endOf('month').toDate(),
+      onChange: ()=>{}
+    };
+  }
 
   componentWillUnmount(){
     $(this.refs.dp).datepicker('destroy');
-  },
+  }
 
-  componentWillReceiveProps(newProps){
+  UNSAFE_componentWillReceiveProps(newProps){
     var [startDate, endDate] = this.getDates();
     if(!(isSame(startDate, newProps.startDate) &&
           isSame(endDate, newProps.endDate))){
         this.setDates(newProps);
       }
-  },
+  }
 
   shouldComponentUpdate(){
     return false;
-  },
+  }
 
-  componentDidMount(){        
+  componentDidMount(){
     this.onChange = debounce(this.onChange, 1);
     $(this.refs.rangePicker).datepicker({
       todayBtn: 'linked',
       keyboardNavigation: false,
       forceParse: false,
       calendarWeeks: true,
-      autoclose: true,      
+      autoclose: true,
     });
-        
+
     this.setDates(this.props);
 
     $(this.refs.rangePicker).datepicker()
-      .on('changeDate', this.onChange);    
-  },
+      .on('changeDate', this.onChange);
+  }
 
-  onChange(){    
+  onChange = () => {
     var [startDate, endDate] = this.getDates()
     if(!(isSame(startDate, this.props.startDate) &&
           isSame(endDate, this.props.endDate))){
         this.props.onChange({startDate, endDate});
     }
-  },
+  }
 
   render() {
     return (
@@ -89,7 +91,7 @@ const DateRangePicker = React.createClass({
       </div>
     );
   }
-});
+}
 
 function isSame(date1, date2){
   return moment(date1).isSame(date2, 'day');

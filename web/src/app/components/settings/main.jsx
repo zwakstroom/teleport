@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React, { PropTypes } from 'react';
-import { connect } from 'nuclear-js-react-addons';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from './../nuclear';
 import { Link } from 'react-router';
 import getters from '../../flux/settings/getters';
 
@@ -26,9 +27,9 @@ class Settings extends React.Component {
   static contextTypes = {
     router: PropTypes.object.isRequired
   }
-        
+
   renderHeaderItem(item, key){
-    let { to, isIndex, title } = item;    
+    let { to, isIndex, title } = item;
     let className = this.context.router.isActive(to, isIndex) ? "active" : "";
     return (
       <li key={key} className={className}>
@@ -41,29 +42,29 @@ class Settings extends React.Component {
       </li>
     )
   }
-  
-  render() {        
-    const { store } = this.props;                 
+
+  render() {
+    const { store } = this.props;
     const $headerItems = store.getNavItems().map(this.renderHeaderItem.bind(this));
 
     if ( !store.isReady() ){
       return null;
     }
-    
-    return (   
-      <div className="grv-page grv-settings">                                                
+
+    return (
+      <div className="grv-page grv-settings">
         <ul className="grv-settings-header-menu">
           {$headerItems}
-        </ul>  
+        </ul>
         { $headerItems.length > 0 && <Separator /> }
-        {this.props.children}        
+        {this.props.children}
       </div>
     );
   }
 }
 
 function mapStateToProps() {
-  return {    
+  return {
     store: getters.store
   }
 }

@@ -15,9 +15,10 @@ limitations under the License.
 */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import $ from 'jQuery';
 import classnames from 'classnames';
-import { connect } from 'nuclear-js-react-addons';
+import { connect } from './../nuclear';
 import cfg from 'app/config';
 import actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
@@ -89,11 +90,11 @@ export class Invite extends React.Component {
 export class InviteInputForm extends React.Component {
 
   static propTypes = {
-    auth2faType: React.PropTypes.string,
-    authType: React.PropTypes.string,
-    onSubmitWithU2f: React.PropTypes.func.isRequired,
-    onSubmit: React.PropTypes.func.isRequired,
-    attemp: React.PropTypes.object.isRequired
+    auth2faType: PropTypes.string,
+    authType: PropTypes.string,
+    onSubmitWithU2f: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    attemp: PropTypes.object.isRequired
   }
 
   constructor(props) {

@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { CloseIcon } from './../icons';
-import connect from './../connect';
+import { connect } from './../nuclear';
 import { withRouter } from 'react-router';
 import { getters as ftGetters } from 'app/flux/fileTransfer';
 import * as ftActions from 'app/flux/fileTransfer/actions';

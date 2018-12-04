@@ -16,22 +16,23 @@ limitations under the License.
 
 import classNames from 'classnames';
 import React from 'react';
- 
+import PropTypes from 'prop-types';
+
 const propTypes = {
-  placement: React.PropTypes.oneOf(['top', 'right', 'bottom', 'left']),
-  positionTop: React.PropTypes.oneOfType([
-    React.PropTypes.number, React.PropTypes.string,
+  placement: PropTypes.oneOf(['top', 'right', 'bottom', 'left']),
+  positionTop: PropTypes.oneOfType([
+    PropTypes.number, PropTypes.string,
   ]),
-  positionLeft: React.PropTypes.oneOfType([
-    React.PropTypes.number, React.PropTypes.string,
+  positionLeft: PropTypes.oneOfType([
+    PropTypes.number, PropTypes.string,
   ]),
-  arrowOffsetTop: React.PropTypes.oneOfType([
-    React.PropTypes.number, React.PropTypes.string,
+  arrowOffsetTop: PropTypes.oneOfType([
+    PropTypes.number, PropTypes.string,
   ]),
-  arrowOffsetLeft: React.PropTypes.oneOfType([
-    React.PropTypes.number, React.PropTypes.string,
+  arrowOffsetLeft: PropTypes.oneOfType([
+    PropTypes.number, PropTypes.string,
   ]),
-  title: React.PropTypes.node,
+  title: PropTypes.node,
 };
 
 const defaultProps = {
@@ -49,10 +50,10 @@ class Popover extends React.Component {
       title,
       className,
       style,
-      children,    
+      children,
     } = this.props;
-    
-    const classes = {      
+
+    const classes = {
       'popover': true,
       [placement]: true,
     };
@@ -68,9 +69,9 @@ class Popover extends React.Component {
       top: arrowOffsetTop,
       left: arrowOffsetLeft,
     };
-    
+
     return (
-      <div 
+      <div
         role="tooltip"
         className={classNames(className, classes)}
         style={outerStyle}>

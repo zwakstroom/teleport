@@ -1,4 +1,4 @@
-import ReactTestUtils from 'react-addons-test-utils';
+import ReactTestUtils from 'react-dom/test-utils';
 import * as ReactDOM from 'react-dom';
 import expect from 'expect';
 import $ from 'jQuery';

@@ -16,7 +16,7 @@ limitations under the License.
 
 import expect from 'expect';
 import $ from 'jQuery';
-import ReactTestUtils from 'react-addons-test-utils';
+import ReactTestUtils from 'react-dom/test-utils';
 import { React, makeHelper, ReactDOM } from 'app/__tests__/domUtils';
 import { FileTransferDialog } from 'app/components/files/index';
 import { FileTransferStore } from 'app/flux/fileTransfer/store';

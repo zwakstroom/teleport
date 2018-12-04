@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 import React from 'react';
-import { connect } from 'nuclear-js-react-addons';
+import { connect } from './../nuclear';
 import userAclGetters from 'app/flux/userAcl/getters';
 import nodeGetters from 'app/flux/nodes/getters';
 import appGetters from 'app/flux/app/getters';

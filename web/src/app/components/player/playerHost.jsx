@@ -23,7 +23,7 @@ import cfg from 'app/config';
 
 class PlayerHost extends React.Component {
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { sid, siteId } = this.props.params;
     this.url = cfg.api.getFetchSessionUrl({ siteId, sid });
   }

@@ -15,42 +15,43 @@ limitations under the License.
 */
 
 import React from 'react';
-import connect from '../connect';
+import PropTypes from 'prop-types';
+import { connect } from './../nuclear';
 import * as Messages from '../msgPage.jsx';
 import getters from '../../flux/settings/getters';
 
-class SettingsIndex extends React.Component {      
-  
+class SettingsIndex extends React.Component {
+
   static propTypes = {
-    router: React.PropTypes.object.isRequired,
-    store: React.PropTypes.object.isRequired,
-    location: React.PropTypes.object.isRequired,
+    router: PropTypes.object.isRequired,
+    store: PropTypes.object.isRequired,
+    location: PropTypes.object.isRequired,
   }
-  
-  componentDidMount(){    
+
+  componentDidMount(){
     const route = this.getAvailableRoute();
-    if(route){      
+    if(route){
       this.props.router.replace({ pathname: route })
     }
   }
 
-  getAvailableRoute(){    
-    const items = this.props.store.getNavItems();    
-    if(items && items[0]){      
+  getAvailableRoute(){
+    const items = this.props.store.getNavItems();
+    if(items && items[0]){
       return items[0].to;
     }
-    
+
     return null;
   }
 
-  render(){        
+  render(){
     return ( <Messages.AccessDenied/> )
   }
 }
 
 function mapStateToProps() {
-  return {    
-    store: getters.store    
+  return {
+    store: getters.store
   }
 }
 

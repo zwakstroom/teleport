@@ -16,7 +16,7 @@ limitations under the License.
 
 import React, { Component } from 'react';
 import classnames from 'classnames';
-import { connect } from 'nuclear-js-react-addons';
+import { connect } from './nuclear';
 import appGetters from 'app/flux/app/getters';
 import { platform } from 'app/services/browser';
 import { refresh } from 'app/flux/app/actions';

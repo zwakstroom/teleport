@@ -16,7 +16,8 @@ limitations under the License.
 
 import $ from 'jQuery';
 import React from 'react';
-import connect from 'app/components/connect';
+import PropTypes from 'prop-types';
+import { connect } from './../nuclear';
 import cfg from 'app/config';
 import { Auth2faTypeEnum } from 'app/services//enums';
 import * as Alerts from 'app/components/alerts';
@@ -41,9 +42,9 @@ const defaultState = {
 class AccountTab extends React.Component {
 
   static propTypes = {
-    attempt: React.PropTypes.object.isRequired,
-    onChangePass: React.PropTypes.func.isRequired,
-    onChangePassWithU2f: React.PropTypes.func.isRequired
+    attempt: PropTypes.object.isRequired,
+    onChangePass: PropTypes.func.isRequired,
+    onChangePassWithU2f: PropTypes.func.isRequired
   }
 
   hasBeenClicked = false;
@@ -99,7 +100,7 @@ class AccountTab extends React.Component {
     return $form.length === 0 || $form.valid();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { isSuccess } = nextProps.attempt;
     if (isSuccess && this.hasBeenClicked) {
       // reset all input fields on success

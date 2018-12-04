@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
+
 import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import { connect } from 'nuclear-js-react-addons';
+import { connect } from './../nuclear';
 import sessionGetters from 'app/flux/sessions/getters';
-import {UserIcon} from './../icons.jsx';
+import { UserIcon } from './../icons.jsx';
 
 const PartyList = props => {
   let parties = props.parties || [];
@@ -31,16 +32,10 @@ const PartyList = props => {
   ));
 
   return (
-    <ReactCSSTransitionGroup className="m-t" component='div'
-      transitionEnterTimeout={500}
-      transitionLeaveTimeout={500}
-      transitionName={{
-        enter: "fadeIn",
-        leave: "fadeOut"
-      }}>
-      <hr className="grv-divider m-t" />
+    <div className="m-t">
+    <hr className="grv-divider m-t" />
       {userIcons}
-    </ReactCSSTransitionGroup>
+    </div>
   )
 }
 

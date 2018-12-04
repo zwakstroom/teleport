@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import connect from './../connect';
+import { connect } from './../nuclear';
 import { fetchSiteEventsWithinTimeRange } from 'app/flux/storedSessionsFilter/actions';
 import settingGetters from 'app/flux/sessions/getters';
 import filterGetters from 'app/flux/storedSessionsFilter/getters';
