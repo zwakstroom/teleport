@@ -59,6 +59,7 @@ module.exports = {
   resolve: {
     // some vendor libraries expect below globals to be defined
     alias: {
+      shared: path.join(ROOT_PATH, '/src/shared/'),
       jquery: path.join(ROOT_PATH, '/src/assets/js/jquery'),
       jQuery: path.join(ROOT_PATH, '/src/assets/js/jquery'),
       app: path.join(ROOT_PATH, '/src/app'),
@@ -173,7 +174,7 @@ module.exports = {
 
 function jsx(args){
   args = args || {};
-  var plugins = ["transform-class-properties", "transform-object-rest-spread", "syntax-dynamic-import"];
+  var plugins = ["@babel/plugin-proposal-class-properties", "@babel/plugin-proposal-object-rest-spread", "@babel/plugin-syntax-dynamic-import"];
   var moduleType = false;
   var emitWarning = false;
 
@@ -187,7 +188,7 @@ function jsx(args){
     moduleType = 'commonjs'
   }
 
-  var presets =   ['react', [ "es2015", { "modules": moduleType } ] ];
+  var presets =   ['@babel/preset-react', [ "@babel/preset-env", { "modules": moduleType } ] ];
 
   return {
     include: [path.join(ROOT_PATH, 'src')],
