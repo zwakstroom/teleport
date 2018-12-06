@@ -5,7 +5,7 @@ import Button, { GreenButton } from '../Button'
 
 storiesOf('Button', module)
   .add(
-    'Button component',
+    'Button component!!',
     withInfo({
       inline: true,
       text:
