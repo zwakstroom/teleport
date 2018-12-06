@@ -1,5 +1,5 @@
 
-export const font = `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;`
+export const font = `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";`
 
 export const fonts = {
   sansSerif: font,
@@ -21,7 +21,7 @@ export const space = [0, 4, 8, 16, 32, 64, 128]
 
 export const colors = {
   black: '#000',
-  white: '#fff',
+  light: '#fff',
   text: '#001833',
   lightBlue: '#cdf',
   blue: '#007aff',
@@ -41,7 +41,12 @@ export const colors = {
   darkOrange: '#a50',
   lightPurple: '#ecf',
   purple: '#70b',
-  darkPurple: '#407'
+  darkPurple: '#407',
+}
+
+export const background = {
+  primary: '#0C143D',
+  secondary: '#222C59',
 }
 
 export const borders = [
@@ -56,6 +61,7 @@ export const borders = [
 
 const theme = {
   colors,
+  background,
   fontSizes,
   font,
   fontWeights,
