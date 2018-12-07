@@ -20,28 +20,19 @@ export const fontWeights = { regular, bold }
 export const space = [0, 4, 8, 16, 32, 64, 128]
 
 export const colors = {
-  black: '#000',
+  accent: '#FA2A6A',
+  dark: '#000',
   light: '#fff',
+  error: '',
+
+  // Old colors
   text: '#001833',
   lightBlue: '#cdf',
   blue: '#007aff',
   darkBlue: '#049',
-  lightGray: '#f6f8fa',
-  borderGray: '#d1d6db',
-  gray: '#687B8E',
-  darkGray: '#364049',
   lightGreen: '#cec',
   green: '#0a0',
   darkGreen: '#060',
-  lightRed: '#fcc',
-  red: '#c00',
-  darkRed: '#800',
-  lightOrange: '#feb',
-  orange: '#fa0',
-  darkOrange: '#a50',
-  lightPurple: '#ecf',
-  purple: '#70b',
-  darkPurple: '#407',
 }
 
 export const background = {
@@ -59,6 +50,19 @@ export const borders = [
   '32px solid',
 ];
 
+const z = {
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  max1: 1000,
+  max2: 2000,
+  max3: 3000,
+  max4: 4000,
+  max5: 5000
+};
+
 const theme = {
   colors,
   background,
@@ -68,7 +72,8 @@ const theme = {
   space,
   borders,
   regular,
-  bold
+  bold,
+  z
 }
 
 export default theme;

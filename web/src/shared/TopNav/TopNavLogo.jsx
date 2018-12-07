@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import theme from './../theme'
 
 
-const TopNavButton = styled.button`
+const TopNavLogo = styled.button`
   background: ${props => props.theme.background.secondary};
   border: none;
   border-bottom: 4px solid ${props => props.active ? props.theme.colors.accent : props.theme.background.secondary};
@@ -39,17 +39,17 @@ const TopNavButton = styled.button`
 
 
 
-TopNavButton.propTypes = {
+TopNavLogo.propTypes = {
   active: PropTypes.bool,
   href: PropTypes.string,
 };
 
-TopNavButton.defaultProps = {
+TopNavLogo.defaultProps = {
   active: false,
   href: '#'
 }
 
-TopNavButton.displayName = 'TopNavButton';
+TopNavLogo.displayName = 'TopNavLogo';
 
 
-export default TopNavButton;
+export default TopNavLogo;
