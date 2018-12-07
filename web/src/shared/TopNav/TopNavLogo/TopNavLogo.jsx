@@ -1,11 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import theme from '../../theme'
 import TopNavButton from '../TopNavButton'
-import GravityLogo from './gravity-logo'
-import TeleportLogo from './teleport-logo'
-
+import teleportLogoSvg from './teleport-logo.svg';
+import gravityLogoSvg from './gravity-logo.svg';
 
 const LogoButton = styled(TopNavButton)`
   margin: 0 80px 0 0;
@@ -30,19 +28,19 @@ const LogoButton = styled(TopNavButton)`
 
   em {
     font-size: 10px;
-    font-weight: bold;
+    font-weight: bold
     font-style: normal;
     margin: 0;
   }
 `;
 
 // This could be react-router-dom's Link for example
-const TopNavLogo = ({ className, children, product, version}) => {
-  const logo = product === 'gravity' ? <GravityLogo /> : <TeleportLogo />;
-  console.log(product)
+const TopNavLogo = ({ className, product, version}) => {
+  const logoSvg = product === 'gravity' ? gravityLogoSvg : teleportLogoSvg;
   return (
-    <LogoButton className={className}>
-      {logo}<em>{version}</em>
+    <LogoButton className={className} __Deandfhd>
+      <img src={logoSvg} />
+      <em>{version}</em>
     </LogoButton>
   );
 };

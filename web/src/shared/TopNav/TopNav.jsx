@@ -5,8 +5,6 @@ import theme from './../theme';
 import TopNavButton from './TopNavButton';
 import TopNavLogo from './TopNavLogo/TopNavLogo';
 
-
-
 const Nav = styled.nav`
   background: ${theme.background.secondary};
   box-shadow: 0 8px 24px rgba(0, 0, 0, .24);

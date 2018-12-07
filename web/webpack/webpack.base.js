@@ -87,7 +87,10 @@ module.exports = {
 
     svg: {
       test: /\.svg$/,
-      loader: 'svg-sprite-loader',
+      loader: 'svg-url-loader',
+      options: {
+        noquotes: true,
+      },
       exclude: /node_modules/
     },
 
