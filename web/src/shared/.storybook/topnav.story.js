@@ -13,7 +13,7 @@ storiesOf('TopNav', module)
     })(() => {
       return (
         <TopNav
-          product="Gravity"
+          product="gravity"
           version="5.3.2"
           buttons={[
             {active: true, label: 'Clusters',location: '/'},

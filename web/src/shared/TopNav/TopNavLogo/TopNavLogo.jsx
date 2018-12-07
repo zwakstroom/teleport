@@ -3,30 +3,18 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import theme from '../../theme'
 import TopNavButton from '../TopNavButton'
-import SVG from './gravity-logo'
+import GravityLogo from './gravity-logo'
 
 
-const Logo = styled(TopNavButton)`
-  background: ${props => props.theme.background.secondary};
-  border: none;
-  color: ${props => props.theme.colors.light};
-  cursor: pointer;
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 72px;
-  margin: 0 80px 0 0;
-  outline: none;
-  padding: 0 16px;
-  text-align: center;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: all .3s;
-  -webkit-font-smoothing: antialiased;
-
+const LogoButton = styled(TopNavButton)`
   &:hover {
-    background: rgba(255, 255, 255, .06);
     border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:active {
+    background: ${props => props.theme.background.primary};
+    color: ${props => props.theme.colors.light};
     padding-bottom: 4px;
   }
 
@@ -43,18 +31,16 @@ const Logo = styled(TopNavButton)`
     font-style: normal;
     margin: 0;
   }
-
 `;
 
 // This could be react-router-dom's Link for example
 const TopNavLogo = ({ className, children, product, version}) => {
-
-  const productName = product === 'gravity' ? 'Gravity' : 'Teleport';
-
+  const logo = product === 'gravity' ? <GravityLogo/> : null;
+  console.log(product)
   return (
-    <Logo className={className}>
-    <SVG/><em>{version}</em>
-    </Logo>
+    <LogoButton className={className}>
+      {logo}<em>{version}</em>
+    </LogoButton>
   );
 };
 
