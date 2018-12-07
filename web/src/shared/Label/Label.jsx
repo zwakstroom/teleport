@@ -1,48 +1,23 @@
 import styled from 'styled-components'
-import { space, fontSize, fontWeight, color, propTypes } from 'styled-system'
+import PropTypes from 'prop-types'
 import theme from './../theme'
 
-const nowrap = props =>
-  props.nowrap
-    ? {
-        whiteSpace: 'nowrap'
-      }
-    : null
-
-const accessiblyHide = props =>
-  props.hidden
-    ? {
-        position: 'absolute',
-        width: '1px',
-        height: '1px',
-        clip: 'rect(1px, 1px, 1px, 1px)'
-      }
-    : null
 
 const Label = styled.label`
-  font-size: 10px;
-  letter-spacing: 0.2px;
+  color: ${props => props.hasError ? props.theme.colors.warning : props.theme.colors.light }
   display: block;
+  font-size: 11px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
   width: 100%;
-  margin: 0;
-
-  ${space} ${fontSize} ${color} ${fontWeight};
-  ${nowrap}
-  ${accessiblyHide}
 `
 
 Label.propTypes = {
-  ...propTypes.space,
-  ...propTypes.fontSize,
-  ...propTypes.color,
-  ...propTypes.fontWeight
 }
 
 Label.defaultProps = {
-  fontSize: '10px',
-  fontWeight: 'bold',
-  color: 'light',
-  theme: theme
+  hasError: false
 }
 
 Label.displayName = 'Label'

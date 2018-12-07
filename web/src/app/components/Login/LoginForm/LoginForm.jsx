@@ -124,13 +124,13 @@ export default class LoginForm extends React.Component {
           placeholder="User name"
           name="user"
           />
-        <Label mt={3} mb={1} fontSize={0}>
+        <Label hasError={(errors && errors.password)}>
           Password
           {errors.password && touched.password && errors.password}
         </Label>
         <Input
           id="password"
-          hasError={errors && errors.password}
+          hasError={(errors && errors.password)}
           value={values.password}
           onChange={handleChange}
           type="password"

@@ -40,9 +40,9 @@ export const colors = {
 
   secondary: '#0C143D',
   secondaryLight: '#222C59',
+  text: '#263238',
 
-  // Old colors
-  text: '#001833',
+
   lightBlue: '#cdf',
   blue: '#007aff',
   darkBlue: '#049',
