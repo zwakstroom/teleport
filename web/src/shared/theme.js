@@ -23,7 +23,15 @@ export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
-  error: '',
+  warning: '#FA2A6A',
+  subtle: '#EDF0F2',
+
+  primary: '#00BFA5',
+  primaryLight: '#00EAC3',
+  primaryDark: '#008A7E',
+
+  secondary: '#0C143D',
+  secondaryLight: '#222C59',
 
   // Old colors
   text: '#001833',

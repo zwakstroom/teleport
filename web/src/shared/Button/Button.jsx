@@ -7,55 +7,88 @@ const size = props => {
   switch (props.size) {
     case 'small':
       return {
-        fontSize: `${props.theme.fontSizes[0]}px`,
-        padding: '7px 12px'
+        fontSize: '10px',
+        lineHeight: '24px',
+        padding: '0 8px'
       }
     case 'medium':
       return {
-        fontSize: `${props.theme.fontSizes[1]}px`,
-        padding: '9.5px 18px'
+        fontSize: `12px`,
+        lineHeight: '40px',
+        padding: '0 24px'
       }
     case 'large':
       return {
-        fontSize: `${props.theme.fontSizes[2]}px`,
-        padding: '12px 22px'
+        fontSize: '14px',
+        lineHeight: '56px',
+        padding: '0 40px'
       }
     default:
       return {
-        fontSize: `${props.theme.fontSizes[1]}px`,
-        padding: '9.5px 18px'
+        fontSize: `10px`,
+        lineHeight: '40px',
+        padding: '0 24px'
       }
   }
 }
 
-const fullWidth = props => (props.fullWidth ? { width: '100%' } : null)
+const color = props => {
+  let color = {background: props.theme.colors.primary};
+
+  if(props.secondary) {
+    color = {
+      background: props.theme.colors.secondary,
+
+      '&:hover': {
+        background: props.theme.colors.secondaryLight,
+      }
+    };
+  }
+
+  return color;
+}
+
+const block = props => (props.block ? {
+  boxSizing: 'border-box',
+  display: 'block',
+  width: '100%'
+} : null)
 
 const Button = styled.button`
-  -webkit-font-smoothing: antialiased;
+  background: ${props => props.theme.colors.primary};
+  border: none;
+  border-radius: 4px;
+  color: ${props => props.theme.colors.light};
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
   display: inline-block;
-  vertical-align: middle;
+  line-height: 40px;
+  outline: none;
   text-align: center;
   text-decoration: none;
-  font-family: inherit;
-  font-weight: 600;
-  line-height: 1.5;
-  cursor: pointer;
-  border-radius: ${props => props.theme.radius};
-  background-color: ${props => props.theme.colors.blue};
-  color: ${props => props.theme.colors.white};
-  border-width: 0;
-  border-style: solid;
-
-  &:disabled {
-    opacity: 0.25;
-  }
+  text-transform: uppercase;
+  transition: all .3s;
+  -webkit-font-smoothing: antialiased;
 
   &:hover {
-    background-color: ${props =>
-      props.disabled ? null : props.theme.colors.darkBlue};
+    background: ${props => props.theme.colors.primaryLight};
+    box-shadow: 0 0 4px rgba(0, 0, 0, .56), 0 4px 4px rgba(0, 0, 0, .24);
   }
 
-  ${fullWidth}
+  &:active {
+    background: ${props => props.theme.colors.primaryDark};
+    color: rgba(255, 255, 255, .24);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    background: rgba(255, 255, 255, .24);
+    color: rgba(0, 0, 0, .24);
+  }
+
+  ${color}
+  ${block}
   ${size}
   ${space};
 `
@@ -69,7 +102,8 @@ const numberStringOrArray = PropTypes.oneOfType([
 Button.propTypes = {
   /** Size */
   size: PropTypes.oneOf(['small', 'medium', 'large']),
-  fullWidth: PropTypes.bool,
+  block: PropTypes.bool,
+  secondary: PropTypes.bool,
   /** Margin */
   m: numberStringOrArray,
   mt: numberStringOrArray,
@@ -77,19 +111,11 @@ Button.propTypes = {
   mb: numberStringOrArray,
   ml: numberStringOrArray,
   mx: numberStringOrArray,
-  my: numberStringOrArray,
-  /** Padding */
-  p: numberStringOrArray,
-  pt: numberStringOrArray,
-  pr: numberStringOrArray,
-  pb: numberStringOrArray,
-  pl: numberStringOrArray,
-  px: numberStringOrArray,
-  py: numberStringOrArray
+  my: numberStringOrArray
 }
 
 Button.defaultProps = {
-  theme: theme
+  size: 'medium'
 }
 
 Button.displayName = 'Button'
