@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import theme from './../theme';
 import TopNavButton from './TopNavButton';
+import TopNavLogo from './TopNavLogo/TopNavLogo';
 
 
 
@@ -44,6 +45,7 @@ class TopNav extends React.Component {
   render() {
     return (
       <Nav>
+        <TopNavLogo product={this.props.product} version={this.props.version} />
         {this.renderButtons()}
       </Nav>
     );

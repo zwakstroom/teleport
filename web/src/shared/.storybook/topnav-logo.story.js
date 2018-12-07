@@ -1,7 +1,7 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { withInfo } from '@storybook/addon-info'
-import TopNavLogo from '../TopNav/TopNavLogo'
+import TopNavLogo from '../TopNav/TopNavLogo/TopNavLogo'
 
 storiesOf('TopNavLogo', module)
   .add(

@@ -11,13 +11,19 @@ storiesOf('TopNav', module)
       text:
         'Use the <Button />,  <GreenButton />, components to render a primitive button.'
     })(() => {
-      return (<TopNav buttons={[
-        {active: true, label: 'Clusters',location: '/'},
-        {label: 'Apps',location: '/apps'},
-        {label: 'Users/Roles',location: '/users'},
-        {label: 'Licenses',location: '/licenses'},
-        {label: 'Setttings',location: '/settings'},
-      ]} />);
+      return (
+        <TopNav
+          product="Gravity"
+          version="5.3.2"
+          buttons={[
+            {active: true, label: 'Clusters',location: '/'},
+            {label: 'Apps',location: '/apps'},
+            {label: 'Users/Roles',location: '/users'},
+            {label: 'Licenses',location: '/licenses'},
+            {label: 'Setttings',location: '/settings'},
+          ]}
+        />
+      );
     })
   );
   // .add('color', () => (
