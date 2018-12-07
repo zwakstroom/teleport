@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { space } from 'styled-system'
+import { space, color } from 'styled-system'
 import theme from './../theme'
 
 const size = props => {
@@ -57,7 +57,8 @@ const Button = styled.button`
 
   ${fullWidth}
   ${size}
-  ${space};
+  ${space}
+  ${color}
 `
 
 const numberStringOrArray = PropTypes.oneOfType([

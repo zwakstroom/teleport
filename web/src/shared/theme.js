@@ -19,6 +19,12 @@ export const fontWeights = { regular, bold }
 
 export const space = [0, 4, 8, 16, 32, 64, 128]
 
+
+export const background = {
+  primary: '#0C143D',
+  secondary: '#222C59',
+}
+
 export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
@@ -33,11 +39,6 @@ export const colors = {
   lightGreen: '#cec',
   green: '#0a0',
   darkGreen: '#060',
-}
-
-export const background = {
-  primary: '#0C143D',
-  secondary: '#222C59',
 }
 
 export const borders = [

@@ -1,7 +1,7 @@
 import styled from 'styled-components'
-import { space,  propTypes } from 'styled-system'
 import PropTypes from 'prop-types'
-import theme from './../theme'
+import defaultTheme from './../theme'
+import { space, themeGet, propTypes } from 'styled-system'
 
 const borders = ({ color, theme }) => {
   const borderColor = color ? theme.colors[color] : theme.colors.borderGray
@@ -22,9 +22,9 @@ const Input = styled.input`
   display: block;
   width: 100%;
   font-family: inherit;
-  color: inherit;
-  font-size: 16px;
-  background-color: white;
+  color: ${ props => props.theme.text};
+  font-size: ${themeGet('fontSizes.2')}px;
+
   border-radius: 4px;
   border: none;
   padding: 0 16px;
@@ -33,12 +33,12 @@ const Input = styled.input`
   height: 40px;
   box-sizing: border-box;
 
-  ::placeholder {
-    color: #CFD8DC;
-  }
-
   ::-ms-clear {
     display: none;
+  }
+
+  ::placeholder {
+    color: ${themeGet('colors.gray')};
   }
 
   ${borders} ${space};
@@ -46,14 +46,13 @@ const Input = styled.input`
 
 Input.displayName = 'Input'
 Input.propTypes = {
-  id: PropTypes.string.isRequired,
   color: PropTypes.string,
   ...propTypes.borders,
   ...propTypes.space
 }
 
 Input.defaultProps = {
-  theme: theme
+  theme: defaultTheme
 }
 
 export default Input
