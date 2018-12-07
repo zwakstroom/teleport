@@ -83,6 +83,8 @@ export default class LoginForm extends React.Component {
     return (
       <Center>
         <Button
+          block
+          size="large"
           type="submit"
           onClick={onClick}
           mt={4}>
@@ -161,7 +163,7 @@ export default class LoginForm extends React.Component {
       >
         {
           props => (
-            <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="4">
+            <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">
               <Heading.h5 textAlign="center" mb="3" color="light">
                 SIGN INTO TELEPORT
               </Heading.h5>
