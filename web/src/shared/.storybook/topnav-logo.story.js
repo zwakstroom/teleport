@@ -11,6 +11,6 @@ storiesOf('TopNavLogo', module)
       text:
         'Use the <Button />,  <GreenButton />, components to render a primitive button.'
     })(() => {
-      return (<TopNavLogo product="gravity" version="5.3.1" />);
+      return (<TopNavLogo product="teleport" version="3.2.1" />);
     })
   );
