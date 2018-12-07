@@ -9,7 +9,7 @@ storiesOf('TopNavLogo', module)
     withInfo({
       inline: true,
       text:
-        'Use the <Button />,  <GreenButton />, components to render a primitive button.'
+        'Use the <TopNavLogo /> to render a button logo.'
     })(() => {
       return (<TopNavLogo product="teleport" version="3.2.1" />);
     })

@@ -9,7 +9,7 @@ storiesOf('TopNavButton', module)
     withInfo({
       inline: true,
       text:
-        'Use the <Button />,  <GreenButton />, components to render a primitive button.'
+        'Use the <TopNavButton />, to render a button design for the top navigation.'
     })
     (() => (
       <nav>

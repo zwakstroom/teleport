@@ -9,7 +9,7 @@ storiesOf('TopNav', module)
     withInfo({
       inline: true,
       text:
-        'Use the <Button />,  <GreenButton />, components to render a primitive button.'
+        'Use the <TopNav /> to render the top nav component for an application. Make sure to include the properties you desire.'
     })(() => {
       return (
         <TopNav

@@ -54,7 +54,11 @@ class TopNav extends React.Component {
 
 TopNav.propTypes = {
   /** {label: "Button Name", location: "http://google.com"} */
-  buttons: PropTypes.array
+  buttons: PropTypes.array,
+  /** The name of the product (gravity, teleport) */
+  product: PropTypes.string,
+  /** The version of the product (ex. 5.3.2) */
+  version: PropTypes.string
 };
 
 
