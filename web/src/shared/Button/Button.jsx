@@ -90,7 +90,7 @@ const Button = styled.button`
   ${color}
   ${block}
   ${size}
-  ${space};
+  ${space}
 `
 
 const numberStringOrArray = PropTypes.oneOfType([

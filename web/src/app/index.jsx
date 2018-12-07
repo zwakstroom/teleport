@@ -28,7 +28,12 @@ import FeatureActivator from './featureActivator';
 import { initApp } from './flux/app/actions';
 import App from './components/app.jsx';
 import userActions from './flux/user/actions';
-import './../styles/grv.scss';
+import ThemeProvider from './../shared/ThemeProvider';
+
+
+import "font-awesome/css/font-awesome.css";
+
+//import './../styles/grv.scss';
 import './flux';
 import './vendor';
 
@@ -59,7 +64,9 @@ const routes = [{
 
 const Root = () => (
   <Provider reactor={reactor}>
-    <Router history={history.original()} routes={addRoutes(routes)} />
+    <ThemeProvider>
+      <Router history={history.original()} routes={addRoutes(routes)} />
+    </ThemeProvider>
   </Provider>
 )
 
