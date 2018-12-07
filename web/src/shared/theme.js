@@ -23,12 +23,14 @@ export const space = [0, 4, 8, 16, 32, 64, 128]
 export const background = {
   primary: '#0C143D',
   secondary: '#222C59',
+  error: '#FEE5ED'
 }
 
 export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
+  error: '#FA2A6A',
   warning: '#FA2A6A',
   subtle: '#EDF0F2',
 

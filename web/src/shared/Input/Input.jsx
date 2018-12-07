@@ -20,9 +20,10 @@ const borders = ({ color, theme }) => {
 const Input = styled.input`
   appearance: none;
   border-radius: 4px;
+  background: ${props => props.hasError ? props.theme.background.error : '#FFF' };
+  border: ${props => props.hasError ? `2px solid ${props.theme.colors.warning}` : 'none' };
   box-sizing: border-box;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);
-  border: none;
   color: ${ props => props.theme.text};
   font-family: inherit;
   font-size: 16px;
@@ -42,19 +43,14 @@ const Input = styled.input`
     color: ${props => props.theme.colors.subtle};
   }
 
-  ${borders}
   ${space};
 `
 
 Input.displayName = 'Input'
+
 Input.propTypes = {
-  color: PropTypes.string,
-  ...propTypes.borders,
-  ...propTypes.space
 }
 
-Input.defaultProps = {
-  theme: defaultTheme
-}
+
 
 export default Input

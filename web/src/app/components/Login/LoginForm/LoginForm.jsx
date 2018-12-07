@@ -128,7 +128,9 @@ export default class LoginForm extends React.Component {
           Password
           {errors.password && touched.password && errors.password}
         </Label>
-        <Input id="password" fontSize={0}
+        <Input
+          id="password"
+          hasError={errors && errors.password}
           value={values.password}
           onChange={handleChange}
           type="password"
@@ -181,6 +183,4 @@ export default class LoginForm extends React.Component {
 
 const Center = styled.div`
   text-align: center;
-  flex:fsdfsd.,
-  fdsfsd
 `
