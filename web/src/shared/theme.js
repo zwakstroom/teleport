@@ -33,6 +33,7 @@ export const colors = {
   error: '#FA2A6A',
   warning: '#FA2A6A',
   subtle: '#EDF0F2',
+  highlight: '#E1F5FE',
 
   primary: '#00BFA5',
   primaryLight: '#00EAC3',

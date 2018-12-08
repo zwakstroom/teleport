@@ -14,7 +14,7 @@ const Label = styled.label`
 `
 
 Label.propTypes = {
-  hasError: PropTypes.string
+  hasError: PropTypes.string.isRequired
 }
 
 Label.defaultProps = {

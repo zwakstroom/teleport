@@ -8,18 +8,7 @@ import gravityLogoSvg from './gravity-logo.svg';
 const LogoButton = styled(TopNavButton)`
   margin: 0 80px 0 0;
 
-  &:hover {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
-  &:active {
-    background: ${props => props.theme.background.primary};
-    color: ${props => props.theme.colors.light};
-    padding-bottom: 4px;
-  }
-
-  svg {
+  img {
     display: inline-block;
     float: left;
     height: 24px;
@@ -44,8 +33,6 @@ const TopNavLogo = ({ className, product, version}) => {
     </LogoButton>
   );
 };
-
-
 
 TopNavLogo.propTypes = {
   product: PropTypes.string,

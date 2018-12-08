@@ -3,19 +3,6 @@ import PropTypes from 'prop-types'
 import {colors} from './../theme'
 import { space, propTypes } from 'styled-system'
 
-const borders = ({ color, theme }) => {
-  const borderColor = color ? theme.colors[color] : theme.colors.borderGray
-  const focusColor = color ? borderColor : theme.colors.blue
-  return {
-    'border-color': borderColor,
-    'box-shadow': `0 0 0 1px ${borderColor}`,
-    ':focus': {
-      outline: 0,
-      'border-color': focusColor,
-      'box-shadow': `0 0 0 2px ${focusColor}`
-    }
-  }
-}
 
 const Input = styled.input`
   appearance: none;
@@ -33,6 +20,7 @@ const Input = styled.input`
   margin: 0 0 24px 0;
   outline: none;
   padding: 0 16px;
+  transition: all .3s;
   width: 100%;
 
   ::-ms-clear {
@@ -52,7 +40,5 @@ Input.propTypes = {
   placeholder: PropTypes.string,
   hasError: PropTypes.string
 }
-
-
 
 export default Input

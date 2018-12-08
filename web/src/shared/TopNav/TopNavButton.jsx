@@ -6,13 +6,14 @@ import theme from './../theme'
 const TopNavButton = styled.button`
   background: ${props => props.theme.background.secondary};
   border: none;
-  border-bottom: 4px solid ${props => props.active ? props.theme.colors.accent : props.theme.background.secondary};
+  border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
+  box-sizing: border-box;
   color: ${props => props.active ? props.theme.colors.light : 'rgba(255, 255, 255, .56)'};
   cursor: pointer;
   display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  line-height: 72px;
+  line-height: ${props => props.active ? '68px': '72px'};
   margin: 0;
   outline: none;
   padding: 0 16px;
@@ -23,16 +24,14 @@ const TopNavButton = styled.button`
   -webkit-font-smoothing: antialiased;
 
   &:hover {
-    background: rgba(255, 255, 255, .06);
-    border-bottom: none;
-    padding-bottom: 4px;
+    background:  ${props => props.active ? props.theme.background.secondary : 'rgba(255, 255, 255, .06)'};
+    border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
   }
 
   &:active {
-    background: ${props => props.theme.background.primary};
+    background:  ${props => props.active ? props.theme.background.secondary : props.theme.background.primary};
     color: ${props => props.theme.colors.light};
-    border-bottom: none;
-    padding-bottom: 4px;
+    border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
   }
 `;
 
