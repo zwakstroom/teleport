@@ -49,7 +49,8 @@ const Input = styled.input`
 Input.displayName = 'Input'
 
 Input.propTypes = {
-
+  placeholder: PropTypes.string,
+  hasError: PropTypes.string
 }
 
 
