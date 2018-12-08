@@ -20,7 +20,7 @@ import logoSvg from 'assets/img/grv-tlpt-logo-full.svg';
 import closeSvg from 'assets/img/grv-icon-close.svg';
 
 const TeleportLogo = () => (
-  <svg className="grv-icon-logo-tlpt"><use xlinkHref={"#"+logoSvg.id}/></svg>
+  <img src={logoSvg}/>
 )
 
 const CloseIcon = () => (
