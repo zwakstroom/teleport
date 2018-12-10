@@ -19,7 +19,7 @@ import { connect } from './../nuclear';
 import actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
 import cfg from 'app/config';
-import { TeleportLogo } from './../icons.jsx';
+import { TeleportLogo } from './../Images';
 import LoginForm from './LoginForm/';
 import { withDocTitle } from './../documentTitle';
 
