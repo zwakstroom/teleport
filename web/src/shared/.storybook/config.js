@@ -12,10 +12,10 @@ const ThemeDecorator = storyFn => (
 
 addDecorator(ThemeDecorator);
 
-const req = require.context('.', true, /\.js$/)
-
+const req = require.context('.', true, /\.story.js$/)
 const loadStories = () => {
-  req.keys().forEach(req)
+    req.keys().forEach(req)
+    require('../../app/components/.storybook/index.js')
 }
 
 configure(loadStories, module);

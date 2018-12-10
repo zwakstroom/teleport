@@ -80,10 +80,13 @@ export default class LoginForm extends React.Component {
         "Insert your U2F key and press the button on the key"
     ) : null;
 
+    const isDisabled = isProcessing;
+
     return (
       <Center>
         <Button
           block
+          disabled={isDisabled}
           size="large"
           type="submit"
           onClick={onClick}
@@ -111,26 +114,31 @@ export default class LoginForm extends React.Component {
   }
 
   renderInputFields({ values, errors, touched, handleChange }) {
+    const userError = errors.user && touched.user;
+    const passError = errors.password && touched.password;
+    const tokenError = errors.token && touched.token;
+
     return (
       <React.Fragment>
-        <Label mb={1} fontSize={0}>
+        <Label mb={1} hasError={userError}>
           Email
-          {errors.user && touched.user && errors.user}
+          {userError && errors.user}
         </Label>
         <Input id="user" fontSize={0}
           autoFocus
           value={values.user}
+          hasError={userError}
           onChange={handleChange}
           placeholder="User name"
           name="user"
           />
-        <Label hasError={(errors && errors.password)}>
+        <Label hasError={passError}>
           Password
-          {errors.password && touched.password && errors.password}
+          {passError && errors.password}
         </Label>
         <Input
           id="password"
-          hasError={(errors && errors.password)}
+          hasError={passError}
           value={values.password}
           onChange={handleChange}
           type="password"
@@ -138,11 +146,12 @@ export default class LoginForm extends React.Component {
           placeholder="Password"/>
         {this.isOTP() && (
           <>
-            <Label mt={3} mb={1} fontSize={0}>
+            <Label mt={3} mb={1} hasError={tokenError}>
               Two factor token
-              {errors.token && touched.token && errors.token}
+              {tokenError && errors.token}
             </Label>
             <Input id="token" fontSize={0}
+              hasError={tokenError}
               autoComplete="off"
               value={values.token}
               onChange={handleChange}
