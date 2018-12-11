@@ -19,6 +19,13 @@ const rules = [
       noquotes: true,
     },
   },
+  {
+    test: /\.(png|jpg|gif)$/,
+    loader: "file-loader",
+    options: {
+      limit: 10000,
+    }
+  },
 ]
 
 module.exports = (baseConfig, env, defaultConfig) => {
