@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
-
 const Label = styled.label`
   color: ${props => props.hasError ? props.theme.colors.warning : props.theme.colors.light }
   display: block;
@@ -17,7 +16,8 @@ Label.propTypes = {
 }
 
 Label.defaultProps = {
-  hasError: false
+  hasError: false,
+  fontSize: 0
 }
 
 Label.displayName = 'Label'

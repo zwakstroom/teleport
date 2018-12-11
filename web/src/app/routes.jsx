@@ -16,7 +16,7 @@ limitations under the License.
 
 import cfg from './config';
 import Login from './components/Login';
-import InviteUser from './components/user/invite.jsx';
+import Invite from './components/Invite';
 import * as Message from './components/msgPage.jsx';
 
 export function addRoutes(routesToAdd = []) {
@@ -24,7 +24,7 @@ export function addRoutes(routesToAdd = []) {
       { path: cfg.routes.error, component: Message.ErrorPage },
       { path: cfg.routes.info, component: Message.InfoPage },
       { path: cfg.routes.login, component: Login },
-      { path: cfg.routes.newUser, component: InviteUser },
+      { path: cfg.routes.newUser, component: Invite },
       { path: cfg.routes.app, onEnter: (localtion, replace) => replace(cfg.routes.nodes) },
       ...routesToAdd,
       { path: '*', component: Message.NotFoundPage }
