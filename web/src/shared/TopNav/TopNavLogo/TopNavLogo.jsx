@@ -27,7 +27,7 @@ const LogoButton = styled(TopNavButton)`
 const TopNavLogo = ({ className, product, version}) => {
   const logoSvg = product === 'gravity' ? gravityLogoSvg : teleportLogoSvg;
   return (
-    <LogoButton className={className} __Deandfhd>
+    <LogoButton className={className}>
       <img src={logoSvg} />
       <em>{version}</em>
     </LogoButton>
@@ -35,13 +35,15 @@ const TopNavLogo = ({ className, product, version}) => {
 };
 
 TopNavLogo.propTypes = {
-  product: PropTypes.string,
+  product: PropTypes.oneOf(['gravity', 'teleport']),
+  href: PropTypes.string,
   version: PropTypes.string,
 };
 
 TopNavLogo.defaultProps = {
-  product: 'Product Name',
-  href: 'v#'
+  product: 'gravity',
+  href: '/',
+  version: 'v#'
 }
 
 TopNavLogo.displayName = 'TopNavLogo';

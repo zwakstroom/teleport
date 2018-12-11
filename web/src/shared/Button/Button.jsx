@@ -72,7 +72,6 @@ const Button = styled.button`
 
   &:hover {
     background: ${props => props.theme.colors.primaryLight};
-    box-shadow: 0 0 4px rgba(0, 0, 0, .56), 0 4px 4px rgba(0, 0, 0, .24);
   }
 
   &:active {

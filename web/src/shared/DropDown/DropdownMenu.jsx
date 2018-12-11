@@ -1,55 +1,60 @@
-import styled, { css } from 'styled-components';
-import {
-  space,
-  color,
-  width,
-  fontSize,
-  fontWeight,
-  textAlign,
-  lineHeight,
-  display,
-  borderRadius,
-  borderColor,
-  borders,
-} from 'styled-system';
+import styled, { css, keyframes } from 'styled-components';
+import {background, z} from '../theme';
 
 const dropdownMenuHidden = (props) => (
-  props.hidden
-    ? css`
-      display: none;
-    `
-    : css`
-      display: block;
-    `
+  props.hidden ? css`display: none;` : css`display: block;`
 );
 
+const location = props => {
+  switch (props.location) {
+    case 'left':
+      return {
+        left: '0',
+        right: 'auto'
+      }
+    case 'right':
+      return {
+        right: '0',
+        left: 'auto'
+      }
+    case 'topRight':
+      return {
+        right: '8px',
+        left: 'auto',
+        top: '8px'
+      }
+    default:
+      return {
+        left: '0',
+        right: 'auto'
+      }
+  }
+}
+
+const fadeIn  = keyframes`
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+`;
+
+
 export const DropdownMenu = styled.div`
+  animation-duration: .3s;
+  animation-fill-mode: both;
+  animation-name: ${fadeIn};
+  background: ${background.light};
+  border-radius: 8px;
+  box-shadow: 0 0 64px rgba(0, 0, 0, .56), 0 8px 32px rgba(0, 0, 0, .24);
+  left: 0;
+  overflow: hidden;
+  padding: 8px;
   position: absolute;
   top: 100%;
-  left: 0;
-  z-index: 1000;
-  float: left;
-  min-width: 10rem;
-  padding: 0.5rem 0;
-  margin: 0.125rem 0 0;
-  font-size: 1rem;
-  color: #212529;
-  text-align: left;
-  list-style: none;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 0.25rem;
-  ${dropdownMenuHidden};
-  ${space};
-  ${width};
-  ${color};
-  ${fontSize};
-  ${fontWeight};
-  ${textAlign};
-  ${lineHeight};
-  ${display};
-  ${borderRadius};
-  ${borderColor};
-  ${borders};
+  z-index: ${z[2]};
+  ${dropdownMenuHidden}
+  ${location}
 `;

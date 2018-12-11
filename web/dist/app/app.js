@@ -113,7 +113,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "491b41866f2fcebf82c8";
+/******/ 	var hotCurrentHash = "c9d1d5c2d460982a4641";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -1313,18 +1313,6 @@ __webpack_require__.r(__webpack_exports__);
   enterModule && enterModule(module);
 })();
 
-function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  text-align: center;\n  flex:fsdfsd.,\n  fdsfsd\n"]);
-
-  _templateObject = function _templateObject() {
-    return data;
-  };
-
-  return data;
-}
-
-function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
-
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1447,15 +1435,17 @@ function (_React$Component) {
   }, {
     key: "renderLoginBtn",
     value: function renderLoginBtn(onClick) {
-      var isProcessing = this.props.attempt.isProcessing;
-      var $helpBlock = isProcessing && this.props.auth2faType === _services_enums__WEBPACK_IMPORTED_MODULE_4__["Auth2faTypeEnum"].UTF ? "Insert your U2F key and press the button on the key" : null;
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Center, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Button"], {
+      var isProcessing = this.props.attempt.isProcessing; // const $helpBlock = isProcessing && this.props.auth2faType === Auth2faTypeEnum.UTF ? (
+      //     "Insert your U2F key and press the button on the key"
+      // ) : null;
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Button"], {
         block: true,
         size: "large",
         type: "submit",
         onClick: onClick,
         mt: 4
-      }, "LOGIN WITH EMAIL"), $helpBlock);
+      }, "LOGIN WITH EMAIL");
     }
   }, {
     key: "renderSsoBtns",
@@ -1494,12 +1484,10 @@ function (_React$Component) {
         placeholder: "User name",
         name: "user"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Label"], {
-        mt: 3,
-        mb: 1,
-        fontSize: 0
+        hasError: errors && errors.password
       }, "Password", errors.password && touched.password && errors.password), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
         id: "password",
-        fontSize: 0,
+        hasError: errors && errors.password,
         value: values.password,
         onChange: handleChange,
         type: "password",
@@ -1559,7 +1547,6 @@ function (_React$Component) {
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 
-var Center = styled_components__WEBPACK_IMPORTED_MODULE_1__["default"].div(_templateObject());
 ;
 
 (function () {
@@ -1572,7 +1559,6 @@ var Center = styled_components__WEBPACK_IMPORTED_MODULE_1__["default"].div(_temp
   }
 
   reactHotLoader.register(LoginForm, "LoginForm", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/LoginForm.jsx");
-  reactHotLoader.register(Center, "Center", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/LoginForm.jsx");
   leaveModule(module);
 })();
 
@@ -4313,7 +4299,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
 /* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var assets_img_grv_tlpt_logo_full_svg__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! assets/img/grv-tlpt-logo-full.svg */ "./src/assets/img/grv-tlpt-logo-full.svg");
+/* harmony import */ var assets_img_grv_tlpt_logo_full_svg__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(assets_img_grv_tlpt_logo_full_svg__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var assets_img_grv_icon_close_svg__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! assets/img/grv-icon-close.svg */ "./src/assets/img/grv-icon-close.svg");
+/* harmony import */ var assets_img_grv_icon_close_svg__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(assets_img_grv_icon_close_svg__WEBPACK_IMPORTED_MODULE_3__);
 (function () {
   var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
 
@@ -4341,18 +4329,16 @@ limitations under the License.
 
 
 var TeleportLogo = function TeleportLogo() {
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("svg", {
-    className: "grv-icon-logo-tlpt"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("use", {
-    xlinkHref: "#" + assets_img_grv_tlpt_logo_full_svg__WEBPACK_IMPORTED_MODULE_2__["default"].id
-  }));
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+    src: assets_img_grv_tlpt_logo_full_svg__WEBPACK_IMPORTED_MODULE_2___default.a
+  });
 };
 
 var CloseIcon = function CloseIcon() {
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("svg", {
     className: "grv-icon-close"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("use", {
-    xlinkHref: "#" + assets_img_grv_icon_close_svg__WEBPACK_IMPORTED_MODULE_3__["default"].id
+    xlinkHref: "#" + assets_img_grv_icon_close_svg__WEBPACK_IMPORTED_MODULE_3___default.a.id
   }));
 };
 
@@ -22649,12 +22635,8 @@ __webpack_require__.r(__webpack_exports__);
   enterModule && enterModule(module);
 })();
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  appearance: none;\n  border-radius: 4px;\n  box-sizing: border-box;\n  box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);\n  border: none;\n  color: ", ";\n  font-family: inherit;\n  font-size: 16px;\n  display: block;\n  height: 40px;\n  line-height: 40px;\n  margin: 0;\n  outline: none;\n  padding: 0 16px;\n  width: 100%;\n\n  ::-ms-clear {\n    display: none;\n  }\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  ", "\n  ", ";\n"]);
+  var data = _taggedTemplateLiteral(["\n  appearance: none;\n  border-radius: 4px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);\n  color: ", ";\n  font-family: inherit;\n  font-size: 16px;\n  display: block;\n  height: 40px;\n  line-height: 40px;\n  margin: 0 0 24px 0;\n  outline: none;\n  padding: 0 16px;\n  transition: all .3s;\n  width: 100%;\n\n  ::-ms-clear {\n    display: none;\n  }\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  ", ";\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -22669,34 +22651,17 @@ function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(
 
 
 
-
-var borders = function borders(_ref) {
-  var color = _ref.color,
-      theme = _ref.theme;
-  var borderColor = color ? theme.colors[color] : theme.colors.borderGray;
-  var focusColor = color ? borderColor : theme.colors.blue;
-  return {
-    'border-color': borderColor,
-    'box-shadow': "0 0 0 1px ".concat(borderColor),
-    ':focus': {
-      outline: 0,
-      'border-color': focusColor,
-      'box-shadow': "0 0 0 2px ".concat(focusColor)
-    }
-  };
-};
-
 var Input = styled_components__WEBPACK_IMPORTED_MODULE_0__["default"].input(_templateObject(), function (props) {
-  return props.theme.text;
+  return props.hasError ? props.theme.background.error : '#FFF';
 }, function (props) {
+  return props.hasError ? "2px solid ".concat(props.theme.colors.warning) : 'none';
+}, _theme__WEBPACK_IMPORTED_MODULE_2__["colors"].text, function (props) {
   return props.theme.colors.subtle;
-}, borders, styled_system__WEBPACK_IMPORTED_MODULE_3__["space"]);
+}, styled_system__WEBPACK_IMPORTED_MODULE_3__["space"]);
 Input.displayName = 'Input';
-Input.propTypes = _objectSpread({
-  color: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string
-}, styled_system__WEBPACK_IMPORTED_MODULE_3__["propTypes"].borders, styled_system__WEBPACK_IMPORTED_MODULE_3__["propTypes"].space);
-Input.defaultProps = {
-  theme: _theme__WEBPACK_IMPORTED_MODULE_2__["default"]
+Input.propTypes = {
+  placeholder: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
+  hasError: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string
 };
 var _default = Input;
 /* harmony default export */ __webpack_exports__["default"] = (_default);
@@ -22711,7 +22676,6 @@ var _default = Input;
     return;
   }
 
-  reactHotLoader.register(borders, "borders", "/Users/admin/Development/teleport/web/src/shared/Input/Input.jsx");
   reactHotLoader.register(Input, "Input", "/Users/admin/Development/teleport/web/src/shared/Input/Input.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/Input/Input.jsx");
   leaveModule(module);
@@ -22771,20 +22735,16 @@ var _default = _Input__WEBPACK_IMPORTED_MODULE_0__["default"];
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(module) {/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! styled-components */ "./node_modules/styled-components/dist/styled-components.browser.esm.js");
-/* harmony import */ var styled_system__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! styled-system */ "./node_modules/styled-system/dist/index.esm.js");
-/* harmony import */ var _theme__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./../theme */ "./src/shared/theme.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
 (function () {
   var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
 
   enterModule && enterModule(module);
 })();
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  font-size: 10px;\n  letter-spacing: 0.2px;\n  display: block;\n  width: 100%;\n  margin: 0;\n\n  ", " ", " ", " ", ";\n  ", "\n  ", "\n"]);
+  var data = _taggedTemplateLiteral(["\n  color: ", "\n  display: block;\n  font-size: 11px;\n  font-weight: bold;\n  margin: 0 0 8px 0;\n  text-transform: uppercase;\n  width: 100%;\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -22797,30 +22757,14 @@ function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(
 
 
 
-
-
-var nowrap = function nowrap(props) {
-  return props.nowrap ? {
-    whiteSpace: 'nowrap'
-  } : null;
+var Label = styled_components__WEBPACK_IMPORTED_MODULE_0__["default"].label(_templateObject(), function (props) {
+  return props.hasError ? props.theme.colors.warning : props.theme.colors.light;
+});
+Label.propTypes = {
+  hasError: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string.isRequired
 };
-
-var accessiblyHide = function accessiblyHide(props) {
-  return props.hidden ? {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    clip: 'rect(1px, 1px, 1px, 1px)'
-  } : null;
-};
-
-var Label = styled_components__WEBPACK_IMPORTED_MODULE_0__["default"].label(_templateObject(), styled_system__WEBPACK_IMPORTED_MODULE_1__["space"], styled_system__WEBPACK_IMPORTED_MODULE_1__["fontSize"], styled_system__WEBPACK_IMPORTED_MODULE_1__["color"], styled_system__WEBPACK_IMPORTED_MODULE_1__["fontWeight"], nowrap, accessiblyHide);
-Label.propTypes = _objectSpread({}, styled_system__WEBPACK_IMPORTED_MODULE_1__["propTypes"].space, styled_system__WEBPACK_IMPORTED_MODULE_1__["propTypes"].fontSize, styled_system__WEBPACK_IMPORTED_MODULE_1__["propTypes"].color, styled_system__WEBPACK_IMPORTED_MODULE_1__["propTypes"].fontWeight);
 Label.defaultProps = {
-  fontSize: '10px',
-  fontWeight: 'bold',
-  color: 'light',
-  theme: _theme__WEBPACK_IMPORTED_MODULE_2__["default"]
+  hasError: false
 };
 Label.displayName = 'Label';
 var _default = Label;
@@ -22836,8 +22780,6 @@ var _default = Label;
     return;
   }
 
-  reactHotLoader.register(nowrap, "nowrap", "/Users/admin/Development/teleport/web/src/shared/Label/Label.jsx");
-  reactHotLoader.register(accessiblyHide, "accessiblyHide", "/Users/admin/Development/teleport/web/src/shared/Label/Label.jsx");
   reactHotLoader.register(Label, "Label", "/Users/admin/Development/teleport/web/src/shared/Label/Label.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/Label/Label.jsx");
   leaveModule(module);
@@ -23207,7 +23149,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!*****************************!*\
   !*** ./src/shared/theme.js ***!
   \*****************************/
-/*! exports provided: font, fonts, regular, bold, fontSizes, fontWeights, space, background, colors, borders, default */
+/*! exports provided: font, fonts, regular, bold, fontSizes, fontWeights, space, background, colors, borders, z, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23222,6 +23164,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "background", function() { return background; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colors", function() { return colors; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "borders", function() { return borders; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "z", function() { return z; });
 (function () {
   var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
 
@@ -23243,24 +23186,28 @@ var fontWeights = {
   regular: regular,
   bold: bold
 };
-var space = [0, 4, 8, 16, 32, 64, 128];
+var space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 var background = {
+  light: 'rgba(255, 255, 255, .87)',
   primary: '#0C143D',
-  secondary: '#222C59'
+  secondary: '#222C59',
+  error: '#FEE5ED'
 };
 var colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
+  error: '#FA2A6A',
   warning: '#FA2A6A',
   subtle: '#EDF0F2',
+  highlight: '#E1F5FE',
+  link: '#039BE5',
   primary: '#00BFA5',
   primaryLight: '#00EAC3',
   primaryDark: '#008A7E',
   secondary: '#0C143D',
   secondaryLight: '#222C59',
-  // Old colors
-  text: '#001833',
+  text: '#263238',
   lightBlue: '#cdf',
   blue: '#007aff',
   darkBlue: '#049',

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import theme from './../theme';
 import TopNavButton from './TopNavButton';
 import TopNavLogo from './TopNavLogo/TopNavLogo';
+import TopNavAccountMenu from './TopNavAccountMenu/TopNavAccountMenu';
 
 const Nav = styled.nav`
   background: ${theme.background.secondary};
@@ -45,6 +46,8 @@ class TopNav extends React.Component {
       <Nav>
         <TopNavLogo product={this.props.product} version={this.props.version} />
         {this.renderButtons()}
+
+        <TopNavAccountMenu cta={{location: '', label: 'Logout'}} />
       </Nav>
     );
   }
@@ -54,7 +57,7 @@ TopNav.propTypes = {
   /** {label: "Button Name", location: "http://google.com"} */
   buttons: PropTypes.array,
   /** The name of the product (gravity, teleport) */
-  product: PropTypes.string,
+  product: PropTypes.oneOf(['gravity', 'teleport']),
   /** The version of the product (ex. 5.3.2) */
   version: PropTypes.string
 };

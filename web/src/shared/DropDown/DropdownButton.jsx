@@ -4,6 +4,7 @@ import {
   DropdownItem,
   DropdownMenu,
 } from './';
+import Button from '../Button'
 
 export class DropdownButton extends React.Component {
 
@@ -20,6 +21,10 @@ export class DropdownButton extends React.Component {
     });
   }
 
+  signOut = () => {
+    alert('Sign Out')
+  }
+
   render() {
     const { hidden } = this.state;
     return (
@@ -27,10 +32,12 @@ export class DropdownButton extends React.Component {
         <button onClick={this.onClick} >
           Dropdown Button
         </button>
-        <DropdownMenu hidden={hidden}>
+        <DropdownMenu location="left" hidden={hidden}>
           <DropdownItem onClick={() => window.alert('hello')}>Action</DropdownItem>
           <DropdownItem>Another action</DropdownItem>
           <DropdownItem>Something else here</DropdownItem>
+
+          <Button mt={2} block onClick={this.signOut}>Sign Out</Button>
         </DropdownMenu>
       </Dropdown>
     );

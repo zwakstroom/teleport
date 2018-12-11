@@ -76,12 +76,11 @@ export default class LoginForm extends React.Component {
 
   renderLoginBtn(onClick) {
     const { isProcessing } = this.props.attempt;
-    const $helpBlock = isProcessing && this.props.auth2faType === Auth2faTypeEnum.UTF ? (
-        "Insert your U2F key and press the button on the key"
-    ) : null;
+    // const $helpBlock = isProcessing && this.props.auth2faType === Auth2faTypeEnum.UTF ? (
+    //     "Insert your U2F key and press the button on the key"
+    // ) : null;
 
     return (
-      <Center>
         <Button
           block
           size="large"
@@ -90,8 +89,6 @@ export default class LoginForm extends React.Component {
           mt={4}>
           LOGIN WITH EMAIL
       </Button>
-      {$helpBlock}
-    </Center>
     );
   }
 
@@ -180,7 +177,3 @@ export default class LoginForm extends React.Component {
     );
   }
 }
-
-const Center = styled.div`
-  text-align: center;
-`

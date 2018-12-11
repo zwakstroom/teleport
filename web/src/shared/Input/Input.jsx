@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {colors} from './../theme'
-import { space, propTypes } from 'styled-system'
+import { space } from 'styled-system'
 
 
 const Input = styled.input`
