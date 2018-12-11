@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { space } from 'styled-system'
+import theme from './../theme'
 
 const size = props => {
   switch (props.size) {
@@ -113,7 +114,8 @@ Button.propTypes = {
 }
 
 Button.defaultProps = {
-  size: 'medium'
+  size: 'medium',
+  theme: theme
 }
 
 Button.displayName = 'Button'

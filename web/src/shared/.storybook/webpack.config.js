@@ -12,11 +12,14 @@ const rules = [
       limit: 10,
     }
   },
+  webpackBaseCfg.rules.svg,
   {
-    test: /\.svg$/,
-    loader: 'svg-url-loader',
+    test: /\.(js|jsx)$/,
+    enforce: "pre",
+    loader: "eslint-loader",
+    exclude: /(node_modules)|(assets)/,
     options: {
-      noquotes: true,
+      emitWarning: true
     },
   },
   {
@@ -30,7 +33,7 @@ const rules = [
 
 module.exports = (baseConfig, env, defaultConfig) => {
 
-  baseConfig.devtool = false;
+  //baseConfig.devtool = false;
 
   baseConfig.module.rules.push(...rules);
 

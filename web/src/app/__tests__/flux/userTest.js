@@ -19,7 +19,7 @@ import auth from 'app/services/auth';
 import history from 'app/services/history';
 import {createMemoryHistory} from 'react-router';
 import {reactor, expect, api, Dfd, spyOn} from './../';
-import actions from 'app/flux/user/actions';
+import * as actions from 'app/flux/user/actions';
 import * as UserFlux from 'app/flux/user';
 import {AuthProviderTypeEnum} from 'app/services/enums';
 import {RECEIVE_USER} from 'app/flux/user/actionTypes';
@@ -27,8 +27,8 @@ import * as apiData from 'app/__tests__/apiData';
 
 describe('flux/user/getters', () => {
   it('should return "user"', () => {
-    const userName = apiData.userContext.userName;    
-    reactor.dispatch(RECEIVE_USER, { name: userName });    
+    const userName = apiData.userContext.userName;
+    reactor.dispatch(RECEIVE_USER, { name: userName });
     expect(reactor.evaluate(UserFlux.getters.userName)).toEqual(userName);
   });
 });
@@ -73,7 +73,7 @@ describe('flux/user/actions', () => {
       actions.fetchInvite(inviteToken)
       const rec = reactor.evaluate(UserFlux.getters.fetchingInvite);
       expect(rec.isFailed).toBe(true);
-      expect(rec.message).toEqual(message)            
+      expect(rec.message).toEqual(message)
     });
 
     it('should handle success state', () => {
@@ -81,7 +81,7 @@ describe('flux/user/actions', () => {
       actions.fetchInvite(inviteToken)
       const rec = reactor.evaluate(UserFlux.getters.fetchingInvite);
       expect(rec.isSuccess).toBe(true);
-      expect(reactor.evaluateToJS(UserFlux.getters.invite)).toEqual(inviteInfoSample);      
+      expect(reactor.evaluateToJS(UserFlux.getters.invite)).toEqual(inviteInfoSample);
     });
   });
 
@@ -90,9 +90,9 @@ describe('flux/user/actions', () => {
     const oidcSsoProvider = { name: 'microsoft', type: AuthProviderTypeEnum.OIDC, url: webApiUrl };
     const defaultEntryRoute = history.ensureBaseUrl(cfg.routes.app);
 
-    it('should login with email', () => {      
+    it('should login with email', () => {
       spyOn(auth, 'login').andReturn(Dfd().resolve(apiData.bearerToken));
-      actions.login(email, password);      
+      actions.login(email, password);
       expect(history.push).toHaveBeenCalledWith(defaultEntryRoute, true);
     });
 
@@ -101,7 +101,7 @@ describe('flux/user/actions', () => {
       actions.loginWithSso(oidcSsoProvider.name, oidcSsoProvider.url);
       expect(history.push).toHaveBeenCalledWith(expectedUrl, true);
     });
-    
+
     it('should login with U2F', () => {
       const dummyResponse = { appId: 'xxx' }
       spyOn(api, 'post').andReturn(Dfd().resolve(dummyResponse));
@@ -156,7 +156,7 @@ describe('flux/user/actions', () => {
     });
 
     actions.acceptInviteWithU2f(user, password, inviteToken).done(() => wasCalled = true );
-    expect(wasCalled).toBe(true);    
+    expect(wasCalled).toBe(true);
     expect(history.push).toHaveBeenCalledWith(cfg.routes.app, true);
   });
 

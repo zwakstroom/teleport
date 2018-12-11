@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import {colors} from './../theme'
 import { space } from 'styled-system'
 
-
 const Input = styled.input`
   appearance: none;
   border-radius: 4px;
@@ -38,7 +37,7 @@ Input.displayName = 'Input'
 
 Input.propTypes = {
   placeholder: PropTypes.string,
-  hasError: PropTypes.string
+  hasError: PropTypes.bool
 }
 
 export default Input

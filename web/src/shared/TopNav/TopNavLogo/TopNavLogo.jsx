@@ -41,9 +41,9 @@ TopNavLogo.propTypes = {
 };
 
 TopNavLogo.defaultProps = {
-  product: 'gravity',
   href: '/',
-  version: 'v#'
+  version: 'v#',
+  product: 'Product Name',
 }
 
 TopNavLogo.displayName = 'TopNavLogo';

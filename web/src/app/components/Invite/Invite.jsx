@@ -17,7 +17,7 @@ limitations under the License.
 import React from 'react';
 import { connect } from './../nuclear';
 import cfg from 'app/config';
-import actions from 'app/flux/user/actions';
+import * as actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
 import { ExpiredLink } from './../msgPage';
 import { withDocTitle } from './../documentTitle';
@@ -75,9 +75,9 @@ function mapStateToProps() {
 
 function mapActionsToProps() {
   return {
-    fetchInvite: actions.fetchInvite.bind(actions),
-    acceptInviteWithU2f: actions.acceptInviteWithU2f.bind(actions),
-    acceptInvite: actions.acceptInvite.bind(actions),
+    fetchInvite: actions.fetchInvite,
+    acceptInviteWithU2f: actions.acceptInviteWithU2f,
+    acceptInvite: actions.acceptInvite,
   }
 }
 

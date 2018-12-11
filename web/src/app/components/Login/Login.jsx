@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { connect } from './../nuclear';
-import actions from 'app/flux/user/actions';
+import * as actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
 import cfg from 'app/config';
 import { TeleportLogo } from './../Images';

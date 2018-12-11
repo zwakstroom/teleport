@@ -18,7 +18,7 @@ import PropTypes from 'prop-types';
 import cfg from 'app/config';
 import * as UserFlux from 'app/flux/user';
 import * as AppStore from 'app/flux/app/appStore';
-import userActions from 'app/flux/user/actions';
+import { logout } from 'app/flux/user/actions';
 import { IndexLink } from 'react-router';
 import { UserIcon } from './icons.jsx';
 
@@ -45,7 +45,7 @@ export default function NavLeftBar(props) {
 
   $items.push((
     <li key={$items.length} title="logout">
-      <a href="#" onClick={userActions.logout} >
+      <a href="#" onClick={logout} >
         <i className="fa fa-sign-out" style={{marginRight: 0}}></i>
       </a>
     </li>
