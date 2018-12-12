@@ -77,13 +77,14 @@ export default class LoginForm extends React.Component {
 
   renderLoginBtn(onClick) {
     const { isProcessing } = this.props.attempt;
-    // const $helpBlock = isProcessing && this.props.auth2faType === Auth2faTypeEnum.UTF ? (
-    //     "Insert your U2F key and press the button on the key"
-    // ) : null;
+     const $helpBlock = isProcessing && this.props.auth2faType === Auth2faTypeEnum.UTF ? (
+         "Insert your U2F key and press the button on the key"
+     ) : null;
 
     const isDisabled = isProcessing;
 
     return (
+      <div>
         <Button
           block
           disabled={isDisabled}
@@ -93,6 +94,8 @@ export default class LoginForm extends React.Component {
           mt={4}>
           LOGIN WITH EMAIL
       </Button>
+        {$helpBlock}
+      </div>
     );
   }
 
