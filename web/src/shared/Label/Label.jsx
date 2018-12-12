@@ -12,7 +12,7 @@ const Label = styled.label`
 `
 
 Label.propTypes = {
-  hasError: PropTypes.string.isRequired
+  hasError: PropTypes.bool
 }
 
 Label.defaultProps = {

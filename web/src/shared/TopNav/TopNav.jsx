@@ -7,7 +7,7 @@ import TopNavLogo from './TopNavLogo/TopNavLogo';
 import TopNavAccountMenu from './TopNavAccountMenu/TopNavAccountMenu';
 
 const Nav = styled.nav`
-  background: ${theme.background.secondary};
+  background: ${props => props.theme.background.secondary};
   box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
   left: 0;
   position: fixed;

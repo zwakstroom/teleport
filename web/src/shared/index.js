@@ -5,6 +5,8 @@ import Text from './Text'
 import Label from './Label'
 import Heading from './Heading'
 import Box from './Box'
+import Indicator from './Indicator'
+import TopNav from './TopNav'
 
 export {
   Input,
@@ -13,5 +15,7 @@ export {
   Heading,
   Card,
   Box,
-  Button
+  Button,
+  Indicator,
+  TopNav
 }

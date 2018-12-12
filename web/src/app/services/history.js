@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { browserHistory } from 'react-router';
+import createHistory from 'history/createBrowserHistory';
 import { matchPattern } from 'app/lib/patternUtils';
 import cfg from 'app/config';
 
@@ -22,85 +22,84 @@ let _inst = null;
 
 const history = {
 
-  original(){    
-    return _inst;    
+  original(){
+    return _inst;
   },
 
-  init(history=browserHistory){
-    _inst = history;    
+  init(history){
+    _inst = history || createHistory();
   },
-  
+
   push(route, withRefresh = false) {
-    route = this.ensureSafeRoute(route);    
+    route = this.ensureSafeRoute(route);
     if (withRefresh) {
       this._pageRefresh(route);
     } else {
       _inst.push(route)
-    }                
+    }
   },
 
   goBack(number) {
     this.original().goBack(number);
   },
-      
-  goToLogin(rememberLocation) {    
+
+  goToLogin(rememberLocation) {
     let url = cfg.routes.login;
     if (rememberLocation) {
-      const currentLoc = _inst.getCurrentLocation();
-      let redirectUrl = _inst.createHref(currentLoc);
+      let redirectUrl = _inst.createHref(_inst.location);
       redirectUrl = this.ensureSafeRoute(redirectUrl);
       redirectUrl = this.ensureBaseUrl(redirectUrl);
-      url = `${url}?redirect_uri=${redirectUrl}`;      
+      url = `${url}?redirect_uri=${redirectUrl}`;
     }
-        
-    this._pageRefresh(url);    
+
+    this._pageRefresh(url);
   },
 
-  getRedirectParam() {    
-    let loc = this.original().getCurrentLocation();
-    if (loc.query && loc.query.redirect_uri) {      
+  getRedirectParam() {
+    let loc = this.original().location;
+    if (loc.query && loc.query.redirect_uri) {
       return loc.query.redirect_uri;
     }
-      
-    return '';    
+
+    return '';
   },
 
-  ensureSafeRoute(url) {    
+  ensureSafeRoute(url) {
     url = this._canPush(url) ? url : cfg.routes.app;
     return url;
   },
 
   ensureBaseUrl(url) {
     url = url || '';
-    if (url.indexOf(cfg.baseUrl) !== 0) {          
+    if (url.indexOf(cfg.baseUrl) !== 0) {
       url = cfg.baseUrl + url;
     }
 
-    return url;    
+    return url;
   },
 
   getRoutes() {
     return Object.getOwnPropertyNames(cfg.routes).map(p => cfg.routes[p]);
   },
 
-  _canPush(route) {         
-    route = route || '';                
+  _canPush(route) {
+    route = route || '';
     let routes = this.getRoutes();
-    if (route.indexOf(cfg.baseUrl) === 0) {      
-      route = route.replace(cfg.baseUrl, '')      
+    if (route.indexOf(cfg.baseUrl) === 0) {
+      route = route.replace(cfg.baseUrl, '')
     }
-                    
+
     return routes.some(match(route));
-  },  
-    
-  _pageRefresh(route) {        
+  },
+
+  _pageRefresh(route) {
     window.location.href = this.ensureBaseUrl(route);
   }
 }
 
 const match = url => route => {
-  let { remainingPathname } = matchPattern(route, url);            
-  return remainingPathname !== null && remainingPathname.length === 0;   
+  let { remainingPathname } = matchPattern(route, url);
+  return remainingPathname !== null && remainingPathname.length === 0;
 }
 
 export default history;

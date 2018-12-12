@@ -112,13 +112,13 @@ export default class LoginForm extends React.Component {
   }
 
   renderInputFields({ values, errors, touched, handleChange }) {
-    const userError = errors.user && touched.user;
-    const passError = errors.password && touched.password;
-    const tokenError = errors.token && touched.token;
+    const userError = !!(errors.user && touched.user);
+    const passError = !!(errors.password && touched.password);
+    const tokenError = !!(errors.token && touched.token);
 
     return (
       <React.Fragment>
-        <Label mb={1} hasError={userError}>
+        <Label mb={1} hasError={!!userError}>
           Email
           {userError && errors.user}
         </Label>
@@ -130,7 +130,7 @@ export default class LoginForm extends React.Component {
           placeholder="User name"
           name="user"
           />
-        <Label hasError={passError}>
+        <Label hasError={!!passError}>
           Password
           {passError && errors.password}
         </Label>
@@ -144,7 +144,7 @@ export default class LoginForm extends React.Component {
           placeholder="Password"/>
         {this.isOTP() && (
           <>
-            <Label mt={3} mb={1} hasError={tokenError}>
+            <Label mt={3} mb={1} hasError={!!tokenError}>
               Two factor token
               {tokenError && errors.token}
             </Label>

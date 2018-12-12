@@ -17,57 +17,35 @@ limitations under the License.
 
 import React from 'react';
 import { Router } from 'react-router';
+import { Route, Switch } from 'react-router-dom'
 import { Provider } from './components/nuclear';
+import Login from './components/Login';
+import Invite from './components/Invite';
 import cfg from './config';
-import history from './services/history';
-import reactor from './reactor';
-import { addRoutes } from './routes';
-import * as Features from './features';
-import { createSettings } from './features/settings';
-import FeatureActivator from './featureActivator';
-import { initApp } from './flux/app/actions';
-import App from './components/app.jsx';
-import userActions from './flux/user/actions';
+import Index from './components/index.jsx';
 import ThemeProvider from './../shared/ThemeProvider';
-
+import { hot, setConfig } from 'react-hot-loader'
 
 import "font-awesome/css/font-awesome.css";
-
-//import './../styles/grv.scss';
 import './flux';
 import './vendor';
 
-cfg.init(window.GRV_CONFIG);
-history.init();
+setConfig({
+  logLevel: 'no-errors-please'
+});
 
-const featureRoutes = [];
-const featureActivator = new FeatureActivator();
-
-featureActivator.register(new Features.Ssh(featureRoutes));
-featureActivator.register(new Features.Audit(featureRoutes));
-featureActivator.register(createSettings(featureRoutes))
-
-const onEnterApp = nextState => {
-  const { siteId } = nextState.params;
-  initApp(siteId, featureActivator)
-}
-
-const routes = [{
-  path: cfg.routes.app,
-  onEnter: userActions.ensureUser,
-  component: App,
-  childRoutes: [{
-    onEnter: onEnterApp,
-    childRoutes: featureRoutes
-  }]
-}];
-
-const Root = () => (
-  <Provider reactor={reactor}>
-    <ThemeProvider>
-      <Router history={history.original()} routes={addRoutes(routes)} />
-    </ThemeProvider>
-  </Provider>
+const Root = props => (
+  <Router history={props.history}>
+    <Provider reactor={props.reactor}>
+      <ThemeProvider>
+        <Switch>
+          <Route path={cfg.routes.login} component={Login} />
+          <Route path={cfg.routes.newUser} component={Invite} />
+          <Route path={cfg.routes.app} component={Index} />
+        </Switch>
+      </ThemeProvider>
+      </Provider>
+  </Router>
 )
 
-export default Root;
+export default hot(module)(Root);
