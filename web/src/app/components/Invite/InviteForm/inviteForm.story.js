@@ -5,7 +5,7 @@ import "font-awesome/css/font-awesome.css";
 
 const invite = {
   "invite_token": "c0de46ef150998597760a679230409a8",
-  "user": "test",
+  "user": "test@gravitational.com",
   "qr": "iVBORw0KGgoAAAANSUhEUgAAAcgAAAHIEAAAAAC/Wvl1AAAJV0lEQVR4nOzdsW4jORZA0fbC///LXowV" +
       "TFIWmqAefUtzTrDJeEtltS+YPDx+fn39ASL+99svAPzr85//+fj47df4ycr5ff1bXD9h/2f3vcenTf0L" +
       "rTzh2tnvd9/jfZ2QECJICBEkhAgSQgQJIYKEEEFCiCAhRJAQIkgI+fz5P50dOz870rT/u3VH0VZ+dv+3" +

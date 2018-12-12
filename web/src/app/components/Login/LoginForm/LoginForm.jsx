@@ -20,7 +20,7 @@ import { Card, Heading, Input, Label, Button } from '../../../../shared/componen
 import * as Alerts from '../../../../shared/components/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
-import Logo from './Logo';
+import Logo from '../../../../shared/components/Logo';
 import { Formik } from 'formik';
 
 export default class LoginForm extends React.Component {

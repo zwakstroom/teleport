@@ -38,7 +38,7 @@ const pickSso = type => {
 const SsoButton = props => {
   const iconClass = pickSso(props.type).className;
   return (
-    <Button {...props} color="light">
+    <Button block size="large" {...props} color="light">
       { iconClass &&
         <Icon>
           <span className={iconClass} />
@@ -53,7 +53,7 @@ export const StyledSsoButton = styled(SsoButton)`
   background-color: ${ props => pickSso(props.type).color};
   position: relative;
   box-sizing: border-box;
-  min-width: 200px;
+  margin: 32px 0 0 0;
 `
 
 const Icon = styled.div`

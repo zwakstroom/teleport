@@ -19,10 +19,10 @@ import { connect } from './../nuclear';
 import cfg from 'app/config';
 import * as actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
-import { ExpiredLink } from './../msgPage';
 import { withDocTitle } from './../documentTitle';
-import { TeleportLogo } from './../Images';
 import InviteForm from './InviteForm';
+import ExpiredInvite from './InviteForm/ExpiredInvite';
+import Logo from '../../../shared/components/Logo';
 
 export class Invite extends React.Component {
 
@@ -43,7 +43,12 @@ export class Invite extends React.Component {
     const auth2faType = cfg.getAuth2faType();
 
     if(fetchingInvite.isFailed){
-      return <ExpiredLink/>
+      return (
+        <div>
+          <Logo />
+          <ExpiredInvite />
+        </div>
+      );
     }
 
     if(!invite) {
@@ -52,7 +57,7 @@ export class Invite extends React.Component {
 
     return (
       <div>
-        <TeleportLogo />
+        <Logo />
         <InviteForm
           auth2faType={auth2faType}
           attempt={attempt}

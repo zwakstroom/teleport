@@ -5,7 +5,7 @@ import "font-awesome/css/font-awesome.css";
 
 const invite = {
   "invite_token": "c0de46ef150998597760a679230409a8",
-  "user": "test",
+  "user": "test@gravitational.com",
 };
 
 const defaultProps = {

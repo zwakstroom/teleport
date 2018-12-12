@@ -21,7 +21,7 @@ const Logo = ({ product }) => {
 
 Logo.propTypes = {
   /** Product Name */
-  product: PropTypes.oneOf(['gravity', 'teleport']),
+  product: PropTypes.oneOf(['gravity', 'teleport']).isRequired,
 };
 
 Logo.defaultProps = {

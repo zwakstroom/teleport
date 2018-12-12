@@ -18,7 +18,7 @@ import React from 'react';
 import styled from 'styled-components'
 import PropTypes from 'prop-types';
 import { Auth2faTypeEnum } from 'app/services/enums';
-import { Card, Heading, Input, Label, Button } from '../../../../shared/components';
+import { Card, Input, Label, Button } from '../../../../shared/components';
 import { Formik } from 'formik';
 import Invite2faData from './TwoFaInfo';
 
@@ -79,15 +79,12 @@ export class InviteForm extends React.Component {
     const passConfirmedError = touched.passwordConfirmed && errors.passwordConfirmed;
     const tokenError = errors.token && touched.token;
     const { user } = this.props.invite;
+
+
     return (
       <React.Fragment>
-        <Label mb={1}>
-          Email
-        </Label>
-        <Input id="user" fontSize={0}
-          disabled
-          value={user}
-        />
+        <UserName>{user}</UserName>
+
         <Label hasError={passError}>
           {passError || "Password"}
         </Label>
@@ -161,7 +158,7 @@ export class InviteForm extends React.Component {
     const isDisabled = isProcessing;
 
     return (
-      <Center>
+      <>
         <Button
           block
           disabled={isDisabled}
@@ -169,10 +166,10 @@ export class InviteForm extends React.Component {
           type="submit"
           onClick={onClick}
           mt={4}>
-          SIGN UP
+          Create My Teleport Account
       </Button>
       {$helpBlock}
-      </Center>
+      </>
     )
   }
 
@@ -191,9 +188,6 @@ export class InviteForm extends React.Component {
         {
           props => (
             <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">
-              <Heading.h5 textAlign="center" mb="3" color="light">
-                Get started with Teleport
-              </Heading.h5>
               {this.renderNameAndPassFields(props)}
               {this.renderSubmitBtn(props.handleSubmit)}
               {$error}
@@ -206,7 +200,7 @@ export class InviteForm extends React.Component {
             </Card>
           )
         }
-      </Formik>
+        </Formik>
     )
   }
 }
@@ -231,8 +225,12 @@ export const ErrorMessage = ({ message }) => {
   )
 }
 
-const Center = styled.div`
-  text-align: center;
+
+const UserName = styled.div`
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 40px;
+  margin: 0 0 16px 0;
 `
 
 export default InviteForm;
