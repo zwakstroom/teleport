@@ -15,8 +15,9 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Card, Heading, Input, Label, Button } from '../../../../shared';
-import * as Alerts from '../../../../shared/Alerts';
+//import styled from 'styled-components'
+import { Card, Heading, Input, Label, Button } from '../../../../shared/components';
+import * as Alerts from '../../../../shared/components/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
 import Logo from './Logo';

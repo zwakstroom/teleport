@@ -1,5 +1,5 @@
 const path = require("path");
-const webpackBaseCfg = require('./../../../webpack/webpack.base');
+const webpackBaseCfg = require('./../../../../webpack/webpack.base');
 
 const rules = [
 

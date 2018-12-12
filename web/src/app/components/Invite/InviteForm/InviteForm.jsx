@@ -18,7 +18,7 @@ import React from 'react';
 import styled from 'styled-components'
 import PropTypes from 'prop-types';
 import { Auth2faTypeEnum } from 'app/services/enums';
-import { Card, Heading, Input, Label, Button } from '../../../../shared';
+import { Card, Heading, Input, Label, Button } from '../../../../shared/components';
 import { Formik } from 'formik';
 import Invite2faData from './TwoFaInfo';
 

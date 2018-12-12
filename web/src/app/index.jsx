@@ -23,7 +23,7 @@ import Login from './components/Login';
 import Invite from './components/Invite';
 import cfg from './config';
 import Index from './components/index.jsx';
-import ThemeProvider from './../shared/ThemeProvider';
+import ThemeProvider from './../shared/components/ThemeProvider';
 import { hot, setConfig } from 'react-hot-loader'
 
 import "font-awesome/css/font-awesome.css";

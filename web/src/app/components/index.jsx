@@ -19,7 +19,7 @@ import { connect } from './nuclear';
 import appGetters from 'app/flux/app/getters';
 import { Failed } from './msgPage.jsx';
 import { initApp } from 'app/flux/app/actions';
-import { TopNav, Indicator } from 'app/../shared';
+import { TopNav, Indicator } from 'app/../shared/components';
 import withAuth from './withAuth';
 import FeatureActivator from './../featureActivator';
 

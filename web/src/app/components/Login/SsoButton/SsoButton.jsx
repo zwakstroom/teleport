@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import styled from 'styled-components'
-import Button from '../../../../shared/Button';
+import { Button } from '../../../../shared/components';
 
 const pickSso = type => {
   switch (type) {

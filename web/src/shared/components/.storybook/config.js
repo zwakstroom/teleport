@@ -15,7 +15,7 @@ addDecorator(ThemeDecorator);
 const req = require.context('.', true, /\.story.js$/)
 const loadStories = () => {
     req.keys().forEach(req)
-    require('../../app/components/.storybook/index.js')
+    require('../../../app/components/.storybook/index.js')
 }
 
 configure(loadStories, module);

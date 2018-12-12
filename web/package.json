@@ -8,7 +8,7 @@
     "build": "rm -rf ./dist; mkdir ./dist; node node_modules/webpack/bin/webpack.js --progress --config webpack/webpack.prod.config.js --bail",
     "tdd": "node node_modules/karma/bin/karma start",
     "test": "jest",
-    "storybook": "start-storybook -p 9001 -c src/shared/.storybook"
+    "storybook": "start-storybook -p 9001 -c src/shared/components/.storybook"
   },
   "author": "",
   "license": "",
