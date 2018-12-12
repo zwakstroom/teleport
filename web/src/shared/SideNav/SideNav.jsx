@@ -1,17 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import theme from './../theme';
+import {z, background} from './../theme';
 import SideNavButton from './SideNavButton';
 
 const Nav = styled.nav`
-  background: ${theme.background.primary};
+  background: ${background.primary};
   left: 0;
   position: fixed;
   bottom: 0;
   top: 0;
   width: 240px;
-  z-index: ${theme.z.max1};
+  z-index: ${z.max1};
 `;
 
 class SideNav extends React.Component {
