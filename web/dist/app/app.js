@@ -113,7 +113,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "c9d1d5c2d460982a4641";
+/******/ 	var hotCurrentHash = "264457c51c26a58dbfc6";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -1130,6 +1130,791 @@ webpackContext.id = "./node_modules/moment/locale sync recursive ^\\.\\/.*$";
 
 /***/ }),
 
+/***/ "./src/app/components/Images/index.jsx":
+/*!*********************************************!*\
+  !*** ./src/app/components/Images/index.jsx ***!
+  \*********************************************/
+/*! exports provided: TeleportLogo */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TeleportLogo", function() { return TeleportLogo; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _teleport_logo_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./teleport-logo.svg */ "./src/app/components/Images/teleport-logo.svg");
+/* harmony import */ var _teleport_logo_svg__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_teleport_logo_svg__WEBPACK_IMPORTED_MODULE_1__);
+(function () {
+  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
+
+  enterModule && enterModule(module);
+})();
+
+/*
+Copyright 2015 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+var TeleportLogo = function TeleportLogo() {
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+    src: _teleport_logo_svg__WEBPACK_IMPORTED_MODULE_1___default.a
+  });
+};
+;
+
+(function () {
+  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
+
+  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(TeleportLogo, "TeleportLogo", "/Users/admin/Development/teleport/web/src/app/components/Images/index.jsx");
+  leaveModule(module);
+})();
+
+;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/app/components/Images/teleport-logo.svg":
+/*!*****************************************************!*\
+  !*** ./src/app/components/Images/teleport-logo.svg ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3C?xml version='1.0'?%3E %3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='340px' height='100px' viewBox='0 0 340 100' enable-background='new 0 0 0 0' xml:space='preserve'%3E %3Cg%3E %3Cg id='Layer_2'%3E %3Cg%3E %3Cg%3E %3Cpath d='m47.671001,21.444c-7.396,0 -14.102001,3.007999 -18.960003,7.866001c-4.856998,4.856998 -7.865999,11.563 -7.865999,18.959999c0,7.396 3.008001,14.101002 7.865999,18.957996s11.564003,7.865005 18.960003,7.865005s14.102001,-3.008003 18.958996,-7.865005s7.865005,-11.561996 7.865005,-18.957996s-3.008003,-14.104 -7.865005,-18.959999c-4.857994,-4.858002 -11.562996,-7.866001 -18.958996,-7.866001zm11.386997,19.509998h-8.213997v23.180004h-6.344002v-23.180004h-8.215v-5.612h22.772999v5.612l0,0z'/%3E %3C/g%3E %3Cg%3E %3Cpath d='m92.782997,63.357002c-0.098999,-0.371002 -0.320999,-0.709 -0.646996,-0.942001l-4.562004,-3.958l-4.561996,-3.957001c0.163002,-0.887001 0.267998,-1.805 0.331001,-2.736c0.063995,-0.931 0.086998,-1.874001 0.086998,-2.805c0,-0.932999 -0.022003,-1.875 -0.086998,-2.806999c-0.063004,-0.931999 -0.167999,-1.851002 -0.331001,-2.736l4.561996,-3.957001l4.562004,-3.958c0.325996,-0.232998 0.548996,-0.57 0.646996,-0.942001c0.099007,-0.372997 0.075005,-0.778999 -0.087997,-1.153c-0.931999,-2.862 -2.199997,-5.655998 -3.731003,-8.299c-1.530998,-2.641998 -3.321999,-5.132998 -5.301994,-7.390999c-0.278999,-0.326 -0.617004,-0.548 -0.978004,-0.646c-0.360001,-0.098999 -0.744995,-0.074999 -1.116997,0.087l-5.750999,2.002001l-5.749001,2.000999c-1.419998,-1.164 -2.933998,-2.211 -4.522003,-3.136999c-1.589996,-0.925001 -3.253998,-1.728001 -4.977997,-2.404001l-1.139999,-5.959l-1.140999,-5.959c-0.069,-0.373 -0.268005,-0.733 -0.547005,-1.013c-0.278999,-0.28 -0.640999,-0.478 -1.036995,-0.524c-2.980003,-0.605 -6.007004,-0.908 -9.033005,-0.908s-6.052998,0.302 -9.032997,0.908c-0.396,0.046 -0.756001,0.245001 -1.036003,0.524c-0.278999,0.279 -0.477997,0.64 -0.546997,1.013l-1.141003,5.959l-1.140999,5.960001c-1.723,0.675999 -3.410999,1.479 -5.012001,2.403999c-1.599998,0.924999 -3.112999,1.973 -4.487,3.136999l-5.75,-2.000999l-5.75,-2.001999c-0.372,-0.164001 -0.755999,-0.187 -1.116999,-0.088001c-0.361,0.1 -0.699001,0.32 -0.978001,0.646c-1.979,2.259001 -3.771,4.75 -5.302,7.392002c-1.53,2.641998 -2.799,5.436996 -3.73,8.299c-0.163,0.372997 -0.187,0.780998 -0.087001,1.151997c0.099,0.372002 0.320001,0.710003 0.646001,0.943001l4.563,3.957001l4.562,3.958c-0.163,0.884998 -0.268,1.804001 -0.331001,2.735001c-0.063999,0.931999 -0.087999,1.875 -0.087999,2.806s0.023001,1.875 0.087,2.806c0.064001,0.931999 0.168001,1.851002 0.332001,2.735001l-4.562,3.957001l-4.562,3.959c-0.325,0.231003 -0.547,0.569 -0.646,0.942001c-0.099,0.370995 -0.076,0.778999 0.087,1.150002c0.931,2.864998 2.2,5.657997 3.73,8.300995c1.531,2.642998 3.323,5.133003 5.302,7.391998c0.280001,0.325005 0.618,0.548004 0.978001,0.646004c0.361,0.099998 0.744999,0.074997 1.118,-0.087997l5.75,-2.003006l5.749998,-2.000999c1.373001,1.164001 2.886002,2.213005 4.487003,3.139c1.600998,0.924004 3.288998,1.728004 5.010998,2.401001l1.140999,5.961998l1.141003,5.959c0.07,0.372002 0.267998,0.733002 0.547001,1.014c0.278999,0.279007 0.640999,0.479004 1.035999,0.522003c1.489998,0.278 2.979,0.500999 4.480999,0.651001c1.500999,0.152 3.014999,0.232002 4.551998,0.232002s3.049004,-0.080002 4.551003,-0.232002c1.501999,-0.150002 2.990997,-0.373001 4.479996,-0.651001c0.396004,-0.044998 0.757004,-0.243996 1.037003,-0.522003c0.279999,-0.278999 0.476997,-0.641998 0.547005,-1.014l1.140999,-5.959l1.140999,-5.961998c1.723,-0.674995 3.387001,-1.477997 4.976997,-2.401001c1.588005,-0.925995 3.103004,-1.974998 4.522003,-3.139l5.75,2.000999l5.75,2.003006c0.373001,0.162994 0.756996,0.185997 1.117996,0.087997c0.360001,-0.098999 0.698006,-0.32 0.978004,-0.646004c1.978996,-2.258995 3.770996,-4.749001 5.301994,-7.391998c1.531006,-2.642998 2.800003,-5.436996 3.731003,-8.300995c0.164001,-0.368004 0.188004,-0.778008 0.087997,-1.150002zm-24.237999,5.787994c-5.348,5.349007 -12.731995,8.660004 -20.875,8.660004c-8.143997,0 -15.526997,-3.312004 -20.875,-8.660004s-8.659998,-12.730995 -8.659998,-20.874996c0,-8.144001 3.312,-15.527 8.661001,-20.875999c5.348,-5.348001 12.731998,-8.661001 20.875999,-8.661001c8.143002,0 15.525997,3.312 20.874996,8.661001c5.348,5.348999 8.661003,12.731998 8.661003,20.875999c-0.000999,8.141998 -3.314003,15.525997 -8.663002,20.874996z'/%3E %3C/g%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cpath d='m119.773003,30.861h-13.020004v-6.841h33.599998v6.841h-13.020004v35.639999h-7.55999v-35.639999l0,0z'/%3E %3Cpath d='m143.953003,54.620998c0.23999,2.16 1.080002,3.84 2.520004,5.039997s3.179993,1.800003 5.219986,1.800003c1.800003,0 3.309006,-0.368996 4.530014,-1.110001c1.219986,-0.738998 2.289993,-1.668999 3.209991,-2.790001l5.160004,3.900002c-1.680008,2.080002 -3.561005,3.561005 -5.639999,4.440002c-2.080002,0.878998 -4.26001,1.319 -6.540009,1.319c-2.159988,0 -4.199997,-0.359001 -6.119995,-1.080002c-1.919998,-0.720001 -3.580994,-1.738998 -4.979996,-3.059998c-1.401001,-1.320007 -2.511002,-2.910004 -3.330002,-4.771004c-0.820007,-1.858997 -1.229996,-3.929996 -1.229996,-6.209999c0,-2.278999 0.409988,-4.349998 1.229996,-6.209999c0.819,-1.859001 1.929001,-3.449001 3.330002,-4.77c1.399002,-1.32 3.059998,-2.34 4.979996,-3.061001c1.919998,-0.719997 3.960007,-1.078999 6.119995,-1.078999c2,0 3.830002,0.351002 5.490005,1.049999c1.658997,0.700001 3.080002,1.709999 4.259995,3.028999c1.180008,1.32 2.100006,2.951 2.76001,4.891003c0.659988,1.939999 0.98999,4.169998 0.98999,6.688999v1.98h-21.959991l0,0.002998zm14.759995,-5.399998c-0.041,-2.118999 -0.699997,-3.789001 -1.979996,-5.010002c-1.281006,-1.219997 -3.059998,-1.829998 -5.339996,-1.829998c-2.160004,0 -3.87001,0.620998 -5.130005,1.860001c-1.259995,1.239998 -2.031006,2.899998 -2.309998,4.979h14.759995l0,0.000999z'/%3E %3Cpath d='m172.753006,21.141001h7.199997v45.359999h-7.199997v-45.359999l0,0z'/%3E %3Cpath d='m193.992004,54.620998c0.23999,2.16 1.080002,3.84 2.519989,5.039997c1.440002,1.200005 3.181,1.800003 5.221008,1.800003c1.800003,0 3.309006,-0.368996 4.528992,-1.110001c1.221008,-0.738998 2.290009,-1.668999 3.211014,-2.790001l5.159988,3.900002c-1.681,2.080002 -3.560989,3.561005 -5.640991,4.440002c-2.080002,0.878998 -4.26001,1.319 -6.540009,1.319c-2.158997,0 -4.199997,-0.359001 -6.119995,-1.080002c-1.919998,-0.720001 -3.580002,-1.738998 -4.979004,-3.059998c-1.401001,-1.320007 -2.511002,-2.910004 -3.330002,-4.771004c-0.819992,-1.858997 -1.228989,-3.929996 -1.228989,-6.209999c0,-2.278999 0.408997,-4.349998 1.228989,-6.209999c0.819,-1.859001 1.929001,-3.449001 3.330002,-4.77c1.399002,-1.32 3.059998,-2.34 4.979004,-3.061001c1.919998,-0.719997 3.960999,-1.078999 6.119995,-1.078999c2,0 3.830002,0.351002 5.490005,1.049999c1.658997,0.700001 3.078995,1.709999 4.259995,3.028999c1.180008,1.32 2.100998,2.951 2.761002,4.891003c0.660004,1.939999 0.988998,4.169998 0.988998,6.688999v1.98h-21.959991l0,0.002998zm14.759995,-5.399998c-0.039993,-2.118999 -0.699005,-3.789001 -1.979004,-5.010002c-1.279999,-1.219997 -3.059998,-1.829998 -5.340988,-1.829998c-2.159012,0 -3.869003,0.620998 -5.129013,1.860001c-1.259995,1.239998 -2.030991,2.899998 -2.310989,4.979h14.759995l0,0.000999z'/%3E %3Cpath d='m222.671997,37.701h6.839996v4.319h0.12001c1.039993,-1.758999 2.438995,-3.039001 4.199997,-3.84c1.759995,-0.799999 3.660004,-1.199001 5.699005,-1.199001c2.19899,0 4.179993,0.389999 5.939987,1.170002c1.76001,0.778999 3.260025,1.850998 4.500015,3.209999c1.239014,1.360001 2.179993,2.959999 2.820007,4.799999c0.639984,1.84 0.959991,3.82 0.959991,5.938999c0,2.121002 -0.339996,4.101002 -1.019989,5.940002c-0.682007,1.840004 -1.631012,3.440002 -2.851013,4.800003c-1.221008,1.359993 -2.690002,2.43 -4.410004,3.209999s-3.600998,1.169998 -5.639999,1.169998c-1.360001,0 -2.561005,-0.140999 -3.600006,-0.420006c-1.041,-0.279991 -1.960999,-0.639992 -2.761002,-1.079994c-0.799988,-0.439003 -1.478989,-0.909004 -2.039993,-1.410004c-0.561005,-0.499001 -1.020004,-0.988998 -1.380005,-1.469994h-0.181v17.339996h-7.19899v-42.479l0.002991,0zm23.880005,14.400002c0,-1.119003 -0.190002,-2.199001 -0.569,-3.239002c-0.380997,-1.040001 -0.940994,-1.959999 -1.681,-2.760998c-0.740997,-0.799004 -1.630005,-1.439003 -2.669998,-1.920002c-1.040009,-0.479 -2.220001,-0.720001 -3.540009,-0.720001s-2.5,0.240002 -3.539993,0.720001c-1.040009,0.48 -1.931,1.120998 -2.669998,1.920002c-0.740997,0.800999 -1.300003,1.720997 -1.681,2.760998c-0.380005,1.040001 -0.569,2.119999 -0.569,3.239002c0,1.120998 0.188995,2.200996 0.569,3.239998c0.380997,1.041 0.938995,1.960995 1.681,2.759998c0.738998,0.801003 1.62999,1.440002 2.669998,1.919998c1.039993,0.480003 2.220001,0.721001 3.539993,0.721001s2.5,-0.239998 3.540009,-0.721001c1.039993,-0.478996 1.929001,-1.118996 2.669998,-1.919998c0.738998,-0.799004 1.300003,-1.718998 1.681,-2.759998c0.377991,-1.039001 0.569,-2.118999 0.569,-3.239998z'/%3E %3Cpath d='m259.031006,52.101002c0,-2.279003 0.410004,-4.350002 1.230011,-6.210003c0.817993,-1.858997 1.928986,-3.448997 3.329987,-4.77c1.39801,-1.32 3.059021,-2.34 4.979004,-3.060997c1.920013,-0.720001 3.959991,-1.079002 6.119995,-1.079002s4.199005,0.359001 6.119019,1.079002c1.919983,0.720997 3.579987,1.739998 4.97998,3.060997s2.51001,2.91 3.330017,4.77c0.819977,1.860001 1.22998,3.931 1.22998,6.210003c0,2.279999 -0.410004,4.350998 -1.22998,6.210003c-0.820007,1.860001 -1.930023,3.449997 -3.330017,4.770996s-3.061005,2.340004 -4.97998,3.059998c-1.920013,0.721001 -3.959015,1.080002 -6.119019,1.080002s-4.199982,-0.359001 -6.119995,-1.080002c-1.92099,-0.719994 -3.580994,-1.738998 -4.979004,-3.059998c-1.401001,-1.32 -2.511993,-2.909996 -3.329987,-4.770996c-0.820007,-1.860004 -1.230011,-3.930004 -1.230011,-6.210003zm7.199005,0c0,1.120998 0.188995,2.200996 0.570007,3.239998c0.380005,1.041 0.938995,1.960995 1.679993,2.759998c0.73999,0.801003 1.630005,1.440002 2.670013,1.919998c1.040985,0.480003 2.220978,0.721001 3.540985,0.721001s2.498993,-0.239998 3.539001,-0.721001c1.040985,-0.478996 1.929993,-1.118996 2.670013,-1.919998c0.73999,-0.799004 1.300995,-1.718998 1.681976,-2.759998c0.378998,-1.039001 0.568024,-2.118999 0.568024,-3.239998c0,-1.119003 -0.189026,-2.199001 -0.568024,-3.239002c-0.380981,-1.040001 -0.940979,-1.959999 -1.681976,-2.760998c-0.740021,-0.799004 -1.629028,-1.439003 -2.670013,-1.920002c-1.040009,-0.479 -2.218994,-0.720001 -3.539001,-0.720001s-2.5,0.240002 -3.540985,0.720001c-1.040009,0.48 -1.930023,1.120998 -2.670013,1.920002c-0.73999,0.800999 -1.299988,1.720997 -1.679993,2.760998c-0.380005,1.039001 -0.570007,2.118999 -0.570007,3.239002z'/%3E %3Cpath d='m297.070007,37.701h7.200989v4.560001h0.119019c0.798981,-1.68 1.938995,-2.979 3.419983,-3.899002s3.179993,-1.380001 5.100006,-1.380001c0.438995,0 0.871002,0.040001 1.290985,0.119003c0.420013,0.080997 0.850006,0.181 1.289001,0.300999v6.959999c-0.599976,-0.16 -1.188995,-0.290001 -1.769989,-0.390999c-0.579987,-0.098999 -1.149994,-0.149002 -1.710999,-0.149002c-1.679993,0 -3.028992,0.310001 -4.049011,0.93c-1.019989,0.621002 -1.800995,1.330002 -2.339996,2.130001c-0.540985,0.800999 -0.899994,1.601002 -1.079987,2.400002c-0.180023,0.800999 -0.27002,1.399998 -0.27002,1.799999v15.419998h-7.200989v-28.800999l0.001007,0z'/%3E %3Cpath d='m317.049011,43.820999v-6.119999h5.940979v-8.34h7.199005v8.34h7.920013v6.119999h-7.920013v12.600002c0,1.439999 0.27002,2.579998 0.811005,3.420002c0.539001,0.839996 1.609009,1.259995 3.209015,1.259995c0.640991,0 1.339996,-0.069 2.10199,-0.209999c0.757996,-0.139999 1.359009,-0.369003 1.798981,-0.689003v6.060005c-0.759979,0.360001 -1.688995,0.608994 -2.788971,0.75c-1.10202,0.139999 -2.070007,0.209999 -2.910004,0.209999c-1.920013,0 -3.490021,-0.209999 -4.710999,-0.630005s-2.180023,-1.059998 -2.878998,-1.919998c-0.701019,-0.859001 -1.182007,-1.93 -1.44101,-3.209991c-0.26001,-1.279007 -0.389008,-2.76001 -0.389008,-4.440002v-13.201004h-5.941986l0,0z'/%3E %3C/g%3E %3Cg%3E %3Cpath d='m119.194,86.295998h3.587997c0.346001,0 0.689003,0.041 1.027,0.124001c0.338005,0.082001 0.639,0.217003 0.903,0.402c0.264,0.187004 0.479004,0.427002 0.644005,0.722s0.246994,0.650002 0.246994,1.066002c0,0.519997 -0.146996,0.947998 -0.441994,1.287003c-0.295006,0.337997 -0.681,0.579994 -1.157005,0.727997v0.026001c0.286003,0.033997 0.553001,0.113998 0.800003,0.239998c0.247002,0.125999 0.457001,0.286003 0.629997,0.480003c0.173004,0.195 0.310005,0.420998 0.409004,0.676994s0.149994,0.530006 0.149994,0.825005c0,0.502998 -0.099998,0.920998 -0.298996,1.254997c-0.198997,0.333 -0.460999,0.603004 -0.786003,0.806c-0.324997,0.204002 -0.697998,0.348999 -1.117996,0.436005s-0.848,0.129997 -1.280998,0.129997h-3.315002v-9.204002l0,0zm1.638,3.744003h1.495003c0.545998,0 0.955994,-0.106003 1.228996,-0.318001c0.273003,-0.212997 0.408997,-0.491997 0.408997,-0.838997c0,-0.398003 -0.140999,-0.695 -0.421997,-0.891006c-0.281998,-0.194 -0.734001,-0.292 -1.358002,-0.292h-1.351997v2.340004l-0.000999,0zm0,4.056h1.507996c0.208,0 0.431007,-0.013 0.669006,-0.039001c0.237999,-0.025002 0.457001,-0.085999 0.656998,-0.181999c0.198997,-0.096001 0.363998,-0.231003 0.494003,-0.408997c0.129997,-0.178001 0.195,-0.418007 0.195,-0.722c0,-0.485001 -0.158005,-0.823006 -0.475006,-1.014c-0.315994,-0.191002 -0.807999,-0.286003 -1.475998,-0.286003h-1.572998v2.652l0.000999,0z'/%3E %3Cpath d='m130.854996,91.560997l-3.457993,-5.264999h2.054001l2.261993,3.666l2.28801,-3.666h1.949997l-3.458008,5.264999v3.939003h-1.638v-3.939003l0,0z'/%3E %3Cpath d='m150.796997,94.823997c-1.136002,0.606003 -2.404999,0.910004 -3.80899,0.910004c-0.711014,0 -1.363007,-0.114998 -1.957001,-0.345001s-1.105011,-0.555 -1.534012,-0.975998c-0.429001,-0.420006 -0.764999,-0.925003 -1.006989,-1.514c-0.243011,-0.590004 -0.363998,-1.244003 -0.363998,-1.964005c0,-0.736 0.120987,-1.404999 0.363998,-2.007996s0.578995,-1.116005 1.006989,-1.541c0.429001,-0.424004 0.940002,-0.750999 1.534012,-0.981003c0.593994,-0.228996 1.245987,-0.345001 1.957001,-0.345001c0.701996,0 1.360001,0.084999 1.975998,0.254005c0.61499,0.168999 1.166,0.471001 1.651001,0.903l-1.209,1.223c-0.295013,-0.286003 -0.652008,-0.508003 -1.072006,-0.663002c-0.421005,-0.155998 -0.865005,-0.234001 -1.332993,-0.234001c-0.477005,0 -0.908005,0.084999 -1.294006,0.253998c-0.384995,0.169006 -0.716995,0.402 -0.994003,0.701004c-0.276993,0.299995 -0.492004,0.648003 -0.643997,1.046997c-0.151993,0.398003 -0.227997,0.828003 -0.227997,1.287003c0,0.493996 0.076004,0.948997 0.227997,1.364998c0.151001,0.416 0.365997,0.775002 0.643997,1.079002c0.277008,0.303001 0.609009,0.541 0.994003,0.714996c0.386002,0.173004 0.817001,0.260002 1.294006,0.260002c0.416,0 0.807999,-0.039001 1.175995,-0.116997c0.367996,-0.078003 0.694992,-0.199005 0.981003,-0.362999v-2.171005h-1.88501v-1.480995h3.52301v4.704994l0.000992,0z'/%3E %3Cpath d='m153.722,86.295998h3.197998c0.442001,0 0.869003,0.041 1.279999,0.124001c0.412003,0.082001 0.778,0.223 1.098999,0.422005c0.320007,0.198997 0.576004,0.467995 0.766998,0.806999c0.190002,0.337997 0.286011,0.766998 0.286011,1.285995c0,0.667999 -0.184998,1.227005 -0.553009,1.678001c-0.369003,0.450005 -0.894989,0.723999 -1.580002,0.818001l2.445007,4.069h-1.975998l-2.132004,-3.900002h-1.195999v3.900002h-1.638v-9.204002l0,0zm2.912003,3.900002c0.233994,0 0.468002,-0.011002 0.701996,-0.032997c0.234009,-0.021004 0.447998,-0.073006 0.643997,-0.154999c0.195007,-0.083 0.352997,-0.208 0.473999,-0.377007c0.122009,-0.168999 0.182007,-0.404999 0.182007,-0.709c0,-0.268997 -0.056,-0.485001 -0.169006,-0.648994c-0.112991,-0.165001 -0.259995,-0.288002 -0.442001,-0.371002c-0.181992,-0.082001 -0.383987,-0.137001 -0.603989,-0.162003c-0.221008,-0.026001 -0.436005,-0.039001 -0.644012,-0.039001h-1.416992v2.496002h1.274002l0,-0.000999z'/%3E %3Cpath d='m165.876007,86.295998h1.416992l3.966003,9.204002h-1.872009l-0.857986,-2.106003h-3.991013l-0.832001,2.106003h-1.832993l4.003006,-9.204002zm2.080994,5.694l-1.417007,-3.743996l-1.442993,3.743996h2.860001l0,0z'/%3E %3Cpath d='m171.401001,86.295998h1.884995l2.509003,6.955002l2.587006,-6.955002h1.76799l-3.716995,9.204002h-1.416992l-3.615005,-9.204002z'/%3E %3Cpath d='m182.087006,86.295998h1.638v9.204002h-1.638v-9.204002l0,0z'/%3E %3Cpath d='m188.613007,87.778h-2.820999v-1.482002h7.279999v1.482002h-2.820999v7.722h-1.638v-7.722l0,0z'/%3E %3Cpath d='m196.959,86.295998h1.417007l3.965988,9.204002h-1.873001l-0.856995,-2.106003h-3.990997l-0.833008,2.106003h-1.832993l4.003998,-9.204002zm2.080002,5.694l-1.417007,-3.743996l-1.442001,3.743996h2.859009l0,0z'/%3E %3Cpath d='m205.044998,87.778h-2.819992v-1.482002h7.278992v1.482002h-2.819992v7.722h-1.639008v-7.722l0,0z'/%3E %3Cpath d='m211.570007,86.295998h1.638992v9.204002h-1.638992v-9.204002l0,0z'/%3E %3Cpath d='m215.718994,90.936996c0,-0.736 0.121002,-1.404999 0.362991,-2.007996s0.578003,-1.115997 1.008011,-1.541c0.429001,-0.424004 0.938995,-0.750999 1.53299,-0.981003c0.594009,-0.228996 1.246002,-0.345001 1.957001,-0.345001c0.719009,-0.007996 1.378006,0.098007 1.977005,0.319c0.597992,0.221001 1.112991,0.544006 1.546997,0.968002c0.432999,0.425003 0.770996,0.937004 1.014008,1.534004c0.241989,0.598999 0.362991,1.265999 0.362991,2.001999c0,0.720001 -0.121002,1.374001 -0.362991,1.962997c-0.242004,0.590004 -0.581009,1.097 -1.014008,1.521004c-0.434006,0.424995 -0.949005,0.755997 -1.546997,0.993996c-0.598999,0.237999 -1.257996,0.362 -1.977005,0.371002c-0.710999,0 -1.362991,-0.114998 -1.957001,-0.345001s-1.103989,-0.555 -1.53299,-0.975998c-0.430008,-0.420006 -0.766006,-0.925003 -1.008011,-1.514c-0.241989,-0.588005 -0.362991,-1.243004 -0.362991,-1.962006zm1.715012,-0.103996c0,0.494003 0.076004,0.948997 0.229004,1.364998c0.149994,0.416 0.365005,0.775002 0.643005,1.079002c0.276993,0.303001 0.608994,0.541 0.993988,0.714996c0.387009,0.173004 0.817001,0.260002 1.295013,0.260002c0.47699,0 0.908997,-0.086998 1.298996,-0.260002c0.390991,-0.173996 0.724991,-0.411995 1.001999,-0.714996c0.276993,-0.304001 0.490997,-0.663002 0.643005,-1.079002c0.151993,-0.416 0.228989,-0.870995 0.228989,-1.364998c0,-0.459 -0.075989,-0.889 -0.228989,-1.287003c-0.151001,-0.397995 -0.365005,-0.746994 -0.643005,-1.046997c-0.277008,-0.299004 -0.611008,-0.531998 -1.001999,-0.701004c-0.389999,-0.168999 -0.822006,-0.253998 -1.298996,-0.253998c-0.478012,0 -0.908005,0.084999 -1.295013,0.253998c-0.384995,0.169006 -0.716995,0.402 -0.993988,0.701004c-0.277008,0.300003 -0.492004,0.648003 -0.643005,1.046997c-0.153015,0.398003 -0.229004,0.828003 -0.229004,1.287003z'/%3E %3Cpath d='m228.029007,86.295998h2.17099l4.459,6.838005h0.026001v-6.838005h1.637009v9.204002h-2.07901l-4.550003,-7.058998h-0.025986v7.058998h-1.638v-9.204002l0,0z'/%3E %3Cpath d='m242.341995,86.295998h1.417007l3.966003,9.204002h-1.873001l-0.85701,-2.106003h-3.990997l-0.832993,2.106003h-1.833008l4.003998,-9.204002zm2.080002,5.694l-1.416992,-3.743996l-1.442001,3.743996h2.858994l0,0z'/%3E %3Cpath d='m249.738007,86.295998h1.638992v7.722h3.912003v1.482002h-5.550995v-9.204002l0,0z'/%3E %3C/g%3E %3C/g%3E %3C/svg%3E"
+
+/***/ }),
+
+/***/ "./src/app/components/Invite/Invite.jsx":
+/*!**********************************************!*\
+  !*** ./src/app/components/Invite/Invite.jsx ***!
+  \**********************************************/
+/*! exports provided: Invite, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Invite", function() { return Invite; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _nuclear__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./../nuclear */ "./src/app/components/nuclear.jsx");
+/* harmony import */ var app_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! app/config */ "./src/app/config.js");
+/* harmony import */ var app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! app/flux/user/actions */ "./src/app/flux/user/actions.js");
+/* harmony import */ var app_flux_user__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! app/flux/user */ "./src/app/flux/user/index.js");
+/* harmony import */ var _msgPage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../msgPage */ "./src/app/components/msgPage.jsx");
+/* harmony import */ var _documentTitle__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./../documentTitle */ "./src/app/components/documentTitle.jsx");
+/* harmony import */ var _Images__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./../Images */ "./src/app/components/Images/index.jsx");
+/* harmony import */ var _InviteForm__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./InviteForm */ "./src/app/components/Invite/InviteForm/index.js");
+(function () {
+  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
+
+  enterModule && enterModule(module);
+})();
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+/*
+Copyright 2015 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+
+
+
+
+
+
+var Invite =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(Invite, _React$Component);
+
+  function Invite() {
+    var _getPrototypeOf2;
+
+    var _this;
+
+    _classCallCheck(this, Invite);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(Invite)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onSubmitWithU2f", function (username, password) {
+      _this.props.acceptInviteWithU2f(username, password, _this.props.params.inviteToken);
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onSubmit", function (username, password, token) {
+      _this.props.acceptInvite(username, password, token, _this.props.params.inviteToken);
+    });
+
+    return _this;
+  }
+
+  _createClass(Invite, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.props.fetchInvite(this.props.params.inviteToken);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props = this.props,
+          fetchingInvite = _this$props.fetchingInvite,
+          invite = _this$props.invite,
+          attempt = _this$props.attempt;
+      var auth2faType = app_config__WEBPACK_IMPORTED_MODULE_2__["default"].getAuth2faType();
+
+      if (fetchingInvite.isFailed) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_msgPage__WEBPACK_IMPORTED_MODULE_5__["ExpiredLink"], null);
+      }
+
+      if (!invite) {
+        return null;
+      }
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Images__WEBPACK_IMPORTED_MODULE_7__["TeleportLogo"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_InviteForm__WEBPACK_IMPORTED_MODULE_8__["default"], {
+        auth2faType: auth2faType,
+        attempt: attempt,
+        invite: invite,
+        onSubmitWithU2f: this.onSubmitWithU2f,
+        onSubmit: this.onSubmit
+      }));
+    }
+  }, {
+    key: "__reactstandin__regenerateByEval",
+    // @ts-ignore
+    value: function __reactstandin__regenerateByEval(key, code) {
+      // @ts-ignore
+      this[key] = eval(code);
+    }
+  }]);
+
+  return Invite;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+function mapStateToProps() {
+  return {
+    invite: app_flux_user__WEBPACK_IMPORTED_MODULE_4__["getters"].invite,
+    attempt: app_flux_user__WEBPACK_IMPORTED_MODULE_4__["getters"].attemp,
+    fetchingInvite: app_flux_user__WEBPACK_IMPORTED_MODULE_4__["getters"].fetchingInvite
+  };
+}
+
+function mapActionsToProps() {
+  return {
+    fetchInvite: app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__["default"].fetchInvite.bind(app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__["default"]),
+    acceptInviteWithU2f: app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__["default"].acceptInviteWithU2f.bind(app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__["default"]),
+    acceptInvite: app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__["default"].acceptInvite.bind(app_flux_user_actions__WEBPACK_IMPORTED_MODULE_3__["default"])
+  };
+}
+
+var _default = Object(_documentTitle__WEBPACK_IMPORTED_MODULE_6__["withDocTitle"])("Invite", Object(_nuclear__WEBPACK_IMPORTED_MODULE_1__["connect"])(mapStateToProps, mapActionsToProps)(Invite));
+
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
+
+  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(Invite, "Invite", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
+  leaveModule(module);
+})();
+
+;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/app/components/Invite/InviteForm/InviteForm.jsx":
+/*!*************************************************************!*\
+  !*** ./src/app/components/Invite/InviteForm/InviteForm.jsx ***!
+  \*************************************************************/
+/*! exports provided: InviteForm, ErrorMessage, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InviteForm", function() { return InviteForm; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ErrorMessage", function() { return ErrorMessage; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! styled-components */ "./node_modules/styled-components/dist/styled-components.browser.esm.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var app_services_enums__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! app/services/enums */ "./src/app/services/enums.js");
+/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../shared */ "./src/shared/index.js");
+/* harmony import */ var formik__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! formik */ "./node_modules/formik/dist/formik.esm.js");
+/* harmony import */ var _TwoFaInfo__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./TwoFaInfo */ "./src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
+(function () {
+  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
+
+  enterModule && enterModule(module);
+})();
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n  text-align: center;\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+/*
+Copyright 2015 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+
+
+
+
+
+var U2F_ERROR_CODES_URL = 'https://developers.yubico.com/U2F/Libraries/Client_error_codes.html';
+
+var needs2fa = function needs2fa(auth2faType) {
+  return !!auth2faType && auth2faType !== app_services_enums__WEBPACK_IMPORTED_MODULE_3__["Auth2faTypeEnum"].DISABLED;
+};
+
+var InviteForm =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(InviteForm, _React$Component);
+
+  function InviteForm() {
+    var _getPrototypeOf2;
+
+    var _this;
+
+    _classCallCheck(this, InviteForm);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(InviteForm)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "initialValues", {
+      password: '',
+      passwordConfirmed: '',
+      token: ''
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onValidate", function (values) {
+      var password = values.password,
+          passwordConfirmed = values.passwordConfirmed;
+      var errors = {};
+
+      if (!password) {
+        errors.password = 'Password is required';
+      } else if (password.length < 6) {
+        errors.password = 'Enter at least 6 characters';
+      }
+
+      if (!passwordConfirmed) {
+        errors.passwordConfirmed = 'Please confirm your password';
+      } else if (passwordConfirmed !== password) {
+        errors.passwordConfirmed = 'Password does not match';
+      }
+
+      if (_this.isOTP() && !values.token) {
+        errors.token = 'Token is required';
+      }
+
+      return errors;
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onSubmit", function (values) {
+      var user = values.user,
+          password = values.password,
+          token = values.token;
+
+      if (_this.props.auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_3__["Auth2faTypeEnum"].UTF) {
+        _this.props.onSubmitWithU2f(user, password);
+      } else {
+        _this.props.onSubmit(user, password, token);
+      }
+    });
+
+    return _this;
+  }
+
+  _createClass(InviteForm, [{
+    key: "renderNameAndPassFields",
+    value: function renderNameAndPassFields(_ref) {
+      var values = _ref.values,
+          errors = _ref.errors,
+          touched = _ref.touched,
+          handleChange = _ref.handleChange;
+      var passError = touched.password && errors.password;
+      var passConfirmedError = touched.passwordConfirmed && errors.passwordConfirmed;
+      var tokenError = errors.token && touched.token;
+      var user = this.props.invite.user;
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Label"], {
+        mb: 1
+      }, "Email"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Input"], {
+        id: "user",
+        fontSize: 0,
+        disabled: true,
+        value: user
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Label"], {
+        hasError: passError
+      }, passError || "Password"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Input"], {
+        hasError: passError,
+        value: values.password,
+        onChange: handleChange,
+        type: "password",
+        name: "password",
+        placeholder: "Password"
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Label"], {
+        hasError: passConfirmedError
+      }, passConfirmedError || "Confirm Password"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Input"], {
+        hasError: passConfirmedError,
+        value: values.passwordConfirmed,
+        onChange: handleChange,
+        type: "password",
+        name: "passwordConfirmed",
+        placeholder: "Password"
+      }), this.isOTP() && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Label"], {
+        mt: 3,
+        mb: 1,
+        hasError: tokenError
+      }, tokenError && errors.token || "Two factor token"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Input"], {
+        id: "token",
+        fontSize: 0,
+        hasError: tokenError,
+        autoComplete: "off",
+        value: values.token,
+        onChange: handleChange,
+        placeholder: "Two factor token (Google Authenticator)"
+      })));
+    }
+  }, {
+    key: "isOTP",
+    value: function isOTP() {
+      var auth2faType = this.props.auth2faType;
+      return needs2fa(auth2faType) && auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_3__["Auth2faTypeEnum"].OTP;
+    }
+  }, {
+    key: "render2faFields",
+    value: function render2faFields() {
+      var _this2 = this;
+
+      var auth2faType = this.props.auth2faType;
+
+      if (needs2fa(auth2faType) && auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_3__["Auth2faTypeEnum"].OTP) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "form-group"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+          autoComplete: "off",
+          value: this.state.token,
+          onChange: function onChange(e) {
+            return _this2.onChangeState('token', e.target.value);
+          },
+          className: "form-control required",
+          name: "token",
+          placeholder: "Two factor token (Google Authenticator)"
+        }));
+      }
+
+      return null;
+    }
+  }, {
+    key: "renderSubmitBtn",
+    value: function renderSubmitBtn(onClick) {
+      var isProcessing = this.props.attempt.isProcessing;
+      var $helpBlock = isProcessing && this.props.auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_3__["Auth2faTypeEnum"].UTF ? "Insert your U2F key and press the button on the key" : null;
+      var isDisabled = isProcessing;
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Center, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Button"], {
+        block: true,
+        disabled: isDisabled,
+        size: "large",
+        type: "submit",
+        onClick: onClick,
+        mt: 4
+      }, "SIGN UP"), $helpBlock);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this3 = this;
+
+      var _this$props = this.props,
+          auth2faType = _this$props.auth2faType,
+          invite = _this$props.invite,
+          attempt = _this$props.attempt;
+      var isFailed = attempt.isFailed,
+          message = attempt.message;
+      var $error = isFailed ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ErrorMessage, {
+        message: message
+      }) : null;
+      var has2FA = needs2fa(auth2faType);
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(formik__WEBPACK_IMPORTED_MODULE_5__["Formik"], {
+        validate: this.onValidate,
+        onSubmit: this.onSubmit,
+        initialValues: this.initialValues
+      }, function (props) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Card"], {
+          bg: "secondary",
+          mt: "4",
+          mb: "4",
+          mr: "auto",
+          ml: "auto",
+          width: "456px",
+          p: "5"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_4__["Heading"].h5, {
+          textAlign: "center",
+          mb: "3",
+          color: "light"
+        }, "Get started with Teleport"), _this3.renderNameAndPassFields(props), _this3.renderSubmitBtn(props.handleSubmit), $error, has2FA && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_TwoFaInfo__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          auth2faType: auth2faType,
+          qr: invite.qr
+        }));
+      });
+    }
+  }, {
+    key: "__reactstandin__regenerateByEval",
+    // @ts-ignore
+    value: function __reactstandin__regenerateByEval(key, code) {
+      // @ts-ignore
+      this[key] = eval(code);
+    }
+  }]);
+
+  return InviteForm;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+_defineProperty(InviteForm, "propTypes", {
+  auth2faType: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.string,
+  authType: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.string,
+  onSubmitWithU2f: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.func.isRequired,
+  onSubmit: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.func.isRequired,
+  attempt: prop_types__WEBPACK_IMPORTED_MODULE_2___default.a.object.isRequired
+});
+
+var ErrorMessage = function ErrorMessage(_ref2) {
+  var message = _ref2.message;
+  message = message || '';
+
+  if (message.indexOf('U2F') !== -1) {
+    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
+      className: "grv-invite-login-error"
+    }, message, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", {
+      className: "grv-invite-login-error-u2f-codes"
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, "click ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
+      target: "_blank",
+      href: U2F_ERROR_CODES_URL
+    }, "here"), " to learn more about U2F error codes")));
+  }
+
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
+    className: "error"
+  }, message, " ");
+};
+var Center = styled_components__WEBPACK_IMPORTED_MODULE_1__["default"].div(_templateObject());
+var _default = InviteForm;
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
+
+  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(U2F_ERROR_CODES_URL, "U2F_ERROR_CODES_URL", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(needs2fa, "needs2fa", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(InviteForm, "InviteForm", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(ErrorMessage, "ErrorMessage", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(Center, "Center", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  leaveModule(module);
+})();
+
+;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/app/components/Invite/InviteForm/TwoFaInfo.jsx":
+/*!************************************************************!*\
+  !*** ./src/app/components/Invite/InviteForm/TwoFaInfo.jsx ***!
+  \************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Invite2faData; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var app_services_enums__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! app/services/enums */ "./src/app/services/enums.js");
+(function () {
+  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
+
+  enterModule && enterModule(module);
+})();
+
+/*
+Copyright 2015 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+
+var U2F_HELP_URL = 'https://support.google.com/accounts/answer/6103523?hl=en';
+function Invite2faData(props) {
+  var auth2faType = props.auth2faType,
+      qr = props.qr;
+
+  if (auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_1__["Auth2faTypeEnum"].OTP) {
+    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "grv-flex-column grv-invite-barcode"
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, "Scan bar code for auth token ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", null, "Scan below to generate your two factor token")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+      className: "img-thumbnail",
+      src: "data:image/png;base64,".concat(qr)
+    }));
+  }
+
+  if (auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_1__["Auth2faTypeEnum"].UTF) {
+    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "grv-flex-column"
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Insert your U2F key "), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "m-t-md"
+    }, "Press the button on the U2F key after you press the sign up button"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "m-t text-muted"
+    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", null, "Click", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
+      a: true,
+      target: "_blank",
+      href: U2F_HELP_URL
+    }, " here "), "to learn more about U2F 2-Step Verification.")));
+  }
+
+  return null;
+}
+;
+
+(function () {
+  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
+
+  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(U2F_HELP_URL, "U2F_HELP_URL", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
+  reactHotLoader.register(Invite2faData, "Invite2faData", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
+  leaveModule(module);
+})();
+
+;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/app/components/Invite/InviteForm/index.js":
+/*!*******************************************************!*\
+  !*** ./src/app/components/Invite/InviteForm/index.js ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony import */ var _InviteForm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./InviteForm */ "./src/app/components/Invite/InviteForm/InviteForm.jsx");
+(function () {
+  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
+
+  enterModule && enterModule(module);
+})();
+
+
+var _default = _InviteForm__WEBPACK_IMPORTED_MODULE_0__["default"];
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
+
+  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/index.js");
+  leaveModule(module);
+})();
+
+;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
+/***/ "./src/app/components/Invite/index.jsx":
+/*!*********************************************!*\
+  !*** ./src/app/components/Invite/index.jsx ***!
+  \*********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(module) {/* harmony import */ var _Invite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Invite */ "./src/app/components/Invite/Invite.jsx");
+(function () {
+  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
+
+  enterModule && enterModule(module);
+})();
+
+/*
+Copyright 2018 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+var _default = _Invite__WEBPACK_IMPORTED_MODULE_0__["default"];
+/* harmony default export */ __webpack_exports__["default"] = (_default);
+;
+
+(function () {
+  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
+
+  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
+
+  if (!reactHotLoader) {
+    return;
+  }
+
+  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/index.jsx");
+  leaveModule(module);
+})();
+
+;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
+
+/***/ }),
+
 /***/ "./src/app/components/Login/Login.jsx":
 /*!********************************************!*\
   !*** ./src/app/components/Login/Login.jsx ***!
@@ -1146,7 +1931,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var app_flux_user_actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! app/flux/user/actions */ "./src/app/flux/user/actions.js");
 /* harmony import */ var app_flux_user__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! app/flux/user */ "./src/app/flux/user/index.js");
 /* harmony import */ var app_config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! app/config */ "./src/app/config.js");
-/* harmony import */ var _icons_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../icons.jsx */ "./src/app/components/icons.jsx");
+/* harmony import */ var _Images__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../Images */ "./src/app/components/Images/index.jsx");
 /* harmony import */ var _LoginForm___WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./LoginForm/ */ "./src/app/components/Login/LoginForm/index.jsx");
 /* harmony import */ var _documentTitle__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./../documentTitle */ "./src/app/components/documentTitle.jsx");
 (function () {
@@ -1237,7 +2022,7 @@ function (_React$Component) {
       var attempt = this.props.attempt;
       var authProviders = app_config__WEBPACK_IMPORTED_MODULE_4__["default"].getAuthProviders();
       var auth2faType = app_config__WEBPACK_IMPORTED_MODULE_4__["default"].getAuth2faType();
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_icons_jsx__WEBPACK_IMPORTED_MODULE_5__["TeleportLogo"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_LoginForm___WEBPACK_IMPORTED_MODULE_6__["default"], {
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Images__WEBPACK_IMPORTED_MODULE_5__["TeleportLogo"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_LoginForm___WEBPACK_IMPORTED_MODULE_6__["default"], {
         authProviders: authProviders,
         auth2faType: auth2faType,
         onLoginWithSso: this.onLoginWithSso,
@@ -1439,8 +2224,10 @@ function (_React$Component) {
       //     "Insert your U2F key and press the button on the key"
       // ) : null;
 
+      var isDisabled = isProcessing;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Button"], {
         block: true,
+        disabled: isDisabled,
         size: "large",
         type: "submit",
         onClick: onClick,
@@ -1472,22 +2259,26 @@ function (_React$Component) {
           errors = _ref.errors,
           touched = _ref.touched,
           handleChange = _ref.handleChange;
+      var userError = errors.user && touched.user;
+      var passError = errors.password && touched.password;
+      var tokenError = errors.token && touched.token;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Label"], {
         mb: 1,
-        fontSize: 0
-      }, "Email", errors.user && touched.user && errors.user), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
+        hasError: userError
+      }, "Email", userError && errors.user), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
         id: "user",
         fontSize: 0,
         autoFocus: true,
         value: values.user,
+        hasError: userError,
         onChange: handleChange,
         placeholder: "User name",
         name: "user"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Label"], {
-        hasError: errors && errors.password
-      }, "Password", errors.password && touched.password && errors.password), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
+        hasError: passError
+      }, "Password", passError && errors.password), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
         id: "password",
-        hasError: errors && errors.password,
+        hasError: passError,
         value: values.password,
         onChange: handleChange,
         type: "password",
@@ -1496,10 +2287,11 @@ function (_React$Component) {
       }), this.isOTP() && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Label"], {
         mt: 3,
         mb: 1,
-        fontSize: 0
-      }, "Two factor token", errors.token && touched.token && errors.token), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
+        hasError: tokenError
+      }, "Two factor token", tokenError && errors.token), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_shared__WEBPACK_IMPORTED_MODULE_2__["Input"], {
         id: "token",
         fontSize: 0,
+        hasError: tokenError,
         autoComplete: "off",
         value: values.token,
         onChange: handleChange,
@@ -10662,578 +11454,6 @@ var _default = Object(_nuclear__WEBPACK_IMPORTED_MODULE_1__["connect"])(mapState
   reactHotLoader.register(PartyList, "PartyList", "/Users/admin/Development/teleport/web/src/app/components/terminal/terminalPartyList.jsx");
   reactHotLoader.register(mapStateToProps, "mapStateToProps", "/Users/admin/Development/teleport/web/src/app/components/terminal/terminalPartyList.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/terminal/terminalPartyList.jsx");
-  leaveModule(module);
-})();
-
-;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
-
-/***/ }),
-
-/***/ "./src/app/components/user/googleAuthLogo.jsx":
-/*!****************************************************!*\
-  !*** ./src/app/components/user/googleAuthLogo.jsx ***!
-  \****************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(module) {/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-(function () {
-  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
-
-  enterModule && enterModule(module);
-})();
-
-/*
-Copyright 2015 Gravitational, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-
-var GoogleAuthInfo = function GoogleAuthInfo() {
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    className: "grv-google-auth text-left"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    className: "grv-icon-google-auth"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "Google Authenticator"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, "Download", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-    href: "https://support.google.com/accounts/answer/1066447?hl=en"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, " Google Authenticator ")), "on your phone to access your two factor token"));
-};
-
-var _default = GoogleAuthInfo;
-/* harmony default export */ __webpack_exports__["default"] = (_default);
-;
-
-(function () {
-  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
-
-  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
-
-  if (!reactHotLoader) {
-    return;
-  }
-
-  reactHotLoader.register(GoogleAuthInfo, "GoogleAuthInfo", "/Users/admin/Development/teleport/web/src/app/components/user/googleAuthLogo.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/user/googleAuthLogo.jsx");
-  leaveModule(module);
-})();
-
-;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
-
-/***/ }),
-
-/***/ "./src/app/components/user/invite.jsx":
-/*!********************************************!*\
-  !*** ./src/app/components/user/invite.jsx ***!
-  \********************************************/
-/*! exports provided: Invite, InviteInputForm, default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Invite", function() { return Invite; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InviteInputForm", function() { return InviteInputForm; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var jQuery__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! jQuery */ "./src/assets/js/jquery.js");
-/* harmony import */ var jQuery__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jQuery__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
-/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _nuclear__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../nuclear */ "./src/app/components/nuclear.jsx");
-/* harmony import */ var app_config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! app/config */ "./src/app/config.js");
-/* harmony import */ var app_flux_user_actions__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! app/flux/user/actions */ "./src/app/flux/user/actions.js");
-/* harmony import */ var app_flux_user__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! app/flux/user */ "./src/app/flux/user/index.js");
-/* harmony import */ var app_services_enums__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! app/services/enums */ "./src/app/services/enums.js");
-/* harmony import */ var _msgPage__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./../msgPage */ "./src/app/components/msgPage.jsx");
-/* harmony import */ var _documentTitle__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./../documentTitle */ "./src/app/components/documentTitle.jsx");
-/* harmony import */ var _icons_jsx__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./../icons.jsx */ "./src/app/components/icons.jsx");
-/* harmony import */ var _googleAuthLogo__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./googleAuthLogo */ "./src/app/components/user/googleAuthLogo.jsx");
-/* harmony import */ var _items__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./items */ "./src/app/components/user/items.js");
-(function () {
-  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
-
-  enterModule && enterModule(module);
-})();
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-/*
-Copyright 2015 Gravitational, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var U2F_HELP_URL = 'https://support.google.com/accounts/answer/6103523?hl=en';
-
-var needs2fa = function needs2fa(auth2faType) {
-  return !!auth2faType && auth2faType !== app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].DISABLED;
-};
-
-var Invite =
-/*#__PURE__*/
-function (_React$Component) {
-  _inherits(Invite, _React$Component);
-
-  function Invite() {
-    var _getPrototypeOf2;
-
-    var _this;
-
-    _classCallCheck(this, Invite);
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(Invite)).call.apply(_getPrototypeOf2, [this].concat(args)));
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onSubmitWithU2f", function (username, password) {
-      app_flux_user_actions__WEBPACK_IMPORTED_MODULE_6__["default"].acceptInviteWithU2f(username, password, _this.props.params.inviteToken);
-    });
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onSubmit", function (username, password, token) {
-      app_flux_user_actions__WEBPACK_IMPORTED_MODULE_6__["default"].acceptInvite(username, password, token, _this.props.params.inviteToken);
-    });
-
-    return _this;
-  }
-
-  _createClass(Invite, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      app_flux_user_actions__WEBPACK_IMPORTED_MODULE_6__["default"].fetchInvite(this.props.params.inviteToken);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this$props = this.props,
-          fetchingInvite = _this$props.fetchingInvite,
-          invite = _this$props.invite,
-          attemp = _this$props.attemp;
-      var auth2faType = app_config__WEBPACK_IMPORTED_MODULE_5__["default"].getAuth2faType();
-
-      if (fetchingInvite.isFailed) {
-        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_msgPage__WEBPACK_IMPORTED_MODULE_9__["ExpiredLink"], null);
-      }
-
-      if (!invite) {
-        return null;
-      }
-
-      var containerClass = classnames__WEBPACK_IMPORTED_MODULE_3___default()('grv-invite-content grv-flex', {
-        '---with-2fa-data': needs2fa(auth2faType)
-      });
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "grv-invite text-center"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_icons_jsx__WEBPACK_IMPORTED_MODULE_11__["TeleportLogo"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: containerClass
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "grv-flex-column"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(InviteInputForm, {
-        auth2faType: auth2faType,
-        attemp: attemp,
-        invite: invite,
-        onSubmitWithU2f: this.onSubmitWithU2f,
-        onSubmit: this.onSubmit
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(InviteFooter, {
-        auth2faType: auth2faType
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Invite2faData, {
-        auth2faType: auth2faType,
-        qr: invite.qr
-      })));
-    }
-  }, {
-    key: "__reactstandin__regenerateByEval",
-    // @ts-ignore
-    value: function __reactstandin__regenerateByEval(key, code) {
-      // @ts-ignore
-      this[key] = eval(code);
-    }
-  }]);
-
-  return Invite;
-}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
-var InviteInputForm =
-/*#__PURE__*/
-function (_React$Component2) {
-  _inherits(InviteInputForm, _React$Component2);
-
-  function InviteInputForm(props) {
-    var _this2;
-
-    _classCallCheck(this, InviteInputForm);
-
-    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(InviteInputForm).call(this, props));
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "onSubmit", function (e) {
-      e.preventDefault();
-
-      if (_this2.isValid()) {
-        var _this2$state = _this2.state,
-            userName = _this2$state.userName,
-            password = _this2$state.password,
-            token = _this2$state.token;
-
-        _this2.props.onSubmit(userName, password, token);
-      }
-    });
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "onSubmitWithU2f", function (e) {
-      e.preventDefault();
-
-      if (_this2.isValid()) {
-        var _this2$state2 = _this2.state,
-            userName = _this2$state2.userName,
-            password = _this2$state2.password;
-
-        _this2.props.onSubmitWithU2f(userName, password);
-      }
-    });
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "onChangeState", function (propName, value) {
-      _this2.setState(_defineProperty({}, propName, value));
-    });
-
-    _this2.state = {
-      userName: _this2.props.invite.user,
-      password: '',
-      passwordConfirmed: '',
-      token: ''
-    };
-    return _this2;
-  }
-
-  _createClass(InviteInputForm, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      jQuery__WEBPACK_IMPORTED_MODULE_2___default()(this.refs.form).validate({
-        rules: {
-          password: {
-            minlength: 6,
-            required: true
-          },
-          passwordConfirmed: {
-            required: true,
-            equalTo: this.refs.password
-          }
-        },
-        messages: {
-          passwordConfirmed: {
-            minlength: jQuery__WEBPACK_IMPORTED_MODULE_2___default.a.validator.format('Enter at least {0} characters'),
-            equalTo: 'Enter the same password as above'
-          }
-        }
-      });
-    }
-  }, {
-    key: "isValid",
-    value: function isValid() {
-      var $form = jQuery__WEBPACK_IMPORTED_MODULE_2___default()(this.refs.form);
-      return $form.length === 0 || $form.valid();
-    }
-  }, {
-    key: "renderNameAndPassFields",
-    value: function renderNameAndPassFields() {
-      var _this3 = this;
-
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        disabled: true,
-        value: this.state.userName,
-        onChange: function onChange(e) {
-          return _this3.onChangeState('userName', e.target.value);
-        },
-        className: "form-control required",
-        placeholder: "User name",
-        name: "userName"
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        value: this.state.password,
-        onChange: function onChange(e) {
-          return _this3.onChangeState('password', e.target.value);
-        },
-        autoFocus: true,
-        ref: "password",
-        type: "password",
-        name: "password",
-        className: "form-control required",
-        placeholder: "Password"
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "form-group"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        value: this.state.passwordConfirmed,
-        onChange: function onChange(e) {
-          return _this3.onChangeState('passwordConfirmed', e.target.value);
-        },
-        type: "password",
-        name: "passwordConfirmed",
-        className: "form-control",
-        placeholder: "Password confirm"
-      })));
-    }
-  }, {
-    key: "render2faFields",
-    value: function render2faFields() {
-      var _this4 = this;
-
-      var auth2faType = this.props.auth2faType;
-
-      if (needs2fa(auth2faType) && auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].OTP) {
-        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          className: "form-group"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-          autoComplete: "off",
-          value: this.state.token,
-          onChange: function onChange(e) {
-            return _this4.onChangeState('token', e.target.value);
-          },
-          className: "form-control required",
-          name: "token",
-          placeholder: "Two factor token (Google Authenticator)"
-        }));
-      }
-
-      return null;
-    }
-  }, {
-    key: "renderSubmitBtn",
-    value: function renderSubmitBtn() {
-      var isProcessing = this.props.attemp.isProcessing;
-      var $helpBlock = isProcessing && this.props.auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].UTF ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "help-block"
-      }, "Insert your U2F key and press the button on the key") : null;
-      var onClick = this.props.auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].UTF ? this.onSubmitWithU2f : this.onSubmit;
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-        onClick: onClick,
-        disabled: isProcessing,
-        type: "submit",
-        className: "btn btn-primary block full-width m-b"
-      }, "Sign up"), $helpBlock);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this$props$attemp = this.props.attemp,
-          isFailed = _this$props$attemp.isFailed,
-          message = _this$props$attemp.message;
-      var $error = isFailed ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_items__WEBPACK_IMPORTED_MODULE_13__["ErrorMessage"], {
-        message: message
-      }) : null;
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-        ref: "form",
-        className: "grv-invite-input-form"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, " Get started with Teleport "), this.renderNameAndPassFields(), this.render2faFields(), this.renderSubmitBtn(), $error);
-    }
-  }, {
-    key: "__reactstandin__regenerateByEval",
-    // @ts-ignore
-    value: function __reactstandin__regenerateByEval(key, code) {
-      // @ts-ignore
-      this[key] = eval(code);
-    }
-  }]);
-
-  return InviteInputForm;
-}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
-
-_defineProperty(InviteInputForm, "propTypes", {
-  auth2faType: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
-  authType: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
-  onSubmitWithU2f: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func.isRequired,
-  onSubmit: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func.isRequired,
-  attemp: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object.isRequired
-});
-
-var Invite2faData = function Invite2faData(_ref) {
-  var auth2faType = _ref.auth2faType,
-      qr = _ref.qr;
-
-  if (!needs2fa(auth2faType)) {
-    return null;
-  }
-
-  if (auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].OTP) {
-    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-      className: "grv-flex-column grv-invite-barcode"
-    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, "Scan bar code for auth token ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", null, "Scan below to generate your two factor token")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
-      className: "img-thumbnail",
-      src: "data:image/png;base64,".concat(qr)
-    }));
-  }
-
-  if (auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].UTF) {
-    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-      className: "grv-flex-column"
-    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Insert your U2F key "), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-      className: "m-t-md"
-    }, "Press the button on the U2F key after you press the sign up button"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-      className: "m-t text-muted"
-    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", null, "Click", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-      a: true,
-      target: "_blank",
-      href: U2F_HELP_URL
-    }, " here "), "to learn more about U2F 2-Step Verification.")));
-  }
-
-  return null;
-};
-
-var InviteFooter = function InviteFooter(_ref2) {
-  var auth2faType = _ref2.auth2faType;
-  var $googleHint = auth2faType === app_services_enums__WEBPACK_IMPORTED_MODULE_8__["Auth2faTypeEnum"].OTP ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_googleAuthLogo__WEBPACK_IMPORTED_MODULE_12__["default"], null) : null;
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, $googleHint);
-};
-
-function mapStateToProps() {
-  return {
-    invite: app_flux_user__WEBPACK_IMPORTED_MODULE_7__["getters"].invite,
-    attemp: app_flux_user__WEBPACK_IMPORTED_MODULE_7__["getters"].attemp,
-    fetchingInvite: app_flux_user__WEBPACK_IMPORTED_MODULE_7__["getters"].fetchingInvite
-  };
-}
-
-var _default = Object(_documentTitle__WEBPACK_IMPORTED_MODULE_10__["withDocTitle"])("Invite", Object(_nuclear__WEBPACK_IMPORTED_MODULE_4__["connect"])(mapStateToProps)(Invite));
-
-/* harmony default export */ __webpack_exports__["default"] = (_default);
-;
-
-(function () {
-  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
-
-  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
-
-  if (!reactHotLoader) {
-    return;
-  }
-
-  reactHotLoader.register(U2F_HELP_URL, "U2F_HELP_URL", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(needs2fa, "needs2fa", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(Invite, "Invite", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(InviteInputForm, "InviteInputForm", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(Invite2faData, "Invite2faData", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(InviteFooter, "InviteFooter", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/user/invite.jsx");
-  leaveModule(module);
-})();
-
-;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/harmony-module.js */ "./node_modules/webpack/buildin/harmony-module.js")(module)))
-
-/***/ }),
-
-/***/ "./src/app/components/user/items.js":
-/*!******************************************!*\
-  !*** ./src/app/components/user/items.js ***!
-  \******************************************/
-/*! exports provided: ErrorMessage */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ErrorMessage", function() { return ErrorMessage; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-(function () {
-  var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
-
-  enterModule && enterModule(module);
-})();
-
-
-var U2F_ERROR_CODES_URL = 'https://developers.yubico.com/U2F/Libraries/Client_error_codes.html';
-var ErrorMessage = function ErrorMessage(_ref) {
-  var message = _ref.message;
-  message = message || '';
-
-  if (message.indexOf('U2F') !== -1) {
-    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
-      className: "grv-invite-login-error"
-    }, message, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", {
-      className: "grv-invite-login-error-u2f-codes"
-    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, "click ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-      target: "_blank",
-      href: U2F_ERROR_CODES_URL
-    }, "here"), " to learn more about U2F error codes")));
-  }
-
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
-    className: "error"
-  }, message, " ");
-};
-;
-
-(function () {
-  var reactHotLoader = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").default;
-
-  var leaveModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").leaveModule;
-
-  if (!reactHotLoader) {
-    return;
-  }
-
-  reactHotLoader.register(U2F_ERROR_CODES_URL, "U2F_ERROR_CODES_URL", "/Users/admin/Development/teleport/web/src/app/components/user/items.js");
-  reactHotLoader.register(ErrorMessage, "ErrorMessage", "/Users/admin/Development/teleport/web/src/app/components/user/items.js");
   leaveModule(module);
 })();
 
@@ -20419,7 +20639,7 @@ __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(module) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addRoutes", function() { return addRoutes; });
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./src/app/config.js");
 /* harmony import */ var _components_Login__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/Login */ "./src/app/components/Login/index.jsx");
-/* harmony import */ var _components_user_invite_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/user/invite.jsx */ "./src/app/components/user/invite.jsx");
+/* harmony import */ var _components_Invite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/Invite */ "./src/app/components/Invite/index.jsx");
 /* harmony import */ var _components_msgPage_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/msgPage.jsx */ "./src/app/components/msgPage.jsx");
 (function () {
   var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
@@ -20467,7 +20687,7 @@ function addRoutes() {
     component: _components_Login__WEBPACK_IMPORTED_MODULE_1__["default"]
   }, {
     path: _config__WEBPACK_IMPORTED_MODULE_0__["default"].routes.newUser,
-    component: _components_user_invite_jsx__WEBPACK_IMPORTED_MODULE_2__["default"]
+    component: _components_Invite__WEBPACK_IMPORTED_MODULE_2__["default"]
   }, {
     path: _config__WEBPACK_IMPORTED_MODULE_0__["default"].routes.app,
     onEnter: function onEnter(localtion, replace) {
@@ -22212,7 +22432,7 @@ __webpack_require__.r(__webpack_exports__);
 })();
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  background: ", ";\n  border: none;\n  border-radius: 4px;\n  color: ", ";\n  cursor: pointer;\n  font-family: inherit;\n  font-weight: bold;\n  display: inline-block;\n  line-height: 40px;\n  outline: none;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  transition: all .3s;\n  -webkit-font-smoothing: antialiased;\n\n  &:hover {\n    background: ", ";\n    box-shadow: 0 0 4px rgba(0, 0, 0, .56), 0 4px 4px rgba(0, 0, 0, .24);\n  }\n\n  &:active {\n    background: ", ";\n    color: rgba(255, 255, 255, .24);\n    box-shadow: none;\n  }\n\n  &:disabled {\n    background: rgba(255, 255, 255, .24);\n    color: rgba(0, 0, 0, .24);\n  }\n\n  ", "\n  ", "\n  ", "\n  ", "\n"]);
+  var data = _taggedTemplateLiteral(["\n  background: ", ";\n  border: none;\n  border-radius: 4px;\n  color: ", ";\n  cursor: pointer;\n  font-family: inherit;\n  font-weight: bold;\n  display: inline-block;\n  line-height: 40px;\n  outline: none;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  transition: all .3s;\n  -webkit-font-smoothing: antialiased;\n\n  &:hover {\n    background: ", ";\n  }\n\n  &:active {\n    background: ", ";\n    color: rgba(255, 255, 255, .24);\n    box-shadow: none;\n  }\n\n  &:disabled {\n    background: rgba(255, 255, 255, .24);\n    color: rgba(0, 0, 0, .24);\n  }\n\n  ", "\n  ", "\n  ", "\n  ", "\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -22764,7 +22984,8 @@ Label.propTypes = {
   hasError: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string.isRequired
 };
 Label.defaultProps = {
-  hasError: false
+  hasError: false,
+  fontSize: 0
 };
 Label.displayName = 'Label';
 var _default = Label;
@@ -23149,7 +23370,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!*****************************!*\
   !*** ./src/shared/theme.js ***!
   \*****************************/
-/*! exports provided: font, fonts, regular, bold, fontSizes, fontWeights, space, background, colors, borders, z, default */
+/*! exports provided: font, fonts, regular, bold, fontSizes, fontWeights, space, background, colors, borders, z, icons, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23165,6 +23386,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colors", function() { return colors; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "borders", function() { return borders; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "z", function() { return z; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "icons", function() { return icons; });
 (function () {
   var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
 
@@ -23188,7 +23410,7 @@ var fontWeights = {
 };
 var space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 var background = {
-  light: 'rgba(255, 255, 255, .87)',
+  light: '#FFFFFF',
   primary: '#0C143D',
   secondary: '#222C59',
   error: '#FEE5ED'
@@ -23228,7 +23450,26 @@ var z = {
   max4: 4000,
   max5: 5000
 };
+var icons = {
+  HOME: 'M25.6 614.4c-6.144 0-12.288-2.202-17.152-6.605-10.496-9.472-11.315-25.651-1.792-36.147l452.045-499.61c14.029-15.514 32.973-24.064 53.35-24.064 0 0 0 0 0 0 20.326 0 39.27 8.55 53.35 24.064l452.045 499.61c9.472 10.496 8.653 26.675-1.792 36.147s-26.675 8.653-36.147-1.792l-452.045-499.61c-4.198-4.659-9.677-7.219-15.36-7.219s-11.162 2.56-15.36 7.219l-452.045 499.61c-5.069 5.581-12.032 8.448-18.995 8.448z',
+  BUBBLE: 'M512 64c282.77 0 512 186.25 512 416 0 229.752-229.23 416-512 416-27.156 0-53.81-1.734-79.824-5.044-109.978 109.978-241.25 129.7-368.176 132.596v-26.916c68.536-33.578 128-94.74 128-164.636 0-9.754-0.758-19.33-2.164-28.696-115.796-76.264-189.836-192.754-189.836-323.304 0-229.75 229.23-416 512-416z',
+  ENLARGE2: 'M1024 0v416l-160-160-192 192-96-96 192-192-160-160zM448 672l-192 192 160 160h-416v-416l160 160 192-192z',
+  SHRINK2: 'M448 576v416l-160-160-192 192-96-96 192-192-160-160zM1024 96l-192 192 160 160h-416v-416l160 160 192-192z',
+  BIN2: 'M192 1024h640l64-704h-768zM640 128v-128h-256v128h-320v192l64-64h768l64 64v-192h-320zM576 128h-128v-64h128v64z',
+  CLOUD_CHECK: 'M892.268 514.49c2.442-11.108 3.732-22.646 3.732-34.49 0-88.366-71.634-160-160-160-14.224 0-28.014 1.868-41.134 5.352-24.796-77.352-97.288-133.352-182.866-133.352-87.348 0-161.054 58.336-184.326 138.17-22.742-6.62-46.792-10.17-71.674-10.17-141.384 0-256 114.616-256 256 0 141.382 114.616 256 256 256h608c88.366 0 160-71.632 160-160 0-78.718-56.854-144.16-131.732-157.51zM416 768l-160-160 64-64 96 96 224-224 64 64-288 288z',
+  BOLD: 'M707.88 484.652c37.498-44.542 60.12-102.008 60.12-164.652 0-141.16-114.842-256-256-256h-320v896h384c141.158 0 256-114.842 256-256 0-92.956-49.798-174.496-124.12-219.348zM384 192h101.5c55.968 0 101.5 57.42 101.5 128s-45.532 128-101.5 128h-101.5v-256zM543 832h-159v-256h159c58.45 0 106 57.42 106 128s-47.55 128-106 128z',
+  UNDERLINE: 'M704 64h128v416c0 159.058-143.268 288-320 288-176.73 0-320-128.942-320-288v-416h128v416c0 40.166 18.238 78.704 51.354 108.506 36.896 33.204 86.846 51.494 140.646 51.494s103.75-18.29 140.646-51.494c33.116-29.802 51.354-68.34 51.354-108.506v-416zM192 832h640v128h-640z',
+  ITALIC: 'M896 64v64h-128l-320 768h128v64h-448v-64h128l320-768h-128v-64z',
+  PARAGRAPH_LEFT: 'M0 64h1024v128h-1024zM0 256h640v128h-640zM0 640h640v128h-640zM0 448h1024v128h-1024zM0 832h1024v128h-1024z',
+  PARAGRAPH_CENTER: 'M0 64h1024v128h-1024zM192 256h640v128h-640zM192 640h640v128h-640zM0 448h1024v128h-1024zM0 832h1024v128h-1024z',
+  PARAGRAPH_RIGHT: 'M0 64h1024v128h-1024zM384 256h640v128h-640zM384 640h640v128h-640zM0 448h1024v128h-1024zM0 832h1024v128h-1024z',
+  GOOGLE: 'M522.2 438.8v175.6h290.4c-11.8 75.4-87.8 220.8-290.4 220.8-174.8 0-317.4-144.8-317.4-323.2s142.6-323.2 317.4-323.2c99.4 0 166 42.4 204 79l139-133.8c-89.2-83.6-204.8-134-343-134-283 0-512 229-512 512s229 512 512 512c295.4 0 491.6-207.8 491.6-500.2 0-33.6-3.6-59.2-8-84.8l-483.6-0.2z',
+  FACEBOOK: 'M608 192h160v-192h-160c-123.514 0-224 100.486-224 224v96h-128v192h128v512h192v-512h160l32-192h-192v-96c0-17.346 14.654-32 32-32z',
+  TWITTER: 'M1024 226.4c-37.6 16.8-78.2 28-120.6 33 43.4-26 76.6-67.2 92.4-116.2-40.6 24-85.6 41.6-133.4 51-38.4-40.8-93-66.2-153.4-66.2-116 0-210 94-210 210 0 16.4 1.8 32.4 5.4 47.8-174.6-8.8-329.4-92.4-433-219.6-18 31-28.4 67.2-28.4 105.6 0 72.8 37 137.2 93.4 174.8-34.4-1-66.8-10.6-95.2-26.2 0 0.8 0 1.8 0 2.6 0 101.8 72.4 186.8 168.6 206-17.6 4.8-36.2 7.4-55.4 7.4-13.6 0-26.6-1.4-39.6-3.8 26.8 83.4 104.4 144.2 196.2 146-72 56.4-162.4 90-261 90-17 0-33.6-1-50.2-3 93.2 59.8 203.6 94.4 322.2 94.4 386.4 0 597.8-320.2 597.8-597.8 0-9.2-0.2-18.2-0.6-27.2 41-29.4 76.6-66.4 104.8-108.6z',
+  LINKEDIN2: 'M384 384h177.106v90.782h2.532c24.64-44.194 84.958-90.782 174.842-90.782 186.946 0 221.52 116.376 221.52 267.734v308.266h-184.61v-273.278c0-65.184-1.334-149.026-96.028-149.026-96.148 0-110.82 70.986-110.82 144.292v278.012h-184.542v-576z M64 384h192v576h-192v-576z M256 224c0 53.019-42.981 96-96 96s-96-42.981-96-96c0-53.019 42.981-96 96-96s96 42.981 96 96z'
+};
 var theme = {
+  icons: icons,
   colors: colors,
   background: background,
   fontSizes: fontSizes,
@@ -23264,6 +23505,7 @@ var _default = theme;
   reactHotLoader.register(colors, "colors", "/Users/admin/Development/teleport/web/src/shared/theme.js");
   reactHotLoader.register(borders, "borders", "/Users/admin/Development/teleport/web/src/shared/theme.js");
   reactHotLoader.register(z, "z", "/Users/admin/Development/teleport/web/src/shared/theme.js");
+  reactHotLoader.register(icons, "icons", "/Users/admin/Development/teleport/web/src/shared/theme.js");
   reactHotLoader.register(theme, "theme", "/Users/admin/Development/teleport/web/src/shared/theme.js");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/theme.js");
   leaveModule(module);

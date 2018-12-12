@@ -20,6 +20,7 @@ import { Card, Heading, Input, Label, Button } from '../../../../shared';
 import * as Alerts from '../../../../shared/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
+import Logo from './Logo';
 import { Formik } from 'formik';
 
 export default class LoginForm extends React.Component {
@@ -164,25 +165,30 @@ export default class LoginForm extends React.Component {
   render() {
     const { isFailed, message } = this.props.attempt;
     return (
-      <Formik
-        validate={this.onValidate}
-        onSubmit={this.onLogin}
-        initialValues={this.initialValues}
-      >
-        {
-          props => (
-            <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">
-              <Heading.h5 textAlign="center" mb="3" color="light">
-                SIGN INTO TELEPORT
-              </Heading.h5>
-              { isFailed && <Alerts.Danger> {message} </Alerts.Danger>  }
-              {this.renderInputFields(props)}
-              {this.renderLoginBtn(props.handleSubmit)}
-              {this.renderSsoBtns()}
-            </Card>
-          )
+      <div>
+        <Logo product="teleport" />
+
+        <Formik
+          validate={this.onValidate}
+          onSubmit={this.onLogin}
+          initialValues={this.initialValues}
+        >
+
+          {
+            props => (
+              <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">
+                <Heading.h5 textAlign="center" mb="3" color="light">
+                  SIGN INTO TELEPORT
+                </Heading.h5>
+                { isFailed && <Alerts.Danger> {message} </Alerts.Danger>  }
+                {this.renderInputFields(props)}
+                {this.renderLoginBtn(props.handleSubmit)}
+                {this.renderSsoBtns()}
+              </Card>
+            )
         }
         </Formik>
+      </div>
     );
   }
 }
