@@ -20,6 +20,7 @@ import Root from './app/index';
 import history from './app/services/history';
 import cfg from './app/config';
 import reactor from './app/reactor';
+import './app/flux';
 
 history.init();
 cfg.init(window.GRV_CONFIG);

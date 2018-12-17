@@ -15,10 +15,13 @@ limitations under the License.
 */
 
 
-const siteNodes = [['tlpt_nodes'], ['tlpt', 'siteId'], (nodeStore, siteId) => {  
+const siteNodes = [['tlpt_nodes'], ['tlpt', 'siteId'], (nodeStore, siteId) => {
   return nodeStore.getSiteServers(siteId)
 }];
 
 export default {
-  siteNodes
+  siteNodes,
+  nodesByCluster: clusterId => [['tlpt_nodes'], nodeStore => {
+    return nodeStore.getSiteServers(clusterId)
+  }]
 }

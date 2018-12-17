@@ -15,12 +15,10 @@ limitations under the License.
 */
 
 import React from 'react';
-//import styled from 'styled-components'
 import { Card, Heading, Input, Label, Button } from '../../../../shared/components';
 import * as Alerts from '../../../../shared/components/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
-import Logo from '../../../../shared/components/Logo';
 import { Formik } from 'formik';
 
 export default class LoginForm extends React.Component {
@@ -115,13 +113,13 @@ export default class LoginForm extends React.Component {
   }
 
   renderInputFields({ values, errors, touched, handleChange }) {
-    const userError = !!(errors.user && touched.user);
-    const passError = !!(errors.password && touched.password);
-    const tokenError = !!(errors.token && touched.token);
+    const userError = Boolean(errors.user && touched.user);
+    const passError = Boolean(errors.password && touched.password);
+    const tokenError = Boolean(errors.token && touched.token);
 
     return (
       <React.Fragment>
-        <Label mb={1} hasError={!!userError}>
+        <Label mb={1} hasError={userError}>
           Email
           {userError && errors.user}
         </Label>
@@ -133,7 +131,7 @@ export default class LoginForm extends React.Component {
           placeholder="User name"
           name="user"
           />
-        <Label hasError={!!passError}>
+        <Label hasError={passError}>
           Password
           {passError && errors.password}
         </Label>
@@ -147,7 +145,7 @@ export default class LoginForm extends React.Component {
           placeholder="Password"/>
         {this.isOTP() && (
           <>
-            <Label mt={3} mb={1} hasError={!!tokenError}>
+            <Label mt={3} mb={1} hasError={tokenError}>
               Two factor token
               {tokenError && errors.token}
             </Label>
@@ -169,14 +167,11 @@ export default class LoginForm extends React.Component {
     const { isFailed, message } = this.props.attempt;
     return (
       <div>
-        <Logo product="teleport" />
-
         <Formik
           validate={this.onValidate}
           onSubmit={this.onLogin}
           initialValues={this.initialValues}
         >
-
           {
             props => (
               <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">

@@ -3,6 +3,50 @@ import { storiesOf } from '@storybook/react';
 import InviteForm from './InviteForm';
 import "font-awesome/css/font-awesome.css";
 
+storiesOf('Teleport/Invite/InviteForm', module)
+  .add('with user name and password', () => {
+    const props = {
+      ...defaultProps,
+      auth2faType: "off"
+    }
+
+    return (
+      <InviteForm
+        {...props}
+      />);
+  })
+  .add('with OTP', () => {
+    return (
+      <InviteForm
+        {...defaultProps}
+      />);
+  })
+  .add('with U2F USB KEY', () => {
+    const props = {
+      ...defaultProps,
+      auth2faType: "u2f",
+    }
+
+    return (
+      <InviteForm
+        {...props}
+      />);
+  })
+  .add('with server error', () => {
+    const props = {
+      ...defaultProps,
+      attempt: {
+        isFailed: true,
+        message: "Server error with a long teeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeext"
+      }
+    }
+
+    return (
+      <InviteForm
+        {...props}
+      />);
+  });
+
 const invite = {
   "invite_token": "c0de46ef150998597760a679230409a8",
   "user": "test@gravitational.com",
@@ -57,47 +101,3 @@ const defaultProps = {
   invite: invite,
   attempt: { },
 }
-
-storiesOf('InvitePage/InviteForm', module)
-  .add('with user name and password', () => {
-    const props = {
-      ...defaultProps,
-      auth2faType: "off"
-    }
-
-    return (
-      <InviteForm
-        {...props}
-      />);
-  })
-  .add('with OTP', () => {
-    return (
-      <InviteForm
-        {...defaultProps}
-      />);
-  })
-  .add('with U2F USB KEY', () => {
-    const props = {
-      ...defaultProps,
-      auth2faType: "u2f",
-    }
-
-    return (
-      <InviteForm
-        {...props}
-      />);
-  })
-  .add('with server error', () => {
-    const props = {
-      ...defaultProps,
-      attempt: {
-        isFailed: true,
-        message: "Server error with a long teeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeext"
-      }
-    }
-
-    return (
-      <InviteForm
-        {...props}
-      />);
-  })

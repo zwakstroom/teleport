@@ -1,58 +1,67 @@
 import React from 'react';
-import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import {z, background} from './../theme';
-import SideNavButton from './SideNavButton';
+import styled, {css} from 'styled-components';
+import { NavLink } from 'react-router-dom'
+import { background } from './../theme';
 
-const Nav = styled.nav`
+const StyledNav = styled.nav`
   background: ${background.primary};
-  left: 0;
-  position: fixed;
-  bottom: 0;
-  top: 0;
   width: 240px;
-  z-index: ${z.max1};
+  overflow: auto;
 `;
 
-class SideNav extends React.Component {
-  constructor(props) {
-    super(props);
+const SideNavItemCss = css`
+  background: ${props => props.active ? props.theme.background.secondary : props.theme.background.primary};
+  border: none;
+  box-sizing: border-box;
+  color: ${props => props.active ? props.theme.colors.light : 'rgba(255, 255, 255, .56)'};
+  cursor: pointer;
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: ${props => props.active ? '68px': '72px'};
+  margin: 0;
+  outline: none;
+  padding: 0 32px;
+  text-align: left;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: all .3s;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+
+  &:hover {
+    background:  ${props => props.active ? props.theme.background.secondary : 'rgba(255, 255, 255, .06)'};
   }
 
-  renderButtons() {
-    const {buttons} = this.props;
-    let navButtons = null;
-
-    if(buttons && buttons.length) {
-      navButtons = buttons.map((button, index) => {
-        const isActive = button.active ? true : false;
-
-        if(isActive) {
-          return <SideNavButton key={index} active href={button.location}>{button.label}</SideNavButton>;
-        }
-        else {
-          return <SideNavButton key={index} href={button.location}>{button.label}</SideNavButton>;
-        }
-      });
-    }
-
-    return navButtons;
+  &:active, &.active {
+    background:  ${props => props.active ? props.theme.background.secondary : props.theme.background.primary};
+    color: ${props => props.theme.colors.light};
   }
+`;
 
-  render() {
-    return (
-      <Nav>
-        {this.renderButtons()}
+const SideNav = props => (
+  <StyledNav {...props}>
+    {props.children}
+  </StyledNav>
+)
 
-      </Nav>
-    );
-  }
-}
+SideNav.displayName = 'SideNav';
 
-SideNav.propTypes = {
-  /** {label: "Button Name", location: "http://google.com"} */
-  buttons: PropTypes.array,
-};
+const SideNavItem = styled.div`
+  ${SideNavItemCss}
+`;
 
+SideNavItem.displayName = 'SideNavItem';
+
+const SideNavItemLink = styled(NavLink)`
+  ${SideNavItemCss}
+`
+
+SideNavItem.displayName = 'SideNavItemLink';
 
 export default SideNav;
+
+export {
+  SideNavItem,
+  SideNavItemLink
+}

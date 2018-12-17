@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { generatePath } from "react-router";
 import { formatPattern } from 'app/lib/patternUtils';
 import $ from 'jQuery';
 import { isTestEnv } from './services/utils'
@@ -39,6 +40,9 @@ const cfg = {
     app: '/web',
     login: '/web/login',
     nodes: '/web/nodes',
+    cluster: '/web/cluster/:clusterId',
+    clusterNodes: '/web/cluster/:clusterId',
+    clusterSessions: '/web/cluster/:clusterId/sessions',
     currentSession: '/web/cluster/:siteId/sessions/:sid',
     sessions: '/web/sessions',
     newUser: '/web/newuser/:inviteToken',
@@ -160,6 +164,18 @@ const cfg = {
 
   init(config = {}) {
     $.extend(true, this, config);
+  },
+
+  getClusterUrl(clusterId) {
+    return generatePath(cfg.routes.cluster, { clusterId });
+  },
+
+  getClusterNodesUrl(clusterId) {
+    return generatePath(cfg.routes.clusterNodes, { clusterId });
+  },
+
+  getClusterSessionsUrl(clusterId) {
+    return generatePath(cfg.routes.clusterSessions, { clusterId });
   },
 
   stripOptionalParams(pattern) {

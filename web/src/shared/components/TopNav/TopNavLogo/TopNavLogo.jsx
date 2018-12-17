@@ -1,11 +1,36 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import TopNavButton from '../TopNavButton'
-import teleportLogoSvg from './teleport-logo.svg';
-import gravityLogoSvg from './gravity-logo.svg';
+import TopNavItem from '../TopNavItem'
 
-const LogoButton = styled(TopNavButton)`
+const TopNavLogo = ({
+  className,
+  src,
+  version
+}) => {
+  return (
+    <StyledLogo className={className}>
+      <img src={src} />
+      <em>{version}</em>
+    </StyledLogo>
+  );
+};
+
+TopNavLogo.propTypes = {
+  src: PropTypes.string,
+  onClick: PropTypes.func,
+  title: PropTypes.string,
+};
+
+TopNavLogo.defaultProps = {
+  src: '/',
+  onClick: () => { },
+  title: 'Empty Title',
+}
+
+TopNavLogo.displayName = 'TopNavLogo';
+
+const StyledLogo = styled(TopNavItem)`
   margin: 0 80px 0 0;
 
   img {
@@ -22,31 +47,6 @@ const LogoButton = styled(TopNavButton)`
     margin: 0;
   }
 `;
-
-// This could be react-router-dom's Link for example
-const TopNavLogo = ({ className, product, version}) => {
-  const logoSvg = product === 'gravity' ? gravityLogoSvg : teleportLogoSvg;
-  return (
-    <LogoButton className={className}>
-      <img src={logoSvg} />
-      <em>{version}</em>
-    </LogoButton>
-  );
-};
-
-TopNavLogo.propTypes = {
-  product: PropTypes.oneOf(['gravity', 'teleport']),
-  href: PropTypes.string,
-  version: PropTypes.string,
-};
-
-TopNavLogo.defaultProps = {
-  href: '/',
-  version: 'v#',
-  product: 'Product Name',
-}
-
-TopNavLogo.displayName = 'TopNavLogo';
 
 
 export default TopNavLogo;

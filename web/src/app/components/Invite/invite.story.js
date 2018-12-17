@@ -3,29 +3,7 @@ import { storiesOf } from '@storybook/react';
 import { Invite } from './Invite';
 import "font-awesome/css/font-awesome.css";
 
-const invite = {
-  "invite_token": "c0de46ef150998597760a679230409a8",
-  "user": "test@gravitational.com",
-};
-
-const defaultProps = {
-  params: {
-    inviteToken: 'xx',
-  },
-  auth2faType: 'otp',
-  authType: '',
-
-
-  invite: invite,
-  attempt:{},
-  fetchingInvite: {},
-  submitWithU2f: () => {},
-  fetchInvite: () => {},
-  acceptInviteWithU2f: () => {},
-  acceptInvite: () => {},
-}
-
-storiesOf('InvitePage', module)
+storiesOf('Teleport/Invite', module)
   .add('basic rendering', () => {
     const props = {
       ...defaultProps,
@@ -51,6 +29,27 @@ storiesOf('InvitePage', module)
       <Invite
         {...props}
       />);
-  })
+  });
 
 
+const invite = {
+  "invite_token": "c0de46ef150998597760a679230409a8",
+  "user": "test@gravitational.com",
+};
+
+const defaultProps = {
+  params: {
+    inviteToken: 'xx',
+  },
+  auth2faType: 'otp',
+  authType: '',
+
+
+  invite: invite,
+  attempt:{},
+  fetchingInvite: {},
+  submitWithU2f: () => {},
+  fetchInvite: () => {},
+  acceptInviteWithU2f: () => {},
+  acceptInvite: () => {},
+}

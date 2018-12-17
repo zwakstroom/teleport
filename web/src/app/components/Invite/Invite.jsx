@@ -22,7 +22,7 @@ import { getters } from 'app/flux/user';
 import { withDocTitle } from './../documentTitle';
 import InviteForm from './InviteForm';
 import ExpiredInvite from './InviteForm/ExpiredInvite';
-import Logo from '../../../shared/components/Logo';
+import Logo from 'shared/components/Logo';
 
 export class Invite extends React.Component {
 

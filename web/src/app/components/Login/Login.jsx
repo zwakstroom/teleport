@@ -19,22 +19,22 @@ import { connect } from './../nuclear';
 import * as actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
 import cfg from 'app/config';
-import { TeleportLogo } from './../Images';
 import LoginForm from './LoginForm/';
 import { withDocTitle } from './../documentTitle';
+import Logo from 'shared/components/Logo';
 
 export class Login extends React.Component {
 
   onLoginWithSso = ssoProvider => {
-    actions.loginWithSso(ssoProvider.name, ssoProvider.url);
+    this.props.onLoginWithSso(ssoProvider.name, ssoProvider.url);
   }
 
   onLoginWithU2f = (username, password) => {
-    actions.loginWithU2f(username, password);
+    this.props.onLoginWithU2f(username, password);
   }
 
   onLogin = (username, password, token) => {
-    actions.login(username, password, token);
+    this.props.onLogin(username, password, token);
   }
 
   render() {
@@ -44,7 +44,7 @@ export class Login extends React.Component {
 
     return (
       <div>
-        <TeleportLogo/>
+        <Logo />
         <LoginForm
           authProviders={authProviders}
           auth2faType={auth2faType}
@@ -58,10 +58,19 @@ export class Login extends React.Component {
   }
 }
 
-function mapStateToProps() {
+function mapStoreToProps() {
   return {
     attempt: getters.loginAttemp
   }
 }
 
-export default withDocTitle("Login", connect(mapStateToProps)(Login));
+function mapActionsToProps() {
+  return {
+    onLogin: actions.login,
+    onLoginWithU2f: actions.loginWithU2f,
+    onLoginWithSso: actions.loginWithSso,
+  }
+}
+
+export default withDocTitle("Login",
+  connect(mapStoreToProps, mapActionsToProps)(Login));

@@ -14,14 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Store, toImmutable } from 'nuclear-js';
+import { Store } from 'nuclear-js';
 import { RECEIVE_CLUSTERS } from './actionTypes';
 import { Record, List } from 'immutable';
 
-const Site = Record({
+export class SiteRec extends Record({
   name: null,
-  status: false
-})
+  status: '',
+  connectedAt: null
+}) {
+  constructor(json) {
+    const params = {
+      ...json,
+      connectedAt: json.last_connected
+    }
+
+    super(params);
+  }
+}
 
 export default Store({
   getInitialState() {
@@ -33,6 +43,6 @@ export default Store({
   }
 })
 
-function receiveSites(state, json){    
-  return toImmutable(json).map( o => new Site(o) );
+function receiveSites(state, json) {
+  return new List(json.map(o => new SiteRec(o)));
 }

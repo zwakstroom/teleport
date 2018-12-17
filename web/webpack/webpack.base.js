@@ -183,6 +183,7 @@ function jsx(args){
 
   if(args.withHot){
     plugins.unshift('react-hot-loader/babel');
+    plugins.push("babel-plugin-styled-components");
     emitWarning = true;
   }
 

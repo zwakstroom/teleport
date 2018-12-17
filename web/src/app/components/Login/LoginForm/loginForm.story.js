@@ -11,7 +11,7 @@ const defaultProps = {
   cb() { }
 }
 
-storiesOf('LoginPage/LoginForm', module)
+storiesOf('Teleport/Login/LoginForm', module)
   .add('with user name and password', () => {
     return (
       <LoginForm

@@ -11,7 +11,6 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     background-color: ${props => props.theme.background.primary};
     color: ${props => props.theme.colors.light};
-    padding: 32px;
   }
 
   article,
