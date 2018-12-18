@@ -4,14 +4,13 @@ import { withInfo } from '@storybook/addon-info'
 import Text from '../Text'
 
 storiesOf('Text', module)
-  .add(
-    'Typography component',
-    withInfo({
+  .addDecorator(withInfo)
+  .addParameters({
+    info: {
       inline: true,
-      text:
-        'A low-level component for setting font-size, typographic styles, margin, and color'
-    })(() => <Text m={3}>Hello</Text>)
-  )
+    },
+  })
+  .add('Typography component', () => <Text m={3}>Hello</Text> )
   .add('fontSize', () => (
     <div>
       <Text fontSize={6}>Hello 6</Text>

@@ -23,6 +23,7 @@ import { withDocTitle } from './../documentTitle';
 import InviteForm from './InviteForm';
 import ExpiredInvite from './InviteForm/ExpiredInvite';
 import Logo from 'shared/components/Logo';
+import logoSvg from 'shared/assets/images/teleport-medallion.svg';
 
 export class Invite extends React.Component {
 
@@ -45,7 +46,7 @@ export class Invite extends React.Component {
     if(fetchingInvite.isFailed){
       return (
         <div>
-          <Logo />
+          <Logo src={logoSvg}/>
           <ExpiredInvite />
         </div>
       );
@@ -57,7 +58,7 @@ export class Invite extends React.Component {
 
     return (
       <div>
-        <Logo />
+        <Logo src={logoSvg}/>
         <InviteForm
           auth2faType={auth2faType}
           attempt={attempt}

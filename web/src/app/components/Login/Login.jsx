@@ -22,6 +22,7 @@ import cfg from 'app/config';
 import LoginForm from './LoginForm/';
 import { withDocTitle } from './../documentTitle';
 import Logo from 'shared/components/Logo';
+import logoSvg from 'shared/assets/images/teleport-medallion.svg';
 
 export class Login extends React.Component {
 
@@ -44,7 +45,7 @@ export class Login extends React.Component {
 
     return (
       <div>
-        <Logo />
+        <Logo src={logoSvg}/>
         <LoginForm
           authProviders={authProviders}
           auth2faType={auth2faType}

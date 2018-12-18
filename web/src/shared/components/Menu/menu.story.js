@@ -9,57 +9,51 @@ import Flex from '../Flex';
 storiesOf('Menu', module)
   .add('Simple menu', () => (
     <Flex justifyContent="space-between">
-      <Box>
-        <SimpleMenu text="Show to the right">
-          <MenuItem>
-            Test
-          </MenuItem>
-          <MenuItem>
+      <SimpleMenu text="Show to the right">
+        <MenuItem>
+          Test
+        </MenuItem>
+        <MenuItem>
+          Test2
+        </MenuItem>
+      </SimpleMenu>
+      <SimpleMenu text="Show in the center"
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <MenuItem>
+          Test
+        </MenuItem>
+        <MenuItem>
             Test2
-          </MenuItem>
-        </SimpleMenu>
-      </Box>
-      <Box>
-        <SimpleMenu text="Show in the center"
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <MenuItem>
-            Test
-          </MenuItem>
-          <MenuItem>
-              Test2
-          </MenuItem>
-          <MenuItem>
-            <Button mt={1} mb={1} block> Logout</Button>
-          </MenuItem>
-        </SimpleMenu>
-      </Box>
-      <Box>
-        <SimpleMenu text="Show to the left"
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem>
-            Test
-          </MenuItem>
-          <MenuItem>
-              Test2
-          </MenuItem>
-        </SimpleMenu>
-      </Box>
+        </MenuItem>
+        <MenuItem>
+          <Button mt={1} mb={1} block> Logout</Button>
+        </MenuItem>
+      </SimpleMenu>
+      <SimpleMenu text="Show to the left"
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem>
+          Test
+        </MenuItem>
+        <MenuItem>
+            Test2
+        </MenuItem>
+      </SimpleMenu>
     </Flex>
   )
 );
@@ -87,7 +81,7 @@ class SimpleMenu extends React.Component {
     const { anchorEl } = this.state;
     return (
       <Box m={10} textAlign="center">
-        <Button size="sm" onClick={this.handleClickListItem}>
+        <Button size="small" onClick={this.handleClickListItem}>
           {text}
         </Button>
         <Menu

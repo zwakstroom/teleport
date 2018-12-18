@@ -5,7 +5,7 @@ import TopNavItem from '../TopNavItem';
 import Menu from '../../Menu/Menu';
 import defaultAvatar from './avatar.png';
 
-class TopNavMenu extends React.Component {
+class TopNavUserMenu extends React.Component {
 
   static displayName = 'TopNavMenu';
 
@@ -43,7 +43,7 @@ class TopNavMenu extends React.Component {
     return (
       <TopNavItem style={{ marginLeft: "auto" }}>
         <AvatarButton ref={this.setRef} onClick={onShow}>
-          <em> {user}</em>
+          <em>{user}</em>
           <img src={avatar} />
         </AvatarButton>
         <Menu
@@ -61,12 +61,12 @@ class TopNavMenu extends React.Component {
   }
 }
 
-export default TopNavMenu;
+export default TopNavUserMenu;
 
 const AvatarButton = styled.div`
   img {
     display: inline-block;
-    float: left;
+    float: right;
     height: 24px;
     margin: 24px 8px 24px 16px;
   }

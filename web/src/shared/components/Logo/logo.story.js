@@ -2,19 +2,13 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { withInfo } from '@storybook/addon-info'
 import Logo from '../Logo'
+import teleportSvg from './../../assets/images/gravity-medallion.svg';
 
 storiesOf('Logo', module)
-  .add(
-    'Logo component',
-    withInfo({
+  .addDecorator(withInfo)
+  .addParameters({
+    info: {
       inline: true,
-      text:
-        'Use the <Logo /> component to render a Logo.'
-    })(() => <Logo product="teleport"/>)
-  )
-  .add('products', () => (
-    <div>
-      <Logo product="teleport"/>
-      <Logo product="gravity"/>
-    </div>
-  ));
+    },
+  })
+  .add('Logo component', () => <Logo src={teleportSvg} />);

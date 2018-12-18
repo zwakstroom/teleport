@@ -4,13 +4,14 @@ import { withInfo } from '@storybook/addon-info'
 import Button from '../Button'
 
 storiesOf('Button', module)
-  .add(
-    'Button component',
-    withInfo({
+  .addDecorator(withInfo)
+  .addParameters({
+    info: {
       inline: true,
-      text:
-        'Use the <Button /> component to render a primitive button.'
-    })(() => <Button size="large">Click Me</Button>)
+    },
+  })
+  .add('Button component', () => (
+    <Button size="large">Click Me</Button>)
   )
   .add('color', () => (
     <div>

@@ -84,7 +84,6 @@ class SimplePopover extends React.Component {
         horizontal: 'center',
       }
     })
-
   }
 
   handleClose = () => {

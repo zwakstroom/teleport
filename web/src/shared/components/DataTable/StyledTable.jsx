@@ -51,21 +51,6 @@ export const StyledTable = styled.table`
     padding: 8px;
     vertical-align: top;
   }
-
-  .grv-table-indicator-sort{
-    margin-left: 5px;
-  }
-
-  .grv-table-indicator-sort.fa-sort {
-  }
-
-  .grv-table-indicator-empty{
-    font-size: 17px;
-  }
-
-  .grv-table-header .grv-table-cell a {
-    color: inherit;
-  }
 `
 
 export const StyledEmptyIndicator = styled.div`

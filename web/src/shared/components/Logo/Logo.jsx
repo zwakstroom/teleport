@@ -1,33 +1,24 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import teleportMedallion from './teleport-medallion.svg';
-import gravityMedallion from './gravity-medallion.svg';
 
-const Img = styled.img`
-  display: block;
-  outline: none;
-  margin: 32px auto;
-`;
-
-const Logo = ({ product }) => {
-  const logoSvg = product === 'gravity' ? gravityMedallion : teleportMedallion;
-
+const Logo = ({ src }) => {
   return (
-    <Img src={logoSvg} />
+    <StyledImg src={src} />
   );
 };
 
-
 Logo.propTypes = {
-  /** Product Name */
-  product: PropTypes.oneOf(['gravity', 'teleport']).isRequired,
-};
-
-Logo.defaultProps = {
-  product: 'teleport'
+  /** Image Src */
+  src: PropTypes.string,
 };
 
 Logo.displayName = 'Logo';
 
 export default Logo;
+
+const StyledImg = styled.img`
+  display: block;
+  outline: none;
+  margin: 32px auto;
+`;

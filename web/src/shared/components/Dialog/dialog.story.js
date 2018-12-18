@@ -43,7 +43,6 @@ const DialogFooter = props => {
   )
 }
 
-
 class SampleDialog extends React.Component {
   state = {
     open: false,

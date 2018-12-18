@@ -129,7 +129,7 @@ class Column extends React.Component {
   }
 }
 
-const TableCell = props => {
+const Cell = props => {
   let { isHeader, children, className='' } = props;
   className = 'grv-table-cell ' + className;
   return isHeader ?
@@ -137,10 +137,10 @@ const TableCell = props => {
     <td>{children}</td>;
 }
 
-const TableTextCell = ({rowIndex, data, columnKey, ...props}) => (
-  <TableCell {...props}>
+const TextCell = ({rowIndex, data, columnKey, ...props}) => (
+  <Cell {...props}>
     {data[rowIndex][columnKey]}
-  </TableCell>
+  </Cell>
 );
 
 class SortHeaderCell extends React.Component {
@@ -164,12 +164,12 @@ class SortHeaderCell extends React.Component {
   render() {
     const { sortDir, title, ...props } = this.props;
     return (
-      <TableCell {...props}>
+      <Cell {...props}>
         <a onClick={this.onSortChange}>
           {title}
         </a>
         <SortIndicator sortDir={sortDir}/>
-      </TableCell>
+      </Cell>
     );
   }
 }
@@ -177,8 +177,8 @@ class SortHeaderCell extends React.Component {
 export {
   Column,
   Table,
-  TableCell as Cell,
-  TableTextCell as TextCell,
+  Cell,
+  TextCell,
   SortHeaderCell,
   SortIndicator,
   SortTypes,

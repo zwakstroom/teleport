@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from './../nuclear';
 import { getters } from 'app/flux/user';
 import { logout } from 'app/flux/user/actions';
-import TopNavMenu from 'shared/components/TopNav/TopNavMenu'
+import TopNavUserMenu from 'shared/components/TopNav/TopNavUserMenu'
 import MenuItem from 'shared/components/Menu/MenuItem';
 import Button from 'shared/components/Button';
 
@@ -32,7 +32,7 @@ export class AppMenu extends React.Component {
   render() {
     const { username } = this.props;
     return (
-      <TopNavMenu
+      <TopNavUserMenu
         open={this.state.open}
         onShow={this.onShow}
         onClose={this.onClose}
@@ -42,7 +42,7 @@ export class AppMenu extends React.Component {
             Logout
           </Button>
         </MenuItem>
-      </TopNavMenu>
+      </TopNavUserMenu>
     )
   }
 }
