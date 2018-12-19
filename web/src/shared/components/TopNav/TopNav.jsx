@@ -1,16 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { background } from './../theme';
 import TopNavLogo from './TopNavLogo/TopNavLogo';
+import theme from './../theme'
 
 const TopNav = ({
   logoSrc,
   version,
-  children
+  children,
+  theme
 }) => {
   return (
-    <StyledNav>
+    <StyledNav theme={theme}>
       <TopNavLogo
         src={logoSrc}
         version={version}
@@ -25,8 +26,12 @@ TopNav.propTypes = {
   version: PropTypes.string
 };
 
+TopNav.defaultProps = {
+  theme: theme
+}
+
 const StyledNav = styled.nav`
-  background: ${background.secondary};
+  background: ${ props => props.theme.background.secondary};
   box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
   width: 100%;
   display: flex;

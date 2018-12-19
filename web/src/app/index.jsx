@@ -22,7 +22,7 @@ import { Provider } from './components/nuclear';
 import Login from './components/Login';
 import Invite from './components/Invite';
 import cfg from './config';
-import Index from './components/index.jsx';
+import App from './components/App';
 import ThemeProvider from './../shared/components/ThemeProvider';
 import { hot, setConfig } from 'react-hot-loader'
 import "font-awesome/css/font-awesome.css";
@@ -39,7 +39,7 @@ const Root = props => (
         <Switch>
           <Route path={cfg.routes.login} component={Login} />
           <Route path={cfg.routes.newUser} component={Invite} />
-          <Route path={cfg.routes.app} component={Index} />
+          <Route path={cfg.routes.app} component={App} />
         </Switch>
       </ThemeProvider>
       </Provider>

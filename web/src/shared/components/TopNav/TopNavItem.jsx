@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components'
 import { NavLink } from 'react-router-dom'
+import theme from './../theme'
 
 /**
  * Css styles for NavItems
@@ -50,6 +51,11 @@ const TopNavItem = styled.div`
 `
 
 TopNavItem.displayName = 'TopNavItem';
+TopNavItem.defaultProps = {
+  theme: theme
+}
+
+export default TopNavItem;
 
 /**
  * TopNavItemLink
@@ -59,8 +65,9 @@ const TopNavItemLink = styled(NavLink)`
 `
 
 TopNavItemLink.displayName = 'TopNavItemLink';
-
-export default TopNavItem;
+TopNavItemLink.defaultProps = {
+  theme: theme
+}
 
 export {
   TopNavItemLink

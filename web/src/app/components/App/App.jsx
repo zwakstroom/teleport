@@ -17,18 +17,17 @@ limitations under the License.
 import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom'
 import styled from 'styled-components';
-import { connect } from './nuclear';
-import TopNavMenu from './TopNavMenu';
+import { connect } from './../nuclear';
+import AppBar from './../AppBar';
 import appGetters from 'app/flux/app/getters';
-import { Failed } from './msgPage.jsx';
+import { Failed } from './../msgPage.jsx';
 import { initApp } from 'app/flux/app/actions';
-import { Flex, Box, TopNav, TopNavItemLink, Indicator } from 'shared/components';
-import withAuth from './withAuth';
-import FeatureActivator from './../featureActivator';
-import Clusters from './Clusters';
-import Cluster from './Cluster';
+import { Flex, Box, Indicator } from 'shared/components';
+import withAuth from './../withAuth';
+import FeatureActivator from './../../featureActivator';
+import Clusters from './../Clusters';
+import Cluster from './../Cluster';
 import cfg from 'app/config';
-import teleportLogoSvg from 'app/../shared/assets/images/teleport-logo.svg';
 
 class App extends Component {
 
@@ -54,14 +53,9 @@ class App extends Component {
     }
 
     return (
-      <StyledFlex flexDirection="column">
+      <StyledApp flexDirection="column">
         <Box>
-          <TopNav logoSrc={teleportLogoSvg} version="5.3.2">
-            <TopNavItemLink to={cfg.routes.app} >
-              Clusters
-            </TopNavItemLink>
-            <TopNavMenu/>
-          </TopNav>
+          <AppBar />
         </Box>
         <Switch>
           <Route exact path={cfg.routes.app} component={Clusters} />
@@ -71,7 +65,7 @@ class App extends Component {
             )}
           />
         </Switch>
-      </StyledFlex>
+      </StyledApp>
     );
   }
 }
@@ -84,10 +78,8 @@ function mapStateToProps() {
 
 export default withAuth(connect(mapStateToProps)(App));
 
-const StyledFlex = styled(Flex)`
+const StyledApp = styled(Flex)`
   position: fixed;
   height: 100%;
   width: 100%;
 `
-
-

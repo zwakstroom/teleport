@@ -1,10 +1,10 @@
 import React from 'react';
 import styled, {css} from 'styled-components';
 import { NavLink } from 'react-router-dom'
-import { background } from './../theme';
+import theme from './../theme'
 
 const StyledNav = styled.nav`
-  background: ${background.primary};
+  background: ${props => props.theme.background.primary};
   width: 240px;
   overflow: auto;
 `;
@@ -47,21 +47,23 @@ const SideNav = props => (
 
 SideNav.displayName = 'SideNav';
 
-const SideNavItem = styled.div`
+SideNav.defaultProps = {
+  theme: theme
+}
+
+export default SideNav;
+
+export const SideNavItem = styled.div`
   ${SideNavItemCss}
 `;
 
 SideNavItem.displayName = 'SideNavItem';
+SideNavItem.defaultProps = {
+  theme: theme
+}
 
-const SideNavItemLink = styled(NavLink)`
+export const SideNavItemLink = styled(NavLink)`
   ${SideNavItemCss}
 `
+SideNavItemLink.displayName = 'SideNavItemLink';
 
-SideNavItem.displayName = 'SideNavItemLink';
-
-export default SideNav;
-
-export {
-  SideNavItem,
-  SideNavItemLink
-}
