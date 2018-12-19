@@ -1,5 +1,5 @@
 import React from 'react'
-import { connect } from './../nuclear';
+import { connect } from './../../nuclear';
 import { getters } from 'app/flux/user';
 import cfg from 'app/config';
 import { logout } from 'app/flux/user/actions';

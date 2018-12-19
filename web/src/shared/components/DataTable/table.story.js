@@ -2,7 +2,6 @@ import React from 'react'
 import { sortBy } from 'lodash';
 import { storiesOf } from '@storybook/react'
 import match from './../utils/match';
-import Box from './../Box';
 import {
   Table,
   Column,
@@ -85,32 +84,30 @@ class TableSample extends React.Component {
     }
 
     return (
-      <Box m={3}>
-        <Table rowCount={data.length}>
-          <Column
-            columnKey="hostname"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.hostname}
-                onSortChange={this.onSortChange}
-                title="Hostname"
-              />
-            }
-            cell={<TextCell data={data}/> }
-          />
-          <Column
-            columnKey="addr"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.addr}
-                onSortChange={this.onSortChange}
-                title="Address"
-              />
-            }
-            cell={<TextCell data={data}/> }
-          />
-        </Table>
-      </Box>
+      <Table rowCount={data.length} data={data} >
+        <Column
+          columnKey="hostname"
+          header={
+            <SortHeaderCell
+              sortDir={this.state.colSortDirs.hostname}
+              onSortChange={this.onSortChange}
+              title="Hostname"
+            />
+          }
+          cell={<TextCell /> }
+        />
+        <Column
+          columnKey="addr"
+          header={
+            <SortHeaderCell
+              sortDir={this.state.colSortDirs.addr}
+              onSortChange={this.onSortChange}
+              title="Address"
+            />
+          }
+          cell={<TextCell /> }
+        />
+      </Table>
     )
   }
 }

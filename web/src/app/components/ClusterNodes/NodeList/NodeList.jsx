@@ -97,7 +97,7 @@ class LoginCell extends React.Component {
           }
           {logins.length > 0 &&
             <div style={{ display: "flex" }} className="btn-group">
-              <NavLink className="btn btn-xs btn-primary" to={defaultTermUrl}>
+              <NavLink to={defaultTermUrl}>
                 {defaultLogin}
               </NavLink>
               <button data-toggle="dropdown"
@@ -200,18 +200,18 @@ class NodeList extends React.Component {
     const searchValue = this.state.filter;
     const data = this.sortAndFilter(nodeRecords);
     return (
-      <div className="grv-nodes m-t">
-        <div className="grv-flex grv-header" style={{ justifyContent: "space-between" }}>
-          <h2 className="text-center no-margins"> Nodes </h2>
-          <div className="grv-flex">
+      <div>
+        <div>
+          <h2> Nodes </h2>
+          <div>
             <InputSearch value={searchValue} onChange={this.onFilterChange} />
           </div>
         </div>
-        <div className="m-t">
+        <div>
           {
             data.length === 0 && this.state.filter.length > 0 ? <EmptyIndicator text="No matching nodes found"/> :
 
-            <Table rowCount={data.length} className="table-striped grv-nodes-table">
+            <Table rowCount={data.length} data={data}>
               <Column
                 columnKey="hostname"
                 header={
@@ -221,7 +221,7 @@ class NodeList extends React.Component {
                     title="Hostname"
                   />
                 }
-                cell={<TextCell data={data}/> }
+                cell={<TextCell/> }
               />
               <Column
                 columnKey="addr"
@@ -232,16 +232,16 @@ class NodeList extends React.Component {
                     title="Address"
                   />
                 }
-                cell={<TextCell data={data}/> }
+                cell={<TextCell/> }
               />
               <Column
                 header={<Cell>Labels</Cell> }
-                cell={<TagCell data={data}/> }
+                cell={<TagCell/> }
               />
               <Column
                 onLoginClick={onLoginClick}
                 header={<Cell>Login as</Cell> }
-                cell={<LoginCell data={data} logins={logins}/> }
+                cell={<LoginCell logins={logins}/> }
               />
             </Table>
           }

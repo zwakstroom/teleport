@@ -35,8 +35,6 @@ module.exports = (baseConfig, env, defaultConfig) => {
 
   //baseConfig.devtool = false;
 
-  console.log(baseConfig.module.rules)
-
   baseConfig.module.rules.push(...rules);
 
   baseConfig.resolve = {

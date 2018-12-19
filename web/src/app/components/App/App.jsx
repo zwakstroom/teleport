@@ -18,7 +18,7 @@ import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom'
 import styled from 'styled-components';
 import { connect } from './../nuclear';
-import AppBar from './../AppBar';
+import AppBar from './AppBar';
 import appGetters from 'app/flux/app/getters';
 import { Failed } from './../msgPage.jsx';
 import { initApp } from 'app/flux/app/actions';

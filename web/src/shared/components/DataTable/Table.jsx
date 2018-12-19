@@ -16,6 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { StyledTable, StyledEmptyIndicator } from './StyledTable';
+import * as Icons from './../Icon/Icon';
 
 /**
 * Sort indicator used by SortHeaderCell
@@ -27,7 +28,8 @@ const SortTypes = {
 
 class Table extends React.Component {
 
-  renderHeader(children){
+  renderHeader(children) {
+    const { data } = this.props;
     const cells = children.map((item, index)=>{
       return this.renderCell(
         item.props.header,
@@ -35,18 +37,20 @@ class Table extends React.Component {
           index,
           key: index,
           isHeader: true,
+          data,
           ...item.props
         });
     })
 
     return (
-      <thead className="grv-table-header">
+      <thead>
         <tr>{cells}</tr>
       </thead>
     )
   }
 
-  renderBody(children){
+  renderBody(children) {
+    const { data } = this.props;
     const count = this.props.rowCount;
     const rows = [];
     for (var i = 0; i < count; i++){
@@ -56,7 +60,8 @@ class Table extends React.Component {
           {
             rowIndex: i,
             key: index,
-            isHeader:  false,
+            isHeader: false,
+            data,
             ...item.props
           }
         );
@@ -95,10 +100,8 @@ class Table extends React.Component {
       children.push(child);
     });
 
-    const tableClass = 'table grv-table ' + this.props.className;
-
     return (
-      <StyledTable className={tableClass}>
+      <StyledTable>
         {this.renderHeader(children)}
         {this.renderBody(children)}
       </StyledTable>
@@ -107,16 +110,15 @@ class Table extends React.Component {
 }
 
 const SortIndicator = ({sortDir})=>{
-  let cls = 'grv-table-indicator-sort fa fa-sort'
   if(sortDir === SortTypes.DESC){
-    cls += '-desc'
+    return <Icons.SortDesc />
   }
 
   if( sortDir === SortTypes.ASC){
-    cls += '-asc'
+    return <Icons.SortAsc />
   }
 
-  return (<i className={cls}></i>);
+  return <Icons.Sort />
 };
 
 class Column extends React.Component {
@@ -130,10 +132,9 @@ class Column extends React.Component {
 }
 
 const Cell = props => {
-  let { isHeader, children, className='' } = props;
-  className = 'grv-table-cell ' + className;
+  const { isHeader, children } = props;
   return isHeader ?
-    <th className={className}>{children}</th> :
+    <th>{children}</th> :
     <td>{children}</td>;
 }
 
@@ -155,7 +156,7 @@ class SortHeaderCell extends React.Component {
     // default
     let newDir = SortTypes.DESC;
     if(sortDir){
-      newDir = this.props.sortDir === SortTypes.DESC ? SortTypes.ASC : SortTypes.DESC;
+      newDir = sortDir === SortTypes.DESC ? SortTypes.ASC : SortTypes.DESC;
     }
 
     this.props.onSortChange(columnKey, newDir);
