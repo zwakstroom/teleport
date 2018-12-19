@@ -17,7 +17,7 @@ import reactor from 'app/reactor';
 import history from 'app/services/history';
 import api from 'app/services/api';
 import cfg from 'app/config';
-import Logger from 'app/lib/logger'; 
+import Logger from 'app/lib/logger';
 import { getNodeStore } from './../nodes/nodeStore';
 import sessionGetters from './../sessions/getters';
 import { TLPT_TERMINAL_INIT, TLPT_TERMINAL_CLOSE, TLPT_TERMINAL_SET_STATUS } from './actionTypes';
@@ -25,11 +25,11 @@ import { saveSshLogin } from './../sshHistory/actions';
 
 const logger = Logger.create('flux/terminal');
 
-const setStatus = json => reactor.dispatch(TLPT_TERMINAL_SET_STATUS, json);    
+const setStatus = json => reactor.dispatch(TLPT_TERMINAL_SET_STATUS, json);
 
 function initStore(params) {
   const { serverId } = params;
-  const server = getNodeStore().findServer(serverId);  
+  const server = getNodeStore().findServer(serverId);
   const hostname = server ? server.hostname : '';
   reactor.dispatch(TLPT_TERMINAL_INIT, {
     ...params,
@@ -37,7 +37,7 @@ function initStore(params) {
   });
 }
 
-function createSid(routeParams) {  
+function createSid(routeParams) {
   const { login, siteId } = routeParams;
   const data = {
     session: {
@@ -49,54 +49,56 @@ function createSid(routeParams) {
     }
   };
 
-  return api.post(cfg.api.getSiteSessionUrl(siteId), data);    
+  return api.post(cfg.api.getSiteSessionUrl(siteId), data);
 }
-    
-export function initTerminal(routeParams) {  
-  logger.info('attempt to open a terminal', routeParams);    
-  
+
+export function initTerminal(routeParams) {
+  logger.info('attempt to open a terminal', routeParams);
+
   const { sid } = routeParams;
-  
+
   setStatus({ isLoading: true });
-  
-  if (sid) {                  
+
+  if (sid) {
     const activeSession = reactor.evaluate(sessionGetters.activeSessionById(sid));
-    if (activeSession) {      
+    if (activeSession) {
       // init store with existing sid
       initStore(routeParams);
       setStatus({ isReady: true });
     } else {
-      setStatus({ isNotFound: true });              
-    }   
+      setStatus({ isNotFound: true });
+    }
 
     return;
-  } 
-  
+  }
+
   createSid(routeParams)
-    .done(json => {
+    .then(json => {
       const sid = json.session.id;
       const newRouteParams = {
         ...routeParams,
         sid
-      };        
+      };
       initStore(newRouteParams)
       setStatus({ isReady: true });
-      updateRoute(newRouteParams);                    
+      updateRoute(newRouteParams);
 
       saveSshLogin(routeParams);
     })
-    .fail(err => {
-      let errorText = api.getErrorText(err);
-      setStatus({ isError: true, errorText });
-    });  
-}
-    
-export function close() {    
-  reactor.dispatch(TLPT_TERMINAL_CLOSE);      
-  history.push(cfg.routes.nodes);      
+    .catch(err => {
+      setStatus({
+        isError: true,
+        errorText: err.message
+      });
+    });
 }
 
-export function updateRoute(newRouteParams) {    
-  let routeUrl = cfg.getTerminalLoginUrl(newRouteParams);                                    
-  history.push(routeUrl);      
-}  
+export function close() {
+  reactor.dispatch(TLPT_TERMINAL_CLOSE);
+  history.push(cfg.routes.nodes);
+}
+
+export function updateRoute(newRouteParams) {
+  let routeUrl = cfg.getTerminalLoginUrl(newRouteParams);
+  history.push(routeUrl);
+}

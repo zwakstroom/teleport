@@ -19,7 +19,7 @@ import { Component } from 'react';
 const DEFAULT_INTERVAL = 3000; // every 3 sec
 
 export default class DataProvider extends Component {
-  
+
   _timerId = null;
   _request = null;
 
@@ -30,17 +30,17 @@ export default class DataProvider extends Component {
 
   fetch() {
     // do not refetch if still in progress
-    if (this._request) {      
+    if (this._request) {
       return;
     }
 
     this._request = this.props.onFetch()
-      .always(() => {
+      .finally(() => {
         this._request = null;
       })
   }
 
-  componentDidMount() {        
+  componentDidMount() {
     this.fetch();
     this._timerId = setInterval(this.fetch.bind(this), this._intervalTime);
   }

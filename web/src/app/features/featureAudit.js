@@ -30,24 +30,24 @@ const auditNavItem = {
 }
 
 class AuditFeature extends FeatureBase {
-    
-  componentDidMount() {    
-    this.init()    
+
+  componentDidMount() {
+    this.init()
   }
 
   init() {
-    if (!this.wasInitialized()) {      
+    if (!this.wasInitialized()) {
       reactor.batch(() => {
         this.startProcessing();
         fetchSiteEventsWithinTimeRange()
-          .done(this.stopProcessing.bind(this))
-          .fail(this.handleError.bind(this))                                                  
-      })      
-    }                
+          .then(this.stopProcessing.bind(this))
+          .catch(this.handleError.bind(this))
+      })
+    }
   }
 
-  constructor(routes) {        
-    super();        
+  constructor(routes) {
+    super();
     const auditRoutes = [
       {
         path: cfg.routes.sessions,
@@ -62,16 +62,16 @@ class AuditFeature extends FeatureBase {
       }
     ];
 
-    routes.push(...auditRoutes);        
+    routes.push(...auditRoutes);
   }
-      
-  onload() {     
-    const sessAccess = getAcl().getSessionAccess();    
+
+  onload() {
+    const sessAccess = getAcl().getSessionAccess();
     if (sessAccess.list) {
-      addNavItem(auditNavItem);  
+      addNavItem(auditNavItem);
       this.init();
-    }        
-  }  
+    }
+  }
 }
 
 export default AuditFeature;

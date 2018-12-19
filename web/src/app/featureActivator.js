@@ -14,52 +14,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import $ from 'jQuery';
 import Logger from 'app/lib/logger';
 const logger = Logger.create('featureActivator');
 
 /**
- * Invokes methods on a group of registered features. 
- * 
+ * Invokes methods on a group of registered features.
+ *
  */
 class FeactureActivator {
-  
+
   constructor() {
     this._features = [];
   }
-  
+
   register(feature) {
     if (!feature) {
       throw Error('Feature is undefined');
     }
 
-    this._features.push(feature);    
+    this._features.push(feature);
   }
 
   /**
    * to be called during app initialization. Becomes useful if feature wants to be
-   * part of app initialization flow. 
+   * part of app initialization flow.
    */
   preload(context) {
     let promises = this._features.map(f => {
-      let featurePromise = $.Deferred();
-      // feature should handle failed promises thus always resolve.
-      f.init(context).always(() => {
-        featurePromise.resolve()
+      return new Promise(resolve => {
+        // feature should handle failed promises thus always resolve.
+        f.init(context).finally(() => {
+          resolve();
+        })
       })
-      
-      return featurePromise;
     });
-                          
-    return $.when(...promises);      
+
+    return Promise.all(promises);
   }
-    
+
   onload(context) {
-    this._features.forEach(f => {      
+    this._features.forEach(f => {
       this._invokeOnload(f, context);
     });
   }
-  
+
   getFirstAvailable(){
     return this._features.find( f => !f.isFailed() );
   }
@@ -73,7 +71,7 @@ class FeactureActivator {
       f.onload(...props);
     } catch(err) {
       logger.error('failed to invoke feature onload()', err);
-    }          
+    }
   }
 
 }

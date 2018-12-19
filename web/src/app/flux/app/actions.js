@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import $ from 'jQuery';
 import reactor from 'app/reactor';
 import { SET_SITE_ID, ADD_NAV_ITEM } from './actionTypes';
 import { RECEIVE_CLUSTERS } from './../sites/actionTypes';
@@ -41,29 +40,31 @@ export function initApp(siteId, featureActivator) {
   initAppStatus.start();
   // get the list of available clusters
   return fetchInitData(siteId)
-    .done(() => {
+    .then(() => {
       featureActivator.onload();
       initAppStatus.success();
     })
-    .fail(err => {
-      let msg = api.getErrorText(err);
-      initAppStatus.fail(msg);
+    .catch(err => {
+      initAppStatus.fail(err.message);
     })
 }
 
 export function refresh() {
-  return $.when(
+  return Promise.all([
     sessionActions.fetchActiveSessions(),
-    nodeActions.fetchNodes()
-  )
+    nodeActions.fetchNodes()]);
 }
 
 export function fetchInitData(siteId) {
-  return $.when(fetchSites(), fetchUserContext())
-    .then(masterSiteId => {
+  return Promise.all([fetchSites(), fetchUserContext()])
+    .then(([masterSiteId])=> {
       const selectedCluster = siteId || masterSiteId;
       setSiteId(selectedCluster);
-      return $.when(nodeActions.fetchNodes(), sessionActions.fetchActiveSessions());
+
+      return Promise.all([
+        nodeActions.fetchNodes(),
+        sessionActions.fetchActiveSessions()
+      ])
     });
 }
 
@@ -75,13 +76,13 @@ export function fetchSites(){
       reactor.dispatch(RECEIVE_CLUSTERS, allClusters);
       return json.current.name;
   })
-  .fail(err => {
+  .catch(err => {
     logger.error('fetchSites', err);
   })
 }
 
 export function fetchUserContext(){
-  return api.get(cfg.api.userContextPath).done(json=>{
+  return api.get(cfg.api.userContextPath).then(json => {
     reactor.dispatch(RECEIVE_USER, { name: json.userName, authType: json.authType });
     reactor.dispatch(RECEIVE_USERACL, json.userAcl);
     logger.info("Teleport ver:", json.version);

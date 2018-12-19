@@ -12,7 +12,10 @@ export default {
     const siteId = reactor.evaluate(appGetters.siteId);
     return api.get(cfg.api.getSiteNodesUrl(siteId))
       .then(res => res.items || [])
-      .done(items => reactor.dispatch(TLPT_NODES_RECEIVE, items))
-      .fail(err => logger.error('fetchNodes', err));    
+      .then(items => reactor.dispatch(TLPT_NODES_RECEIVE, items))
+      .catch(err => {
+        logger.error('fetchNodes', err);
+        throw err;
+      })
   }
 }

@@ -12,7 +12,7 @@ const withAuth = component => {
     }
 
     componentDidMount() {
-      session.ensureSession(true).done(() => {
+      session.ensureSession(true).then(() => {
         this.setState({
           hasUser: true
         })

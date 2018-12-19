@@ -13,84 +13,132 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-import $ from 'jQuery';
+import 'whatwg-fetch';
 import localStorage from './localStorage';
+import cfg from './../config';
+
+const defaultCfg = {
+  credentials: 'same-origin',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=utf-8'
+  }
+}
 
 const api = {
 
-  put(path, data){
-    return api.ajax({url: path, data: JSON.stringify(data), type: 'PUT'});
+  get(url){
+    return api.ajax(url);
   },
 
-  post(path, data){
-    return api.ajax({url: path, data: JSON.stringify(data), type: 'POST'});
+  post(url, data){
+    return api.ajax(url, {
+      body: JSON.stringify(data),
+      method: 'POST'
+    });
   },
 
-  delete(path, data){
-    return api.ajax({url: path, data: JSON.stringify(data), type: 'DELETE'});
+  delete(url, data){
+    return api.ajax(url, {
+      body: JSON.stringify(data),
+      method: 'DELETE'
+    });
   },
 
-  get(path){
-    return api.ajax({url: path});
+  put(url, data){
+    return api.ajax(url, {
+      body: JSON.stringify(data),
+      method: 'PUT'
+    });
   },
 
-  ajax(cfg){
-    const defaultCfg = {
-      cache: false,
-      type: 'GET',
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      beforeSend: xhr => this.setAuthHeaders(xhr)
+  ajax(url, params) {
+    url = cfg.baseUrl + url;
+    const options = {
+      ...defaultCfg,
+      ...params
+    };
+
+    options.headers = {
+      ...options.headers,
+      ...getAuthHeaders()
     }
 
-    return $.ajax($.extend({}, defaultCfg, cfg));
-  },
+    return new Promise((resolve, reject) => {
+      fetch(url, options)
+        .then(parseJSON)
+        .then(response => {
+          if (response.ok) {
+            return resolve(response.json);
+          }
 
-  getErrorText(err){
-    let msg = 'Unknown error';
-
-    if (err instanceof Error) {
-      return err.message || msg;
-    }
-
-    if(err.responseJSON && err.responseJSON.message){
-      return err.responseJSON.message;
-    }
-
-    if (err.responseJSON && err.responseJSON.error) {
-      return err.responseJSON.error.message || msg;
-    }
-
-    if (err.responseText) {
-      return err.responseText;
-    }
-
-    return msg;
-  },
-
-  setAuthHeaders(xhr) {
-    const accessToken = this.getAccessToken();
-    const csrfToken = this.getXCSRFToken();
-    xhr.setRequestHeader('X-CSRF-Token', csrfToken);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-  },
-
-  setNoCacheHeaders(xhr) {
-    xhr.setRequestHeader('cache-control', 'max-age=0');
-    xhr.setRequestHeader('expires', '0');
-    xhr.setRequestHeader('pragma', 'no-cache');
-  },
-
-  getAccessToken(){
-    const bearerToken = localStorage.getBearerToken() || {};
-    return bearerToken.accessToken
-  },
-
-  getXCSRFToken(){
-    const metaTag = document.querySelector('[name=grv_csrf_token]');
-    return metaTag ? metaTag.content : ''
+          const err = new Error(getErrorText(response.json));
+          err.status = response.status;
+          return reject(err);
+        })
+        .catch(err => {
+          reject(err);
+        })
+    });
   }
+}
+
+function parseJSON(response) {
+  return new Promise((resolve, reject) => {
+    return response
+      .json()
+      .then(json => resolve({status: response.status, ok: response.ok, json}))
+      .catch(err => reject(err))
+  });
+}
+
+export function getAuthHeaders() {
+  const accessToken = getAccessToken();
+  const csrfToken = getXCSRFToken();
+  return {
+    'X-CSRF-Token': csrfToken,
+    'Authorization': `Bearer ${accessToken}`
+  }
+}
+
+export function getNoCacheHeaders() {
+  return {
+    'cache-control': 'max-age=0',
+    'expires': '0',
+    'pragma': 'no-cache'
+  }
+}
+
+export const getXCSRFToken = () => {
+  const metaTag = document.querySelector('[name=grv_csrf_token]');
+  return metaTag ? metaTag.content : '';
+}
+
+export function getAccessToken() {
+  const bearerToken = localStorage.getBearerToken() || {};
+  return bearerToken.accessToken;
+}
+
+function getErrorText(json){
+  const msg = 'Unknown error';
+
+  if(json && json.error){
+    return json.error.message || msg;
+  }
+
+  if(json && json.message){
+    return json.message;
+  }
+
+  if (json && json.error) {
+    return json.error.message || msg;
+  }
+
+  if (json.responseText) {
+    return json.responseText;
+  }
+
+  return msg;
 }
 
 export default api;

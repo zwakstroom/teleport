@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import $ from 'jQuery';
 import BufferModule from 'buffer/';
 import api from 'app/services/api';
 import Tty from './tty';
@@ -45,17 +44,19 @@ export class EventProvider{
   }
 
   init() {
-    return this._fetchEvents().then(events => {
-      this.events = events;
-      const printEvents = this.events.filter(onlyPrintEvents);
-      if (printEvents.length === 0) {
-        return;
-      }
+    return this._fetchEvents()
+      .then(events => {
+        this.events = events;
+        const printEvents = this.events.filter(onlyPrintEvents);
+        if (printEvents.length === 0) {
+          return;
+        }
 
-      return this._fetchContent(printEvents).then(buffer => {
-        this._populatePrintEvents(buffer, printEvents);
+        return this._fetchContent(printEvents)
+          .then(buffer => {
+            this._populatePrintEvents(buffer, printEvents);
+          });
       });
-    });
   }
 
   _fetchEvents() {
@@ -91,7 +92,7 @@ export class EventProvider{
     }
 
     // fetch all session chunks and then merge them in one
-    return $.when(...promises)
+    return Promise.all(...promises)
       .then((...responses) => {
         responses = promises.length === 1 ? [[responses]] : responses;
         const allBytes = responses.reduce((byteStr, r) => byteStr + r[0], '');
@@ -256,11 +257,11 @@ export class TtyPlayer extends Tty {
         this._init();
         this._setStatusFlag({isReady: true});
       })
-      .fail(err => {
+      .catch(err => {
         logger.error('unable to init event provider', err);
         this.handleError(err);
       })
-      .always(this._change.bind(this));
+      .finally(this._change.bind(this));
 
     this._change();
   }

@@ -16,12 +16,9 @@ limitations under the License.
 
 import api from './api';
 import cfg from 'app/config';
-import $ from 'jQuery';
+import 'u2f-api-polyfill';
 
-// This puts it in window.u2f
-import 'u2f-api-polyfill'; 
-
-const auth = {      
+const auth = {
 
   login(email, password, token){
     const data = {
@@ -29,82 +26,81 @@ const auth = {
       pass: password,
       second_factor_token: token
     };
-    
+
     return api.post(cfg.api.sessionPath, data, false);
   },
 
-  loginWithU2f(name, password){    
+  loginWithU2f(name, password){
     const data = {
       user: name,
       pass: password
     };
 
     return api.post(cfg.api.u2fSessionChallengePath, data, false).then(data=>{
-      const deferred = $.Deferred();
-
-      window.u2f.sign(data.appId, data.challenge, [data], function(res){
-        if(res.errorCode){
-          const err = auth._getU2fErr(res.errorCode);
-          deferred.reject(err);
-          return;
-        }
-
-        const response = {
-          user: name,
-          u2f_sign_response: res
-        };
-
-        api.post(cfg.api.u2fSessionPath, response, false).then(data=>{                    
-          deferred.resolve(data);
-        }).fail(data=>{
-          deferred.reject(data);
-        });
-        
-      });
-
-      return deferred.promise();
-    });
-  },
-
-  acceptInvite(name, password, token, inviteToken){
-    const data = {
-      invite_token: inviteToken,      
-      pass: password,      
-      second_factor_token: token,
-      user: name,      
-    };
-
-    return api.post(cfg.api.createUserPath, data, false);      
-  },
-
-  acceptInviteWithU2f(name, password, inviteToken){
-    return api.get(cfg.api.getU2fCreateUserChallengeUrl(inviteToken))
-      .then(data => {
-        const deferred = $.Deferred();        
-        window.u2f.register(data.appId, [data], [], function(res){        
+      const promise = new Promise((resolve, reject) => {
+        window.u2f.sign(data.appId, data.challenge, [data], function (res) {
           if (res.errorCode) {
             const err = auth._getU2fErr(res.errorCode);
-            deferred.reject(err);
+            reject(err);
             return;
           }
 
           const response = {
             user: name,
-            pass: password,
-            u2f_register_response: res,
-            invite_token: inviteToken
+            u2f_sign_response: res
           };
 
-          api.post(cfg.api.u2fCreateUserPath, response, false)
-            .then(data => {                        
-              deferred.resolve(data);
-            })
-            .fail(err => {
-              deferred.reject(err);
-            })
-          });
+          api.post(cfg.api.u2fSessionPath, response, false)
+            .then(data => {
+              resolve(data);
+            }).catch(data => {
+              reject(data);
+            });
+        });
+      });
 
-          return deferred.promise();        
+      return promise;
+    });
+  },
+
+  acceptInvite(name, password, token, inviteToken){
+    const data = {
+      invite_token: inviteToken,
+      pass: password,
+      second_factor_token: token,
+      user: name,
+    };
+
+    return api.post(cfg.api.createUserPath, data, false);
+  },
+
+  acceptInviteWithU2f(name, password, inviteToken){
+    return api.get(cfg.api.getU2fCreateUserChallengeUrl(inviteToken))
+      .then(data => {
+        return new Promise((resolve, reject) => {
+          window.u2f.register(data.appId, [data], [], function (res) {
+            if (res.errorCode) {
+              const err = auth._getU2fErr(res.errorCode);
+              reject(err);
+              return;
+            }
+
+            const response = {
+              user: name,
+              pass: password,
+              u2f_register_response: res,
+              invite_token: inviteToken
+            };
+
+            api.post(cfg.api.u2fCreateUserPath, response, false)
+              .then(data => {
+                resolve(data);
+              })
+              .catch(err => {
+                reject(err);
+              })
+          });
+        });
       });
   },
 
@@ -114,8 +110,8 @@ const auth = {
       new_password: window.btoa(newPass),
       second_factor_token: token
     }
-    
-    return api.put(cfg.api.changeUserPasswordPath, data);      
+
+    return api.put(cfg.api.changeUserPasswordPath, data);
   },
 
   changePasswordWithU2f(oldPass, newPass) {
@@ -123,34 +119,33 @@ const auth = {
       user: name,
       pass: oldPass,
     };
-    
+
     return api.post(cfg.api.u2fChangePassChallengePath, data).then(data=>{
-      const deferred = $.Deferred();
+      return new Promise((resolve, reject) => {
+        window.u2f.sign(data.appId, data.challenge, [data], function (res) {
+          if (res.errorCode) {
+            const err = auth._getU2fErr(res.errorCode);
+            reject(err);
+            return;
+          }
 
-      window.u2f.sign(data.appId, data.challenge, [data], function(res){
-        if(res.errorCode){
-          const err = auth._getU2fErr(res.errorCode);
-          deferred.reject(err);
-          return;
-        }
-        
-        const data = {          
-          new_password: window.btoa(newPass),
-          u2f_sign_response: res
-        }
+          const data = {
+            new_password: window.btoa(newPass),
+            u2f_sign_response: res
+          }
 
-        api.put(cfg.api.changeUserPasswordPath, data).then(data=>{                    
-          deferred.resolve(data);
-        }).fail(data=>{
-          deferred.reject(data);
+          api.put(cfg.api.changeUserPasswordPath, data)
+            .then(data => {
+              resolve(data);
+            }).catch(data => {
+              reject(data);
+            });
         });
-        
-      });
 
-      return deferred.promise();
-    });    
+      })
+    });
   },
-  
+
   _getU2fErr(errorCode){
     let errorMsg = "";
     // lookup error message...

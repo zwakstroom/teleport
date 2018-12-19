@@ -25,15 +25,19 @@ import {
   RECEIVE_SITE_EVENTS,
 } from './actionTypes';
 
-const logger = Logger.create('Modules/Sessions');
+const logger = Logger.create('flux/sessions');
 
 export function fetchStoredSession(sid, siteId) {
   siteId = siteId || reactor.evaluate(appGetters.siteId);
-  return api.get(cfg.api.getSessionEventsUrl({ siteId, sid })).then(json=>{
-    if (json && json.events) {
-      reactor.dispatch(RECEIVE_SITE_EVENTS, { siteId, json: json.events });
-    }
-  });
+  return api.get(cfg.api.getSessionEventsUrl({ siteId, sid }))
+    .then(json => {
+      if (json && json.events) {
+        reactor.dispatch(RECEIVE_SITE_EVENTS, {
+          siteId, json:
+            json.events
+        });
+      }
+    });
 }
 
 export function fetchSiteEvents(start, end){
@@ -44,26 +48,28 @@ export function fetchSiteEvents(start, end){
   start = start.toISOString();
   end = end.toISOString();
 
-  let siteId = reactor.evaluate(appGetters.siteId);
+  const siteId = reactor.evaluate(appGetters.siteId);
   return api.get(cfg.api.getSiteEventsFilterUrl({ start, end, siteId }))
-    .done(json => {
+    .then(json => {
       if (json && json.events) {
         reactor.dispatch(RECEIVE_SITE_EVENTS, { siteId, json: json.events });
       }
     })
-    .fail(err => {
+    .catch(err => {
       logger.error('fetchSiteEvents', err);
+      throw err;
     });
 }
 
 export function fetchActiveSessions() {
   const siteId = reactor.evaluate(appGetters.siteId);
   return api.get(cfg.api.getFetchSessionsUrl(siteId))
-    .done(json => {
+    .then(json => {
       let sessions = json.sessions || [];
       reactor.dispatch(RECEIVE_ACTIVE_SESSIONS, { siteId, json: sessions });
     })
-    .fail(err => {
+    .catch(err => {
       logger.error('fetchActiveSessions', err);
+      throw err;
     });
 }

@@ -39,17 +39,18 @@ export function resetPasswordChangeAttempt() {
 function _handleChangePasswordPromise(promise) {
   status.changePasswordStatus.start();
   return promise
-    .done(() => {
+    .then(() => {
       status.changePasswordStatus.success();
     })
-    .fail(err => {            
-      const msg = api.getErrorText(err);
+    .catch(err => {
       logger.error("change password", err);
-      status.changePasswordStatus.fail(msg);
-      // logout a user in case of access denied error 
+      status.changePasswordStatus.fail(err.message);
+      // logout a user in case of access denied error
       // (most likely a user exceeded a number of allowed attempts)
       if(err.status == 403){
         session.logout();
       }
+
+      throw err;
     });
 }

@@ -29,20 +29,13 @@ const logger = Logger.create('flux/user/actions');
 export function fetchInvite(inviteToken) {
   const path = cfg.api.getInviteUrl(inviteToken);
   status.fetchInviteStatus.start();
-  api.get(path).done(invite => {
+  api.get(path).then(invite => {
     status.fetchInviteStatus.success();
     reactor.dispatch(RECEIVE_INVITE, invite);
   })
-  .fail(err => {
-    let msg = api.getErrorText(err);
-    status.fetchInviteStatus.fail(msg);
+  .catch(err => {
+    status.fetchInviteStatus.fail(err.message);
   });
-}
-
-export function ensureUser(nextState, replace, cb) {
-  session.ensureSession(true).done(() => {
-    cb();
-  })
 }
 
 export function acceptInvite(name, psw, token, inviteToken){
@@ -77,27 +70,25 @@ export function logout() {
 function _handleAcceptInvitePromise(promise) {
   status.signupStatus.start();
   return promise
-    .done(() => {
+    .then(() => {
       history.push(cfg.routes.app, true);
     })
-    .fail(err => {
-      const msg = api.getErrorText(err);
+    .catch(err => {
       logger.error('accept invite', err);
-      status.signupStatus.fail(msg);
+      status.signupStatus.fail(err.message);
     })
 }
 
 function _handleLoginPromise(promise) {
   status.loginStatus.start();
   promise
-    .done(() => {
+    .then(() => {
       const url = _getEntryRoute();
       history.push(url, true);
     })
-    .fail(err => {
-      const msg = api.getErrorText(err);
+    .catch(err => {
       logger.error('login', err);
-      status.loginStatus.fail(msg);
+      status.loginStatus.fail(err.message);
     })
 }
 
