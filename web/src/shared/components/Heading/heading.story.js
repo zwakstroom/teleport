@@ -8,6 +8,7 @@ storiesOf('Heading', module)
   .addParameters({
     info: {
       inline: true,
+      header: false,
     },
   })
   .add('Heading component', () => (

@@ -8,6 +8,7 @@ storiesOf('Text', module)
   .addParameters({
     info: {
       inline: true,
+      header: false,
     },
   })
   .add('Typography component', () => <Text m={3}>Hello</Text> )

@@ -8,6 +8,7 @@ storiesOf('Flex', module)
   .addDecorator(withInfo)
   .addParameters({
     info: {
+      header: false,
       inline: true,
       text: 'The Flex component is an extension of the Box component with display: flex and props for using flexbox.'
     },

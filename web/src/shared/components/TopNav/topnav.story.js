@@ -11,6 +11,7 @@ storiesOf('TopNav', module)
   .addDecorator(withInfo)
   .addParameters({
     info: {
+      header: false,
       inline: true,
       text:
         'Use the <TopNav /> to render the top nav component'

@@ -1,12 +1,14 @@
+import { platform } from './utils/platform';
+
+const fontMonoLinux = `"Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback`;
+const fontMonoWin = `Consolas, "Courier New", monospace`;
+const fontMonoMac = `Menlo, Monaco, "Courier New", monospace`;
 
 export const font = `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";`
 
 export const fonts = {
   sansSerif: font,
-  monoLinux: `Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback`,
-  monoWin: `Consolas, "Courier New", monospace`,
-  monoMac: `Menlo, Monaco, "Courier New", monospace`,
-  mono: `Droid Sans Mono", "Andale Mono", Consolas, monospace`
+  mono: getMonoFont()
 }
 
 export const regular = 400
@@ -58,19 +60,6 @@ export const borders = [
   '32px solid',
 ];
 
-export const z = {
-  1: 1,
-  2: 2,
-  3: 3,
-  4: 4,
-  5: 5,
-  max1: 1000,
-  max2: 2000,
-  max3: 3000,
-  max4: 4000,
-  max5: 5000
-};
-
 const theme = {
   colors,
   background,
@@ -84,3 +73,19 @@ const theme = {
 }
 
 export default theme;
+
+function getMonoFont() {
+  if (platform.isLinux) {
+    return fontMonoLinux;
+  }
+
+  if (platform.isMac) {
+    return fontMonoMac;
+  }
+
+  if (platform.isWin) {
+    return fontMonoWin;
+  }
+
+  return fontMonoLinux;
+}

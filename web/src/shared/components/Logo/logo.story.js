@@ -9,6 +9,7 @@ storiesOf('Logo', module)
   .addParameters({
     info: {
       inline: true,
+      header: false,
     },
   })
   .add('Logo component', () => <Logo src={teleportSvg} />);

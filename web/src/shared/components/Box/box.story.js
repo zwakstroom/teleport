@@ -8,27 +8,31 @@ storiesOf('Box', module)
   .addParameters({
     info: {
       inline: true,
-      text: 'A low-level layout component for setting width, margin, padding, and color'
+      header: false,
     },
   })
-  .add('Layout component', () => <Box> this is a simple div</Box>)
+  .add('Layout component', () => (
+    <Box color="white" bg="blue">
+      this is a simple div
+    </Box>
+  ))
   .add('Padding', () => (
-    <Box p={3}>
+    <Box bg="blue" p={3}>
       Hello
     </Box>
   ))
   .add('Margin', () => (
-    <Box m={3}>
+    <Box bg="blue" m={3}>
       Hello
     </Box>
   ))
   .add('Color', () => (
-    <Box p={3} color='blue'>
+    <Box bg="blue" p={3} color='white'>
       Hello
     </Box>
   ))
   .add('Background Color', () => (
-    <Box p={3} color='white' bg='blue'>
+    <Box bg="blue" p={3} color='white'>
       Hello
     </Box>
   ))

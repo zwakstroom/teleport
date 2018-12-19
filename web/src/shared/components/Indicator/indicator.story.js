@@ -8,6 +8,7 @@ storiesOf('Indicator', module)
   .addParameters({
     info: {
       inline: true,
+      header: false,
     },
   })
   .add('Loading Indicator', () => <Indicator />)

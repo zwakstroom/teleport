@@ -8,10 +8,12 @@ storiesOf('Button', module)
   .addParameters({
     info: {
       inline: true,
+      header: false
     },
   })
   .add('Button component', () => (
-    <Button size="large">Click Me</Button>)
+    <Button size="large">Click Me</Button>
+  )
   )
   .add('color', () => (
     <div>
@@ -27,4 +29,9 @@ storiesOf('Button', module)
     </div>
   ))
   .add('block', () => <Button block>Block Button</Button>)
-  .add('disabled', () => <Button disabled>Disabled</Button>)
+  .add('states', () => (
+    <div>
+      <Button mr={2} disabled>Disabled</Button>
+      <Button autoFocus> Focused</Button>
+    </div>
+  ));

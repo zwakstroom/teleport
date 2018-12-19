@@ -25,7 +25,6 @@ Box.propTypes = {
   bg: PropTypes.string,
   width: numberStringOrArray,
   w: numberStringOrArray,
-  /** Margin */
   m: numberStringOrArray,
   mt: numberStringOrArray,
   mr: numberStringOrArray,
@@ -33,7 +32,6 @@ Box.propTypes = {
   ml: numberStringOrArray,
   mx: numberStringOrArray,
   my: numberStringOrArray,
-  /** Padding */
   p: numberStringOrArray,
   pt: numberStringOrArray,
   pr: numberStringOrArray,

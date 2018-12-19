@@ -8,6 +8,7 @@ storiesOf('SideNav', module)
   .addParameters({
     info: {
       inline: true,
+      header: false,
     },
   })
   .add('SideNav component', () => {

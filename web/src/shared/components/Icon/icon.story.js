@@ -9,6 +9,7 @@ storiesOf('Icon', module)
   .addParameters({
     info: {
       inline: true,
+      header: false,
     },
   })
   .add('Icon components', () => (
