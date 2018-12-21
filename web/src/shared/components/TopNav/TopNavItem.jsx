@@ -1,11 +1,10 @@
-import styled, { css } from 'styled-components'
-import { NavLink } from 'react-router-dom'
+import styled from 'styled-components'
 import theme from './../theme'
 
 /**
- * Css styles for NavItems
+ * TopNavItem
  */
-const styledTopNavItemCss = css`
+const TopNavItem = styled.button`
   background: ${props => props.theme.background.secondary};
   border: none;
   border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
@@ -41,13 +40,6 @@ const styledTopNavItemCss = css`
     line-height: 68px;
     border-bottom: ${props => `4px solid ${props.theme.colors.accent}` }
   }
-`;
-
-/**
- * TopNavItem
- */
-const TopNavItem = styled.div`
-  ${styledTopNavItemCss}
 `
 
 TopNavItem.displayName = 'TopNavItem';
@@ -56,19 +48,3 @@ TopNavItem.defaultProps = {
 }
 
 export default TopNavItem;
-
-/**
- * TopNavItemLink
- */
-const TopNavItemLink = styled(NavLink)`
-  ${styledTopNavItemCss}
-`
-
-TopNavItemLink.displayName = 'TopNavItemLink';
-TopNavItemLink.defaultProps = {
-  theme: theme
-}
-
-export {
-  TopNavItemLink
-}

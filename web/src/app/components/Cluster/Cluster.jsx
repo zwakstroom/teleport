@@ -15,11 +15,11 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Route, Switch } from 'react-router-dom'
+import { Route, Switch, NavLink } from 'react-router-dom'
 import { connect } from './../nuclear';
 import cfg from 'app/config';
 import clusterGetters from 'app/flux/sites/getters';
-import { Flex, Box, SideNav, SideNavItemLink } from 'shared/components';
+import { Flex, Box, SideNav, SideNavItem } from 'shared/components';
 import ClusterNodes from './../ClusterNodes';
 import ClusterSelector from './ClusterSelector';
 import { changeCluster } from 'app/flux/sites/actions';
@@ -41,15 +41,21 @@ export class Cluster extends React.Component {
       <Flex style={{ height: "100%" }}>
         <Box style={{ overflow: "auto" }}>
           <SideNav>
-            <SideNavItemLink
-              exact
-              to={cfg.getClusterUrl(clusterId)}>
-                Nodes
-            </SideNavItemLink>
-            <SideNavItemLink
-              to={cfg.getClusterSessionsUrl(clusterId)}>
+            <SideNavItem as={props => (
+              <NavLink className={props.className}
+                exact
+                to={cfg.getClusterUrl(clusterId)}>
+                  Nodes
+              </NavLink>
+              )}
+            />
+            <SideNavItem as={props => (
+              <NavLink className={props.className}
+                to={cfg.getClusterSessionsUrl(clusterId)}>
                 Sessions
-            </SideNavItemLink>
+              </NavLink>
+              )}
+            />
           </SideNav>
         </Box>
         <Box m={4} style={{ overflow: "auto" }} >
@@ -61,12 +67,9 @@ export class Cluster extends React.Component {
             />
           </div>
           <Switch>
-            <Route
-              exact path={cfg.routes.cluster}
-              render={() => (
-                <ClusterNodes clusterId={clusterId} />
-              )}
-            />
+            <Route exact path={cfg.routes.cluster} >
+              <ClusterNodes clusterId={clusterId} />
+            </Route>
           </Switch>
         </Box>
       </Flex>

@@ -22,7 +22,7 @@ import AppBar from './AppBar';
 import appGetters from 'app/flux/app/getters';
 import { Failed } from './../msgPage.jsx';
 import { initApp } from 'app/flux/app/actions';
-import { Flex, Box, Indicator } from 'shared/components';
+import { Box, Indicator } from 'shared/components';
 import withAuth from './../withAuth';
 import FeatureActivator from './../../featureActivator';
 import Clusters from './../Clusters';
@@ -78,8 +78,10 @@ function mapStateToProps() {
 
 export default withAuth(connect(mapStateToProps)(App));
 
-const StyledApp = styled(Flex)`
+const StyledApp = styled.div`
   position: fixed;
   height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 `

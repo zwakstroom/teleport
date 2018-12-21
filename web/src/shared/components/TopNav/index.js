@@ -1,7 +1,6 @@
 import TopNav from './TopNav';
-import TopNavItem, { TopNavItemLink} from './TopNavItem';
+import TopNavItem from './TopNavItem';
 export default TopNav;
 export {
   TopNavItem,
-  TopNavItemLink
 }

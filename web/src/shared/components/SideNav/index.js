@@ -1,6 +1,7 @@
-import SideNav, { SideNavItem, SideNavItemLink } from './SideNav';
+import SideNav from './SideNav';
+import SideNavItem from './SideNavItem';
 export default SideNav;
+
 export {
-  SideNavItem,
-  SideNavItemLink
+  SideNavItem
 }

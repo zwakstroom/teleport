@@ -6,8 +6,8 @@ import Label from './Label';
 import Heading from './Heading';
 import Box from './Box';
 import Indicator from './Indicator';
-import SideNav, { SideNavItem, SideNavItemLink } from './SideNav';
-import TopNav, { TopNavItem, TopNavItemLink } from './TopNav';
+import SideNav, { SideNavItem } from './SideNav';
+import TopNav, { TopNavItem } from './TopNav';
 import Flex from './Flex';
 
 export {
@@ -21,9 +21,7 @@ export {
   Label,
   SideNav,
   SideNavItem,
-  SideNavItemLink,
   Text,
   TopNav,
   TopNavItem,
-  TopNavItemLink,
 }
