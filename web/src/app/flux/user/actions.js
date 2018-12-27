@@ -29,7 +29,7 @@ const logger = Logger.create('flux/user/actions');
 export function fetchInvite(inviteToken) {
   const path = cfg.api.getInviteUrl(inviteToken);
   status.fetchInviteStatus.start();
-  api.get(path).then(invite => {
+  return api.get(path).then(invite => {
     status.fetchInviteStatus.success();
     reactor.dispatch(RECEIVE_INVITE, invite);
   })
@@ -40,7 +40,7 @@ export function fetchInvite(inviteToken) {
 
 export function acceptInvite(name, psw, token, inviteToken){
   const promise = auth.acceptInvite(name, psw, token, inviteToken);
-  _handleAcceptInvitePromise(promise);
+  return _handleAcceptInvitePromise(promise);
 }
 
 export function acceptInviteWithU2f(name, psw, inviteToken) {
@@ -49,18 +49,18 @@ export function acceptInviteWithU2f(name, psw, inviteToken) {
 }
 
 export function loginWithSso(providerName, providerUrl) {
-  const entryUrl = this._getEntryRoute();
+  const entryUrl = _getEntryRoute();
   history.push(cfg.api.getSsoUrl(providerUrl, providerName, entryUrl), true);
 }
 
 export function loginWithU2f(user, password) {
   const promise = auth.loginWithU2f(user, password);
-  _handleLoginPromise(promise);
+  return _handleLoginPromise(promise);
 }
 
 export function login(user, password, token) {
   const promise = auth.login(user, password, token);
-  _handleLoginPromise(promise);
+  return _handleLoginPromise(promise);
 }
 
 export function logout() {
@@ -81,7 +81,7 @@ function _handleAcceptInvitePromise(promise) {
 
 function _handleLoginPromise(promise) {
   status.loginStatus.start();
-  promise
+  return promise
     .then(() => {
       const url = _getEntryRoute();
       history.push(url, true);

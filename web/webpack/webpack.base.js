@@ -202,6 +202,8 @@ function jsx(args){
       {
         loader: 'babel-loader',
         options: {
+          babelrc: false,
+          configFile: false,
           presets,
           plugins,
           // This is a feature of `babel-loader` for webpack (not Babel itself).

@@ -25,8 +25,6 @@ import cfg from './config';
 import App from './components/App';
 import ThemeProvider from './../shared/components/ThemeProvider';
 import { hot, setConfig } from 'react-hot-loader'
-import "font-awesome/css/font-awesome.css";
-import './vendor';
 
 setConfig({
   logLevel: 'no-errors-please'

@@ -16,7 +16,6 @@ limitations under the License.
 
 import Logger from 'app/lib/logger';
 import cfg from 'app/config';
-import $ from 'jQuery';
 import history from './history';
 import localStorage, { KeysEnum } from './localStorage';
 import api from './api';
@@ -38,11 +37,11 @@ let sesstionCheckerTimerId = null;
 const session = {
 
   logout(rememberLocation=false) {
-    api.delete(cfg.api.sessionPath).finally(() => {
-      history.goToLogin(rememberLocation)
-    });
-
-    this.clear();
+    return api.delete(cfg.api.sessionPath)
+      .finally(() => {
+        this.clear();
+        history.goToLogin(rememberLocation)
+      });
   },
 
   clear(){
@@ -59,7 +58,7 @@ const session = {
     const token = this._getBearerToken();
     if (!token) {
       this.logout(rememberLocation);
-      return $.Deferred().reject();
+      return Promise.reject("missing bearer token");
     }
 
     if(this._shouldRenewToken()){
@@ -68,7 +67,7 @@ const session = {
         .catch(() => this.logout(rememberLocation));
     } else {
       this._startSessionChecker();
-      return $.Deferred().resolve(token)
+      return Promise.resolve(token);
     }
   },
 

@@ -14,25 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var webpackCfg = require('./webpack/webpack.config.test');
+import localStorage from 'app/services/localStorage';
+import {BearerToken} from 'app/services/session';
 
-module.exports = function (config) {
-  config.set({
-    browsers: ['Chrome'],
-    frameworks: [ 'mocha' ],
-    reporters: [ 'mocha' ],
-    files: [
-      'karma.test.files.js'
-    ],
+describe('services/localStorage', () => {
 
-    preprocessors: {
-      'karma.test.files.js': [ 'webpack' ]
-    },
+  it('should put and retrieve bearer token from browser localStorage', () => {
+    const bearerToken = new BearerToken({"token": "sample_token", "expires_in": 599});
 
-    webpack: webpackCfg,
-
-    webpackServer: {
-      noInfo: true
-    }
+    localStorage.setBearerToken(bearerToken);
+    const actual = localStorage.getBearerToken();
+    expect(actual.accessToken).toEqual(bearerToken.accessToken);
   });
-};
+
+})

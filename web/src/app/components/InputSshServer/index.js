@@ -1,5 +1,5 @@
 /*
-Copyright 2015 Gravitational, Inc.
+Copyright 2018 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import $ from 'jquery'
-import expect from 'expect';
-import ReactTestUtils from 'react-dom/test-utils';
-import reactor from 'app/reactor';
-import session from 'app/services/session';
-import api from 'app/services/api';
-import cfg from 'app/config';
-import 'app/flux';
-
-const spyOn = expect.spyOn;
-const Dfd = $.Deferred;
-
-export {
-  cfg,
-  reactor,
-  session,
-  expect,
-  $,
-  ReactTestUtils,
-  spyOn,
-  Dfd,
-  api
-}
+import InputSshServer from './InputSshServer';
+export default InputSshServer;

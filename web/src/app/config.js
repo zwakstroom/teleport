@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 import { generatePath } from "react-router";
+import { merge } from 'lodash';
 import { formatPattern } from 'app/lib/patternUtils';
-import $ from 'jQuery';
 import { isTestEnv } from './services/utils'
 
 const baseUrl = isTestEnv() ? 'localhost' : window.location.origin;
@@ -162,8 +162,8 @@ const cfg = {
     return `${prefix}${hostport}`;
   },
 
-  init(config = {}) {
-    $.extend(true, this, config);
+  init(newConfig = {}) {
+    merge(this, newConfig);
   },
 
   getClusterUrl(clusterId) {

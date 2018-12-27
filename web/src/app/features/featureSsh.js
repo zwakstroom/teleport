@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import cfg from 'app/config'
-import Nodes from 'app/components/nodes/main';
+import Nodes from 'app/components/ClusterNodes';
 import FeatureBase from './../featureBase';
 import { addNavItem } from './../flux/app/actions';
 import Index from '../components/terminal';

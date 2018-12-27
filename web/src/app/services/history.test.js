@@ -14,12 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import expect from 'expect';
 import history from 'app/services/history';
-import { createMemoryHistory } from 'react-router';
+import { createMemoryHistory } from 'history';
 import cfg from 'app/config';
-
-const spyOn = expect.spyOn;
 
 history.init( new createMemoryHistory());
 
@@ -28,18 +25,17 @@ describe('services/history', () => {
   const fallbackRoute = cfg.routes.app;
   const browserHistory = history.original(/* be default returns inMemory history*/);
 
-  beforeEach( () => {
-    spyOn(browserHistory, 'push');
-    spyOn(history, 'getRoutes');
-    spyOn(history, '_pageRefresh');
+  beforeEach(() => {
+    jest.spyOn(browserHistory, 'push');
+    jest.spyOn(history, 'getRoutes');
+    jest.spyOn(history, '_pageRefresh').mockImplementation();
   });
 
-  afterEach( () => {
-    expect.restoreSpies();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('canPush', () => {
-
     const push = actual => ({
       andExpect(expected){
         history.push(actual)
@@ -48,7 +44,7 @@ describe('services/history', () => {
     })
 
     it('should push if allowed else fallback to default route', () => {
-      history.getRoutes.andReturn(['/valid', '/']);
+      history.getRoutes.mockReturnValue(['/valid', '/']);
       push('invalid').andExpect(fallbackRoute);
       push('.').andExpect(fallbackRoute);
       push('/valid/test').andExpect(fallbackRoute);
@@ -60,22 +56,20 @@ describe('services/history', () => {
 
     it('should refresh a page if called withRefresh=true', () => {
       let route = '/';
-      history.getRoutes.andReturn([route]);
+      history.getRoutes.mockReturnValue([route]);
       history.push(route, true)
-      expect(history._pageRefresh).toHaveBeenCalledWith(route);
+      expect(history._pageRefresh).toBeCalledWith(route);
     })
   })
 
   describe('goToLogin()', () => {
     it('should navigate to login with URL that has redirect parameter with current location', () => {
-      history.getRoutes.andReturn(['/web/login', '/current-location']);
-      spyOn(browserHistory, 'getCurrentLocation').andReturn({
-        pathname: '/current-location'
-      });
-
+      history.getRoutes.mockReturnValue(['/web/login', '/current-location']);
+      history.original().location.pathname = '/current-location'
       history.goToLogin(true);
-      const expected = '/web/login?redirect_uri=localhost/current-location';
-      expect(history._pageRefresh).toHaveBeenCalledWith(expected);
+
+      const expected = '/web/login?redirect_uri=http://localhost/current-location';
+      expect(history._pageRefresh).toBeCalledWith(expected);
     });
   });
 })

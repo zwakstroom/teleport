@@ -65,7 +65,6 @@ export class EventProvider{
       if (!json.events) {
         return [];
       }
-
       return this._createEvents(json.events);
     })
   }
@@ -92,7 +91,7 @@ export class EventProvider{
     }
 
     // fetch all session chunks and then merge them in one
-    return Promise.all(...promises)
+    return Promise.all(promises)
       .then((...responses) => {
         responses = promises.length === 1 ? [[responses]] : responses;
         const allBytes = responses.reduce((byteStr, r) => byteStr + r[0], '');
@@ -251,8 +250,9 @@ export class TtyPlayer extends Tty {
 
   // override
   connect(){
-    this._setStatusFlag({isLoading: true});
-    this._eventProvider.init()
+    this._setStatusFlag({ isLoading: true });
+    this._change();
+    return this._eventProvider.init()
       .then(() => {
         this._init();
         this._setStatusFlag({isReady: true});
@@ -262,14 +262,12 @@ export class TtyPlayer extends Tty {
         this.handleError(err);
       })
       .finally(this._change.bind(this));
-
-    this._change();
   }
 
   handleError(err) {
     this._setStatusFlag({
       isError: true,
-      errText: api.getErrorText(err)
+      errText: err.message
     })
   }
 

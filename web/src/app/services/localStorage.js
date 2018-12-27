@@ -30,11 +30,11 @@ const storage = {
   },
 
   unsubscribe(fn) {
-    window.removeEventListener('storage', fn);  
+    window.removeEventListener('storage', fn);
   },
-  
-  setBearerToken(token) {  
-    window.localStorage.setItem(KeysEnum.TOKEN, JSON.stringify(token));  
+
+  setBearerToken(token) {
+    window.localStorage.setItem(KeysEnum.TOKEN, JSON.stringify(token));
   },
 
   getBearerToken(){
@@ -48,7 +48,7 @@ const storage = {
 
   broadcast(messageType, messageBody){
     window.localStorage.setItem(messageType, messageBody);
-    window.localStorage.removeItem(messageType);    
+    window.localStorage.removeItem(messageType);
   }
 }
 

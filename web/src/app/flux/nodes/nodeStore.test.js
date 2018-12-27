@@ -14,40 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { reactor, expect, Dfd, spyOn, api } from './../';
-import actions from 'app/flux/nodes/actions';
+import 'app/flux';
+import api from 'app/services/api';
+import reactor from 'app/reactor';
+import { fetchNodes } from './actions';
 import getters from 'app/flux/nodes/getters';
 import { getNodeStore } from 'app/flux/nodes/nodeStore';
 import { setSiteId } from 'app/flux/app/actions';
-import { nodes } from 'app/__tests__/apiData'
+import { nodes } from 'app/fixtures'
 
 describe('flux/nodes', () => {
   const siteid = 'siteid123';
   const serverId = 'ad2109a6-42ac-44e4-a570-5ce1b470f9b6';
-  
+
   beforeEach(() => {
-    setSiteId(siteid);  
-    spyOn(api, 'get');
+    setSiteId(siteid);
   });
 
   afterEach(() => {
-    reactor.reset()
-    expect.restoreSpies();
+    reactor.reset();
+    jest.clearAllMocks();
   })
 
-  describe('getters and actions', () => {
-    beforeEach(() => {
-      api.get.andReturn(Dfd().resolve(nodes));
-      actions.fetchNodes();
-    });
+  it('getters', async () => {
+    jest.spyOn(api, 'get')
+      .mockImplementation(() => Promise.resolve(nodes) );
 
-    it('should get cluster nodes"', () => {                           
-      expect(reactor.evaluateToJS(getters.siteNodes)).toEqual(nodes.items);
-    });
-
-    it('should findServer', () => {            
-      const server = getNodeStore().findServer(serverId);
-      expect(server.hostname).toEqual('x220');
-    });
+    await fetchNodes();
+    const server = getNodeStore().findServer(serverId);
+    expect(server.hostname).toEqual('x220');
+    expect(reactor.evaluateToJS(getters.siteNodes)).toEqual(nodes.items);
   });
+
 })

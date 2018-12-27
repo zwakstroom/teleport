@@ -16,6 +16,10 @@ module.exports = {
     "node": true,
     "mocha": true
   },
+  "globals": {
+    "expect": true,
+    "jest": true
+  },
   "extends": [
     "eslint:recommended",
     "plugin:import/errors",

@@ -19,8 +19,10 @@ class Logger {
     this.name = name;
   }
 
-  log(level='log', ...args) {
-    window.console[level](`%c[${this.name}]`, `color: blue;`, ...args);
+  log(level = 'log', ...args) {
+    if (process.env.NODE_ENV !== 'test') {
+      window.console[level](`%c[${this.name}]`, `color: blue;`, ...args);
+    }
   }
 
   trace(...args) {

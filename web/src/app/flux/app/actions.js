@@ -22,7 +22,7 @@ import { RECEIVE_USERACL } from './../userAcl/actionTypes';
 import api from 'app/services/api';
 import cfg from 'app/config';
 import { initAppStatus } from 'app/flux/status/actions';
-import nodeActions from './../nodes/actions';
+import { fetchNodes } from './../nodes/actions';
 import * as sessionActions from 'app/flux/sessions/actions';
 import Logger from 'app/lib/logger';
 
@@ -52,7 +52,7 @@ export function initApp(siteId, featureActivator) {
 export function refresh() {
   return Promise.all([
     sessionActions.fetchActiveSessions(),
-    nodeActions.fetchNodes()]);
+    fetchNodes()]);
 }
 
 export function fetchInitData(siteId) {
@@ -62,7 +62,7 @@ export function fetchInitData(siteId) {
       setSiteId(selectedCluster);
 
       return Promise.all([
-        nodeActions.fetchNodes(),
+        fetchNodes(),
         sessionActions.fetchActiveSessions()
       ])
     });
