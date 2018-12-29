@@ -30,10 +30,17 @@ export class CardCluster extends React.Component {
     const { name, status, connectedAt, ...rest } = this.props;
     const public_addr = public_addr || 'wolfe.gravitational.com';
     const version = version || '#.#.#';
+
     const props = {
       p: 4,
       ...rest,
       onClick: this.onClick,
+    }
+
+    let lastSeen = null;
+
+    if(status !== 'online') {
+      lastSeen = <div>LAST SEEN: {connectedAt}</div>;
     }
 
     console.log(this.props);
@@ -41,15 +48,19 @@ export class CardCluster extends React.Component {
     return (
       <StyledCardCluster {...props}>
         <ClusterHeader>
+          <ClusterStatus status={status} />
           <h2>{name}</h2>
           <h3>{} NODES</h3>
+
+          <ClusterSettings>
+            <Icons.Ellipsis />
+          </ClusterSettings>
         </ClusterHeader>
 
-
-        <ClusterContent>
-          <ClusterIcon>
+        <ClusterContent><ClusterIcon>
             <Icons.Cluster />
           </ClusterIcon>
+
           <ul>
             <li><strong>STATUS: {status}</strong></li>
             <li>{public_addr}</li>
@@ -57,7 +68,7 @@ export class CardCluster extends React.Component {
           </ul>
         </ClusterContent>
 
-        <ClusterFooter>{connectedAt}</ClusterFooter>
+        <ClusterFooter>{lastSeen}</ClusterFooter>
       </StyledCardCluster>
     );
   }
@@ -82,7 +93,8 @@ const StyledCardCluster = styled(Box)`
 const ClusterHeader = styled.header`
   background: ${props => props.theme.background.tertiary };
   border-radius: 4px 4px 0 0;
-  padding: 16px 16px 8px 16px;
+  padding: 16px 16px 8px 40px;
+  position: relative;
   transition: all .3s;
 
   h2 {
@@ -99,6 +111,27 @@ const ClusterHeader = styled.header`
     opacity: .56;
     text-transform: uppercase;
   }
+`
+
+const ClusterStatus = styled.div`
+  background: ${props => props.status !== "online" ? props.theme.colors.error : props.theme.colors.success };
+  box-shadow: 0 2px 16px ${props => props.status !== "online" ? props.theme.colors.error : props.theme.colors.success };
+  border-radius: 200px;
+  border: 1px solid ${props => props.theme.background.tertiary };
+  height: 8px;
+  left: 16px;
+  position: absolute;
+  top: 24px;
+  width: 8px;
+  z-index: 1;
+`
+
+const ClusterSettings = styled.div`
+  opacity: .24;
+  right: 16px;
+  position: absolute;
+  top: 16px;
+  z-index: 2;
 `
 
 

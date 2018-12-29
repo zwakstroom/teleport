@@ -1,2 +1,2 @@
-import { Microsoft, Google, Github, Cluster } from './Icon'
-export { Microsoft, Google, Github, Cluster };
+import { Microsoft, Google, Github, Cluster, Ellipsis } from './Icon'
+export { Microsoft, Google, Github, Cluster, Ellipsis };

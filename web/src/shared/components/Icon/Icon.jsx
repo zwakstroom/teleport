@@ -3,6 +3,7 @@ import './../../assets/icomoon/style.css';
 
 const fontIconClasses = {
   "Cluster": 'icon-site-map',
+  "Ellipsis": 'icon-ellipsis',
   "Windows": 'icon-windows',
   "Github": 'icon-github',
   "Google": 'icon-google-plus2',
@@ -23,6 +24,8 @@ function makeFontIcon(kind) {
 }
 
 export const Cluster = makeFontIcon('Cluster');
+
+export const Ellipsis = makeFontIcon('Ellipsis');
 
 export const Microsoft = makeFontIcon('Windows');
 

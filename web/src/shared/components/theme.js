@@ -23,7 +23,8 @@ export const background = {
   secondary: '#222C59',
   tertiary: '#263266',
   quaternary: '#1B234A',
-  error: '#FEE5ED'
+  error: '#FEE5ED',
+  success: '#00BFA5'
 }
 
 export const colors = {
@@ -33,6 +34,7 @@ export const colors = {
   error: '#FA2A6A',
   warning: '#FA2A6A',
   subtle: '#EDF0F2',
+  success: '#00BFA5',
   highlight: '#E1F5FE',
   link: '#039BE5',
 
