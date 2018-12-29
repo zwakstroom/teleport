@@ -67,6 +67,7 @@ export class CardCluster extends React.Component {
 
 const StyledCardCluster = styled(Box)`
   background: ${props => props.theme.background.secondary };
+  border-radius: 4px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, .24);
   cursor: pointer;
   width: 408px;
@@ -80,7 +81,7 @@ const StyledCardCluster = styled(Box)`
 
 const ClusterHeader = styled.header`
   background: ${props => props.theme.background.tertiary };
-  border-radius: 4px;
+  border-radius: 4px 4px 0 0;
   padding: 16px 16px 8px 16px;
   transition: all .3s;
 
@@ -118,7 +119,6 @@ const ClusterIcon = styled.div`
     line-height: 40px;
     margin: 0 auto;
   }
-
 `
 
 const ClusterContent = styled.div`
@@ -147,6 +147,7 @@ const ClusterContent = styled.div`
 const ClusterFooter = styled.footer`
   background: ${props => props.theme.background.quaternary };
   box-sizing: border-box;
+  border-radius: 0 0 4px 4px;
   clear: both;
   font-size: 12px;
   height: 48px;
@@ -155,6 +156,5 @@ const ClusterFooter = styled.footer`
   margin: 0;
   padding: 0 16px;
 `
-
 
 export default CardCluster;
