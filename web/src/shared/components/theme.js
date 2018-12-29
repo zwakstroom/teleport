@@ -19,8 +19,10 @@ export const space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 
 export const background = {
   light: '#FFFFFF',
-  primary: '#0C143D',
+  primary: '#111B48',
   secondary: '#222C59',
+  tertiary: '#263266',
+  quaternary: '#1B234A',
   error: '#FEE5ED'
 }
 
