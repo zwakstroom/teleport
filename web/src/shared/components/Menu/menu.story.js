@@ -9,7 +9,7 @@ import Flex from '../Flex';
 storiesOf('Menu', module)
   .add('Simple menu', () => (
     <Flex justifyContent="space-between">
-      <SimpleMenu text="Show to the right">
+      <SimpleMenu text="Menu to right">
         <MenuItem>
           Test
         </MenuItem>
@@ -17,7 +17,7 @@ storiesOf('Menu', module)
           Test2
         </MenuItem>
       </SimpleMenu>
-      <SimpleMenu text="Show in the center"
+      <SimpleMenu text="Menu in center"
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'center',
@@ -37,7 +37,7 @@ storiesOf('Menu', module)
           <Button mt={1} mb={1} block> Logout</Button>
         </MenuItem>
       </SimpleMenu>
-      <SimpleMenu text="Show to the left"
+      <SimpleMenu text="Menu to left"
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'right',

@@ -81,7 +81,9 @@ const StyledDialog = styled.div`
 `
 
 const StyledDialogContent = styled.div`
-  background-color: white;
+  background: ${props => props.theme.background.light };
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .24);
   display: flex;
   flex-direction: column;
   margin: 48;

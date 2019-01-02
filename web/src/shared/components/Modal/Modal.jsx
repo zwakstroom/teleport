@@ -11,7 +11,6 @@ function getHasTransition(props) {
 }
 
 class Modal extends React.Component {
-
   mounted = false;
 
   constructor(props) {
@@ -325,7 +324,7 @@ const StyledBackdrop = styled.div`
   bottom: 0;
   top: 0;
   left: 0;
-  background-color: ${ props => props.invisible ? 'transparent' : `rgba(0, 0, 0, 0.5)`};
+  background-color: ${ props => props.invisible ? 'transparent' : `rgba(0, 0, 0, .24)`};
   opacity: 1;
   touch-action: none;
 `
