@@ -117,14 +117,14 @@ class TableSample extends React.Component {
 }
 
 const data = [{
-  hostname: 'host-a',
+  hostname: <strong>host-a</strong>,
   addr: '192.168.7.1'
 },
 {
-  hostname: 'host-b',
+  hostname: <strong>host-b</strong>,
   addr: '192.168.7.2'
 },
 {
-  hostname: 'host-c',
+  hostname: <strong>host-c</strong>,
   addr: '192.168.7.3'
 }]

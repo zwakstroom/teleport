@@ -39,7 +39,7 @@ const color = props => {
     color = {
       background: props.theme.colors.secondary,
 
-      '&:hover': {
+      '&:hover, &:focus': {
         background: props.theme.colors.secondaryLight,
       }
     };
@@ -49,7 +49,7 @@ const color = props => {
     color = {
       background: props.theme.colors.warning,
 
-      '&:hover, &:active': {
+      '&:hover, &:focus': {
         background: props.theme.colors.error
       },
 
