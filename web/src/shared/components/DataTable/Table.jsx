@@ -78,7 +78,7 @@ class Table extends React.Component {
         <tbody>
           <tr>
            <td align="center" colSpan={children ? children.length:0}>
-            <h3>NO DATA AVAIALBLE</h3>
+            <h3 className="no-data">NO DATA AVAIALBLE</h3>
            </td>
           </tr>
         </tbody>

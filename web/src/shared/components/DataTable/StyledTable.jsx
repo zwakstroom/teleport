@@ -68,6 +68,13 @@ export const StyledTable = styled.table`
       margin-left: 8px;
     }
   }
+
+  .no-data {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: .24;
+    margin: 24px 0;
+  }
 `;
 
 export const StyledEmptyIndicator = styled.div`
