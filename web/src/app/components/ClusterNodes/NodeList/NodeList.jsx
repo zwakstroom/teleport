@@ -50,7 +50,6 @@ const TagCell = ({rowIndex, data, ...props}) => {
 }
 
 class LoginCell extends React.Component {
-
   onKeyPress = e => {
     if (e.key === 'Enter' && e.target.value) {
       const url = this.makeUrl(e.target.value);

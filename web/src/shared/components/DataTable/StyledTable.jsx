@@ -33,7 +33,7 @@ export const StyledTable = styled.table`
   & > thead > tr > td,
   & > tbody > tr > td,
   & > tfoot > tr > td {
-    line-height: 1.42857;
+    line-height: 24px;
     padding: 16px;
     vertical-align: top;
   }
@@ -45,7 +45,7 @@ export const StyledTable = styled.table`
   & > thead> tr > td,
   & > tbody> tr > td,
   & > tfoot> tr > td {
-    line-height: 1.42857;
+    line-height: 24px;
     padding: 16px;
     vertical-align: top;
   }
@@ -53,9 +53,10 @@ export const StyledTable = styled.table`
 
   & > thead > tr > th {
     background: ${props => props.theme.background.quaternary };
-    color: rgba(${props => props.theme.colors.light }, .56);
+    color: rgba(255, 255, 255, .56);
+    cursor: pointer;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
     height: 24px;
     line-height: 24px;
     padding: 0 16px;
@@ -63,6 +64,7 @@ export const StyledTable = styled.table`
     text-transform: uppercase;
 
     .icon {
+      font-weight: bold;
       margin-left: 8px;
     }
   }

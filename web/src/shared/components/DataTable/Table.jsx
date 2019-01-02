@@ -27,7 +27,6 @@ const SortTypes = {
 };
 
 class Table extends React.Component {
-
   renderHeader(children) {
     const { data } = this.props;
     const cells = children.map((item, index)=>{
@@ -53,8 +52,9 @@ class Table extends React.Component {
     const { data } = this.props;
     const count = this.props.rowCount;
     const rows = [];
-    for (var i = 0; i < count; i++){
-      var cells = children.map((item, index)=>{
+
+    for (let i = 0; i < count; i++){
+      let cells = children.map((item, index)=>{
         return this.renderCell(
           item.props.cell,
           {
@@ -70,9 +70,20 @@ class Table extends React.Component {
       rows.push(<tr key={i}>{cells}</tr>);
     }
 
-    return (
-      <tbody>{rows}</tbody>
-    );
+    if(rows.length) {
+      return <tbody>{rows}</tbody>;
+    }
+    else {
+      return (
+        <tbody>
+          <tr>
+           <td align="center" colSpan={children ? children.length:0}>
+            <h3>NO DATA AVAIALBLE</h3>
+           </td>
+          </tr>
+        </tbody>
+      );
+    }
   }
 
   renderCell(cell, cellProps){
@@ -111,31 +122,35 @@ class Table extends React.Component {
 
 const SortIndicator = ({sortDir})=>{
   if(sortDir === SortTypes.DESC){
-    return <Icons.SortDesc />
+    return <Icons.SortDesc />;
   }
 
   if( sortDir === SortTypes.ASC){
-    return <Icons.SortAsc />
+    return <Icons.SortAsc />;
   }
 
-  return <Icons.Sort />
+  return <Icons.Sort />;
 };
 
 class Column extends React.Component {
   static defaultProps = {
     _isColumn: true
-  }
+  };
 
-  render(){
-    throw new Error('Component <Column /> should never render');
+  render() {
+    throw new Error("Component Column should never render");
   }
 }
 
 const Cell = props => {
   const { isHeader, children } = props;
-  return isHeader ?
-    <th>{children}</th> :
-    <td>{children}</td>;
+  let cell = <td>{children}</td>;
+
+  if(isHeader) {
+    cell = <th>{children}</th>;
+  }
+
+  return cell;
 }
 
 const TextCell = ({rowIndex, data, columnKey, ...props}) => (
@@ -166,9 +181,7 @@ class SortHeaderCell extends React.Component {
     const { sortDir, title, ...props } = this.props;
     return (
       <Cell {...props}>
-        <a onClick={this.onSortChange}>
-          {title}
-        </a>
+        <a onClick={this.onSortChange}>{title}</a>
         <SortIndicator sortDir={sortDir}/>
       </Cell>
     );
