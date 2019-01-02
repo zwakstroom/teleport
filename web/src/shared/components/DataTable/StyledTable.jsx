@@ -68,8 +68,40 @@ export const StyledTable = styled.table`
       margin-left: 8px;
     }
   }
-`
+`;
 
 export const StyledEmptyIndicator = styled.div`
-  font-size: 17px;
+  background: ${props => props.theme.background.quaternary };
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin: 48px auto;
+  max-width: 720px;
+  padding: 32px;
+  text-align: center;
+
+  h2 {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 40px;
+    margin: 0 0 16px 0;
+  }
+
+  p {
+    font-size: 12px;
+    line-height: 24px;
+    margin: 0;
+  }
+
+  a {
+    color: ${props => props.theme.colors.link };
+  }
 `
+
+
+
+
+
+
+
+
+

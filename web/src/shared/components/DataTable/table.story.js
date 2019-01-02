@@ -80,7 +80,11 @@ class TableSample extends React.Component {
     const nothingFound = data.length === 0 && this.state.filter.length > 0;
 
     if (nothingFound) {
-      return <EmptyIndicator text="No matching nodes found" />;
+      return (
+        <EmptyIndicator title='No Results Found for "X458AAZ"'>
+          For tips on getting better search results, please read <a href="https://gravitational.com/teleport/docs">our documentation</a>
+        </EmptyIndicator>
+      )
     }
 
     return (

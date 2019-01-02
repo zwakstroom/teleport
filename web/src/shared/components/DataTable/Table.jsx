@@ -188,6 +188,21 @@ class SortHeaderCell extends React.Component {
   }
 }
 
+class EmptyIndicator extends React.Component {
+
+  render() {
+    const {children, title} = this.props;
+    const noResults = title || "No Results Found";
+    return (
+      <StyledEmptyIndicator>
+        <h2>{noResults}</h2>
+        <p>{children}</p>
+      </StyledEmptyIndicator>
+    );
+  }
+}
+
+
 export {
   Column,
   Table,
@@ -196,5 +211,5 @@ export {
   SortHeaderCell,
   SortIndicator,
   SortTypes,
-  StyledEmptyIndicator as EmptyIndicator
+  EmptyIndicator
 };
