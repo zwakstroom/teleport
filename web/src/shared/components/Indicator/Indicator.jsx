@@ -43,10 +43,10 @@ const StyledSpinner = styled.div.attrs({
   animation: anim-rotate 2s infinite linear;
   color: #fff;
   display: inline-block;
-  font-size:4em;
-  height: 1em;
-  line-height: 1;
-  margin: .5em;
+  font-size: 32px;
+  height: 32px;
+  line-height: 32px;
+  margin: 16px;
   text-shadow: 0 0 .25em rgba(255,255,255, .3);
 
   @keyframes anim-rotate {
