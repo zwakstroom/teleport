@@ -22,7 +22,7 @@ class ClusterSelector extends React.Component {
     const { value, options, onChange } = this.props;
     const selected = options.find(o => o.value === value);
     return (
-      <div style={{width: "400px"}}>
+      <div style={{width: "200px"}}>
         <Select
           styles={customStyles}
           value={selected}
@@ -41,11 +41,13 @@ const customStyles = {
     color: state.isSelected ? 'red' : 'blue',
     //padding: 20,
   }),
+
   control: () => ({
     // none of react-select's styles are passed to <Control />
-    width: 400,
+    width: 200,
     display: "flex"
   }),
+
   singleValue: (provided, state) => {
     const opacity = state.isDisabled ? 0.5 : 1;
     const transition = 'opacity 300ms';

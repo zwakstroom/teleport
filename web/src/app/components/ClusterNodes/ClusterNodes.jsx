@@ -33,11 +33,7 @@ const ClusterNodes = ({
   const logins = aclStore.getSshLogins().toJS();
   const nodeRecords = nodes.toJS();
   return (
-    <Flex style={{ overflow: "auto" }}>
-      <Box m={4}>
-        <Heading.h2>
-          ClusterNodes
-        </Heading.h2>
+
         <NodeList
           sshHistory={sshHistory}
           storage={storage}
@@ -46,8 +42,6 @@ const ClusterNodes = ({
           nodeRecords={nodeRecords}
           logins={logins}
         />
-      </Box>
-    </Flex>
   );
 }
 

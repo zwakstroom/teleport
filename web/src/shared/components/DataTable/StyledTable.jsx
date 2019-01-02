@@ -17,13 +17,15 @@ limitations under the License.
 import styled from 'styled-components'
 
 export const StyledTable = styled.table`
-  background-color: rgba(0,0,0,0);
+  background: ${props => props.theme.background.secondary };
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .24);
   border-collapse: collapse;
   border-spacing: 0;
-  display: table;
-  margin-bottom: 20px;
-  max-width: 100%;
+  border-radius: 4px;
+  font-size: 12px;
+  margin: 40px 0;
   width: 100%;
+
 
   & > thead > tr > th,
   & > tbody > tr > th,
@@ -32,13 +34,10 @@ export const StyledTable = styled.table`
   & > tbody > tr > td,
   & > tfoot > tr > td {
     line-height: 1.42857;
-    padding: 8px;
+    padding: 16px;
     vertical-align: top;
   }
 
-  & > thead > tr > th {
-    border-bottom: 1px solid #DDDDDD;
-  }
 
   & > thead> tr > th,
   & > tbody> tr > th,
@@ -46,10 +45,26 @@ export const StyledTable = styled.table`
   & > thead> tr > td,
   & > tbody> tr > td,
   & > tfoot> tr > td {
-    border-top: 1px solid #e7eaec;
     line-height: 1.42857;
-    padding: 8px;
+    padding: 16px;
     vertical-align: top;
+  }
+
+
+  & > thead > tr > th {
+    background: ${props => props.theme.background.quaternary };
+    color: rgba(${props => props.theme.colors.light }, .56);
+    font-size: 10px;
+    font-weight: 800;
+    height: 24px;
+    line-height: 24px;
+    padding: 0 16px;
+    text-align: left;
+    text-transform: uppercase;
+
+    .icon {
+      margin-left: 8px;
+    }
   }
 `
 

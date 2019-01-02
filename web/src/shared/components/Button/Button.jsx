@@ -45,6 +45,20 @@ const color = props => {
     };
   }
 
+  if(props.warning) {
+    color = {
+      background: props.theme.colors.warning,
+
+      '&:hover, &:active': {
+        background: props.theme.colors.error
+      },
+
+      '&:active': {
+        opacity: .56
+      }
+    };
+  }
+
   return color;
 }
 
@@ -71,7 +85,7 @@ const Button = styled.button`
   transition: all .3s;
   -webkit-font-smoothing: antialiased;
 
-  &:hover {
+  &:hover, &:focus {
     background: ${props => props.theme.colors.primaryLight};
   }
 

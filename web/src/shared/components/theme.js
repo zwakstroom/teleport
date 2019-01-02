@@ -31,7 +31,7 @@ export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
-  error: '#FA2A6A',
+  error: '#FF1744',
   warning: '#FA2A6A',
   subtle: '#EDF0F2',
   success: '#00BFA5',
