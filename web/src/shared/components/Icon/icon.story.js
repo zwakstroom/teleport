@@ -14,6 +14,18 @@ storiesOf('Icon', module)
   })
   .add('Icon components', () => (
     <Container>
+      <Icon.CarrotDown />
+      <Icon.CarrotUp />
+      <Icon.CarrotLeft />
+      <Icon.CarrotRight />
+      <Icon.CarrotSort />
+      <Icon.Earth />
+      <Icon.CircleCheck />
+      <Icon.CircleCross />
+      <Icon.CircleStop />
+      <Icon.CirclePlay />
+      <Icon.CirclePause />
+      <Icon.Magnifier />
       <Icon.Cluster />
       <Icon.Ellipsis />
       <Icon.Github />

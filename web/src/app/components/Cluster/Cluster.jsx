@@ -23,6 +23,7 @@ import { Flex, Box, SideNav, SideNavItem } from 'shared/components';
 import ClusterNodes from './../ClusterNodes';
 import ClusterSelector from './ClusterSelector';
 import { changeCluster } from 'app/flux/sites/actions';
+import * as Icons from 'shared/components/Icon/Icon';
 
 export class Cluster extends React.Component {
 

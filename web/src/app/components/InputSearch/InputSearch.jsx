@@ -17,6 +17,8 @@ limitations under the License.
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { debounce } from 'lodash';
+import styled from 'styled-components';
+import {Magnifier} from 'shared/components/Icon/Icon';
 
 class InputSearch extends React.Component {
 
@@ -29,8 +31,19 @@ class InputSearch extends React.Component {
     let value = props.value || '';
 
     this.state = {
-      value
+      value,
+      isFocused: false,
     };
+  }
+
+  onBlur = e => {
+    this.setState({ isFocused: false });
+    console.log('blur');
+  }
+
+  onFocus = e => {
+    this.setState({ isFocused: true });
+    console.log('focus');
   }
 
   onChange = e => {
@@ -52,16 +65,59 @@ class InputSearch extends React.Component {
 
   render() {
     let { className = '', autoFocus = false } = this.props;
+    const isFocused = this.state.isFocused ? 'is-active' : '';
 
     return (
-      <div>
+      <SearchField className={isFocused}>
+        <Magnifier  />
         <input placeholder="Search..." className="form-control"
           autoFocus={autoFocus}
           value={this.state.value}
-          onChange={this.onChange} />
-      </div>
+          onChange={this.onChange} onFocus={this.onFocus} onBlur={this.onBlur} />
+      </SearchField>
     );
   }
 }
+
+
+const SearchField = styled.div`
+  float: left;
+  height: 40px;
+  margin: 0;
+  position: relative;
+
+  &.is-active {
+    .icon {
+      color: ${props => props.theme.background.secondary};
+    }
+  }
+
+  .icon {
+    font-size: 24px;
+    left: 8px;
+    opacity: .56;
+    position: absolute;
+    top: 8px;
+    z-index: 1;
+  }
+
+  input {
+    background: ${props => props.theme.background.tertiary};
+    border: none;
+    border-radius: 200px;
+    color: ${props => props.theme.colors.light};
+    font-size: 14px;
+    font-weight: 300;
+    height: 40px;
+    outline: none;
+    padding: 0 16px 0 40px;
+    transition: all .3s;
+
+    &:focus, &:active {
+      background: ${props => props.theme.background.light};
+      color: ${props => props.theme.colors.link};
+    }
+  }
+`;
 
 export default InputSearch;

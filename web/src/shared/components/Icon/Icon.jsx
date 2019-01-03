@@ -2,6 +2,18 @@ import React from 'react';
 import './../../assets/icomoon/style.css';
 
 const fontIconClasses = {
+  "CarrotDown": 'icon-caret-down',
+  "CarrotUp": 'icon-caret-up',
+  "CarrotLeft": 'icon-caret-left',
+  "CarrotRight": 'icon-caret-right',
+  "CarrotSort": 'icon-sort',
+  "Earth": 'icon-earth',
+  "CircleCheck": 'icon-checkmark-circle',
+  "CircleCross": 'icon-cross-circle',
+  "CircleStop": 'icon-stop-circle',
+  "CirclePlay": 'icon-play-circle',
+  "CirclePause": 'icon-pause-circle',
+  "Magnifier": 'icon-magnifier',
   "Cluster": 'icon-site-map',
   "Ellipsis": 'icon-ellipsis',
   "Github": 'icon-github',
@@ -102,6 +114,18 @@ function makeFontIcon(kind) {
   return Icon;
 }
 
+export const CarrotDown = makeFontIcon('CarrotDown');
+export const CarrotUp = makeFontIcon('CarrotUp');
+export const CarrotLeft = makeFontIcon('CarrotLeft');
+export const CarrotRight = makeFontIcon('CarrotRight');
+export const CarrotSort = makeFontIcon('CarrotSort');
+export const Earth = makeFontIcon('Earth');
+export const CircleCheck = makeFontIcon('CircleCheck');
+export const CircleCross = makeFontIcon('CircleCross');
+export const CircleStop = makeFontIcon('CircleStop');
+export const CirclePlay = makeFontIcon('CirclePlay');
+export const CirclePause = makeFontIcon('CirclePause');
+export const Magnifier = makeFontIcon('Magnifier');
 export const Cluster = makeFontIcon('Cluster');
 export const Ellipsis = makeFontIcon('Ellipsis');
 export const Github = makeFontIcon('Github');
