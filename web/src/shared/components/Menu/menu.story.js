@@ -17,6 +17,7 @@ storiesOf('Menu', module)
           Test2
         </MenuItem>
       </SimpleMenu>
+
       <SimpleMenu text="Menu in center"
         anchorOrigin={{
           vertical: 'bottom',

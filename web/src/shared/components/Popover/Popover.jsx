@@ -8,7 +8,6 @@ import { ownerWindow, ownerDocument } from '../utils';
 import Modal from '../Modal';
 
 export const StyledPopover = styled.div`
-  height: 24px;
   line-height: 24px;
   max-width: 200px;
   outline: none;

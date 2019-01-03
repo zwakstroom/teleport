@@ -35,11 +35,10 @@ MenuList.propTypes = {
 };
 
 const StyledMenuList = styled.div`
-  background-color: ${props => props.theme.background.secondary};
+  background-color: ${props => props.theme.background.light};
   box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
-  max-height: calc(100% - 96px);
-  position: relative;
-  width: 200px;
+  border-radius: 4px;
+
 
   ${ props => props.menuListCss && props.menuListCss(props) }
 `

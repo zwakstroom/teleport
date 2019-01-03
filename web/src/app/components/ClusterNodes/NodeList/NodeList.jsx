@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import { sortBy } from 'lodash';
 import { isMatch } from 'app/lib/objectUtils';
@@ -124,9 +125,7 @@ class LoginCell extends React.Component {
 }
 
 class NodeList extends React.Component {
-
   storageKey = 'NodeList';
-
   searchableProps = ['addr', 'hostname', 'tags'];
 
   constructor(props) {
@@ -194,18 +193,23 @@ class NodeList extends React.Component {
     return sorted;
   }
 
+  renderPageHeader() {
+    const searchValue = this.state.filter;
+
+    return (
+      <PageHeader>
+        <h1>Nodes</h1>
+        <InputSearch value={searchValue} onChange={this.onFilterChange} />
+      </PageHeader>
+    )
+  }
+
   render() {
     const { nodeRecords, logins, onLoginClick } = this.props;
-    const searchValue = this.state.filter;
     const data = this.sortAndFilter(nodeRecords);
     return (
       <div>
-        <div>
-          <h2> Nodes </h2>
-          <div>
-            <InputSearch value={searchValue} onChange={this.onFilterChange} />
-          </div>
-        </div>
+        {this.renderPageHeader()}
         <div>
           {
             data.length === 0 && this.state.filter.length > 0 ? <EmptyIndicator text="No matching nodes found"/> :
@@ -249,5 +253,25 @@ class NodeList extends React.Component {
     )
   }
 }
+
+const PageHeader = styled.header`
+  height: 32px;
+  margin: 32px 0;
+
+  &::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 300;
+    float: left;
+    line-height: 32px;
+    margin: 0 32px 0 0;
+  }
+`;
+
 
 export default NodeList;

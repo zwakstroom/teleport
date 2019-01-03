@@ -13,7 +13,7 @@ storiesOf('SideNav', module)
   })
   .add('SideNav component', () => {
     return (
-      <SideNav>
+      <SideNav static>
         <SideNavItem>
           Item 1
           </SideNavItem>

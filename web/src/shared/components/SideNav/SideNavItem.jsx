@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import theme from './../theme'
 
 const SideNavItem = styled.button`
-  background: ${props => props.active ? props.theme.background.secondary : props.theme.background.primary};
+  background: ${props => props.active ? props.theme.background.tertiary : props.theme.background.secondary};
   border: none;
   box-sizing: border-box;
   color: ${props => props.active ? props.theme.colors.light : 'rgba(255, 255, 255, .56)'};
@@ -26,7 +26,7 @@ const SideNavItem = styled.button`
   }
 
   &:active, &.active {
-    background:  ${props => props.active ? props.theme.background.secondary : props.theme.background.primary};
+    background:  ${props => props.active ? props.theme.background.tertiary : props.theme.background.secondary};
     color: ${props => props.theme.colors.light};
   }
 `;

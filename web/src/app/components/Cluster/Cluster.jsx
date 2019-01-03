@@ -38,8 +38,7 @@ export class Cluster extends React.Component {
     }));
 
     return (
-      <Flex style={{ height: "100%" }}>
-        <Box style={{ overflow: "auto" }}>
+      <Box style={{ height: "100%", paddingLeft: "260px" }}>
           <SideNav>
             <SideNavItem as={props => (
               <NavLink className={props.className}
@@ -57,22 +56,19 @@ export class Cluster extends React.Component {
               )}
             />
           </SideNav>
-        </Box>
-        <Box m={4} style={{ overflow: "auto" }} >
-          <div style={{width: "400px"}}>
+
             <ClusterSelector
               value={clusterId}
               onChange={this.onChangeCluster}
               options={clusterOptions}
             />
-          </div>
+
           <Switch>
             <Route exact path={cfg.routes.cluster} >
               <ClusterNodes clusterId={clusterId} />
             </Route>
           </Switch>
-        </Box>
-      </Flex>
+      </Box>
     );
   }
 }

@@ -41,6 +41,7 @@ class InputSearch extends React.Component {
   componentDidMount() {
     // set cursor
     const $el = ReactDOM.findDOMNode(this);
+
     if ($el) {
       const $input = $el.querySelector('input')
       const length = $input.value.length;
@@ -51,10 +52,9 @@ class InputSearch extends React.Component {
 
   render() {
     let { className = '', autoFocus = false } = this.props;
-    className = `grv-search input-group-sm ${className}`;
 
     return (
-      <div className={className}>
+      <div>
         <input placeholder="Search..." className="form-control"
           autoFocus={autoFocus}
           value={this.state.value}
