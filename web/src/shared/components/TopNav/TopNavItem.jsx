@@ -1,11 +1,10 @@
 import styled from 'styled-components'
-import theme from './../theme'
 
 /**
  * TopNavItem
  */
 const TopNavItem = styled.button`
-  background: ${props => props.theme.background.secondary};
+  background: none;
   border: none;
   border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
   box-sizing: border-box;
@@ -43,8 +42,6 @@ const TopNavItem = styled.button`
 `
 
 TopNavItem.displayName = 'TopNavItem';
-TopNavItem.defaultProps = {
-  theme: theme
-}
+
 
 export default TopNavItem;

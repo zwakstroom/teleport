@@ -19,11 +19,10 @@ import { Route, Switch, NavLink } from 'react-router-dom'
 import { connect } from './../nuclear';
 import cfg from 'app/config';
 import clusterGetters from 'app/flux/sites/getters';
-import { Flex, Box, SideNav, SideNavItem } from 'shared/components';
+import { Box, SideNav, SideNavItem } from 'shared/components';
 import ClusterNodes from './../ClusterNodes';
 import ClusterSelector from './ClusterSelector';
 import { changeCluster } from 'app/flux/sites/actions';
-import * as Icons from 'shared/components/Icon/Icon';
 
 export class Cluster extends React.Component {
 

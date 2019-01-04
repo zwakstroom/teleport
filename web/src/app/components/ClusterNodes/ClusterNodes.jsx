@@ -19,7 +19,6 @@ import { connect } from './../nuclear';
 import userAclGetters from 'app/flux/userAcl/getters';
 import nodeGetters from 'app/flux/nodes/getters';
 import { getters as sshHistoryGetters } from 'app/flux/sshHistory/store';
-import { Flex, Box, Heading } from 'shared/components';
 import NodeList from './NodeList'
 
 const ClusterNodes = ({

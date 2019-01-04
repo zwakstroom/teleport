@@ -2,20 +2,17 @@ import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import TopNavLogo from './TopNavLogo/TopNavLogo';
-import theme from './../theme'
+import {z} from './../constants';
 
 const TopNav = ({
   logoSrc,
   version,
   children,
-  theme
+  isStatic,
 }) => {
   return (
-    <StyledNav theme={theme}>
-      <TopNavLogo
-        src={logoSrc}
-        version={version}
-      />
+    <StyledNav isStatic={isStatic}>
+      <TopNavLogo src={logoSrc} version={version} />
       {children}
     </StyledNav>
   );
@@ -23,20 +20,21 @@ const TopNav = ({
 
 TopNav.propTypes = {
   /** The version of the product (ex. 5.3.2) */
-  version: PropTypes.string
+  version: PropTypes.string,
+  logoSrc: PropTypes.string,
 };
 
 TopNav.defaultProps = {
-  theme: theme
+  version: 'v#'
 }
 
 const StyledNav = styled.nav`
-  background: ${ props => props.theme.background.secondary};
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  left: 0;
+  display: block;
+  position: ${props => props.isStatic ? 'relative' : 'fixed'};
+  right: 0;
+  top: 0;
+  z-index: ${z.zmax2};
 `;
 
 export default TopNav;
