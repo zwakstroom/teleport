@@ -43,8 +43,6 @@ export class CardCluster extends React.Component {
       lastSeen = <div>LAST SEEN: {connectedAt}</div>;
     }
 
-    console.log(this.props);
-
     return (
       <StyledCardCluster {...props}>
         <ClusterHeader>

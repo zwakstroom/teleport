@@ -36,14 +36,12 @@ class InputSearch extends React.Component {
     };
   }
 
-  onBlur = e => {
+  onBlur = () => {
     this.setState({ isFocused: false });
-    console.log('blur');
   }
 
-  onFocus = e => {
+  onFocus = () => {
     this.setState({ isFocused: true });
-    console.log('focus');
   }
 
   onChange = e => {
@@ -64,7 +62,7 @@ class InputSearch extends React.Component {
   }
 
   render() {
-    let { className = '', autoFocus = false } = this.props;
+    let {autoFocus = false } = this.props;
     const isFocused = this.state.isFocused ? 'is-active' : '';
 
     return (

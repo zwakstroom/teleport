@@ -167,9 +167,8 @@ module.exports = __webpack_require__("rVcD");
 
 "use strict";
 /* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("vOnD");
-/* harmony import */ var _theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__("K0cP");
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  background: ", ";\n  border: none;\n  border-bottom:  ", ";\n  box-sizing: border-box;\n  color: ", ";\n  cursor: pointer;\n  display: inline-block;\n  font-size: 11px;\n  font-weight: 600;\n  line-height: ", ";\n  margin: 0;\n  outline: none;\n  padding: 0 16px;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  transition: all .3s;\n  -webkit-font-smoothing: antialiased;\n\n  &:hover {\n    background:  ", ";\n    border-bottom:  ", ";\n  }\n\n  &:active, {\n    background:  ", ";\n    color: ", ";\n    border-bottom:  ", ";\n  }\n\n  &.active {\n    color: ", ";\n    line-height: 68px;\n    border-bottom: ", "\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  background: none;\n  border: none;\n  border-bottom:  ", ";\n  box-sizing: border-box;\n  color: ", ";\n  cursor: pointer;\n  display: inline-block;\n  font-size: 11px;\n  font-weight: 600;\n  line-height: ", ";\n  margin: 0;\n  outline: none;\n  padding: 0 16px;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  transition: all .3s;\n  -webkit-font-smoothing: antialiased;\n\n  &:hover {\n    background:  ", ";\n    border-bottom:  ", ";\n  }\n\n  &:active, {\n    background:  ", ";\n    color: ", ";\n    border-bottom:  ", ";\n  }\n\n  &.active {\n    color: ", ";\n    line-height: 68px;\n    border-bottom: ", "\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -181,14 +180,11 @@ function _templateObject() {
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
 
-
 /**
  * TopNavItem
  */
 
 var TopNavItem = styled_components__WEBPACK_IMPORTED_MODULE_0__[/* default */ "c"].button(_templateObject(), function (props) {
-  return props.theme.background.secondary;
-}, function (props) {
   return props.active ? "4px solid ".concat(props.theme.colors.accent) : 'none';
 }, function (props) {
   return props.active ? props.theme.colors.light : 'rgba(255, 255, 255, .56)';
@@ -210,9 +206,6 @@ var TopNavItem = styled_components__WEBPACK_IMPORTED_MODULE_0__[/* default */ "c
   return "4px solid ".concat(props.theme.colors.accent);
 });
 TopNavItem.displayName = 'TopNavItem';
-TopNavItem.defaultProps = {
-  theme: _theme__WEBPACK_IMPORTED_MODULE_1__[/* default */ "c"]
-};
 /* harmony default export */ __webpack_exports__["a"] = (TopNavItem);
 
 /***/ }),
@@ -750,7 +743,7 @@ var flux_user = __webpack_require__("S+Ht");
 // EXTERNAL MODULE: ./src/app/config.js
 var config = __webpack_require__("LMli");
 
-// EXTERNAL MODULE: ./src/shared/components/index.js + 22 modules
+// EXTERNAL MODULE: ./src/shared/components/index.js + 23 modules
 var components = __webpack_require__("ryey");
 
 // EXTERNAL MODULE: ./node_modules/styled-components/dist/styled-components.browser.esm.js
@@ -1530,17 +1523,21 @@ var fontWeights = {
 var space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 var background = {
   light: '#FFFFFF',
-  primary: '#0C143D',
+  primary: '#111B48',
   secondary: '#222C59',
-  error: '#FEE5ED'
+  tertiary: '#263266',
+  quaternary: '#1B234A',
+  error: '#FEE5ED',
+  success: '#00BFA5'
 };
 var colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
-  error: '#FA2A6A',
+  error: '#FF1744',
   warning: '#FA2A6A',
   subtle: '#EDF0F2',
+  success: '#00BFA5',
   highlight: '#E1F5FE',
   link: '#039BE5',
   primary: '#00BFA5',
@@ -2691,7 +2688,7 @@ var prop_types_default = /*#__PURE__*/__webpack_require__.n(prop_types);
 // EXTERNAL MODULE: ./src/app/services/enums.js
 var enums = __webpack_require__("l3S1");
 
-// EXTERNAL MODULE: ./src/shared/components/index.js + 22 modules
+// EXTERNAL MODULE: ./src/shared/components/index.js + 23 modules
 var components = __webpack_require__("ryey");
 
 // EXTERNAL MODULE: ./node_modules/formik/dist/formik.esm.js + 2 modules
@@ -3845,7 +3842,7 @@ var theme = __webpack_require__("K0cP");
 
 // CONCATENATED MODULE: ./src/shared/components/Button/Button.jsx
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  background: ", ";\n  border: none;\n  border-radius: 4px;\n  color: ", ";\n  cursor: pointer;\n  font-family: inherit;\n  font-weight: bold;\n  display: inline-block;\n  line-height: 40px;\n  outline: none;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  transition: all .3s;\n  -webkit-font-smoothing: antialiased;\n\n  &:hover {\n    background: ", ";\n  }\n\n  &:active {\n    background: ", ";\n    color: rgba(255, 255, 255, .24);\n    box-shadow: none;\n  }\n\n  &:disabled {\n    background: rgba(255, 255, 255, .24);\n    color: rgba(0, 0, 0, .24);\n  }\n\n  ", "\n  ", "\n  ", "\n  ", "\n"]);
+  var data = _taggedTemplateLiteral(["\n  background: ", ";\n  border: none;\n  border-radius: 4px;\n  color: ", ";\n  cursor: pointer;\n  font-family: inherit;\n  font-weight: bold;\n  display: inline-block;\n  line-height: 40px;\n  outline: none;\n  text-align: center;\n  text-decoration: none;\n  text-transform: uppercase;\n  transition: all .3s;\n  -webkit-font-smoothing: antialiased;\n\n  &:hover, &:focus {\n    background: ", ";\n  }\n\n  &:active {\n    background: ", ";\n    color: rgba(255, 255, 255, .24);\n    box-shadow: none;\n  }\n\n  &:disabled {\n    background: rgba(255, 255, 255, .24);\n    color: rgba(0, 0, 0, .24);\n  }\n\n  ", "\n  ", "\n  ", "\n  ", "\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -3901,8 +3898,20 @@ var color = function color(props) {
   if (props.secondary) {
     color = {
       background: props.theme.colors.secondary,
-      '&:hover': {
+      '&:hover, &:focus': {
         background: props.theme.colors.secondaryLight
+      }
+    };
+  }
+
+  if (props.warning) {
+    color = {
+      background: props.theme.colors.warning,
+      '&:hover, &:focus': {
+        background: props.theme.colors.error
+      },
+      '&:active': {
+        opacity: .56
       }
     };
   }
@@ -4031,14 +4040,8 @@ var styled_components_browser_esm = __webpack_require__("vOnD");
 // EXTERNAL MODULE: ./src/app/components/nuclear.jsx
 var nuclear = __webpack_require__("2qgS");
 
-// EXTERNAL MODULE: ./node_modules/react-router-dom/es/NavLink.js + 9 modules
-var NavLink = __webpack_require__("uNOt");
-
 // EXTERNAL MODULE: ./src/app/flux/user/index.js
 var flux_user = __webpack_require__("S+Ht");
-
-// EXTERNAL MODULE: ./src/app/config.js
-var config = __webpack_require__("LMli");
 
 // EXTERNAL MODULE: ./src/app/flux/user/actions.js + 1 modules
 var actions = __webpack_require__("DeKp");
@@ -4895,7 +4898,7 @@ var Modal_Backdrop = function Backdrop(props) {
 };
 
 var StyledBackdrop = styled_components_browser_esm["c" /* default */].div(_templateObject(), function (props) {
-  return props.invisible ? 'transparent' : "rgba(0, 0, 0, 0.5)";
+  return props.invisible ? 'transparent' : "rgba(0, 0, 0, .24)";
 });
 var StyledModal = styled_components_browser_esm["c" /* default */].div(_templateObject2(), function (props) {
   return props.modalCss && props.modalCss(props);
@@ -4931,7 +4934,7 @@ function Popover_assertThisInitialized(self) { if (self === void 0) { throw new 
 function Popover_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function Popover_templateObject() {
-  var data = Popover_taggedTemplateLiteral(["\n  position: absolute;\n  overflowY: auto;\n  overflowX: hidden;\n  min-width: 16px;\n  min-height: 16px;\n  max-width: calc(100% - 32px);\n  maxHeight: calc(100% - 32px);\n  outline: none;\n  ", "\n"]);
+  var data = Popover_taggedTemplateLiteral(["\n  line-height: 24px;\n  max-width: 200px;\n  outline: none;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  right: 0;\n  top: 0;\n  ", "\n"]);
 
   Popover_templateObject = function _templateObject() {
     return data;
@@ -5397,7 +5400,7 @@ var theme = __webpack_require__("K0cP");
 
 // CONCATENATED MODULE: ./src/shared/components/Menu/MenuList.jsx
 function MenuList_templateObject() {
-  var data = MenuList_taggedTemplateLiteral(["\n  background-color: ", ";\n  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);\n  max-height: calc(100% - 96px);\n  position: relative;\n  width: 200px;\n\n  ", "\n"]);
+  var data = MenuList_taggedTemplateLiteral(["\n  background-color: ", ";\n  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);\n  border-radius: 4px;\n\n\n  ", "\n"]);
 
   MenuList_templateObject = function _templateObject() {
     return data;
@@ -5481,7 +5484,7 @@ MenuList_MenuList.propTypes = {
   menuListCss: prop_types_default.a.func
 };
 var StyledMenuList = styled_components_browser_esm["c" /* default */].div(MenuList_templateObject(), function (props) {
-  return props.theme.background.secondary;
+  return props.theme.background.light;
 }, function (props) {
   return props.menuListCss && props.menuListCss(props);
 });
@@ -5655,7 +5658,7 @@ var avatar_default = /*#__PURE__*/__webpack_require__.n(TopNavUserMenu_avatar);
 
 // CONCATENATED MODULE: ./src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx
 function TopNavUserMenu_templateObject() {
-  var data = TopNavUserMenu_taggedTemplateLiteral(["\n  img {\n    display: inline-block;\n    float: right;\n    height: 24px;\n    margin: 24px 8px 24px 16px;\n  }\n\n  em {\n    font-size: 10px;\n    font-weight: bold\n    font-style: normal;\n    margin: 0;\n  }\n"]);
+  var data = TopNavUserMenu_taggedTemplateLiteral(["\n  position: absolute;\n  top: 0;\n  right: 0;\n\n  img {\n    display: inline-block;\n    float: right;\n    height: 24px;\n    margin: 24px 8px 24px 16px;\n  }\n\n  em {\n    font-size: 10px;\n    font-weight: bold\n    font-style: normal;\n    margin: 0;\n  }\n"]);
 
   TopNavUserMenu_templateObject = function _templateObject() {
     return data;
@@ -5741,7 +5744,6 @@ function (_React$Component) {
       }, react_default.a.createElement("em", null, user), react_default.a.createElement("img", {
         src: avatar
       })), react_default.a.createElement(components_Menu_Menu, {
-        menuListCss: TopNavUserMenu_menuListCss,
         anchorOrigin: anchorOrigin,
         transformOrigin: transformOrigin,
         anchorEl: anchorEl,
@@ -5758,7 +5760,13 @@ TopNavUserMenu_defineProperty(TopNavUserMenu_TopNavUserMenu, "displayName", 'Top
 
 TopNavUserMenu_defineProperty(TopNavUserMenu_TopNavUserMenu, "defaultProps", {
   avatar: avatar_default.a,
-  open: false
+  open: false,
+  onShow: function onShow() {
+    alert('show');
+  },
+  onClose: function onClose() {
+    alert('close');
+  }
 });
 
 TopNavUserMenu_defineProperty(TopNavUserMenu_TopNavUserMenu, "propTypes", {
@@ -5774,15 +5782,10 @@ TopNavUserMenu_defineProperty(TopNavUserMenu_TopNavUserMenu, "propTypes", {
 
 /* harmony default export */ var TopNav_TopNavUserMenu_TopNavUserMenu = (TopNavUserMenu_TopNavUserMenu);
 var AvatarButton = styled_components_browser_esm["c" /* default */].div(TopNavUserMenu_templateObject());
-/** Custom css styles for MenuList */
-
-var TopNavUserMenu_menuListCss = function menuListCss() {
-  return "\n\n";
-};
 // CONCATENATED MODULE: ./src/shared/components/TopNav/TopNavUserMenu/index.js
 
 /* harmony default export */ var TopNav_TopNavUserMenu = (TopNav_TopNavUserMenu_TopNavUserMenu);
-// EXTERNAL MODULE: ./src/shared/components/index.js + 22 modules
+// EXTERNAL MODULE: ./src/shared/components/index.js + 23 modules
 var components = __webpack_require__("ryey");
 
 // EXTERNAL MODULE: ./src/shared/assets/images/teleport-logo.svg
@@ -5883,8 +5886,6 @@ function AppBar_defineProperty(obj, key, value) { if (key in obj) { Object.defin
 
 
 
-
-
 var AppBar_AppBar =
 /*#__PURE__*/
 function (_React$Component) {
@@ -5938,15 +5939,8 @@ function (_React$Component) {
       var username = this.props.username;
       return react_default.a.createElement(components["k" /* TopNav */], {
         logoSrc: teleport_logo_default.a,
-        version: "v3.2.0-alpha.1"
-      }, react_default.a.createElement(components["l" /* TopNavItem */], {
-        as: function as(props) {
-          return react_default.a.createElement(NavLink["a" /* default */], {
-            className: props.className,
-            to: config["a" /* default */].routes.app
-          }, "Clusters");
-        }
-      }), react_default.a.createElement(TopNav_TopNavUserMenu, {
+        version: "v3.2.1"
+      }, react_default.a.createElement(TopNav_TopNavUserMenu, {
         open: this.state.open,
         onShow: this.onShowMenu,
         onClose: this.onCloseMenu,
@@ -6192,6 +6186,9 @@ var userAcl_actionTypes = __webpack_require__("gC4k");
 
 // EXTERNAL MODULE: ./src/app/services/api.js
 var api = __webpack_require__("Z9Rw");
+
+// EXTERNAL MODULE: ./src/app/config.js
+var config = __webpack_require__("LMli");
 
 // EXTERNAL MODULE: ./src/app/flux/status/actions.js
 var status_actions = __webpack_require__("ksSu");
@@ -6614,11 +6611,289 @@ var getters_sites = [['tlpt_sites'], function (siteList) {
 /* harmony default export */ var sites_getters = ({
   sites: getters_sites
 });
+// EXTERNAL MODULE: ./src/shared/assets/icomoon/style.css
+var style = __webpack_require__("ec++");
+
+// CONCATENATED MODULE: ./src/shared/components/Icon/Icon.jsx
+
+
+var fontIconClasses = {
+  "CarrotDown": 'icon-caret-down',
+  "CarrotUp": 'icon-caret-up',
+  "CarrotLeft": 'icon-caret-left',
+  "CarrotRight": 'icon-caret-right',
+  "CarrotSort": 'icon-sort',
+  "Earth": 'icon-earth',
+  "CircleCheck": 'icon-checkmark-circle',
+  "CircleCross": 'icon-cross-circle',
+  "CircleStop": 'icon-stop-circle',
+  "CirclePlay": 'icon-play-circle',
+  "CirclePause": 'icon-pause-circle',
+  "Magnifier": 'icon-magnifier',
+  "Cluster": 'icon-site-map',
+  "Ellipsis": 'icon-ellipsis',
+  "Github": 'icon-github',
+  "Google": 'icon-google-plus2',
+  "SortDesc": 'icon-chevron-down',
+  "SortAsc": 'icon-chevron-up',
+  "Sort": 'icon-chevrons-expand-vertical',
+  "CardView": 'icon-th-large',
+  "CardViewSmall": 'icon-th',
+  "ListView": 'icon-th-list',
+  "Twitter": 'icon-twitter',
+  "Facebook": 'icon-facebook',
+  "CreditCard": 'icon-credit-card1',
+  "CaretLeft": 'icon-caret-left',
+  "CaretRight": 'icon-caret-right',
+  "Apple": 'icon-apple',
+  "Windows": 'icon-windows',
+  "Linux": 'icon-linux',
+  "Visa": 'icon-cc-visa',
+  "MasterCard": 'icon-cc-mastercard',
+  "Discover": 'icon-cc-discover',
+  "Amex": 'icon-cc-amex',
+  "Paypal": 'icon-cc-paypal',
+  "Stripe": 'icon-cc-stripe',
+  "CreditCardAlt": 'icon-credit-card-alt',
+  "Home": 'icon-home3',
+  "Apartment": 'icon-apartment',
+  "Pencil": 'icon-pencil',
+  "Edit": 'icon-pencil4',
+  "Cloud": 'icon-cloud',
+  "Database": 'icon-database',
+  "Server": 'icon-server',
+  "ShieldCheck": 'icon-shield-check',
+  "Lock": 'icon-lock',
+  "Unlock": 'icon-unlock',
+  "Cog": 'icon-cog',
+  "Trash": 'icon-trash2',
+  "Archive": 'icon-archive2',
+  "Clipboard": 'icon-clipboard-text',
+  "ClipboardUser": 'icon-clipboard-user',
+  "License": 'icon-license2',
+  "Play": 'icon-play',
+  "Camera": 'icon-camera',
+  "Label": 'icon-label',
+  "Profile": 'icon-profile',
+  "User": 'icon-user',
+  "Users": 'icon-users2',
+  "AddUsers": 'icon-users-plus',
+  "CreditCardAlt2": 'icon-credit-card',
+  "Cash": 'icon-cash-dollar',
+  "Phone": 'icon-telephone',
+  "MapMarker": 'icon-map-marker',
+  "Calendar": 'icon-calendar-empty',
+  "Signal": 'icon-signal',
+  "SmartPhone": 'icon-smartphone-embed',
+  "Tablet": 'icon-tablet2',
+  "Window": 'icon-window',
+  "Power": 'icon-power',
+  "Bubble": 'icon-bubble',
+  "Graph": 'icon-graph',
+  "Shart": 'icon-chart-bars',
+  "Speed": 'icon-speed-fast',
+  "Planet": 'icon-planet',
+  "VolumeUp": 'icon-volume-high',
+  "Mute": 'icon-mute',
+  "Lan": 'icon-lan',
+  "LanAlt": 'icon-lan2',
+  "Wifi": 'icon-wifi',
+  "Cli": 'icon-cli',
+  "Code": 'icon-code',
+  "Link": 'icon-link',
+  "Cross": 'icon-cross',
+  "ListCheck": 'icon-list3',
+  "ListBullet": 'icon-list4',
+  "ArrowUp": 'icon-chevron-up',
+  "ArrowDown": 'icon-chevron-down',
+  "ArrowLeft": 'icon-chevron-left',
+  "ArrowRight": 'icon-chevron-right',
+  "ArrowsVertical": 'icon-chevrons-expand-vertical',
+  "Expand": 'icon-frame-expand',
+  "Contract": 'icon-frame-contract',
+  "Layers": 'icon-layers',
+  "Spinner": 'icon-spinner8',
+  "FacebookSquare": 'icon-facebook2',
+  "Youtube": 'icon-youtube',
+  "Linkedin": 'icon-linkedin'
+};
+
+function makeFontIcon(kind) {
+  var className = fontIconClasses[kind];
+
+  var Icon = function Icon() {
+    return react_default.a.createElement("span", {
+      className: "icon ".concat(className)
+    });
+  };
+
+  Icon.displayName = "Icon.".concat(kind);
+  return Icon;
+}
+
+var CarrotDown = makeFontIcon('CarrotDown');
+var CarrotUp = makeFontIcon('CarrotUp');
+var CarrotLeft = makeFontIcon('CarrotLeft');
+var CarrotRight = makeFontIcon('CarrotRight');
+var CarrotSort = makeFontIcon('CarrotSort');
+var Earth = makeFontIcon('Earth');
+var CircleCheck = makeFontIcon('CircleCheck');
+var CircleCross = makeFontIcon('CircleCross');
+var CircleStop = makeFontIcon('CircleStop');
+var CirclePlay = makeFontIcon('CirclePlay');
+var CirclePause = makeFontIcon('CirclePause');
+var Magnifier = makeFontIcon('Magnifier');
+var Icon_Cluster = makeFontIcon('Cluster');
+var Ellipsis = makeFontIcon('Ellipsis');
+var Github = makeFontIcon('Github');
+var Google = makeFontIcon('Google');
+var SortDesc = makeFontIcon('SortDesc');
+var SortAsc = makeFontIcon('SortAsc');
+var Sort = makeFontIcon('Sort');
+var CardView = makeFontIcon('CardView');
+var CardViewSmall = makeFontIcon('CardViewSmall');
+var ListView = makeFontIcon('ListView');
+var Twitter = makeFontIcon('Twitter');
+var Facebook = makeFontIcon('Facebook');
+var CreditCard = makeFontIcon('CreditCard');
+var CaretLeft = makeFontIcon('CaretLeft');
+var CaretRight = makeFontIcon('CaretRight');
+var Apple = makeFontIcon('Apple');
+var Windows = makeFontIcon('Windows');
+var Linux = makeFontIcon('Linux');
+var Visa = makeFontIcon('Visa');
+var MasterCard = makeFontIcon('MasterCard');
+var Discover = makeFontIcon('Discover');
+var Amex = makeFontIcon('Amex');
+var Paypal = makeFontIcon('Paypal');
+var Stripe = makeFontIcon('Stripe');
+var CreditCardAlt = makeFontIcon('CreditCardAlt');
+var Home = makeFontIcon('Home');
+var Apartment = makeFontIcon('Apartment');
+var Pencil = makeFontIcon('Pencil');
+var Edit = makeFontIcon('Edit');
+var Cloud = makeFontIcon('Cloud');
+var Database = makeFontIcon('Database');
+var Server = makeFontIcon('Server');
+var ShieldCheck = makeFontIcon('ShieldCheck');
+var Lock = makeFontIcon('Lock');
+var Unlock = makeFontIcon('Unlock');
+var Cog = makeFontIcon('Cog');
+var Trash = makeFontIcon('Trash');
+var Archive = makeFontIcon('Archive');
+var Clipboard = makeFontIcon('Clipboard');
+var ClipboardUser = makeFontIcon('ClipboardUser');
+var License = makeFontIcon('License');
+var Play = makeFontIcon('Play');
+var Camera = makeFontIcon('Camera');
+var Label = makeFontIcon('Label');
+var Profile = makeFontIcon('Profile');
+var User = makeFontIcon('User');
+var Users = makeFontIcon('Users');
+var AddUsers = makeFontIcon('AddUsers');
+var CreditCardAlt2 = makeFontIcon('CreditCardAlt2');
+var Cash = makeFontIcon('Cash');
+var Phone = makeFontIcon('Phone');
+var MapMarker = makeFontIcon('MapMarker');
+var Calendar = makeFontIcon('Calendar');
+var Signal = makeFontIcon('Signal');
+var SmartPhone = makeFontIcon('SmartPhone');
+var Tablet = makeFontIcon('Tablet');
+var Window = makeFontIcon('Window');
+var Power = makeFontIcon('Power');
+var Bubble = makeFontIcon('Bubble');
+var Graph = makeFontIcon('Graph');
+var Shart = makeFontIcon('Shart');
+var Speed = makeFontIcon('Speed');
+var Planet = makeFontIcon('Planet');
+var VolumeUp = makeFontIcon('VolumeUp');
+var Mute = makeFontIcon('Mute');
+var Lan = makeFontIcon('Lan');
+var LanAlt = makeFontIcon('LanAlt');
+var Wifi = makeFontIcon('Wifi');
+var Cli = makeFontIcon('Cli');
+var Code = makeFontIcon('Code');
+var Link = makeFontIcon('Link');
+var Cross = makeFontIcon('Cross');
+var ListCheck = makeFontIcon('ListCheck');
+var ListBullet = makeFontIcon('ListBullet');
+var ArrowUp = makeFontIcon('ArrowUp');
+var ArrowDown = makeFontIcon('ArrowDown');
+var ArrowLeft = makeFontIcon('ArrowLeft');
+var ArrowRight = makeFontIcon('ArrowRight');
+var ArrowsVertical = makeFontIcon('ArrowsVertical');
+var Expand = makeFontIcon('Expand');
+var Contract = makeFontIcon('Contract');
+var Layers = makeFontIcon('Layers');
+var Spinner = makeFontIcon('Spinner');
+var FacebookSquare = makeFontIcon('FacebookSquare');
+var Youtube = makeFontIcon('Youtube');
+var Linkedin = makeFontIcon('Linkedin');
 // CONCATENATED MODULE: ./src/app/components/Clusters/CardCluster/CardCluster.jsx
 function CardCluster_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { CardCluster_typeof = function _typeof(obj) { return typeof obj; }; } else { CardCluster_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return CardCluster_typeof(obj); }
 
+function _templateObject7() {
+  var data = CardCluster_taggedTemplateLiteral(["\n  background: ", ";\n  box-sizing: border-box;\n  border-radius: 0 0 4px 4px;\n  clear: both;\n  font-size: 12px;\n  height: 48px;\n  line-height: 48px;\n  opacity: .56;\n  margin: 0;\n  padding: 0 16px;\n"]);
+
+  _templateObject7 = function _templateObject7() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject6() {
+  var data = CardCluster_taggedTemplateLiteral(["\n  border-radius: 4px;\n  padding: 40px;\n\n  ul {\n    font-size: 12px;\n    list-style-type: none;\n    margin: 0;\n    padding: 0;\n\n    li {\n      color: ", ";\n      line-height: 24px;\n      margin: 0;\n    }\n\n    strong {\n      font-weight: bold;\n      color: ", ";\n      text-transform: uppercase;\n    }\n  }\n"]);
+
+  _templateObject6 = function _templateObject6() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject5() {
+  var data = CardCluster_taggedTemplateLiteral(["\n  background: ", ";\n  border-radius: 4px;\n  box-sizing: border-box;\n  float: left;\n  height: 72px;\n  margin: 0 16px 0 0;\n  padding: 16px;\n  text-align: center;\n  width: 72px;\n\n  .icon {\n    font-size: 40px;\n    display: block;\n    line-height: 40px;\n    margin: 0 auto;\n  }\n"]);
+
+  _templateObject5 = function _templateObject5() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject4() {
+  var data = CardCluster_taggedTemplateLiteral(["\n  opacity: .24;\n  right: 16px;\n  position: absolute;\n  top: 16px;\n  z-index: 2;\n"]);
+
+  _templateObject4 = function _templateObject4() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject3() {
+  var data = CardCluster_taggedTemplateLiteral(["\n  background: ", ";\n  box-shadow: 0 2px 16px ", ";\n  border-radius: 200px;\n  border: 1px solid ", ";\n  height: 8px;\n  left: 16px;\n  position: absolute;\n  top: 24px;\n  width: 8px;\n  z-index: 1;\n"]);
+
+  _templateObject3 = function _templateObject3() {
+    return data;
+  };
+
+  return data;
+}
+
+function CardCluster_templateObject2() {
+  var data = CardCluster_taggedTemplateLiteral(["\n  background: ", ";\n  border-radius: 4px 4px 0 0;\n  padding: 16px 16px 8px 40px;\n  position: relative;\n  transition: all .3s;\n\n  h2 {\n    font-size: 12px;\n    line-height: 16px;\n    margin: 0;\n    text-transform: uppercase;\n  }\n\n  h3 {\n    font-size: 10px;\n    line-height: 16px;\n    margin: 0;\n    opacity: .56;\n    text-transform: uppercase;\n  }\n"]);
+
+  CardCluster_templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
 function CardCluster_templateObject() {
-  var data = CardCluster_taggedTemplateLiteral(["\n  &:hover {\n    background:  ", ";\n    cursor: pointer;\n  }\n"]);
+  var data = CardCluster_taggedTemplateLiteral(["\n  background: ", ";\n  border-radius: 4px;\n  box-shadow: 0 8px 32px rgba(0, 0, 0, .24);\n  cursor: pointer;\n  width: 408px;\n  padding: 0;\n  transition: all .3s;\n\n  &:hover {\n    box-shadow: 0 24px 64px rgba(0, 0, 0, .56);\n  }\n"]);
 
   CardCluster_templateObject = function _templateObject() {
     return data;
@@ -6671,6 +6946,7 @@ limitations under the License.
 
 
 
+
 var CardCluster_CardCluster =
 /*#__PURE__*/
 function (_React$Component) {
@@ -6705,21 +6981,53 @@ function (_React$Component) {
           connectedAt = _this$props.connectedAt,
           rest = CardCluster_objectWithoutProperties(_this$props, ["name", "status", "connectedAt"]);
 
+      var public_addr = public_addr || 'wolfe.gravitational.com';
+      var version = version || '#.#.#';
+
       var props = _objectSpread({
-        p: 4,
-        bg: "secondaryLight"
+        p: 4
       }, rest, {
         onClick: this.onClick
       });
 
-      return react_default.a.createElement(StyledCardCluster, props, react_default.a.createElement("div", null, " Name: ", name, " "), react_default.a.createElement("div", null, " Status: ", status, " "), react_default.a.createElement("div", null, " Joined: ", connectedAt, " "));
+      var lastSeen = null;
+
+      if (status !== 'online') {
+        lastSeen = react_default.a.createElement("div", null, "LAST SEEN: ", connectedAt);
+      }
+
+      return react_default.a.createElement(StyledCardCluster, props, react_default.a.createElement(ClusterHeader, null, react_default.a.createElement(ClusterStatus, {
+        status: status
+      }), react_default.a.createElement("h2", null, name), react_default.a.createElement("h3", null, " NODES"), react_default.a.createElement(ClusterSettings, null, react_default.a.createElement(Ellipsis, null))), react_default.a.createElement(ClusterContent, null, react_default.a.createElement(ClusterIcon, null, react_default.a.createElement(Icon_Cluster, null)), react_default.a.createElement("ul", null, react_default.a.createElement("li", null, react_default.a.createElement("strong", null, "STATUS: ", status)), react_default.a.createElement("li", null, public_addr), react_default.a.createElement("li", null, "Teleport v", version))), react_default.a.createElement(ClusterFooter, null, lastSeen));
     }
   }]);
 
   return CardCluster;
 }(react_default.a.Component);
 var StyledCardCluster = Object(styled_components_browser_esm["c" /* default */])(components["a" /* Box */])(CardCluster_templateObject(), function (props) {
-  return props.theme.background.primary;
+  return props.theme.background.secondary;
+});
+var ClusterHeader = styled_components_browser_esm["c" /* default */].header(CardCluster_templateObject2(), function (props) {
+  return props.theme.background.tertiary;
+});
+var ClusterStatus = styled_components_browser_esm["c" /* default */].div(_templateObject3(), function (props) {
+  return props.status !== "online" ? props.theme.colors.error : props.theme.colors.success;
+}, function (props) {
+  return props.status !== "online" ? props.theme.colors.error : props.theme.colors.success;
+}, function (props) {
+  return props.theme.background.tertiary;
+});
+var ClusterSettings = styled_components_browser_esm["c" /* default */].div(_templateObject4());
+var ClusterIcon = styled_components_browser_esm["c" /* default */].div(_templateObject5(), function (props) {
+  return props.theme.background.quaternary;
+});
+var ClusterContent = styled_components_browser_esm["c" /* default */].div(_templateObject6(), function (props) {
+  return props.theme.colors.subtle;
+}, function (props) {
+  return props.theme.colors.light;
+});
+var ClusterFooter = styled_components_browser_esm["c" /* default */].footer(_templateObject7(), function (props) {
+  return props.theme.background.quaternary;
 });
 /* harmony default export */ var Clusters_CardCluster_CardCluster = (CardCluster_CardCluster);
 // CONCATENATED MODULE: ./src/app/components/Clusters/CardCluster/index.js
@@ -6893,6 +7201,9 @@ function Clusters_mapActionsToProps() {
 // CONCATENATED MODULE: ./src/app/components/Clusters/index.js
 
 /* harmony default export */ var components_Clusters = (components_Clusters_Clusters);
+// EXTERNAL MODULE: ./node_modules/react-router-dom/es/NavLink.js + 9 modules
+var NavLink = __webpack_require__("uNOt");
+
 // CONCATENATED MODULE: ./src/app/flux/userAcl/getters.js
 /*
 Copyright 2015 Gravitational, Inc.
@@ -7006,7 +7317,7 @@ function isUUID(str) {
 }
 // CONCATENATED MODULE: ./src/shared/components/DataTable/StyledTable.jsx
 function StyledTable_templateObject2() {
-  var data = StyledTable_taggedTemplateLiteral(["\n  font-size: 17px;\n"]);
+  var data = StyledTable_taggedTemplateLiteral(["\n  background: ", ";\n  border-radius: 4px;\n  box-sizing: border-box;\n  margin: 48px auto;\n  max-width: 720px;\n  padding: 32px;\n  text-align: center;\n\n  h2 {\n    font-size: 32px;\n    font-weight: 300;\n    line-height: 40px;\n    margin: 0 0 16px 0;\n  }\n\n  p {\n    font-size: 12px;\n    line-height: 24px;\n    margin: 0;\n  }\n\n  a {\n    color: ", ";\n  }\n"]);
 
   StyledTable_templateObject2 = function _templateObject2() {
     return data;
@@ -7016,7 +7327,7 @@ function StyledTable_templateObject2() {
 }
 
 function StyledTable_templateObject() {
-  var data = StyledTable_taggedTemplateLiteral(["\n  background-color: rgba(0,0,0,0);\n  border-collapse: collapse;\n  border-spacing: 0;\n  display: table;\n  margin-bottom: 20px;\n  max-width: 100%;\n  width: 100%;\n\n  & > thead > tr > th,\n  & > tbody > tr > th,\n  & > tfoot > tr > th,\n  & > thead > tr > td,\n  & > tbody > tr > td,\n  & > tfoot > tr > td {\n    line-height: 1.42857;\n    padding: 8px;\n    vertical-align: top;\n  }\n\n  & > thead > tr > th {\n    border-bottom: 1px solid #DDDDDD;\n  }\n\n  & > thead> tr > th,\n  & > tbody> tr > th,\n  & > tfoot> tr > th,\n  & > thead> tr > td,\n  & > tbody> tr > td,\n  & > tfoot> tr > td {\n    border-top: 1px solid #e7eaec;\n    line-height: 1.42857;\n    padding: 8px;\n    vertical-align: top;\n  }\n"]);
+  var data = StyledTable_taggedTemplateLiteral(["\n  background: ", ";\n  box-shadow: 0 8px 32px rgba(0, 0, 0, .24);\n  border-collapse: collapse;\n  border-spacing: 0;\n  border-radius: 4px;\n  font-size: 12px;\n  margin: 40px 0;\n  width: 100%;\n\n\n  & > thead > tr > th,\n  & > tbody > tr > th,\n  & > tfoot > tr > th,\n  & > thead > tr > td,\n  & > tbody > tr > td,\n  & > tfoot > tr > td {\n    line-height: 24px;\n    padding: 16px;\n    vertical-align: top;\n  }\n\n\n  & > thead> tr > th,\n  & > tbody> tr > th,\n  & > tfoot> tr > th,\n  & > thead> tr > td,\n  & > tbody> tr > td,\n  & > tfoot> tr > td {\n    line-height: 24px;\n    padding: 16px;\n    vertical-align: top;\n  }\n\n\n  & > thead > tr > th {\n    background: ", ";\n    color: rgba(255, 255, 255, .56);\n    cursor: pointer;\n    font-size: 10px;\n    font-weight: 600;\n    height: 24px;\n    line-height: 24px;\n    padding: 0 16px;\n    text-align: left;\n    text-transform: uppercase;\n\n    .icon {\n      font-weight: bold;\n      margin-left: 8px;\n    }\n  }\n\n  .no-data {\n    font-size: 14px;\n    font-weight: 500;\n    opacity: .24;\n    margin: 24px 0;\n  }\n"]);
 
   StyledTable_templateObject = function _templateObject() {
     return data;
@@ -7043,42 +7354,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var StyledTable = styled_components_browser_esm["c" /* default */].table(StyledTable_templateObject());
-var StyledEmptyIndicator = styled_components_browser_esm["c" /* default */].div(StyledTable_templateObject2());
-// EXTERNAL MODULE: ./src/shared/assets/icomoon/style.css
-var style = __webpack_require__("ec++");
-
-// CONCATENATED MODULE: ./src/shared/components/Icon/Icon.jsx
-
-
-var fontIconClasses = {
-  "Windows": 'icon-windows',
-  "Github": 'icon-github',
-  "Google": 'google-plus2',
-  "SortDesc": 'icon-chevron-down',
-  "SortAsc": 'icon-chevron-up',
-  "Sort": 'icon-chevrons-expand-vertical'
-};
-
-function makeFontIcon(kind) {
-  var className = fontIconClasses[kind];
-
-  var Icon = function Icon() {
-    return react_default.a.createElement("span", {
-      className: "icon ".concat(className)
-    });
-  };
-
-  Icon.displayName = "Icon.".concat(kind);
-  return Icon;
-}
-
-var Microsoft = makeFontIcon('Windows');
-var Google = makeFontIcon('Google');
-var Github = makeFontIcon('Github');
-var SortDesc = makeFontIcon('SortDesc');
-var SortAsc = makeFontIcon('SortAsc');
-var Sort = makeFontIcon('Sort');
+var StyledTable = styled_components_browser_esm["c" /* default */].table(StyledTable_templateObject(), function (props) {
+  return props.theme.background.secondary;
+}, function (props) {
+  return props.theme.background.quaternary;
+});
+var StyledEmptyIndicator = styled_components_browser_esm["c" /* default */].div(StyledTable_templateObject2(), function (props) {
+  return props.theme.background.quaternary;
+}, function (props) {
+  return props.theme.colors.link;
+});
 // CONCATENATED MODULE: ./src/shared/components/DataTable/Table.jsx
 function Table_objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = Table_objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
 
@@ -7169,7 +7454,7 @@ function (_React$Component) {
       var count = this.props.rowCount;
       var rows = [];
 
-      for (var i = 0; i < count; i++) {
+      var _loop = function _loop(i) {
         var cells = children.map(function (item, index) {
           return _this2.renderCell(item.props.cell, Table_objectSpread({
             rowIndex: i,
@@ -7181,9 +7466,22 @@ function (_React$Component) {
         rows.push(react_default.a.createElement("tr", {
           key: i
         }, cells));
+      };
+
+      for (var i = 0; i < count; i++) {
+        _loop(i);
       }
 
-      return react_default.a.createElement("tbody", null, rows);
+      if (rows.length) {
+        return react_default.a.createElement("tbody", null, rows);
+      } else {
+        return react_default.a.createElement("tbody", null, react_default.a.createElement("tr", null, react_default.a.createElement("td", {
+          align: "center",
+          colSpan: children ? children.length : 0
+        }, react_default.a.createElement("h3", {
+          className: "no-data"
+        }, "NO DATA AVAIALBLE"))));
+      }
     }
   }, {
     key: "renderCell",
@@ -7248,7 +7546,7 @@ function (_React$Component2) {
   Table_createClass(Column, [{
     key: "render",
     value: function render() {
-      throw new Error('Component <Column /> should never render');
+      throw new Error("Component Column should never render");
     }
   }]);
 
@@ -7262,7 +7560,13 @@ Table_defineProperty(Column, "defaultProps", {
 var Table_Cell = function Cell(props) {
   var isHeader = props.isHeader,
       children = props.children;
-  return isHeader ? react_default.a.createElement("th", null, children) : react_default.a.createElement("td", null, children);
+  var cell = react_default.a.createElement("td", null, children);
+
+  if (isHeader) {
+    cell = react_default.a.createElement("th", null, children);
+  }
+
+  return cell;
 };
 
 var Table_TextCell = function TextCell(_ref2) {
@@ -7334,11 +7638,48 @@ function (_React$Component3) {
   return SortHeaderCell;
 }(react_default.a.Component);
 
+var Table_EmptyIndicator =
+/*#__PURE__*/
+function (_React$Component4) {
+  Table_inherits(EmptyIndicator, _React$Component4);
+
+  function EmptyIndicator() {
+    Table_classCallCheck(this, EmptyIndicator);
+
+    return Table_possibleConstructorReturn(this, Table_getPrototypeOf(EmptyIndicator).apply(this, arguments));
+  }
+
+  Table_createClass(EmptyIndicator, [{
+    key: "render",
+    value: function render() {
+      var _this$props2 = this.props,
+          children = _this$props2.children,
+          title = _this$props2.title;
+      var noResults = title || "No Results Found";
+      return react_default.a.createElement(StyledEmptyIndicator, null, react_default.a.createElement("h2", null, noResults), react_default.a.createElement("p", null, children));
+    }
+  }]);
+
+  return EmptyIndicator;
+}(react_default.a.Component);
+
 
 // CONCATENATED MODULE: ./src/shared/components/DataTable/index.js
 
 
 // CONCATENATED MODULE: ./src/app/components/InputSearch/InputSearch.jsx
+function InputSearch_templateObject() {
+  var data = InputSearch_taggedTemplateLiteral(["\n  float: left;\n  height: 40px;\n  margin: 0;\n  position: relative;\n\n  &.is-active {\n    .icon {\n      color: ", ";\n    }\n  }\n\n  .icon {\n    font-size: 20px;\n    left: 12px;\n    opacity: .24;\n    position: absolute;\n    top: 12px;\n    z-index: 1;\n  }\n\n  input {\n    background: ", ";\n    border: none;\n    border-radius: 200px;\n    color: ", ";\n    font-size: 14px;\n    font-weight: 300;\n    height: 40px;\n    outline: none;\n    padding: 0 16px 0 40px;\n    transition: all .3s;\n\n    &:focus, &:active {\n      background: ", ";\n      box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);\n      color: ", ";\n    }\n\n          // PLACEHOLDER TEXT\n    &::-webkit-input-placeholder { /* Chrome/Opera/Safari */\n      color: ", ";\n      font-size: 12px;\n      text-transform: uppercase;\n    }\n    &::-moz-placeholder { /* Firefox 19+ */\n      color: ", ";\n      font-size: 12px;\n      text-transform: uppercase;\n    }\n    &:-ms-input-placeholder { /* IE 10+ */\n      color: ", ";\n      font-size: 12px;\n      text-transform: uppercase;\n    }\n    &:-moz-placeholder { /* Firefox 18- */\n      color: ", ";\n      font-size: 12px;\n      text-transform: uppercase;\n    }\n  }\n"]);
+
+  InputSearch_templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function InputSearch_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
 function InputSearch_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { InputSearch_typeof = function _typeof(obj) { return typeof obj; }; } else { InputSearch_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return InputSearch_typeof(obj); }
 
 function InputSearch_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7378,6 +7719,8 @@ limitations under the License.
 
 
 
+
+
 var InputSearch_InputSearch =
 /*#__PURE__*/
 function (_React$Component) {
@@ -7389,6 +7732,18 @@ function (_React$Component) {
     InputSearch_classCallCheck(this, InputSearch);
 
     _this = InputSearch_possibleConstructorReturn(this, InputSearch_getPrototypeOf(InputSearch).call(this, props));
+
+    InputSearch_defineProperty(InputSearch_assertThisInitialized(InputSearch_assertThisInitialized(_this)), "onBlur", function () {
+      _this.setState({
+        isFocused: false
+      });
+    });
+
+    InputSearch_defineProperty(InputSearch_assertThisInitialized(InputSearch_assertThisInitialized(_this)), "onFocus", function () {
+      _this.setState({
+        isFocused: true
+      });
+    });
 
     InputSearch_defineProperty(InputSearch_assertThisInitialized(InputSearch_assertThisInitialized(_this)), "onChange", function (e) {
       _this.setState({
@@ -7403,7 +7758,8 @@ function (_React$Component) {
     }, 200);
     var value = props.value || '';
     _this.state = {
-      value: value
+      value: value,
+      isFocused: false
     };
     return _this;
   }
@@ -7424,20 +7780,19 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props = this.props,
-          _this$props$className = _this$props.className,
-          className = _this$props$className === void 0 ? '' : _this$props$className,
-          _this$props$autoFocus = _this$props.autoFocus,
+      var _this$props$autoFocus = this.props.autoFocus,
           autoFocus = _this$props$autoFocus === void 0 ? false : _this$props$autoFocus;
-      className = "grv-search input-group-sm ".concat(className);
-      return react_default.a.createElement("div", {
-        className: className
-      }, react_default.a.createElement("input", {
+      var isFocused = this.state.isFocused ? 'is-active' : '';
+      return react_default.a.createElement(SearchField, {
+        className: isFocused
+      }, react_default.a.createElement(Magnifier, null), react_default.a.createElement("input", {
         placeholder: "Search...",
         className: "form-control",
         autoFocus: autoFocus,
         value: this.state.value,
-        onChange: this.onChange
+        onChange: this.onChange,
+        onFocus: this.onFocus,
+        onBlur: this.onBlur
       }));
     }
   }]);
@@ -7445,6 +7800,25 @@ function (_React$Component) {
   return InputSearch;
 }(react_default.a.Component);
 
+var SearchField = styled_components_browser_esm["c" /* default */].div(InputSearch_templateObject(), function (props) {
+  return props.theme.background.secondary;
+}, function (props) {
+  return props.theme.background.secondary;
+}, function (props) {
+  return props.theme.colors.light;
+}, function (props) {
+  return props.theme.background.light;
+}, function (props) {
+  return props.theme.colors.link;
+}, function (props) {
+  return props.theme.colors.subtle;
+}, function (props) {
+  return props.theme.colors.subtle;
+}, function (props) {
+  return props.theme.colors.subtle;
+}, function (props) {
+  return props.theme.colors.subtle;
+});
 /* harmony default export */ var components_InputSearch_InputSearch = (InputSearch_InputSearch);
 // CONCATENATED MODULE: ./src/app/components/InputSearch/index.js
 /*
@@ -7465,6 +7839,18 @@ limitations under the License.
 
 /* harmony default export */ var components_InputSearch = (components_InputSearch_InputSearch);
 // CONCATENATED MODULE: ./src/app/components/ClusterNodes/NodeList/NodeList.jsx
+function NodeList_templateObject() {
+  var data = NodeList_taggedTemplateLiteral(["\n  height: 40px;\n  margin: 40px 0;\n\n  &::after {\n    content: \"\";\n    clear: both;\n    display: table;\n  }\n\n  h1 {\n    font-size: 36px;\n    font-weight: 300;\n    float: left;\n    line-height: 40px;\n    margin: 0 40px 0 0;\n  }\n"]);
+
+  NodeList_templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function NodeList_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
 function NodeList_typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { NodeList_typeof = function _typeof(obj) { return typeof obj; }; } else { NodeList_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return NodeList_typeof(obj); }
 
 function NodeList_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7504,6 +7890,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 
 
 
@@ -7743,20 +8130,32 @@ function (_React$Component2) {
       return sorted;
     }
   }, {
-    key: "render",
-    value: function render() {
+    key: "renderPageHeader",
+    value: function renderPageHeader() {
+      var searchValue = this.state.filter;
+      return react_default.a.createElement(PageHeader, null, react_default.a.createElement("h1", null, "Nodes"), react_default.a.createElement(components_InputSearch, {
+        value: searchValue,
+        onChange: this.onFilterChange
+      }));
+    }
+  }, {
+    key: "renderEmptyIndicator",
+    value: function renderEmptyIndicator() {
+      return react_default.a.createElement(Table_EmptyIndicator, {
+        title: "No Results Found for \"".concat(this.state.filter, "\"")
+      }, "For tips on getting better search results, please read ", react_default.a.createElement("a", {
+        href: "https://gravitational.com/teleport/docs"
+      }, "our documentation"));
+    }
+  }, {
+    key: "renderTable",
+    value: function renderTable() {
       var _this$props3 = this.props,
           nodeRecords = _this$props3.nodeRecords,
           logins = _this$props3.logins,
           onLoginClick = _this$props3.onLoginClick;
-      var searchValue = this.state.filter;
       var data = this.sortAndFilter(nodeRecords);
-      return react_default.a.createElement("div", null, react_default.a.createElement("div", null, react_default.a.createElement("h2", null, " Nodes "), react_default.a.createElement("div", null, react_default.a.createElement(components_InputSearch, {
-        value: searchValue,
-        onChange: this.onFilterChange
-      }))), react_default.a.createElement("div", null, data.length === 0 && this.state.filter.length > 0 ? react_default.a.createElement(StyledEmptyIndicator, {
-        text: "No matching nodes found"
-      }) : react_default.a.createElement(Table_Table, {
+      return react_default.a.createElement(Table_Table, {
         rowCount: data.length,
         data: data
       }, react_default.a.createElement(Column, {
@@ -7784,13 +8183,27 @@ function (_React$Component2) {
         cell: react_default.a.createElement(NodeList_LoginCell, {
           logins: logins
         })
-      }))));
+      }));
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var nodeRecords = this.props.nodeRecords;
+      var data = this.sortAndFilter(nodeRecords);
+      var table = this.renderTable(); // no results found
+
+      if (data.length === 0 && this.state.filter.length > 0) {
+        table = this.renderEmptyIndicator();
+      }
+
+      return react_default.a.createElement("div", null, this.renderPageHeader(), table);
     }
   }]);
 
   return NodeList;
 }(react_default.a.Component);
 
+var PageHeader = styled_components_browser_esm["c" /* default */].header(NodeList_templateObject());
 /* harmony default export */ var ClusterNodes_NodeList_NodeList = (NodeList_NodeList);
 // CONCATENATED MODULE: ./src/app/components/ClusterNodes/NodeList/index.js
 
@@ -7818,7 +8231,6 @@ limitations under the License.
 
 
 
-
 var ClusterNodes_ClusterNodes = function ClusterNodes(_ref) {
   var nodes = _ref.nodes,
       sshHistory = _ref.sshHistory,
@@ -7828,20 +8240,14 @@ var ClusterNodes_ClusterNodes = function ClusterNodes(_ref) {
       storage = _ref.storage;
   var logins = aclStore.getSshLogins().toJS();
   var nodeRecords = nodes.toJS();
-  return react_default.a.createElement(components["d" /* Flex */], {
-    style: {
-      overflow: "auto"
-    }
-  }, react_default.a.createElement(components["a" /* Box */], {
-    m: 4
-  }, react_default.a.createElement(components["e" /* Heading */].h2, null, "ClusterNodes"), react_default.a.createElement(ClusterNodes_NodeList, {
+  return react_default.a.createElement(ClusterNodes_NodeList, {
     sshHistory: sshHistory,
     storage: storage,
     siteId: siteId,
     sites: sites,
     nodeRecords: nodeRecords,
     logins: logins
-  })));
+  });
 };
 
 function ClusterNodes_mapStoreToProps(props) {
@@ -7922,16 +8328,12 @@ function (_React$Component) {
       var selected = options.find(function (o) {
         return o.value === value;
       });
-      return react_default.a.createElement("div", {
-        style: {
-          width: "400px"
-        }
-      }, react_default.a.createElement(react_select_esm["a" /* default */], {
+      return react_default.a.createElement(react_select_esm["a" /* default */], {
         styles: customStyles,
         value: selected,
         onChange: onChange,
         options: options
-      }));
+      });
     }
   }]);
 
@@ -7941,17 +8343,15 @@ function (_React$Component) {
 var customStyles = {
   option: function option(provided, state) {
     return ClusterSelector_objectSpread({}, provided, {
-      borderBottom: '1px dotted pink',
-      color: state.isSelected ? 'red' : 'blue' //padding: 20,
-
+      color: state.isSelected ? 'red' : 'blue'
     });
   },
-  control: function control() {
-    return {
-      // none of react-select's styles are passed to <Control />
-      width: 400,
-      display: "flex"
-    };
+  container: function container(provided) {
+    return ClusterSelector_objectSpread({}, provided, {
+      height: '24px',
+      lineHeight: '24px',
+      width: '200px'
+    });
   },
   singleValue: function singleValue(provided, state) {
     var opacity = state.isDisabled ? 0.5 : 1;
@@ -8048,13 +8448,10 @@ function (_React$Component) {
           label: c.name
         };
       });
-      return react_default.a.createElement(components["d" /* Flex */], {
+      return react_default.a.createElement(components["a" /* Box */], {
         style: {
-          height: "100%"
-        }
-      }, react_default.a.createElement(components["a" /* Box */], {
-        style: {
-          overflow: "auto"
+          height: "100%",
+          paddingLeft: "260px"
         }
       }, react_default.a.createElement(components["i" /* SideNav */], null, react_default.a.createElement(components["j" /* SideNavItem */], {
         as: function as(props) {
@@ -8071,25 +8468,16 @@ function (_React$Component) {
             to: config["a" /* default */].getClusterSessionsUrl(clusterId)
           }, "Sessions");
         }
-      }))), react_default.a.createElement(components["a" /* Box */], {
-        m: 4,
-        style: {
-          overflow: "auto"
-        }
-      }, react_default.a.createElement("div", {
-        style: {
-          width: "400px"
-        }
-      }, react_default.a.createElement(Cluster_ClusterSelector, {
+      })), react_default.a.createElement(Cluster_ClusterSelector, {
         value: clusterId,
         onChange: this.onChangeCluster,
         options: clusterOptions
-      })), react_default.a.createElement(Switch["a" /* default */], null, react_default.a.createElement(Route["a" /* default */], {
+      }), react_default.a.createElement(Switch["a" /* default */], null, react_default.a.createElement(Route["a" /* default */], {
         exact: true,
         path: config["a" /* default */].routes.cluster
       }, react_default.a.createElement(components_ClusterNodes, {
         clusterId: clusterId
-      })))));
+      }))));
     }
   }]);
 
@@ -10116,7 +10504,7 @@ var prop_types = __webpack_require__("17x9");
 var prop_types_default = /*#__PURE__*/__webpack_require__.n(prop_types);
 
 // EXTERNAL MODULE: ./src/shared/components/theme.js + 1 modules
-var components_theme = __webpack_require__("K0cP");
+var theme = __webpack_require__("K0cP");
 
 // EXTERNAL MODULE: ./node_modules/styled-system/dist/index.esm.js + 1 modules
 var index_esm = __webpack_require__("za5s");
@@ -10142,7 +10530,7 @@ var Input = styled_components_browser_esm["c" /* default */].input(_templateObje
   return props.hasError ? props.theme.background.error : '#FFF';
 }, function (props) {
   return props.hasError ? "2px solid ".concat(props.theme.colors.warning) : 'none';
-}, components_theme["b" /* colors */].text, function (props) {
+}, theme["b" /* colors */].text, function (props) {
   return props.theme.colors.subtle;
 }, index_esm["k" /* space */]);
 Input.displayName = 'Input';
@@ -10177,7 +10565,7 @@ function Box_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.sli
 var Box = styled_components_browser_esm["c" /* default */].div(Box_templateObject(), index_esm["k" /* space */], index_esm["m" /* width */], index_esm["c" /* color */], index_esm["l" /* textAlign */], index_esm["d" /* flex */], index_esm["b" /* alignSelf */], index_esm["i" /* justifySelf */]);
 Box.displayName = 'Box';
 Box.defaultProps = {
-  theme: components_theme["c" /* default */]
+  theme: theme["c" /* default */]
 };
 var numberStringOrArray = prop_types_default.a.oneOfType([prop_types_default.a.number, prop_types_default.a.string, prop_types_default.a.array]);
 Box.propTypes = {
@@ -10230,7 +10618,7 @@ Card.propTypes = {
   borderWidth: prop_types_default.a.oneOf([1, 2])
 };
 Card.defaultProps = {
-  theme: components_theme["c" /* default */]
+  theme: theme["c" /* default */]
 };
 Card.displayName = 'Card';
 /* harmony default export */ var Card_Card = (Card);
@@ -10305,7 +10693,7 @@ Text.propTypes = {
   py: Text_numberStringOrArray
 };
 Text.defaultProps = {
-  theme: components_theme["c" /* default */]
+  theme: theme["c" /* default */]
 };
 Text.span = Text.withComponent('span');
 Text.p = Text.withComponent('p');
@@ -10353,7 +10741,7 @@ Heading.defaultProps = {
   regular: true,
   fontSize: 4,
   m: 0,
-  theme: components_theme["c" /* default */]
+  theme: theme["c" /* default */]
 };
 Heading.h1 = Heading.withComponent('h1');
 Heading.h1.defaultProps = {
@@ -10405,7 +10793,7 @@ var style = __webpack_require__("ec++");
 
 // CONCATENATED MODULE: ./src/shared/components/Indicator/Indicator.jsx
 function Indicator_templateObject() {
-  var data = Indicator_taggedTemplateLiteral(["\n  animation: anim-rotate 2s infinite linear;\n  color: #fff;\n  display: inline-block;\n  font-size:4em;\n  height: 1em;\n  line-height: 1;\n  margin: .5em;\n  text-shadow: 0 0 .25em rgba(255,255,255, .3);\n\n  @keyframes anim-rotate {\n    0% {\n      transform: rotate(0);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n\n"]);
+  var data = Indicator_taggedTemplateLiteral(["\n  animation: anim-rotate 2s infinite linear;\n  color: #fff;\n  display: inline-block;\n  font-size: 32px;\n  height: 32px;\n  line-height: 32px;\n  margin: 16px;\n  text-shadow: 0 0 .25em rgba(255,255,255, .3);\n\n  @keyframes anim-rotate {\n    0% {\n      transform: rotate(0);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n\n"]);
 
   Indicator_templateObject = function _templateObject() {
     return data;
@@ -10494,9 +10882,23 @@ var StyledSpinner = styled_components_browser_esm["c" /* default */].div.attrs({
 // CONCATENATED MODULE: ./src/shared/components/Indicator/index.js
 
 /* harmony default export */ var components_Indicator = (components_Indicator_Indicator);
+// CONCATENATED MODULE: ./src/shared/components/constants.js
+var z = {
+  z1: 1,
+  z2: 2,
+  z3: 3,
+  z4: 4,
+  z5: 5,
+  zmax1: 1000,
+  zmax2: 2000,
+  zmax3: 3000,
+  zmax4: 4000,
+  zmax5: 5000
+};
+
 // CONCATENATED MODULE: ./src/shared/components/SideNav/SideNav.jsx
 function SideNav_templateObject() {
-  var data = SideNav_taggedTemplateLiteral(["\n  background: ", ";\n  width: 240px;\n  overflow: auto;\n"]);
+  var data = SideNav_taggedTemplateLiteral(["\n  background: ", ";\n  bottom: 0;\n  width: 240px;\n  left: 0;\n  overflow: auto;\n  padding-top: 72px;\n  position: ", ";\n  top: 0;\n  z-index: ", ";\n"]);
 
   SideNav_templateObject = function _templateObject() {
     return data;
@@ -10510,12 +10912,11 @@ function SideNav_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings
 
 
 var SideNav = styled_components_browser_esm["c" /* default */].nav(SideNav_templateObject(), function (props) {
-  return props.theme.background.primary;
-});
+  return props.theme.background.secondary;
+}, function (props) {
+  return props.static ? 'relative' : 'fixed';
+}, z.zmax1);
 SideNav.displayName = 'SideNav';
-SideNav.defaultProps = {
-  theme: components_theme["c" /* default */]
-};
 /* harmony default export */ var SideNav_SideNav = (SideNav);
 // CONCATENATED MODULE: ./src/shared/components/SideNav/SideNavItem.jsx
 function SideNavItem_templateObject() {
@@ -10533,7 +10934,7 @@ function SideNavItem_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = str
 
 
 var SideNavItem = styled_components_browser_esm["c" /* default */].button(SideNavItem_templateObject(), function (props) {
-  return props.active ? props.theme.background.secondary : props.theme.background.primary;
+  return props.active ? props.theme.background.tertiary : props.theme.background.secondary;
 }, function (props) {
   return props.active ? props.theme.colors.light : 'rgba(255, 255, 255, .56)';
 }, function (props) {
@@ -10541,13 +10942,13 @@ var SideNavItem = styled_components_browser_esm["c" /* default */].button(SideNa
 }, function (props) {
   return props.active ? props.theme.background.secondary : 'rgba(255, 255, 255, .06)';
 }, function (props) {
-  return props.active ? props.theme.background.secondary : props.theme.background.primary;
+  return props.active ? props.theme.background.tertiary : props.theme.background.secondary;
 }, function (props) {
   return props.theme.colors.light;
 });
 SideNavItem.displayName = 'SideNavItem';
 SideNavItem.defaultProps = {
-  theme: components_theme["c" /* default */]
+  theme: theme["c" /* default */]
 };
 /* harmony default export */ var SideNav_SideNavItem = (SideNavItem);
 // CONCATENATED MODULE: ./src/shared/components/SideNav/index.js
@@ -10558,9 +10959,12 @@ SideNavItem.defaultProps = {
 // EXTERNAL MODULE: ./src/shared/components/TopNav/TopNavItem.jsx
 var TopNavItem = __webpack_require__("2oKY");
 
+// EXTERNAL MODULE: ./src/app/config.js
+var config = __webpack_require__("LMli");
+
 // CONCATENATED MODULE: ./src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx
 function TopNavLogo_templateObject() {
-  var data = TopNavLogo_taggedTemplateLiteral(["\n  margin: 0 80px 0 0;\n\n  img {\n    display: inline-block;\n    float: left;\n    height: 24px;\n    margin: 24px 8px 24px 16px;\n  }\n\n  em {\n    font-size: 10px;\n    font-weight: bold\n    font-style: normal;\n    margin: 0;\n  }\n"]);
+  var data = TopNavLogo_taggedTemplateLiteral(["\n  margin: 0;\n  width: 240px;\n\n  img {\n    display: inline-block;\n    float: left;\n    height: 24px;\n    margin: 24px 0 24px 16px;\n  }\n\n  em {\n    display: inline-block;\n    font-size: 10px;\n    font-weight: bold;\n    font-style: normal;\n    margin: 0;\n  }\n"]);
 
   TopNavLogo_templateObject = function _templateObject() {
     return data;
@@ -10576,33 +10980,31 @@ function TopNavLogo_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = stri
 
 
 
+
 var TopNavLogo_TopNavLogo = function TopNavLogo(_ref) {
-  var className = _ref.className,
-      src = _ref.src,
+  var src = _ref.src,
       version = _ref.version;
-  return react_default.a.createElement(StyledLogo, {
-    className: className
-  }, react_default.a.createElement("img", {
+  return react_default.a.createElement("a", {
+    href: config["a" /* default */].routes.app
+  }, react_default.a.createElement(StyledLogo, null, react_default.a.createElement("img", {
     src: src
-  }), react_default.a.createElement("em", null, version));
+  }), react_default.a.createElement("em", null, version)));
 };
 
 TopNavLogo_TopNavLogo.propTypes = {
   src: prop_types_default.a.string,
-  onClick: prop_types_default.a.func,
-  title: prop_types_default.a.string
+  version: prop_types_default.a.string
 };
 TopNavLogo_TopNavLogo.defaultProps = {
   src: '/',
-  onClick: function onClick() {},
-  title: 'Empty Title'
+  version: 'v#'
 };
 TopNavLogo_TopNavLogo.displayName = 'TopNavLogo';
 var StyledLogo = Object(styled_components_browser_esm["c" /* default */])(TopNavItem["a" /* default */])(TopNavLogo_templateObject());
 /* harmony default export */ var TopNav_TopNavLogo_TopNavLogo = (TopNavLogo_TopNavLogo);
 // CONCATENATED MODULE: ./src/shared/components/TopNav/TopNav.jsx
 function TopNav_templateObject() {
-  var data = TopNav_taggedTemplateLiteral(["\n  background: ", ";\n  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n"]);
+  var data = TopNav_taggedTemplateLiteral(["\n  left: 0;\n  display: block;\n  position: ", ";\n  right: 0;\n  top: 0;\n  z-index: ", ";\n"]);
 
   TopNav_templateObject = function _templateObject() {
     return data;
@@ -10623,9 +11025,9 @@ var TopNav_TopNav = function TopNav(_ref) {
   var logoSrc = _ref.logoSrc,
       version = _ref.version,
       children = _ref.children,
-      theme = _ref.theme;
+      isStatic = _ref.isStatic;
   return react_default.a.createElement(StyledNav, {
-    theme: theme
+    isStatic: isStatic
   }, react_default.a.createElement(TopNav_TopNavLogo_TopNavLogo, {
     src: logoSrc,
     version: version
@@ -10634,14 +11036,15 @@ var TopNav_TopNav = function TopNav(_ref) {
 
 TopNav_TopNav.propTypes = {
   /** The version of the product (ex. 5.3.2) */
-  version: prop_types_default.a.string
+  version: prop_types_default.a.string,
+  logoSrc: prop_types_default.a.string
 };
 TopNav_TopNav.defaultProps = {
-  theme: components_theme["c" /* default */]
+  version: 'v#'
 };
 var StyledNav = styled_components_browser_esm["c" /* default */].nav(TopNav_templateObject(), function (props) {
-  return props.theme.background.secondary;
-});
+  return props.isStatic ? 'relative' : 'fixed';
+}, z.zmax2);
 /* harmony default export */ var components_TopNav_TopNav = (TopNav_TopNav);
 // CONCATENATED MODULE: ./src/shared/components/TopNav/index.js
 
@@ -10670,7 +11073,7 @@ function Flex_taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.sl
 
 var Flex = styled_components_browser_esm["c" /* default */].div(Flex_templateObject(), index_esm["k" /* space */], index_esm["m" /* width */], index_esm["c" /* color */], index_esm["a" /* alignItems */], index_esm["h" /* justifyContent */], index_esm["f" /* flexWrap */], index_esm["e" /* flexDirection */]);
 Flex.defaultProps = {
-  theme: components_theme["c" /* default */]
+  theme: theme["c" /* default */]
 };
 Flex.propTypes = _objectSpread({}, index_esm["j" /* propTypes */].space, index_esm["j" /* propTypes */].width, index_esm["j" /* propTypes */].color, index_esm["j" /* propTypes */].alignItems, index_esm["j" /* propTypes */].justifyContent, index_esm["j" /* propTypes */].flexWrap, index_esm["j" /* propTypes */].flexDirection);
 Flex.displayName = 'Flex';
@@ -10691,7 +11094,7 @@ Flex.displayName = 'Flex';
 /* concated harmony reexport SideNavItem */__webpack_require__.d(__webpack_exports__, "j", function() { return SideNav_SideNavItem; });
 /* unused concated harmony import Text */
 /* concated harmony reexport TopNav */__webpack_require__.d(__webpack_exports__, "k", function() { return components_TopNav; });
-/* concated harmony reexport TopNavItem */__webpack_require__.d(__webpack_exports__, "l", function() { return TopNavItem["a" /* default */]; });
+/* unused concated harmony import TopNavItem */
 
 
 
@@ -10721,7 +11124,7 @@ var styled_components_browser_esm = __webpack_require__("vOnD");
 
 // CONCATENATED MODULE: ./src/shared/components/ThemeProvider/globals.js
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n\n  html {\n    font-family: ", ";\n    font-weight: 400;\n  }\n\n  body {\n    margin: 0;\n    background-color: ", ";\n    color: ", ";\n  }\n\n  article,\n  aside,\n  details,\n  figcaption,\n  figure,\n  footer,\n  header,\n  main,\n  menu,\n  nav,\n  section,\n  summary {\n    display: block;\n  }\n\n"]);
+  var data = _taggedTemplateLiteral(["\n\n  html {\n    font-family: ", ";\n    font-weight: 400;\n  }\n\n  body {\n    margin: 0;\n    background-color: ", ";\n    color: ", ";\n    padding: 0;\n  }\n\n  article,\n  aside,\n  details,\n  figcaption,\n  figure,\n  footer,\n  header,\n  main,\n  menu,\n  nav,\n  section,\n  summary {\n    display: block;\n  }\n\n"]);
 
   _templateObject = function _templateObject() {
     return data;

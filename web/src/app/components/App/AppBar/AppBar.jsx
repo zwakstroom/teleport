@@ -1,11 +1,9 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
 import { connect } from './../../nuclear';
 import { getters } from 'app/flux/user';
-import cfg from 'app/config';
 import { logout } from 'app/flux/user/actions';
 import TopNavUserMenu from 'shared/components/TopNav/TopNavUserMenu'
-import { TopNav, TopNavItem } from 'shared/components';
+import { TopNav } from 'shared/components';
 import teleportLogoSvg from 'app/../shared/assets/images/teleport-logo.svg';
 import MenuItem from 'shared/components/Menu/MenuItem';
 import Button from 'shared/components/Button';
@@ -36,12 +34,7 @@ export class AppBar extends React.Component {
   render() {
     const { username } = this.props;
     return (
-      <TopNav logoSrc={teleportLogoSvg} version="v3.2.0-alpha.1">
-        <TopNavItem as={props => (
-          <NavLink className={props.className} to={cfg.routes.app} >
-            Clusters
-          </NavLink>)}
-        />
+      <TopNav logoSrc={teleportLogoSvg} version="v3.2.1">
         <TopNavUserMenu
           open={this.state.open}
           onShow={this.onShowMenu}

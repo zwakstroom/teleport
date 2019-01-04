@@ -39,7 +39,7 @@ const customStyles = {
     color: state.isSelected ? 'red' : 'blue',
   }),
 
-  container: (provided, state) => ({
+  container: (provided) => ({
     ...provided,
     height: '24px',
     lineHeight: '24px',

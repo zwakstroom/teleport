@@ -13,15 +13,12 @@ storiesOf('TopNav', module)
     info: {
       header: false,
       inline: true,
-      text:
-        'Use the <TopNav /> to render the top nav component'
+      text: 'Use the TopNav to render the top nav component'
     },
   })
   .add('TopNav component', () => {
     return (
-      <TopNav
-        logoSrc={teleportSvg}
-        version="5.3.2">
+      <TopNav isStatic={true} logoSrc={teleportSvg} version="5.3.2">
         <TopNavItem>
           Action 1
         </TopNavItem>
