@@ -86,7 +86,7 @@ const SearchField = styled.div`
 
   &.is-active {
     .icon {
-      color: ${props => props.theme.background.secondary};
+      color: ${props => props.theme.colors.bgSecondary};
     }
   }
 
@@ -100,7 +100,7 @@ const SearchField = styled.div`
   }
 
   input {
-    background: ${props => props.theme.background.secondary};
+    background: ${props => props.theme.colors.bgSecondary};
     border: none;
     border-radius: 200px;
     color: ${props => props.theme.colors.light};
@@ -112,7 +112,7 @@ const SearchField = styled.div`
     transition: all .3s;
 
     &:focus, &:active {
-      background: ${props => props.theme.background.light};
+      background: ${props => props.theme.colors.bgLight};
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);
       color: ${props => props.theme.colors.link};
     }

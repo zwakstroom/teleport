@@ -16,6 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { connect } from './../nuclear';
+import TopNav from './../TopNav/TopNav';
 import siteGetters from 'app/flux/sites/getters';
 import { Flex, Box, Heading } from 'shared/components';
 import CardCluster from './CardCluster';
@@ -30,13 +31,14 @@ export class Clusters extends React.Component {
   render() {
     const { clusters } = this.props;
     const $clusters = clusters.map((cluster, index) => {
-      const { name, connectedAt, status } = cluster;
+      const { name, nodeCount, connectedAt, status } = cluster;
       const key = `${name}-${index}`;
       return (
         <CardCluster
           m={2}
           key={key}
           onClick={this.onSelectCluster}
+          nodeCount={nodeCount}
           name={name}
           connectedAt={connectedAt}
           status={status}
@@ -45,15 +47,20 @@ export class Clusters extends React.Component {
     })
 
     return (
-      <Flex style={{ overflow: "auto" }}>
-        <Box m={4}>
-          <Heading.h2>
-            Clusters
-          </Heading.h2>
-          <Flex flexWrap="wrap" >
-            {$clusters}
-          </Flex>
-        </Box>
+      <Flex flexDirection="column" height="100%">
+        <div>
+          <TopNav withLogo={true} />
+        </div>
+        <div style={{ overflow: "auto" }}>
+          <Box m={4}>
+            <Heading.h2>
+              Clusters
+            </Heading.h2>
+            <Flex flexWrap="wrap" >
+              {$clusters}
+            </Flex>
+          </Box>
+        </div>
       </Flex>
     );
   }

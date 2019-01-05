@@ -24,12 +24,12 @@ const TopNavItem = styled.button`
   -webkit-font-smoothing: antialiased;
 
   &:hover {
-    background:  ${props => props.active ? props.theme.background.secondary : 'rgba(255, 255, 255, .06)'};
+    background:  ${props => props.active ? props.theme.colors.bgSecondary : 'rgba(255, 255, 255, .06)'};
     border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
   }
 
   &:active, {
-    background:  ${props => props.active ? props.theme.background.secondary : props.theme.background.primary};
+    background:  ${props => props.active ? props.theme.colors.bgSecondary : props.theme.colors.bgPrimary};
     color: ${props => props.theme.colors.light};
     border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
   }

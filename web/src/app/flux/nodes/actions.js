@@ -2,7 +2,7 @@ import reactor from 'app/reactor';
 import { TLPT_NODES_RECEIVE } from './actionTypes';
 import api from 'app/services/api';
 import cfg from 'app/config';
-import appGetters from 'app/flux/app/getters';
+import { getters as appGetters } from 'app/flux/app/appStore';
 import Logger from 'app/lib/logger';
 
 const logger = Logger.create('flux/nodes');

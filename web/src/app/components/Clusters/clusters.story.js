@@ -1,17 +1,47 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { Clusters } from './Clusters'
+import reactor from 'app/reactor';
+import history from 'app/services/history';
+import { createMemoryHistory } from 'history';
+import { Router } from 'react-router';
+import 'app/flux';
+import { Provider } from './../nuclear';
+import { RECEIVE_USER } from 'app/flux/user/actionTypes';
 
 storiesOf('Teleport/Clusters', module)
   .add('With CardCluster components', () => {
     return (
-      <Clusters
-        onSelectCluster={() => window.alert("Selected!")}
-        siteId="one"
-        clusters={clusters}
-      />
+      <ClustersPage/>
     );
   });
+
+class ClustersPage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.inMemoryHistory = createMemoryHistory({
+      initialEntries: ['/web/'],
+      initialIndex: 0
+    });
+
+    history.init(this.inMemoryHistory);
+    reactor.dispatch(RECEIVE_USER, { name: 'John Smith' });
+  }
+
+  render() {
+    return(
+      <Router history={this.inMemoryHistory}>
+        <Provider reactor={reactor}>
+          <Clusters
+            onSelectCluster={() => window.alert("Selected!")}
+            siteId="one"
+            clusters={clusters}
+            />
+        </Provider>
+      </Router>
+    )
+  }
+}
 
 const clusters = [{
   "name": "one",

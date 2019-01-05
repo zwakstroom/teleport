@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import reactor from 'app/reactor';
-import { SET_SITE_ID, ADD_NAV_ITEM } from './actionTypes';
+import  * as APP from './actionTypes';
 import { RECEIVE_CLUSTERS } from './../sites/actionTypes';
 import { RECEIVE_USER } from './../user/actionTypes';
 import { RECEIVE_USERACL } from './../userAcl/actionTypes';
@@ -29,11 +29,11 @@ import Logger from 'app/lib/logger';
 const logger = Logger.create('flux/app');
 
 export function addNavItem(item) {
-  reactor.dispatch(ADD_NAV_ITEM, item);
+  reactor.dispatch(APP.ADD_NAV_ITEM, item);
 }
 
 export function setSiteId(siteId) {
-  reactor.dispatch(SET_SITE_ID, siteId);
+  reactor.dispatch(APP.SET_SITE_ID, siteId);
 }
 
 export function initApp(siteId, featureActivator) {
@@ -84,6 +84,7 @@ export function fetchSites(){
 export function fetchUserContext(){
   return api.get(cfg.api.userContextPath).then(json => {
     reactor.dispatch(RECEIVE_USER, { name: json.userName, authType: json.authType });
+    reactor.dispatch(APP.SET_VERSION, json.version);
     reactor.dispatch(RECEIVE_USERACL, json.userAcl);
     logger.info("Teleport ver:", json.version);
   })

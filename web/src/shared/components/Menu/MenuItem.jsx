@@ -38,7 +38,7 @@ MenuItem.defaultProps = {
 };
 
 const StyledMenuItem = styled.div`
-  background-color: ${props => props.theme.background.light};
+  background-color: ${props => props.theme.colors.bgLight};
   border-bottom: 1px solid ${props => props.theme.colors.subtle};
   box-sizing: content-box;
   color: ${props => props.theme.colors.text};

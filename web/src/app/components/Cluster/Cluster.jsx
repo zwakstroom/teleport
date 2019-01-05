@@ -15,13 +15,17 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import { Route, Switch, NavLink } from 'react-router-dom'
+import teleportLogoSvg from 'shared/assets/images/teleport-logo.svg';
+import TopNav from './../TopNav/TopNav';
 import { connect } from './../nuclear';
 import cfg from 'app/config';
 import clusterGetters from 'app/flux/sites/getters';
-import { Box, SideNav, SideNavItem } from 'shared/components';
+import { Flex, Box, SideNav, SideNavItem } from 'shared/components';
 import ClusterNodes from './../ClusterNodes';
 import ClusterSelector from './ClusterSelector';
+import NavLogo from './../NavLogo';
 import { changeCluster } from 'app/flux/sites/actions';
 
 export class Cluster extends React.Component {
@@ -38,13 +42,18 @@ export class Cluster extends React.Component {
     }));
 
     return (
-      <Box style={{ height: "100%", paddingLeft: "260px" }}>
+      <Flex height="100%">
+        <div>
           <SideNav>
+            <SideNavItem as={() => (
+              <NavLogo src={teleportLogoSvg} />
+            )}/>
             <SideNavItem as={props => (
               <NavLink className={props.className}
                 exact
-                to={cfg.getClusterUrl(clusterId)}>
-                  Nodes
+                to={cfg.getClusterUrl(clusterId)}
+              >
+                Nodes
               </NavLink>
               )}
             />
@@ -56,19 +65,27 @@ export class Cluster extends React.Component {
               )}
             />
           </SideNav>
-
+        </div>
+        <Flex flexDirection="column" width="100%">
+          <div>
             <ClusterSelector
               value={clusterId}
               onChange={this.onChangeCluster}
               options={clusterOptions}
             />
-
-          <Switch>
-            <Route exact path={cfg.routes.cluster} >
-              <ClusterNodes clusterId={clusterId} />
-            </Route>
-          </Switch>
-      </Box>
+            <TopNav />
+          </div>
+          <Content>
+            <Box m={2} width="100%">
+              <Switch>
+                <Route exact path={cfg.routes.cluster} >
+                  <ClusterNodes clusterId={clusterId} />
+                </Route>
+                </Switch>
+            </Box>
+          </Content>
+        </Flex>
+      </Flex>
     );
   }
 }
@@ -84,6 +101,12 @@ function mapStateToProps() {
     onChangeCluster: changeCluster,
   }
 }
+
+const Content = styled(Flex)`
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+`
 
 export default connect(mapStoreToProps, mapStateToProps)(Cluster);
 

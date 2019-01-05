@@ -21,6 +21,7 @@ import { Record, List } from 'immutable';
 export class SiteRec extends Record({
   name: null,
   status: '',
+  nodeCount: 0,
   connectedAt: null
 }) {
   constructor(json) {

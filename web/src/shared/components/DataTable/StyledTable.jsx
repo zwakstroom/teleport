@@ -17,7 +17,7 @@ limitations under the License.
 import styled from 'styled-components'
 
 export const StyledTable = styled.table`
-  background: ${props => props.theme.background.secondary };
+  background: ${props => props.theme.colors.bgSecondary };
   box-shadow: 0 8px 32px rgba(0, 0, 0, .24);
   border-collapse: collapse;
   border-spacing: 0;
@@ -52,7 +52,7 @@ export const StyledTable = styled.table`
 
 
   & > thead > tr > th {
-    background: ${props => props.theme.background.quaternary };
+    background: ${props => props.theme.colors.bgQuaternary };
     color: rgba(255, 255, 255, .56);
     cursor: pointer;
     font-size: 10px;
@@ -78,7 +78,7 @@ export const StyledTable = styled.table`
 `;
 
 export const StyledEmptyIndicator = styled.div`
-  background: ${props => props.theme.background.quaternary };
+  background: ${props => props.theme.colors.bgQuaternary };
   border-radius: 4px;
   box-sizing: border-box;
   margin: 48px auto;

@@ -1,4 +1,6 @@
 import React from 'react';
+import styled from 'styled-components'
+import { space, fontSize, width, color } from 'styled-system'
 import './../../assets/icomoon/style.css';
 
 const fontIconClasses = {
@@ -102,12 +104,11 @@ const fontIconClasses = {
   "Linkedin": 'icon-linkedin',
 }
 
-
 function makeFontIcon(kind) {
-  const className = fontIconClasses[kind];
-  const Icon = function(){
-    return <span className={`icon ${className}`} />
-  }
+  const className = `icon ${fontIconClasses[kind]}`;
+  const Icon = styled.span.attrs({className: className})`
+    ${space} ${width} ${color} ${fontSize}
+  `
 
   Icon.displayName = `Icon.${kind}`;
 

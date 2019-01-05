@@ -16,12 +16,15 @@ limitations under the License.
 import reactor from 'app/reactor';
 import { Store } from 'nuclear-js';
 import { Record, List } from 'immutable';
+import { initAppAttempt } from 'app/flux/status/getters';
 import * as AT from './actionTypes';
 
-class AppRec extends Record({  
-  siteId: null,  
-  navItems: new List() 
-}){      
+const STORE_NAME = 'tlpt';
+class AppRec extends Record({
+  version: '',
+  siteId: null,
+  navItems: new List()
+}){
 
   constructor(props) {
     super(props)
@@ -31,15 +34,19 @@ class AppRec extends Record({
     return this.set('siteId', siteId);
   }
 
+  setVersion(version) {
+    return this.set('version', version);
+  }
+
   getClusterName() {
     return this.get('siteId');
   }
 
-  getNavItems(){    
+  getNavItems(){
     return this.navItems.toJS();
   }
-  
-  addNavItem(navItem) {        
+
+  addNavItem(navItem) {
     return this.set('navItems', this.navItems.push(navItem))
   }
 }
@@ -48,15 +55,27 @@ export function getStore() {
   return reactor.evaluate(['tlpt']);
 }
 
-export default Store({
-  
+const store = Store({
+
   getInitialState() {
     return new AppRec();
   },
 
-  initialize() {    
-    this.on(AT.SET_SITE_ID, (state, siteId) => state.setSiteId(siteId) );            
+  initialize() {
+    this.on(AT.SET_SITE_ID, (state, siteId) => state.setSiteId(siteId));
+    this.on(AT.SET_VERSION, (state, version) => state.setVersion(version));
     this.on(AT.ADD_NAV_ITEM, (state, navItem) => state.addNavItem(navItem))
   }
 });
 
+export const register = reactor => {
+  reactor.registerStores({
+    [STORE_NAME]: store
+  })
+}
+
+export const getters = {
+  store: [STORE_NAME],
+  initAttempt: initAppAttempt,
+  siteId: [STORE_NAME, 'siteId']
+}

@@ -19,7 +19,7 @@ import { connect } from './../nuclear';
 import { fetchSiteEventsWithinTimeRange } from 'app/flux/storedSessionsFilter/actions';
 import settingGetters from 'app/flux/sessions/getters';
 import filterGetters from 'app/flux/storedSessionsFilter/getters';
-import appGetters from 'app/flux/app/getters';
+import { getters as appGetters } from 'app/flux/app/appStore';
 import AjaxPoller from './../dataProvider.jsx';
 import SessionList from './sessionList.jsx';
 import { DocumentTitle } from './../documentTitle';

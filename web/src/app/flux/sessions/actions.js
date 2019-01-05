@@ -18,7 +18,7 @@ import reactor from 'app/reactor';
 import api from 'app/services/api';
 import cfg from 'app/config';
 import moment from 'moment';
-import appGetters from 'app/flux/app/getters';
+import { getters as appGetters } from 'app/flux/app/appStore';
 import Logger from 'app/lib/logger';
 import {
   RECEIVE_ACTIVE_SESSIONS,

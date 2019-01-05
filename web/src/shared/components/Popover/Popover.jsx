@@ -8,14 +8,14 @@ import { ownerWindow, ownerDocument } from '../utils';
 import Modal from '../Modal';
 
 export const StyledPopover = styled.div`
-  line-height: 24px;
-  max-width: 200px;
+  max-width: calc(100% - 32px);
+  maxHeight: calc(100% - 32px);
+  min-height: 16px;
+  min-width: 16px;
   outline: none;
-  overflow: hidden;
-  padding: 0;
+  overflowX: hidden;
+  overflowY: auto;
   position: absolute;
-  right: 0;
-  top: 0;
   ${ props => props.popoverCss && props.popoverCss(props) }
 `
 

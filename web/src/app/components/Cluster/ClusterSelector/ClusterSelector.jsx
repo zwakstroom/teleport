@@ -43,7 +43,10 @@ const customStyles = {
     ...provided,
     height: '24px',
     lineHeight: '24px',
-    width: '200px'
+    width: '200px',
+    position: 'absolute',
+    top: "15px",
+    marginLeft: "15px"
   }),
 
   singleValue: (provided, state) => {

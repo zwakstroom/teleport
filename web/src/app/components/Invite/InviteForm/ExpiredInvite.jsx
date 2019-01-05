@@ -17,7 +17,7 @@ limitations under the License.
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types'
-import {background, colors} from '../../../../shared/components/theme';
+import {colors} from '../../../../shared/components/theme';
 
 
 class ExpiredInvite extends React.Component {
@@ -72,7 +72,7 @@ const GithubLink = styled.a`
 `;
 
 const ExpiredCard = styled.div`
-  background-color: ${background.light};
+  background-color: ${colors.bgLight};
   border-radius: 8px;
   box-sizing: border-box;
   box-shadow: 0 0 32px rgba(0, 0, 0, .12), 0 8px 32px rgba(0, 0, 0, .24);

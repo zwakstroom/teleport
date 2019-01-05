@@ -2,34 +2,34 @@ import React from 'react';
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { space } from 'styled-system'
-import { background, colors } from '../theme';
+import { colors } from '../theme';
 
 const alertType = props => {
   switch (props.type) {
     case 'danger':
       return {
-        background: background.error,
+        background: colors.bgError,
         borderColor: colors.error,
         color: colors.error
       }
     case 'info':
       return {
-        background: background.error,
+        background: colors.bgError,
         color: colors.text
       }
     case 'warning':
       return {
-        background: background.error,
+        background: colors.bgError,
         color: colors.text
       }
     case 'success':
       return {
-        background: background.error,
+        background: colors.bgError,
         color: colors.text
       }
     default:
       return {
-        background: background.error,
+        background: colors.bgError,
         color: colors.text
       }
   }

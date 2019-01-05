@@ -15,25 +15,47 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import { connect } from './../nuclear';
+import InputSearch from './../InputSearch';
 import userAclGetters from 'app/flux/userAcl/getters';
 import nodeGetters from 'app/flux/nodes/getters';
+
 import { getters as sshHistoryGetters } from 'app/flux/sshHistory/store';
 import NodeList from './NodeList'
 
-const ClusterNodes = ({
-  nodes,
-  sshHistory,
-  aclStore,
-  sites,
-  siteId,
-  storage
-}) => {
-  const logins = aclStore.getSshLogins().toJS();
-  const nodeRecords = nodes.toJS();
-  return (
+class ClusterNodes extends React.Component {
 
+  state = {
+    filter: ''
+  }
+
+  onFilterChange = value => {
+    this.state.filter = value;
+    this.setState(this.state);
+  }
+
+  render() {
+    const {
+      nodes,
+      sshHistory,
+      aclStore,
+      sites,
+      siteId,
+      storage
+    } = this.props;
+    const logins = aclStore.getSshLogins().toJS();
+    const nodeRecords = nodes.toJS();
+    const filter = this.state.filter;
+
+    return (
+      <div>
+        <Header>
+          <h1>Nodes</h1>
+          <InputSearch value={filter} onChange={this.onFilterChange} />
+        </Header>
         <NodeList
+          searchValue={filter}
           sshHistory={sshHistory}
           storage={storage}
           siteId={siteId}
@@ -41,8 +63,29 @@ const ClusterNodes = ({
           nodeRecords={nodeRecords}
           logins={logins}
         />
-  );
+      </div>
+    );
+  }
 }
+
+const Header = styled.header`
+  height: 40px;
+  margin: 40px 0;
+
+  &::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+  h1 {
+    font-size: 36px;
+    font-weight: 300;
+    float: left;
+    line-height: 40px;
+    margin: 0 40px 0 0;
+  }
+`;
 
 function mapStoreToProps(props) {
   const { clusterId } = props;

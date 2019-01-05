@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import theme from './../theme'
 
 const SideNavItem = styled.button`
-  background: ${props => props.active ? props.theme.background.tertiary : props.theme.background.secondary};
+  background: ${props => props.active ? props.theme.colors.bgTertiary : props.theme.colors.bgSecondary};
   border: none;
   box-sizing: border-box;
   color: ${props => props.active ? props.theme.colors.light : 'rgba(255, 255, 255, .56)'};
@@ -22,11 +22,11 @@ const SideNavItem = styled.button`
   -webkit-font-smoothing: antialiased;
 
   &:hover {
-    background:  ${props => props.active ? props.theme.background.secondary : 'rgba(255, 255, 255, .06)'};
+    background:  ${props => props.active ? props.theme.colors.bgSecondary : 'rgba(255, 255, 255, .06)'};
   }
 
   &:active, &.active {
-    background:  ${props => props.active ? props.theme.background.tertiary : props.theme.background.secondary};
+    background:  ${props => props.active ? props.theme.colors.bgTertiary : props.theme.colors.bgSecondary};
     color: ${props => props.theme.colors.light};
   }
 `;

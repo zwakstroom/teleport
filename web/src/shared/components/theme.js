@@ -17,16 +17,6 @@ export const fontSizes = [12, 14, 16, 20, 24, 32, 48];
 export const fontWeights = { regular, bold }
 export const space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 
-export const background = {
-  light: '#FFFFFF',
-  primary: '#111B48',
-  secondary: '#222C59',
-  tertiary: '#263266',
-  quaternary: '#1B234A',
-  error: '#FEE5ED',
-  success: '#00BFA5'
-}
-
 export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
@@ -52,6 +42,14 @@ export const colors = {
   lightGreen: '#cec',
   green: '#0a0',
   darkGreen: '#060',
+
+  bgError: '#FEE5ED',
+  bgLight: '#FFFFFF',
+  bgPrimary: '#111B48',
+  bgQuaternary: '#1B234A',
+  bgSecondary: '#222C59',
+  bgSuccess: '#00BFA5',
+  bgTertiary: '#263266',
 }
 
 export const borders = [
@@ -66,7 +64,6 @@ export const borders = [
 
 const theme = {
   colors,
-  background,
   fontSizes,
   font,
   fontWeights,

@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import siteGetters from 'app/flux/sites/getters';
-import appGetters from 'app/flux/app/getters';
+import { getters as appGetters } from 'app/flux/app/appStore';
 import DropDown from './dropdown.jsx';
 import { setSiteId, refresh } from 'app/flux/app/actions';
 import { isUUID } from 'app/lib/objectUtils';

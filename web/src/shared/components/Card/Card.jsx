@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 const Card = styled(Box)`
   box-shadow: 0 0 32px rgba(0, 0, 0, .12), 0 8px 32px rgba(0, 0, 0, .24);
   border-radius: 12px;
-  background-color: ${props => props.theme.background.secondary};
+  background-color: ${props => props.theme.colors.bgSecondary};
   box-sizing: border-box;
 `
 

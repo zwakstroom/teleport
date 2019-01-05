@@ -16,4 +16,5 @@ limitations under the License.
 
 export const SET_SITE_ID = 'TLPT_APP_SET_SITE_ID';
 export const ADD_NAV_ITEM = 'TLPT_APP_ADD_NAV_ITEM';
+export const SET_VERSION = 'TLPT_APP_SET_VERSION';
 

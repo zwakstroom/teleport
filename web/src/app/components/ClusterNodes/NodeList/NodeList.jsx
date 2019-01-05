@@ -15,17 +15,15 @@ limitations under the License.
 */
 
 import React from 'react';
-import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import { sortBy } from 'lodash';
 import { isMatch } from 'app/lib/objectUtils';
 import { Table, Column, Cell, TextCell, SortHeaderCell, SortTypes, EmptyIndicator } from 'shared/components/DataTable';
 import cfg from 'app/config';
 import history from 'app/services/history';
-import InputSearch from './../../InputSearch';
 
 const EmptyValue = ({ text='Empty' }) => (
-  <small className="text-muted">
+  <small>
     <span>{text}</span>
   </small>
 );
@@ -135,7 +133,7 @@ class NodeList extends React.Component {
     }
 
     if (!this.state) {
-      this.state = { filter: '', colSortDirs: { hostname: SortTypes.DESC } };
+      this.state = { colSortDirs: { hostname: SortTypes.DESC } };
     }
   }
 
@@ -147,11 +145,6 @@ class NodeList extends React.Component {
 
   onSortChange = (columnKey, sortDir) => {
     this.state.colSortDirs = { [columnKey]: sortDir };
-    this.setState(this.state);
-  }
-
-  onFilterChange = value => {
-    this.state.filter = value;
     this.setState(this.state);
   }
 
@@ -175,10 +168,10 @@ class NodeList extends React.Component {
     }
   }
 
-  sortAndFilter(data) {
+  sortAndFilter(data, searchValue) {
     const { colSortDirs } = this.state;
     const filtered = data
-      .filter(obj => isMatch(obj, this.state.filter, {
+      .filter(obj => isMatch(obj, searchValue, {
         searchableProps: this.searchableProps,
         cb: this.searchAndFilterCb
       }));
@@ -193,103 +186,61 @@ class NodeList extends React.Component {
     return sorted;
   }
 
-  renderPageHeader() {
-    const searchValue = this.state.filter;
-
+  renderEmptyIndicator(searchValue) {
     return (
-      <PageHeader>
-        <h1>Nodes</h1>
-        <InputSearch value={searchValue} onChange={this.onFilterChange} />
-      </PageHeader>
-    )
-  }
-
-  renderEmptyIndicator() {
-    return (
-      <EmptyIndicator title={`No Results Found for "${this.state.filter}"`}>
+      <EmptyIndicator title={`No Results Found for "${searchValue}"`}>
         For tips on getting better search results, please read <a href="https://gravitational.com/teleport/docs">our documentation</a>
       </EmptyIndicator>
     );
   }
 
-  renderTable() {
-    const { nodeRecords, logins, onLoginClick } = this.props;
-    const data = this.sortAndFilter(nodeRecords);
-
-    return (
-      <Table rowCount={data.length} data={data}>
-        <Column
-          columnKey="hostname"
-          header={
-            <SortHeaderCell
-              sortDir={this.state.colSortDirs.hostname}
-              onSortChange={this.onSortChange}
-              title="Hostname"
-            />
-          }
-          cell={<TextCell/> }
-        />
-        <Column
-          columnKey="addr"
-          header={
-            <SortHeaderCell
-              sortDir={this.state.colSortDirs.addr}
-              onSortChange={this.onSortChange}
-              title="Address"
-            />
-          }
-          cell={<TextCell/> }
-        />
-        <Column
-          header={<Cell>Labels</Cell> }
-          cell={<TagCell/> }
-        />
-        <Column
-          onLoginClick={onLoginClick}
-          header={<Cell>Login as</Cell> }
-          cell={<LoginCell logins={logins}/> }
-        />
-      </Table>
-    );
-  }
-
   render() {
-    const {nodeRecords} = this.props;
-    const data = this.sortAndFilter(nodeRecords);
-    let table = this.renderTable();
+    const { nodeRecords, logins, onLoginClick, searchValue } = this.props;
+    const data = this.sortAndFilter(nodeRecords, searchValue);
 
     // no results found
-    if(data.length === 0 && this.state.filter.length > 0) {
-      table = this.renderEmptyIndicator();
+    if(data.length === 0 && searchValue.length > 0) {
+      return this.renderEmptyIndicator(searchValue);
     }
 
     return (
       <div>
-        {this.renderPageHeader()}
-        {table}
+        <Table rowCount={data.length} data={data}>
+          <Column
+            columnKey="hostname"
+            header={
+              <SortHeaderCell
+                sortDir={this.state.colSortDirs.hostname}
+                onSortChange={this.onSortChange}
+                title="Hostname"
+              />
+            }
+            cell={<TextCell/> }
+          />
+          <Column
+            columnKey="addr"
+            header={
+              <SortHeaderCell
+                sortDir={this.state.colSortDirs.addr}
+                onSortChange={this.onSortChange}
+                title="Address"
+              />
+            }
+            cell={<TextCell/> }
+          />
+          <Column
+            header={<Cell>Labels</Cell> }
+            cell={<TagCell/> }
+          />
+          <Column
+            onLoginClick={onLoginClick}
+            header={<Cell>Login as</Cell> }
+            cell={<LoginCell logins={logins}/> }
+          />
+        </Table>
       </div>
     )
   }
 }
-
-const PageHeader = styled.header`
-  height: 40px;
-  margin: 40px 0;
-
-  &::after {
-    content: "";
-    clear: both;
-    display: table;
-  }
-
-  h1 {
-    font-size: 36px;
-    font-weight: 300;
-    float: left;
-    line-height: 40px;
-    margin: 0 40px 0 0;
-  }
-`;
-
 
 export default NodeList;

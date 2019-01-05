@@ -113,7 +113,11 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
+<<<<<<< Updated upstream
 /******/ 	var hotCurrentHash = "c6a8cd8ffec5b460fa4e";
+=======
+/******/ 	var hotCurrentHash = "6f3b07e9027f00dfff98";
+>>>>>>> Stashed changes
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -1301,10 +1305,10 @@ var StyledApp = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div.wi
     return;
   }
 
-  reactHotLoader.register(App, "App", "/Users/admin/Development/teleport/web/src/app/components/App/App.jsx");
-  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/Users/admin/Development/teleport/web/src/app/components/App/App.jsx");
-  reactHotLoader.register(StyledApp, "StyledApp", "/Users/admin/Development/teleport/web/src/app/components/App/App.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/App/App.jsx");
+  reactHotLoader.register(App, "App", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/App.jsx");
+  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/App.jsx");
+  reactHotLoader.register(StyledApp, "StyledApp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/App.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/App.jsx");
   leaveModule(module);
 })();
 
@@ -1472,10 +1476,10 @@ var _default = Object(_nuclear__WEBPACK_IMPORTED_MODULE_1__["connect"])(mapStore
     return;
   }
 
-  reactHotLoader.register(AppBar, "AppBar", "/Users/admin/Development/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
-  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/Users/admin/Development/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
-  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/Users/admin/Development/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
+  reactHotLoader.register(AppBar, "AppBar", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
+  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
+  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/AppBar/AppBar.jsx");
   leaveModule(module);
 })();
 
@@ -1529,7 +1533,7 @@ var _default = _AppBar__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/App/AppBar/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/AppBar/index.js");
   leaveModule(module);
 })();
 
@@ -1568,7 +1572,7 @@ var _default = _App__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/App/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/App/index.js");
   leaveModule(module);
 })();
 
@@ -1597,6 +1601,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ClusterNodes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./../ClusterNodes */ "./src/app/components/ClusterNodes/index.js");
 /* harmony import */ var _ClusterSelector__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ClusterSelector */ "./src/app/components/Cluster/ClusterSelector/index.js");
 /* harmony import */ var app_flux_sites_actions__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! app/flux/sites/actions */ "./src/app/flux/sites/actions.js");
+/* harmony import */ var shared_components_Icon_Icon__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! shared/components/Icon/Icon */ "./src/shared/components/Icon/Icon.jsx");
 (function () {
   var enterModule = __webpack_require__(/*! react-hot-loader */ "./node_modules/react-hot-loader/index.js").enterModule;
 
@@ -1638,6 +1643,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 
 
 
@@ -1753,10 +1759,10 @@ var _default = Object(_nuclear__WEBPACK_IMPORTED_MODULE_2__["connect"])(mapStore
     return;
   }
 
-  reactHotLoader.register(Cluster, "Cluster", "/Users/admin/Development/teleport/web/src/app/components/Cluster/Cluster.jsx");
-  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/Users/admin/Development/teleport/web/src/app/components/Cluster/Cluster.jsx");
-  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/Users/admin/Development/teleport/web/src/app/components/Cluster/Cluster.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Cluster/Cluster.jsx");
+  reactHotLoader.register(Cluster, "Cluster", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/Cluster.jsx");
+  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/Cluster.jsx");
+  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/Cluster.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/Cluster.jsx");
   leaveModule(module);
 })();
 
@@ -1869,7 +1875,11 @@ var customStyles = {
       color: state.isSelected ? 'red' : 'blue'
     });
   },
+<<<<<<< Updated upstream
   container: function container(provided) {
+=======
+  container: function container(provided, state) {
+>>>>>>> Stashed changes
     return _objectSpread({}, provided, {
       height: '24px',
       lineHeight: '24px',
@@ -1898,9 +1908,9 @@ var _default = ClusterSelector;
     return;
   }
 
-  reactHotLoader.register(ClusterSelector, "ClusterSelector", "/Users/admin/Development/teleport/web/src/app/components/Cluster/ClusterSelector/ClusterSelector.jsx");
-  reactHotLoader.register(customStyles, "customStyles", "/Users/admin/Development/teleport/web/src/app/components/Cluster/ClusterSelector/ClusterSelector.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Cluster/ClusterSelector/ClusterSelector.jsx");
+  reactHotLoader.register(ClusterSelector, "ClusterSelector", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/ClusterSelector/ClusterSelector.jsx");
+  reactHotLoader.register(customStyles, "customStyles", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/ClusterSelector/ClusterSelector.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/ClusterSelector/ClusterSelector.jsx");
   leaveModule(module);
 })();
 
@@ -1939,7 +1949,7 @@ var _default = _ClusterSelector__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Cluster/ClusterSelector/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/ClusterSelector/index.js");
   leaveModule(module);
 })();
 
@@ -1978,7 +1988,7 @@ var _default = _Cluster__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Cluster/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Cluster/index.js");
   leaveModule(module);
 })();
 
@@ -2040,7 +2050,11 @@ var ClusterNodes = function ClusterNodes(_ref) {
       storage = _ref.storage;
   var logins = aclStore.getSshLogins().toJS();
   var nodeRecords = nodes.toJS();
+<<<<<<< Updated upstream
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_NodeList__WEBPACK_IMPORTED_MODULE_5__["default"], {
+=======
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_NodeList__WEBPACK_IMPORTED_MODULE_6__["default"], {
+>>>>>>> Stashed changes
     sshHistory: sshHistory,
     storage: storage,
     siteId: siteId,
@@ -2073,9 +2087,9 @@ var _default = Object(_nuclear__WEBPACK_IMPORTED_MODULE_1__["connect"])(mapStore
     return;
   }
 
-  reactHotLoader.register(ClusterNodes, "ClusterNodes", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/ClusterNodes.jsx");
-  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/ClusterNodes.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/ClusterNodes.jsx");
+  reactHotLoader.register(ClusterNodes, "ClusterNodes", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/ClusterNodes.jsx");
+  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/ClusterNodes.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/ClusterNodes.jsx");
   leaveModule(module);
 })();
 
@@ -2493,12 +2507,21 @@ var _default = NodeList;
     return;
   }
 
+<<<<<<< Updated upstream
   reactHotLoader.register(EmptyValue, "EmptyValue", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
   reactHotLoader.register(TagCell, "TagCell", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
   reactHotLoader.register(LoginCell, "LoginCell", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
   reactHotLoader.register(NodeList, "NodeList", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
   reactHotLoader.register(PageHeader, "PageHeader", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+=======
+  reactHotLoader.register(EmptyValue, "EmptyValue", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+  reactHotLoader.register(TagCell, "TagCell", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+  reactHotLoader.register(LoginCell, "LoginCell", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+  reactHotLoader.register(NodeList, "NodeList", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+  reactHotLoader.register(PageHeader, "PageHeader", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/NodeList.jsx");
+>>>>>>> Stashed changes
   leaveModule(module);
 })();
 
@@ -2537,7 +2560,7 @@ var _default = _NodeList__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/NodeList/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/NodeList/index.js");
   leaveModule(module);
 })();
 
@@ -2576,7 +2599,7 @@ var _default = _ClusterNodes__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/ClusterNodes/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/ClusterNodes/index.js");
   leaveModule(module);
 })();
 
@@ -2700,6 +2723,10 @@ function (_React$Component) {
         lastSeen = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, "LAST SEEN: ", connectedAt);
       }
 
+<<<<<<< Updated upstream
+=======
+      console.log(this.props);
+>>>>>>> Stashed changes
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledCardCluster, props, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ClusterHeader, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ClusterStatus, {
         status: status
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, " NODES"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ClusterSettings, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(shared_components_Icon_Icon__WEBPACK_IMPORTED_MODULE_3__["Ellipsis"], null))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ClusterContent, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ClusterIcon, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(shared_components_Icon_Icon__WEBPACK_IMPORTED_MODULE_3__["Cluster"], null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "STATUS: ", status)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, public_addr), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "Teleport v", version))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ClusterFooter, null, lastSeen));
@@ -2774,6 +2801,7 @@ var _default = CardCluster;
     return;
   }
 
+<<<<<<< Updated upstream
   reactHotLoader.register(CardCluster, "CardCluster", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
   reactHotLoader.register(StyledCardCluster, "StyledCardCluster", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
   reactHotLoader.register(ClusterHeader, "ClusterHeader", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
@@ -2783,6 +2811,17 @@ var _default = CardCluster;
   reactHotLoader.register(ClusterContent, "ClusterContent", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
   reactHotLoader.register(ClusterFooter, "ClusterFooter", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+=======
+  reactHotLoader.register(CardCluster, "CardCluster", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(StyledCardCluster, "StyledCardCluster", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(ClusterHeader, "ClusterHeader", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(ClusterStatus, "ClusterStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(ClusterSettings, "ClusterSettings", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(ClusterIcon, "ClusterIcon", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(ClusterContent, "ClusterContent", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(ClusterFooter, "ClusterFooter", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/CardCluster.jsx");
+>>>>>>> Stashed changes
   leaveModule(module);
 })();
 
@@ -2821,7 +2860,7 @@ var _default = _CardCluster__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Clusters/CardCluster/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/CardCluster/index.js");
   leaveModule(module);
 })();
 
@@ -2987,10 +3026,10 @@ var _default = Object(_nuclear__WEBPACK_IMPORTED_MODULE_1__["connect"])(mapStore
     return;
   }
 
-  reactHotLoader.register(Clusters, "Clusters", "/Users/admin/Development/teleport/web/src/app/components/Clusters/Clusters.jsx");
-  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/Users/admin/Development/teleport/web/src/app/components/Clusters/Clusters.jsx");
-  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/Users/admin/Development/teleport/web/src/app/components/Clusters/Clusters.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Clusters/Clusters.jsx");
+  reactHotLoader.register(Clusters, "Clusters", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/Clusters.jsx");
+  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/Clusters.jsx");
+  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/Clusters.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/Clusters.jsx");
   leaveModule(module);
 })();
 
@@ -3029,7 +3068,7 @@ var _default = _Clusters__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Clusters/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Clusters/index.js");
   leaveModule(module);
 })();
 
@@ -3114,6 +3153,7 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(InputSearch).call(this, props));
 
+<<<<<<< Updated upstream
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onBlur", function () {
       _this.setState({
         isFocused: false
@@ -3124,6 +3164,22 @@ function (_React$Component) {
       _this.setState({
         isFocused: true
       });
+=======
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onBlur", function (e) {
+      _this.setState({
+        isFocused: false
+      });
+
+      console.log('blur');
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onFocus", function (e) {
+      _this.setState({
+        isFocused: true
+      });
+
+      console.log('focus');
+>>>>>>> Stashed changes
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "onChange", function (e) {
@@ -3223,9 +3279,15 @@ var _default = InputSearch;
     return;
   }
 
+<<<<<<< Updated upstream
   reactHotLoader.register(InputSearch, "InputSearch", "/Users/admin/Development/teleport/web/src/app/components/InputSearch/InputSearch.jsx");
   reactHotLoader.register(SearchField, "SearchField", "/Users/admin/Development/teleport/web/src/app/components/InputSearch/InputSearch.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/InputSearch/InputSearch.jsx");
+=======
+  reactHotLoader.register(InputSearch, "InputSearch", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/InputSearch/InputSearch.jsx");
+  reactHotLoader.register(SearchField, "SearchField", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/InputSearch/InputSearch.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/InputSearch/InputSearch.jsx");
+>>>>>>> Stashed changes
   leaveModule(module);
 })();
 
@@ -3279,7 +3341,7 @@ var _default = _InputSearch__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/InputSearch/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/InputSearch/index.js");
   leaveModule(module);
 })();
 
@@ -3466,10 +3528,10 @@ var _default = Object(_documentTitle__WEBPACK_IMPORTED_MODULE_5__["withDocTitle"
     return;
   }
 
-  reactHotLoader.register(Invite, "Invite", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
-  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
-  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(Invite, "Invite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(mapStateToProps, "mapStateToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/Invite.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/Invite.jsx");
   leaveModule(module);
 })();
 
@@ -3610,10 +3672,10 @@ var _default = ExpiredInvite;
     return;
   }
 
-  reactHotLoader.register(ExpiredInvite, "ExpiredInvite", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
-  reactHotLoader.register(GithubLink, "GithubLink", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
-  reactHotLoader.register(ExpiredCard, "ExpiredCard", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
+  reactHotLoader.register(ExpiredInvite, "ExpiredInvite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
+  reactHotLoader.register(GithubLink, "GithubLink", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
+  reactHotLoader.register(ExpiredCard, "ExpiredCard", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/ExpiredInvite.jsx");
   leaveModule(module);
 })();
 
@@ -3937,12 +3999,12 @@ var _default = InviteForm;
     return;
   }
 
-  reactHotLoader.register(U2F_ERROR_CODES_URL, "U2F_ERROR_CODES_URL", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
-  reactHotLoader.register(needs2fa, "needs2fa", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
-  reactHotLoader.register(InviteForm, "InviteForm", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
-  reactHotLoader.register(ErrorMessage, "ErrorMessage", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
-  reactHotLoader.register(UserName, "UserName", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(U2F_ERROR_CODES_URL, "U2F_ERROR_CODES_URL", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(needs2fa, "needs2fa", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(InviteForm, "InviteForm", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(ErrorMessage, "ErrorMessage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(UserName, "UserName", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/InviteForm.jsx");
   leaveModule(module);
 })();
 
@@ -4028,8 +4090,8 @@ function Invite2faData(props) {
     return;
   }
 
-  reactHotLoader.register(U2F_HELP_URL, "U2F_HELP_URL", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
-  reactHotLoader.register(Invite2faData, "Invite2faData", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
+  reactHotLoader.register(U2F_HELP_URL, "U2F_HELP_URL", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
+  reactHotLoader.register(Invite2faData, "Invite2faData", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/TwoFaInfo.jsx");
   leaveModule(module);
 })();
 
@@ -4068,7 +4130,7 @@ var _default = _InviteForm__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/InviteForm/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/InviteForm/index.js");
   leaveModule(module);
 })();
 
@@ -4122,7 +4184,7 @@ var _default = _Invite__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Invite/index.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Invite/index.jsx");
   leaveModule(module);
 })();
 
@@ -4292,10 +4354,10 @@ var _default = Object(_documentTitle__WEBPACK_IMPORTED_MODULE_6__["withDocTitle"
     return;
   }
 
-  reactHotLoader.register(Login, "Login", "/Users/admin/Development/teleport/web/src/app/components/Login/Login.jsx");
-  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/Users/admin/Development/teleport/web/src/app/components/Login/Login.jsx");
-  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/Users/admin/Development/teleport/web/src/app/components/Login/Login.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Login/Login.jsx");
+  reactHotLoader.register(Login, "Login", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/Login.jsx");
+  reactHotLoader.register(mapStoreToProps, "mapStoreToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/Login.jsx");
+  reactHotLoader.register(mapActionsToProps, "mapActionsToProps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/Login.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/Login.jsx");
   leaveModule(module);
 })();
 
@@ -4576,7 +4638,7 @@ function (_React$Component) {
     return;
   }
 
-  reactHotLoader.register(LoginForm, "LoginForm", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/LoginForm.jsx");
+  reactHotLoader.register(LoginForm, "LoginForm", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/LoginForm/LoginForm.jsx");
   leaveModule(module);
 })();
 
@@ -4693,9 +4755,9 @@ var _default = SsoBtnList;
     return;
   }
 
-  reactHotLoader.register(guessProviderType, "guessProviderType", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/SsoButtons.jsx");
-  reactHotLoader.register(SsoBtnList, "SsoBtnList", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/SsoButtons.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/SsoButtons.jsx");
+  reactHotLoader.register(guessProviderType, "guessProviderType", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/LoginForm/SsoButtons.jsx");
+  reactHotLoader.register(SsoBtnList, "SsoBtnList", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/LoginForm/SsoButtons.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/LoginForm/SsoButtons.jsx");
   leaveModule(module);
 })();
 
@@ -4749,7 +4811,7 @@ var _default = _LoginForm__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Login/LoginForm/index.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/LoginForm/index.jsx");
   leaveModule(module);
 })();
 
@@ -4873,11 +4935,11 @@ var _default = StyledSsoButton;
     return;
   }
 
-  reactHotLoader.register(pickSso, "pickSso", "/Users/admin/Development/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
-  reactHotLoader.register(SsoButton, "SsoButton", "/Users/admin/Development/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
-  reactHotLoader.register(StyledSsoButton, "StyledSsoButton", "/Users/admin/Development/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
-  reactHotLoader.register(Icon, "Icon", "/Users/admin/Development/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
+  reactHotLoader.register(pickSso, "pickSso", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
+  reactHotLoader.register(SsoButton, "SsoButton", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
+  reactHotLoader.register(StyledSsoButton, "StyledSsoButton", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
+  reactHotLoader.register(Icon, "Icon", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/SsoButton/SsoButton.jsx");
   leaveModule(module);
 })();
 
@@ -4931,7 +4993,7 @@ var _default = _SsoButton__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Login/SsoButton/index.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/SsoButton/index.jsx");
   leaveModule(module);
 })();
 
@@ -4985,7 +5047,7 @@ var _default = _Login__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/Login/index.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/Login/index.jsx");
   leaveModule(module);
 })();
 
@@ -5152,8 +5214,8 @@ var withDocTitle = function withDocTitle(title, component) {
     return;
   }
 
-  reactHotLoader.register(DocumentTitle, "DocumentTitle", "/Users/admin/Development/teleport/web/src/app/components/documentTitle.jsx");
-  reactHotLoader.register(withDocTitle, "withDocTitle", "/Users/admin/Development/teleport/web/src/app/components/documentTitle.jsx");
+  reactHotLoader.register(DocumentTitle, "DocumentTitle", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/documentTitle.jsx");
+  reactHotLoader.register(withDocTitle, "withDocTitle", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/documentTitle.jsx");
   leaveModule(module);
 })();
 
@@ -5360,29 +5422,29 @@ var SuccessfulLogin = function SuccessfulLogin() {
     return;
   }
 
-  reactHotLoader.register(MSG_INFO_LOGIN_SUCCESS, "MSG_INFO_LOGIN_SUCCESS", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_LOGIN_FAILED, "MSG_ERROR_LOGIN_FAILED", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_DEFAULT, "MSG_ERROR_DEFAULT", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_NOT_FOUND, "MSG_ERROR_NOT_FOUND", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_NOT_FOUND_DETAILS, "MSG_ERROR_NOT_FOUND_DETAILS", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_EXPIRED_INVITE, "MSG_ERROR_EXPIRED_INVITE", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_EXPIRED_INVITE_DETAILS, "MSG_ERROR_EXPIRED_INVITE_DETAILS", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(MSG_ERROR_ACCESS_DENIED, "MSG_ERROR_ACCESS_DENIED", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(ErrorPageEnum, "ErrorPageEnum", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(InfoPageEnum, "InfoPageEnum", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(InfoPage, "InfoPage", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(ErrorPage, "ErrorPage", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(Box, "Box", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(InfoBox, "InfoBox", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(ErrorBox, "ErrorBox", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(ErrorBoxDetails, "ErrorBoxDetails", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(NotFound, "NotFound", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(NotFoundPage, "NotFoundPage", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(AccessDenied, "AccessDenied", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(Failed, "Failed", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(ExpiredLink, "ExpiredLink", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(LoginFailed, "LoginFailed", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
-  reactHotLoader.register(SuccessfulLogin, "SuccessfulLogin", "/Users/admin/Development/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_INFO_LOGIN_SUCCESS, "MSG_INFO_LOGIN_SUCCESS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_LOGIN_FAILED, "MSG_ERROR_LOGIN_FAILED", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_DEFAULT, "MSG_ERROR_DEFAULT", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_NOT_FOUND, "MSG_ERROR_NOT_FOUND", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_NOT_FOUND_DETAILS, "MSG_ERROR_NOT_FOUND_DETAILS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_EXPIRED_INVITE, "MSG_ERROR_EXPIRED_INVITE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_EXPIRED_INVITE_DETAILS, "MSG_ERROR_EXPIRED_INVITE_DETAILS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(MSG_ERROR_ACCESS_DENIED, "MSG_ERROR_ACCESS_DENIED", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(ErrorPageEnum, "ErrorPageEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(InfoPageEnum, "InfoPageEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(InfoPage, "InfoPage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(ErrorPage, "ErrorPage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(Box, "Box", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(InfoBox, "InfoBox", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(ErrorBox, "ErrorBox", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(ErrorBoxDetails, "ErrorBoxDetails", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(NotFound, "NotFound", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(NotFoundPage, "NotFoundPage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(AccessDenied, "AccessDenied", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(Failed, "Failed", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(ExpiredLink, "ExpiredLink", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(LoginFailed, "LoginFailed", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
+  reactHotLoader.register(SuccessfulLogin, "SuccessfulLogin", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/msgPage.jsx");
   leaveModule(module);
 })();
 
@@ -5647,10 +5709,10 @@ function connect(mapFluxToProps, mapStateToProps) {
     return;
   }
 
-  reactHotLoader.register(Provider, "Provider", "/Users/admin/Development/teleport/web/src/app/components/nuclear.jsx");
-  reactHotLoader.register(reactorShape, "reactorShape", "/Users/admin/Development/teleport/web/src/app/components/nuclear.jsx");
-  reactHotLoader.register(getDisplayName, "getDisplayName", "/Users/admin/Development/teleport/web/src/app/components/nuclear.jsx");
-  reactHotLoader.register(connect, "connect", "/Users/admin/Development/teleport/web/src/app/components/nuclear.jsx");
+  reactHotLoader.register(Provider, "Provider", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/nuclear.jsx");
+  reactHotLoader.register(reactorShape, "reactorShape", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/nuclear.jsx");
+  reactHotLoader.register(getDisplayName, "getDisplayName", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/nuclear.jsx");
+  reactHotLoader.register(connect, "connect", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/nuclear.jsx");
   leaveModule(module);
 })();
 
@@ -5774,8 +5836,8 @@ var _default = withAuth;
     return;
   }
 
-  reactHotLoader.register(withAuth, "withAuth", "/Users/admin/Development/teleport/web/src/app/components/withAuth.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/components/withAuth.jsx");
+  reactHotLoader.register(withAuth, "withAuth", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/withAuth.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/components/withAuth.jsx");
   leaveModule(module);
 })();
 
@@ -6042,9 +6104,9 @@ var _default = cfg;
     return;
   }
 
-  reactHotLoader.register(baseUrl, "baseUrl", "/Users/admin/Development/teleport/web/src/app/config.js");
-  reactHotLoader.register(cfg, "cfg", "/Users/admin/Development/teleport/web/src/app/config.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/config.js");
+  reactHotLoader.register(baseUrl, "baseUrl", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/config.js");
+  reactHotLoader.register(cfg, "cfg", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/config.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/config.js");
   leaveModule(module);
 })();
 
@@ -6193,9 +6255,9 @@ var _default = FeactureActivator;
     return;
   }
 
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/featureActivator.js");
-  reactHotLoader.register(FeactureActivator, "FeactureActivator", "/Users/admin/Development/teleport/web/src/app/featureActivator.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/featureActivator.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/featureActivator.js");
+  reactHotLoader.register(FeactureActivator, "FeactureActivator", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/featureActivator.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/featureActivator.js");
   leaveModule(module);
 })();
 
@@ -6249,8 +6311,8 @@ var ADD_NAV_ITEM = 'TLPT_APP_ADD_NAV_ITEM';
     return;
   }
 
-  reactHotLoader.register(SET_SITE_ID, "SET_SITE_ID", "/Users/admin/Development/teleport/web/src/app/flux/app/actionTypes.js");
-  reactHotLoader.register(ADD_NAV_ITEM, "ADD_NAV_ITEM", "/Users/admin/Development/teleport/web/src/app/flux/app/actionTypes.js");
+  reactHotLoader.register(SET_SITE_ID, "SET_SITE_ID", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actionTypes.js");
+  reactHotLoader.register(ADD_NAV_ITEM, "ADD_NAV_ITEM", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -6395,14 +6457,14 @@ function fetchUserContext() {
     return;
   }
 
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(addNavItem, "addNavItem", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(setSiteId, "setSiteId", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(initApp, "initApp", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(refresh, "refresh", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(fetchInitData, "fetchInitData", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(fetchSites, "fetchSites", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
-  reactHotLoader.register(fetchUserContext, "fetchUserContext", "/Users/admin/Development/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(addNavItem, "addNavItem", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(setSiteId, "setSiteId", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(initApp, "initApp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(refresh, "refresh", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(fetchInitData, "fetchInitData", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(fetchSites, "fetchSites", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
+  reactHotLoader.register(fetchUserContext, "fetchUserContext", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/actions.js");
   leaveModule(module);
 })();
 
@@ -6547,9 +6609,9 @@ var _default = Object(nuclear_js__WEBPACK_IMPORTED_MODULE_1__["Store"])({
     return;
   }
 
-  reactHotLoader.register(AppRec, "AppRec", "/Users/admin/Development/teleport/web/src/app/flux/app/appStore.js");
-  reactHotLoader.register(getStore, "getStore", "/Users/admin/Development/teleport/web/src/app/flux/app/appStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/app/appStore.js");
+  reactHotLoader.register(AppRec, "AppRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/appStore.js");
+  reactHotLoader.register(getStore, "getStore", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/appStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/appStore.js");
   leaveModule(module);
 })();
 
@@ -6606,7 +6668,7 @@ var _default = {
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/app/getters.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/app/getters.js");
   leaveModule(module);
 })();
 
@@ -6666,11 +6728,11 @@ var UPDATE_STATUS = '/flux/fileTransfer:status';
     return;
   }
 
-  reactHotLoader.register(OPEN, "OPEN", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
-  reactHotLoader.register(CLOSE, "CLOSE", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
-  reactHotLoader.register(ADD, "ADD", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
-  reactHotLoader.register(REMOVE, "REMOVE", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
-  reactHotLoader.register(UPDATE_STATUS, "UPDATE_STATUS", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
+  reactHotLoader.register(OPEN, "OPEN", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
+  reactHotLoader.register(CLOSE, "CLOSE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
+  reactHotLoader.register(ADD, "ADD", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
+  reactHotLoader.register(REMOVE, "REMOVE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
+  reactHotLoader.register(UPDATE_STATUS, "UPDATE_STATUS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/actionTypes.jsx");
   leaveModule(module);
 })();
 
@@ -6739,10 +6801,10 @@ var getters = {
     return;
   }
 
-  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/index.js");
-  reactHotLoader.register(getFileTransfer, "getFileTransfer", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/index.js");
-  reactHotLoader.register(register, "register", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/index.js");
-  reactHotLoader.register(getters, "getters", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/index.js");
+  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/index.js");
+  reactHotLoader.register(getFileTransfer, "getFileTransfer", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/index.js");
+  reactHotLoader.register(register, "register", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/index.js");
+  reactHotLoader.register(getters, "getters", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/index.js");
   leaveModule(module);
 })();
 
@@ -7003,10 +7065,10 @@ var _default = Object(nuclear_js__WEBPACK_IMPORTED_MODULE_0__["Store"])({
     return;
   }
 
-  reactHotLoader.register(defaultStatus, "defaultStatus", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/store.js");
-  reactHotLoader.register(File, "File", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/store.js");
-  reactHotLoader.register(FileTransferStore, "FileTransferStore", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/store.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/fileTransfer/store.js");
+  reactHotLoader.register(defaultStatus, "defaultStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/store.js");
+  reactHotLoader.register(File, "File", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/store.js");
+  reactHotLoader.register(FileTransferStore, "FileTransferStore", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/store.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/fileTransfer/store.js");
   leaveModule(module);
 })();
 
@@ -7173,11 +7235,11 @@ var storage = {
     return;
   }
 
-  reactHotLoader.register(SET, "SET", "/Users/admin/Development/teleport/web/src/app/flux/misc/store.js");
-  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/Users/admin/Development/teleport/web/src/app/flux/misc/store.js");
-  reactHotLoader.register(store, "store", "/Users/admin/Development/teleport/web/src/app/flux/misc/store.js");
-  reactHotLoader.register(register, "register", "/Users/admin/Development/teleport/web/src/app/flux/misc/store.js");
-  reactHotLoader.register(storage, "storage", "/Users/admin/Development/teleport/web/src/app/flux/misc/store.js");
+  reactHotLoader.register(SET, "SET", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/misc/store.js");
+  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/misc/store.js");
+  reactHotLoader.register(store, "store", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/misc/store.js");
+  reactHotLoader.register(register, "register", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/misc/store.js");
+  reactHotLoader.register(storage, "storage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/misc/store.js");
   leaveModule(module);
 })();
 
@@ -7229,7 +7291,7 @@ var TLPT_NODES_RECEIVE = 'TLPT_NODES_RECEIVE';
     return;
   }
 
-  reactHotLoader.register(TLPT_NODES_RECEIVE, "TLPT_NODES_RECEIVE", "/Users/admin/Development/teleport/web/src/app/flux/nodes/actionTypes.js");
+  reactHotLoader.register(TLPT_NODES_RECEIVE, "TLPT_NODES_RECEIVE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -7289,8 +7351,8 @@ function fetchNodes() {
     return;
   }
 
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/flux/nodes/actions.js");
-  reactHotLoader.register(fetchNodes, "fetchNodes", "/Users/admin/Development/teleport/web/src/app/flux/nodes/actions.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/actions.js");
+  reactHotLoader.register(fetchNodes, "fetchNodes", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/actions.js");
   leaveModule(module);
 })();
 
@@ -7352,8 +7414,8 @@ var _default = {
     return;
   }
 
-  reactHotLoader.register(siteNodes, "siteNodes", "/Users/admin/Development/teleport/web/src/app/flux/nodes/getters.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/nodes/getters.js");
+  reactHotLoader.register(siteNodes, "siteNodes", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/getters.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/getters.js");
   leaveModule(module);
 })();
 
@@ -7535,10 +7597,10 @@ var _default = Object(nuclear_js__WEBPACK_IMPORTED_MODULE_1__["Store"])({
     return;
   }
 
-  reactHotLoader.register(ServerRec, "ServerRec", "/Users/admin/Development/teleport/web/src/app/flux/nodes/nodeStore.js");
-  reactHotLoader.register(NodeStoreRec, "NodeStoreRec", "/Users/admin/Development/teleport/web/src/app/flux/nodes/nodeStore.js");
-  reactHotLoader.register(getNodeStore, "getNodeStore", "/Users/admin/Development/teleport/web/src/app/flux/nodes/nodeStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/nodes/nodeStore.js");
+  reactHotLoader.register(ServerRec, "ServerRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/nodeStore.js");
+  reactHotLoader.register(NodeStoreRec, "NodeStoreRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/nodeStore.js");
+  reactHotLoader.register(getNodeStore, "getNodeStore", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/nodeStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/nodes/nodeStore.js");
   leaveModule(module);
 })();
 
@@ -7592,8 +7654,8 @@ var RECEIVE_SITE_EVENTS = 'TLPT_SESSIONS_RECEIVE_EVENTS';
     return;
   }
 
-  reactHotLoader.register(RECEIVE_ACTIVE_SESSIONS, "RECEIVE_ACTIVE_SESSIONS", "/Users/admin/Development/teleport/web/src/app/flux/sessions/actionTypes.js");
-  reactHotLoader.register(RECEIVE_SITE_EVENTS, "RECEIVE_SITE_EVENTS", "/Users/admin/Development/teleport/web/src/app/flux/sessions/actionTypes.js");
+  reactHotLoader.register(RECEIVE_ACTIVE_SESSIONS, "RECEIVE_ACTIVE_SESSIONS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/actionTypes.js");
+  reactHotLoader.register(RECEIVE_SITE_EVENTS, "RECEIVE_SITE_EVENTS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -7712,10 +7774,10 @@ function fetchActiveSessions() {
     return;
   }
 
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/flux/sessions/actions.js");
-  reactHotLoader.register(fetchStoredSession, "fetchStoredSession", "/Users/admin/Development/teleport/web/src/app/flux/sessions/actions.js");
-  reactHotLoader.register(fetchSiteEvents, "fetchSiteEvents", "/Users/admin/Development/teleport/web/src/app/flux/sessions/actions.js");
-  reactHotLoader.register(fetchActiveSessions, "fetchActiveSessions", "/Users/admin/Development/teleport/web/src/app/flux/sessions/actions.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/actions.js");
+  reactHotLoader.register(fetchStoredSession, "fetchStoredSession", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/actions.js");
+  reactHotLoader.register(fetchSiteEvents, "fetchSiteEvents", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/actions.js");
+  reactHotLoader.register(fetchActiveSessions, "fetchActiveSessions", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/actions.js");
   leaveModule(module);
 })();
 
@@ -7848,13 +7910,13 @@ function createParties(jsonArray) {
     return;
   }
 
-  reactHotLoader.register(ActiveSessionRec, "ActiveSessionRec", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
-  reactHotLoader.register(PartyRecord, "PartyRecord", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
-  reactHotLoader.register(defaultState, "defaultState", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
-  reactHotLoader.register(receive, "receive", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
-  reactHotLoader.register(createSessionRec, "createSessionRec", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
-  reactHotLoader.register(createParties, "createParties", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(ActiveSessionRec, "ActiveSessionRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(PartyRecord, "PartyRecord", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(defaultState, "defaultState", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(receive, "receive", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(createSessionRec, "createSessionRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(createParties, "createParties", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/activeSessionStore.js");
   leaveModule(module);
 })();
 
@@ -7976,9 +8038,9 @@ function receive(state, _ref) {
     return;
   }
 
-  reactHotLoader.register(StoredSessionRec, "StoredSessionRec", "/Users/admin/Development/teleport/web/src/app/flux/sessions/archivedSessionStore.js");
-  reactHotLoader.register(receive, "receive", "/Users/admin/Development/teleport/web/src/app/flux/sessions/archivedSessionStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/sessions/archivedSessionStore.js");
+  reactHotLoader.register(StoredSessionRec, "StoredSessionRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/archivedSessionStore.js");
+  reactHotLoader.register(receive, "receive", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/archivedSessionStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/archivedSessionStore.js");
   leaveModule(module);
 })();
 
@@ -8062,8 +8124,8 @@ function receive(state, _ref) {
     return;
   }
 
-  reactHotLoader.register(receive, "receive", "/Users/admin/Development/teleport/web/src/app/flux/sessions/eventStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/sessions/eventStore.js");
+  reactHotLoader.register(receive, "receive", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/eventStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sessions/eventStore.js");
   leaveModule(module);
 })();
 
@@ -8119,9 +8181,9 @@ var SET_RES_TO_DELETE = 'SETTINGS_SET_RES_TO_DELETE';
     return;
   }
 
-  reactHotLoader.register(INIT, "INIT", "/Users/admin/Development/teleport/web/src/app/flux/settings/actionTypes.js");
-  reactHotLoader.register(ADD_NAV_ITEM, "ADD_NAV_ITEM", "/Users/admin/Development/teleport/web/src/app/flux/settings/actionTypes.js");
-  reactHotLoader.register(SET_RES_TO_DELETE, "SET_RES_TO_DELETE", "/Users/admin/Development/teleport/web/src/app/flux/settings/actionTypes.js");
+  reactHotLoader.register(INIT, "INIT", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/settings/actionTypes.js");
+  reactHotLoader.register(ADD_NAV_ITEM, "ADD_NAV_ITEM", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/settings/actionTypes.js");
+  reactHotLoader.register(SET_RES_TO_DELETE, "SET_RES_TO_DELETE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/settings/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -8254,8 +8316,8 @@ var _default = Object(nuclear_js__WEBPACK_IMPORTED_MODULE_0__["Store"])({
     return;
   }
 
-  reactHotLoader.register(SettingsRec, "SettingsRec", "/Users/admin/Development/teleport/web/src/app/flux/settings/store.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/settings/store.js");
+  reactHotLoader.register(SettingsRec, "SettingsRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/settings/store.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/settings/store.js");
   leaveModule(module);
 })();
 
@@ -8307,7 +8369,7 @@ var RECEIVE_CLUSTERS = 'TLPT_CLUSTER_RECEIVE';
     return;
   }
 
-  reactHotLoader.register(RECEIVE_CLUSTERS, "RECEIVE_CLUSTERS", "/Users/admin/Development/teleport/web/src/app/flux/sites/actionTypes.js");
+  reactHotLoader.register(RECEIVE_CLUSTERS, "RECEIVE_CLUSTERS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -8390,8 +8452,8 @@ function changeCluster(clusterId) {
     return;
   }
 
-  reactHotLoader.register(showCluster, "showCluster", "/Users/admin/Development/teleport/web/src/app/flux/sites/actions.js");
-  reactHotLoader.register(changeCluster, "changeCluster", "/Users/admin/Development/teleport/web/src/app/flux/sites/actions.js");
+  reactHotLoader.register(showCluster, "showCluster", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/actions.js");
+  reactHotLoader.register(changeCluster, "changeCluster", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/actions.js");
   leaveModule(module);
 })();
 
@@ -8457,10 +8519,10 @@ var _default = {
     return;
   }
 
-  reactHotLoader.register(SiteStatusEnum, "SiteStatusEnum", "/Users/admin/Development/teleport/web/src/app/flux/sites/getters.js");
-  reactHotLoader.register(onlyOnline, "onlyOnline", "/Users/admin/Development/teleport/web/src/app/flux/sites/getters.js");
-  reactHotLoader.register(sites, "sites", "/Users/admin/Development/teleport/web/src/app/flux/sites/getters.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/sites/getters.js");
+  reactHotLoader.register(SiteStatusEnum, "SiteStatusEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/getters.js");
+  reactHotLoader.register(onlyOnline, "onlyOnline", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/getters.js");
+  reactHotLoader.register(sites, "sites", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/getters.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/getters.js");
   leaveModule(module);
 })();
 
@@ -8589,9 +8651,9 @@ function receiveSites(state, json) {
     return;
   }
 
-  reactHotLoader.register(SiteRec, "SiteRec", "/Users/admin/Development/teleport/web/src/app/flux/sites/siteStore.js");
-  reactHotLoader.register(receiveSites, "receiveSites", "/Users/admin/Development/teleport/web/src/app/flux/sites/siteStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/sites/siteStore.js");
+  reactHotLoader.register(SiteRec, "SiteRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/siteStore.js");
+  reactHotLoader.register(receiveSites, "receiveSites", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/siteStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sites/siteStore.js");
   leaveModule(module);
 })();
 
@@ -8643,7 +8705,7 @@ var ADD_ITEM = 'TLPT_SSH_HISTORY';
     return;
   }
 
-  reactHotLoader.register(ADD_ITEM, "ADD_ITEM", "/Users/admin/Development/teleport/web/src/app/flux/sshHistory/actionTypes.js");
+  reactHotLoader.register(ADD_ITEM, "ADD_ITEM", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sshHistory/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -8794,11 +8856,11 @@ var getters = {
     return;
   }
 
-  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/Users/admin/Development/teleport/web/src/app/flux/sshHistory/store.js");
-  reactHotLoader.register(SshHistoryRec, "SshHistoryRec", "/Users/admin/Development/teleport/web/src/app/flux/sshHistory/store.js");
-  reactHotLoader.register(store, "store", "/Users/admin/Development/teleport/web/src/app/flux/sshHistory/store.js");
-  reactHotLoader.register(register, "register", "/Users/admin/Development/teleport/web/src/app/flux/sshHistory/store.js");
-  reactHotLoader.register(getters, "getters", "/Users/admin/Development/teleport/web/src/app/flux/sshHistory/store.js");
+  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sshHistory/store.js");
+  reactHotLoader.register(SshHistoryRec, "SshHistoryRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sshHistory/store.js");
+  reactHotLoader.register(store, "store", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sshHistory/store.js");
+  reactHotLoader.register(register, "register", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sshHistory/store.js");
+  reactHotLoader.register(getters, "getters", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/sshHistory/store.js");
   leaveModule(module);
 })();
 
@@ -8856,10 +8918,10 @@ var CLEAR = 'TLPT_STATUS_CLEAR';
     return;
   }
 
-  reactHotLoader.register(START, "START", "/Users/admin/Development/teleport/web/src/app/flux/status/actionTypes.js");
-  reactHotLoader.register(SUCCESS, "SUCCESS", "/Users/admin/Development/teleport/web/src/app/flux/status/actionTypes.js");
-  reactHotLoader.register(FAIL, "FAIL", "/Users/admin/Development/teleport/web/src/app/flux/status/actionTypes.js");
-  reactHotLoader.register(CLEAR, "CLEAR", "/Users/admin/Development/teleport/web/src/app/flux/status/actionTypes.js");
+  reactHotLoader.register(START, "START", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actionTypes.js");
+  reactHotLoader.register(SUCCESS, "SUCCESS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actionTypes.js");
+  reactHotLoader.register(FAIL, "FAIL", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actionTypes.js");
+  reactHotLoader.register(CLEAR, "CLEAR", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -8954,13 +9016,13 @@ var changePasswordStatus = makeStatus(_constants__WEBPACK_IMPORTED_MODULE_2__["T
     return;
   }
 
-  reactHotLoader.register(makeStatus, "makeStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
-  reactHotLoader.register(initAppStatus, "initAppStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
-  reactHotLoader.register(loginStatus, "loginStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
-  reactHotLoader.register(fetchInviteStatus, "fetchInviteStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
-  reactHotLoader.register(signupStatus, "signupStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
-  reactHotLoader.register(initSettingsStatus, "initSettingsStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
-  reactHotLoader.register(changePasswordStatus, "changePasswordStatus", "/Users/admin/Development/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(makeStatus, "makeStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(initAppStatus, "initAppStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(loginStatus, "loginStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(fetchInviteStatus, "fetchInviteStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(signupStatus, "signupStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(initSettingsStatus, "initSettingsStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
+  reactHotLoader.register(changePasswordStatus, "changePasswordStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/actions.js");
   leaveModule(module);
 })();
 
@@ -9022,12 +9084,12 @@ var TRYING_TO_CHANGE_PSW = 'TRYING_TO_CHANGE_PSW';
     return;
   }
 
-  reactHotLoader.register(TRYING_TO_SIGN_UP, "TRYING_TO_SIGN_UP", "/Users/admin/Development/teleport/web/src/app/flux/status/constants.js");
-  reactHotLoader.register(TRYING_TO_LOGIN, "TRYING_TO_LOGIN", "/Users/admin/Development/teleport/web/src/app/flux/status/constants.js");
-  reactHotLoader.register(FETCHING_INVITE, "FETCHING_INVITE", "/Users/admin/Development/teleport/web/src/app/flux/status/constants.js");
-  reactHotLoader.register(TRYING_TO_INIT_APP, "TRYING_TO_INIT_APP", "/Users/admin/Development/teleport/web/src/app/flux/status/constants.js");
-  reactHotLoader.register(TRYING_TO_INIT_SETTINGS, "TRYING_TO_INIT_SETTINGS", "/Users/admin/Development/teleport/web/src/app/flux/status/constants.js");
-  reactHotLoader.register(TRYING_TO_CHANGE_PSW, "TRYING_TO_CHANGE_PSW", "/Users/admin/Development/teleport/web/src/app/flux/status/constants.js");
+  reactHotLoader.register(TRYING_TO_SIGN_UP, "TRYING_TO_SIGN_UP", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/constants.js");
+  reactHotLoader.register(TRYING_TO_LOGIN, "TRYING_TO_LOGIN", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/constants.js");
+  reactHotLoader.register(FETCHING_INVITE, "FETCHING_INVITE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/constants.js");
+  reactHotLoader.register(TRYING_TO_INIT_APP, "TRYING_TO_INIT_APP", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/constants.js");
+  reactHotLoader.register(TRYING_TO_INIT_SETTINGS, "TRYING_TO_INIT_SETTINGS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/constants.js");
+  reactHotLoader.register(TRYING_TO_CHANGE_PSW, "TRYING_TO_CHANGE_PSW", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/constants.js");
   leaveModule(module);
 })();
 
@@ -9100,14 +9162,14 @@ var changePasswordAttempt = makeGetter(_constants__WEBPACK_IMPORTED_MODULE_1__["
     return;
   }
 
-  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(makeGetter, "makeGetter", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(initAppAttempt, "initAppAttempt", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(loginAttempt, "loginAttempt", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(fetchInviteAttempt, "fetchInviteAttempt", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(signupAttempt, "signupAttempt", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(initSettingsAttempt, "initSettingsAttempt", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
-  reactHotLoader.register(changePasswordAttempt, "changePasswordAttempt", "/Users/admin/Development/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(makeGetter, "makeGetter", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(initAppAttempt, "initAppAttempt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(loginAttempt, "loginAttempt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(fetchInviteAttempt, "fetchInviteAttempt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(signupAttempt, "signupAttempt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(initSettingsAttempt, "initSettingsAttempt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
+  reactHotLoader.register(changePasswordAttempt, "changePasswordAttempt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/getters.js");
   leaveModule(module);
 })();
 
@@ -9211,12 +9273,12 @@ function clear(state, request) {
     return;
   }
 
-  reactHotLoader.register(TrackRec, "TrackRec", "/Users/admin/Development/teleport/web/src/app/flux/status/statusStore.js");
-  reactHotLoader.register(start, "start", "/Users/admin/Development/teleport/web/src/app/flux/status/statusStore.js");
-  reactHotLoader.register(fail, "fail", "/Users/admin/Development/teleport/web/src/app/flux/status/statusStore.js");
-  reactHotLoader.register(success, "success", "/Users/admin/Development/teleport/web/src/app/flux/status/statusStore.js");
-  reactHotLoader.register(clear, "clear", "/Users/admin/Development/teleport/web/src/app/flux/status/statusStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/status/statusStore.js");
+  reactHotLoader.register(TrackRec, "TrackRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/statusStore.js");
+  reactHotLoader.register(start, "start", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/statusStore.js");
+  reactHotLoader.register(fail, "fail", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/statusStore.js");
+  reactHotLoader.register(success, "success", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/statusStore.js");
+  reactHotLoader.register(clear, "clear", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/statusStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/status/statusStore.js");
   leaveModule(module);
 })();
 
@@ -9272,9 +9334,9 @@ var TLPT_STORED_SESSINS_FILTER_RECEIVE_MORE = 'TLPT_STORED_SESSINS_FILTER_RECEIV
     return;
   }
 
-  reactHotLoader.register(TLPT_STORED_SESSINS_FILTER_SET_RANGE, "TLPT_STORED_SESSINS_FILTER_SET_RANGE", "/Users/admin/Development/teleport/web/src/app/flux/storedSessionsFilter/actionTypes.js");
-  reactHotLoader.register(TLPT_STORED_SESSINS_FILTER_SET_STATUS, "TLPT_STORED_SESSINS_FILTER_SET_STATUS", "/Users/admin/Development/teleport/web/src/app/flux/storedSessionsFilter/actionTypes.js");
-  reactHotLoader.register(TLPT_STORED_SESSINS_FILTER_RECEIVE_MORE, "TLPT_STORED_SESSINS_FILTER_RECEIVE_MORE", "/Users/admin/Development/teleport/web/src/app/flux/storedSessionsFilter/actionTypes.js");
+  reactHotLoader.register(TLPT_STORED_SESSINS_FILTER_SET_RANGE, "TLPT_STORED_SESSINS_FILTER_SET_RANGE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/storedSessionsFilter/actionTypes.js");
+  reactHotLoader.register(TLPT_STORED_SESSINS_FILTER_SET_STATUS, "TLPT_STORED_SESSINS_FILTER_SET_STATUS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/storedSessionsFilter/actionTypes.js");
+  reactHotLoader.register(TLPT_STORED_SESSINS_FILTER_RECEIVE_MORE, "TLPT_STORED_SESSINS_FILTER_RECEIVE_MORE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/storedSessionsFilter/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -9354,8 +9416,8 @@ function setRange(state, newState) {
     return;
   }
 
-  reactHotLoader.register(setRange, "setRange", "/Users/admin/Development/teleport/web/src/app/flux/storedSessionsFilter/storedSessionFilterStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/storedSessionsFilter/storedSessionFilterStore.js");
+  reactHotLoader.register(setRange, "setRange", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/storedSessionsFilter/storedSessionFilterStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/storedSessionsFilter/storedSessionFilterStore.js");
   leaveModule(module);
 })();
 
@@ -9411,9 +9473,9 @@ var TLPT_TERMINAL_SET_STATUS = 'TLPT_TERMINAL_SET_STATUS';
     return;
   }
 
-  reactHotLoader.register(TLPT_TERMINAL_INIT, "TLPT_TERMINAL_INIT", "/Users/admin/Development/teleport/web/src/app/flux/terminal/actionTypes.js");
-  reactHotLoader.register(TLPT_TERMINAL_CLOSE, "TLPT_TERMINAL_CLOSE", "/Users/admin/Development/teleport/web/src/app/flux/terminal/actionTypes.js");
-  reactHotLoader.register(TLPT_TERMINAL_SET_STATUS, "TLPT_TERMINAL_SET_STATUS", "/Users/admin/Development/teleport/web/src/app/flux/terminal/actionTypes.js");
+  reactHotLoader.register(TLPT_TERMINAL_INIT, "TLPT_TERMINAL_INIT", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/actionTypes.js");
+  reactHotLoader.register(TLPT_TERMINAL_CLOSE, "TLPT_TERMINAL_CLOSE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/actionTypes.js");
+  reactHotLoader.register(TLPT_TERMINAL_SET_STATUS, "TLPT_TERMINAL_SET_STATUS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -9594,12 +9656,12 @@ function changeStatus(state, status) {
     return;
   }
 
-  reactHotLoader.register(TermStatusRec, "TermStatusRec", "/Users/admin/Development/teleport/web/src/app/flux/terminal/store.js");
-  reactHotLoader.register(TermRec, "TermRec", "/Users/admin/Development/teleport/web/src/app/flux/terminal/store.js");
-  reactHotLoader.register(close, "close", "/Users/admin/Development/teleport/web/src/app/flux/terminal/store.js");
-  reactHotLoader.register(init, "init", "/Users/admin/Development/teleport/web/src/app/flux/terminal/store.js");
-  reactHotLoader.register(changeStatus, "changeStatus", "/Users/admin/Development/teleport/web/src/app/flux/terminal/store.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/terminal/store.js");
+  reactHotLoader.register(TermStatusRec, "TermStatusRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/store.js");
+  reactHotLoader.register(TermRec, "TermRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/store.js");
+  reactHotLoader.register(close, "close", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/store.js");
+  reactHotLoader.register(init, "init", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/store.js");
+  reactHotLoader.register(changeStatus, "changeStatus", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/store.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/terminal/store.js");
   leaveModule(module);
 })();
 
@@ -9653,8 +9715,8 @@ var RECEIVE_INVITE = 'TLPT_RECEIVE_USER_INVITE';
     return;
   }
 
-  reactHotLoader.register(RECEIVE_USER, "RECEIVE_USER", "/Users/admin/Development/teleport/web/src/app/flux/user/actionTypes.js");
-  reactHotLoader.register(RECEIVE_INVITE, "RECEIVE_INVITE", "/Users/admin/Development/teleport/web/src/app/flux/user/actionTypes.js");
+  reactHotLoader.register(RECEIVE_USER, "RECEIVE_USER", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actionTypes.js");
+  reactHotLoader.register(RECEIVE_INVITE, "RECEIVE_INVITE", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -9799,17 +9861,17 @@ function _getEntryRoute() {
     return;
   }
 
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(fetchInvite, "fetchInvite", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(acceptInvite, "acceptInvite", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(acceptInviteWithU2f, "acceptInviteWithU2f", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(loginWithSso, "loginWithSso", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(loginWithU2f, "loginWithU2f", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(login, "login", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(logout, "logout", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(_handleAcceptInvitePromise, "_handleAcceptInvitePromise", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(_handleLoginPromise, "_handleLoginPromise", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
-  reactHotLoader.register(_getEntryRoute, "_getEntryRoute", "/Users/admin/Development/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(fetchInvite, "fetchInvite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(acceptInvite, "acceptInvite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(acceptInviteWithU2f, "acceptInviteWithU2f", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(loginWithSso, "loginWithSso", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(loginWithU2f, "loginWithU2f", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(login, "login", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(logout, "logout", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(_handleAcceptInvitePromise, "_handleAcceptInvitePromise", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(_handleLoginPromise, "_handleLoginPromise", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
+  reactHotLoader.register(_getEntryRoute, "_getEntryRoute", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/actions.js");
   leaveModule(module);
 })();
 
@@ -9881,11 +9943,11 @@ var getters = {
     return;
   }
 
-  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/Users/admin/Development/teleport/web/src/app/flux/user/index.js");
-  reactHotLoader.register(getUser, "getUser", "/Users/admin/Development/teleport/web/src/app/flux/user/index.js");
-  reactHotLoader.register(invite, "invite", "/Users/admin/Development/teleport/web/src/app/flux/user/index.js");
-  reactHotLoader.register(userName, "userName", "/Users/admin/Development/teleport/web/src/app/flux/user/index.js");
-  reactHotLoader.register(getters, "getters", "/Users/admin/Development/teleport/web/src/app/flux/user/index.js");
+  reactHotLoader.register(STORE_NAME, "STORE_NAME", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/index.js");
+  reactHotLoader.register(getUser, "getUser", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/index.js");
+  reactHotLoader.register(invite, "invite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/index.js");
+  reactHotLoader.register(userName, "userName", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/index.js");
+  reactHotLoader.register(getters, "getters", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/index.js");
   leaveModule(module);
 })();
 
@@ -9964,9 +10026,9 @@ function receiveInvite(state, json) {
     return;
   }
 
-  reactHotLoader.register(Invite, "Invite", "/Users/admin/Development/teleport/web/src/app/flux/user/userInviteStore.js");
-  reactHotLoader.register(receiveInvite, "receiveInvite", "/Users/admin/Development/teleport/web/src/app/flux/user/userInviteStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/user/userInviteStore.js");
+  reactHotLoader.register(Invite, "Invite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/userInviteStore.js");
+  reactHotLoader.register(receiveInvite, "receiveInvite", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/userInviteStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/userInviteStore.js");
   leaveModule(module);
 })();
 
@@ -10096,9 +10158,9 @@ function receiveUser(state, json) {
     return;
   }
 
-  reactHotLoader.register(UserRec, "UserRec", "/Users/admin/Development/teleport/web/src/app/flux/user/userStore.js");
-  reactHotLoader.register(receiveUser, "receiveUser", "/Users/admin/Development/teleport/web/src/app/flux/user/userStore.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/user/userStore.js");
+  reactHotLoader.register(UserRec, "UserRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/userStore.js");
+  reactHotLoader.register(receiveUser, "receiveUser", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/userStore.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/user/userStore.js");
   leaveModule(module);
 })();
 
@@ -10150,7 +10212,7 @@ var RECEIVE_USERACL = 'TLPT_USERACL_RECEIVE';
     return;
   }
 
-  reactHotLoader.register(RECEIVE_USERACL, "RECEIVE_USERACL", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/actionTypes.js");
+  reactHotLoader.register(RECEIVE_USERACL, "RECEIVE_USERACL", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/actionTypes.js");
   leaveModule(module);
 })();
 
@@ -10205,8 +10267,8 @@ var _default = {
     return;
   }
 
-  reactHotLoader.register(userAcl, "userAcl", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/getters.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/getters.js");
+  reactHotLoader.register(userAcl, "userAcl", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/getters.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/getters.js");
   leaveModule(module);
 })();
 
@@ -10386,11 +10448,11 @@ var _default = Object(nuclear_js__WEBPACK_IMPORTED_MODULE_1__["Store"])({
     return;
   }
 
-  reactHotLoader.register(sortLogins, "sortLogins", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/store.js");
-  reactHotLoader.register(Access, "Access", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/store.js");
-  reactHotLoader.register(AccessListRec, "AccessListRec", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/store.js");
-  reactHotLoader.register(getAcl, "getAcl", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/store.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/flux/userAcl/store.js");
+  reactHotLoader.register(sortLogins, "sortLogins", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/store.js");
+  reactHotLoader.register(Access, "Access", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/store.js");
+  reactHotLoader.register(AccessListRec, "AccessListRec", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/store.js");
+  reactHotLoader.register(getAcl, "getAcl", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/store.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/flux/userAcl/store.js");
   leaveModule(module);
 })();
 
@@ -10486,8 +10548,8 @@ var _default = Object(react_hot_loader__WEBPACK_IMPORTED_MODULE_9__["hot"])(modu
     return;
   }
 
-  reactHotLoader.register(Root, "Root", "/Users/admin/Development/teleport/web/src/app/index.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/index.jsx");
+  reactHotLoader.register(Root, "Root", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/index.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/index.jsx");
   leaveModule(module);
 })();
 
@@ -10633,8 +10695,8 @@ var _default = {
     return;
   }
 
-  reactHotLoader.register(Logger, "Logger", "/Users/admin/Development/teleport/web/src/app/lib/logger.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/lib/logger.js");
+  reactHotLoader.register(Logger, "Logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/logger.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/logger.js");
   leaveModule(module);
 })();
 
@@ -10729,11 +10791,11 @@ function isUUID(str) {
     return;
   }
 
-  reactHotLoader.register(uuid, "uuid", "/Users/admin/Development/teleport/web/src/app/lib/objectUtils.js");
-  reactHotLoader.register(PORT_REGEX, "PORT_REGEX", "/Users/admin/Development/teleport/web/src/app/lib/objectUtils.js");
-  reactHotLoader.register(parseIp, "parseIp", "/Users/admin/Development/teleport/web/src/app/lib/objectUtils.js");
-  reactHotLoader.register(isMatch, "isMatch", "/Users/admin/Development/teleport/web/src/app/lib/objectUtils.js");
-  reactHotLoader.register(isUUID, "isUUID", "/Users/admin/Development/teleport/web/src/app/lib/objectUtils.js");
+  reactHotLoader.register(uuid, "uuid", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/objectUtils.js");
+  reactHotLoader.register(PORT_REGEX, "PORT_REGEX", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/objectUtils.js");
+  reactHotLoader.register(parseIp, "parseIp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/objectUtils.js");
+  reactHotLoader.register(isMatch, "isMatch", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/objectUtils.js");
+  reactHotLoader.register(isUUID, "isUUID", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/objectUtils.js");
   leaveModule(module);
 })();
 
@@ -10980,15 +11042,15 @@ function formatPattern(pattern, params) {
     return;
   }
 
-  reactHotLoader.register(escapeRegExp, "escapeRegExp", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(escapeSource, "escapeSource", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(_compilePattern, "_compilePattern", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(CompiledPatternsCache, "CompiledPatternsCache", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(compilePattern, "compilePattern", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(matchPattern, "matchPattern", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(getParamNames, "getParamNames", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(getParams, "getParams", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
-  reactHotLoader.register(formatPattern, "formatPattern", "/Users/admin/Development/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(escapeRegExp, "escapeRegExp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(escapeSource, "escapeSource", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(_compilePattern, "_compilePattern", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(CompiledPatternsCache, "CompiledPatternsCache", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(compilePattern, "compilePattern", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(matchPattern, "matchPattern", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(getParamNames, "getParamNames", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(getParams, "getParams", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
+  reactHotLoader.register(formatPattern, "formatPattern", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/patternUtils.js");
   leaveModule(module);
 })();
 
@@ -11058,9 +11120,9 @@ var StatusCodeEnum = {
     return;
   }
 
-  reactHotLoader.register(EventTypeEnum, "EventTypeEnum", "/Users/admin/Development/teleport/web/src/app/lib/term/enums.js");
-  reactHotLoader.register(TermEventEnum, "TermEventEnum", "/Users/admin/Development/teleport/web/src/app/lib/term/enums.js");
-  reactHotLoader.register(StatusCodeEnum, "StatusCodeEnum", "/Users/admin/Development/teleport/web/src/app/lib/term/enums.js");
+  reactHotLoader.register(EventTypeEnum, "EventTypeEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/term/enums.js");
+  reactHotLoader.register(TermEventEnum, "TermEventEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/term/enums.js");
+  reactHotLoader.register(StatusCodeEnum, "StatusCodeEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/lib/term/enums.js");
   leaveModule(module);
 })();
 
@@ -11141,11 +11203,11 @@ var _default = reactor;
     return;
   }
 
-  reactHotLoader.register(CSS, "CSS", "/Users/admin/Development/teleport/web/src/app/reactor.js");
-  reactHotLoader.register(options, "options", "/Users/admin/Development/teleport/web/src/app/reactor.js");
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/reactor.js");
-  reactHotLoader.register(reactor, "reactor", "/Users/admin/Development/teleport/web/src/app/reactor.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/reactor.js");
+  reactHotLoader.register(CSS, "CSS", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/reactor.js");
+  reactHotLoader.register(options, "options", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/reactor.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/reactor.js");
+  reactHotLoader.register(reactor, "reactor", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/reactor.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/reactor.js");
   leaveModule(module);
 })();
 
@@ -11322,15 +11384,15 @@ var _default = api;
     return;
   }
 
-  reactHotLoader.register(defaultCfg, "defaultCfg", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(api, "api", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(parseJSON, "parseJSON", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(getAuthHeaders, "getAuthHeaders", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(getNoCacheHeaders, "getNoCacheHeaders", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(getXCSRFToken, "getXCSRFToken", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(getAccessToken, "getAccessToken", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(getErrorText, "getErrorText", "/Users/admin/Development/teleport/web/src/app/services/api.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(defaultCfg, "defaultCfg", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(api, "api", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(parseJSON, "parseJSON", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(getAuthHeaders, "getAuthHeaders", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(getNoCacheHeaders, "getNoCacheHeaders", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(getXCSRFToken, "getXCSRFToken", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(getAccessToken, "getAccessToken", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(getErrorText, "getErrorText", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/api.js");
   leaveModule(module);
 })();
 
@@ -11515,8 +11577,8 @@ var _default = auth;
     return;
   }
 
-  reactHotLoader.register(auth, "auth", "/Users/admin/Development/teleport/web/src/app/services/auth.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/services/auth.js");
+  reactHotLoader.register(auth, "auth", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/auth.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/auth.js");
   leaveModule(module);
 })();
 
@@ -11587,10 +11649,10 @@ var AuthTypeEnum = {
     return;
   }
 
-  reactHotLoader.register(AuthProviderTypeEnum, "AuthProviderTypeEnum", "/Users/admin/Development/teleport/web/src/app/services/enums.js");
-  reactHotLoader.register(RestRespCodeEnum, "RestRespCodeEnum", "/Users/admin/Development/teleport/web/src/app/services/enums.js");
-  reactHotLoader.register(Auth2faTypeEnum, "Auth2faTypeEnum", "/Users/admin/Development/teleport/web/src/app/services/enums.js");
-  reactHotLoader.register(AuthTypeEnum, "AuthTypeEnum", "/Users/admin/Development/teleport/web/src/app/services/enums.js");
+  reactHotLoader.register(AuthProviderTypeEnum, "AuthProviderTypeEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/enums.js");
+  reactHotLoader.register(RestRespCodeEnum, "RestRespCodeEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/enums.js");
+  reactHotLoader.register(Auth2faTypeEnum, "Auth2faTypeEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/enums.js");
+  reactHotLoader.register(AuthTypeEnum, "AuthTypeEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/enums.js");
   leaveModule(module);
 })();
 
@@ -11734,10 +11796,10 @@ var _default = history;
     return;
   }
 
-  reactHotLoader.register(_inst, "_inst", "/Users/admin/Development/teleport/web/src/app/services/history.js");
-  reactHotLoader.register(history, "history", "/Users/admin/Development/teleport/web/src/app/services/history.js");
-  reactHotLoader.register(match, "match", "/Users/admin/Development/teleport/web/src/app/services/history.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/services/history.js");
+  reactHotLoader.register(_inst, "_inst", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/history.js");
+  reactHotLoader.register(history, "history", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/history.js");
+  reactHotLoader.register(match, "match", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/history.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/history.js");
   leaveModule(module);
 })();
 
@@ -11821,9 +11883,9 @@ var _default = storage;
     return;
   }
 
-  reactHotLoader.register(KeysEnum, "KeysEnum", "/Users/admin/Development/teleport/web/src/app/services/localStorage.js");
-  reactHotLoader.register(storage, "storage", "/Users/admin/Development/teleport/web/src/app/services/localStorage.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/services/localStorage.js");
+  reactHotLoader.register(KeysEnum, "KeysEnum", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/localStorage.js");
+  reactHotLoader.register(storage, "storage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/localStorage.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/localStorage.js");
   leaveModule(module);
 })();
 
@@ -12110,14 +12172,14 @@ var _default = session;
     return;
   }
 
-  reactHotLoader.register(EMPTY_TOKEN_CONTENT_LENGTH, "EMPTY_TOKEN_CONTENT_LENGTH", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(TOKEN_CHECKER_INTERVAL, "TOKEN_CHECKER_INTERVAL", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(logger, "logger", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(BearerToken, "BearerToken", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(sesstionCheckerTimerId, "sesstionCheckerTimerId", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(session, "session", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(receiveMessage, "receiveMessage", "/Users/admin/Development/teleport/web/src/app/services/session.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(EMPTY_TOKEN_CONTENT_LENGTH, "EMPTY_TOKEN_CONTENT_LENGTH", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(TOKEN_CHECKER_INTERVAL, "TOKEN_CHECKER_INTERVAL", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(logger, "logger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(BearerToken, "BearerToken", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(sesstionCheckerTimerId, "sesstionCheckerTimerId", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(session, "session", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(receiveMessage, "receiveMessage", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/session.js");
   leaveModule(module);
 })();
 
@@ -12175,8 +12237,8 @@ var isTestEnv = function isTestEnv() {
     return;
   }
 
-  reactHotLoader.register(isDevEnv, "isDevEnv", "/Users/admin/Development/teleport/web/src/app/services/utils.js");
-  reactHotLoader.register(isTestEnv, "isTestEnv", "/Users/admin/Development/teleport/web/src/app/services/utils.js");
+  reactHotLoader.register(isDevEnv, "isDevEnv", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/utils.js");
+  reactHotLoader.register(isTestEnv, "isTestEnv", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/app/services/utils.js");
   leaveModule(module);
 })();
 
@@ -12253,7 +12315,7 @@ render(_app_index__WEBPACK_IMPORTED_MODULE_2__["default"]);
     return;
   }
 
-  reactHotLoader.register(render, "render", "/Users/admin/Development/teleport/web/src/boot.js");
+  reactHotLoader.register(render, "render", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/boot.js");
   leaveModule(module);
 })();
 
@@ -12384,14 +12446,14 @@ var Success = function Success(props) {
     return;
   }
 
-  reactHotLoader.register(alertType, "alertType", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(Alert, "Alert", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(Danger, "Danger", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(Warning, "Warning", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(Info, "Info", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(Success, "Success", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(alertType, "alertType", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(Alert, "Alert", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(Danger, "Danger", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(Warning, "Warning", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(Info, "Info", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(Success, "Success", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Alerts/index.jsx");
   leaveModule(module);
 })();
 
@@ -12466,9 +12528,9 @@ var _default = Box;
     return;
   }
 
-  reactHotLoader.register(Box, "Box", "/Users/admin/Development/teleport/web/src/shared/components/Box/Box.jsx");
-  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/Users/admin/Development/teleport/web/src/shared/components/Box/Box.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Box/Box.jsx");
+  reactHotLoader.register(Box, "Box", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Box/Box.jsx");
+  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Box/Box.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Box/Box.jsx");
   leaveModule(module);
 })();
 
@@ -12507,7 +12569,7 @@ var _default = _Box__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Box/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Box/index.js");
   leaveModule(module);
 })();
 
@@ -12656,12 +12718,12 @@ var _default = Button;
     return;
   }
 
-  reactHotLoader.register(size, "size", "/Users/admin/Development/teleport/web/src/shared/components/Button/Button.jsx");
-  reactHotLoader.register(color, "color", "/Users/admin/Development/teleport/web/src/shared/components/Button/Button.jsx");
-  reactHotLoader.register(block, "block", "/Users/admin/Development/teleport/web/src/shared/components/Button/Button.jsx");
-  reactHotLoader.register(Button, "Button", "/Users/admin/Development/teleport/web/src/shared/components/Button/Button.jsx");
-  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/Users/admin/Development/teleport/web/src/shared/components/Button/Button.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Button/Button.jsx");
+  reactHotLoader.register(size, "size", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/Button.jsx");
+  reactHotLoader.register(color, "color", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/Button.jsx");
+  reactHotLoader.register(block, "block", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/Button.jsx");
+  reactHotLoader.register(Button, "Button", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/Button.jsx");
+  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/Button.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/Button.jsx");
   leaveModule(module);
 })();
 
@@ -12700,7 +12762,7 @@ var _default = _Button__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Button/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Button/index.js");
   leaveModule(module);
 })();
 
@@ -12761,8 +12823,8 @@ var _default = Card;
     return;
   }
 
-  reactHotLoader.register(Card, "Card", "/Users/admin/Development/teleport/web/src/shared/components/Card/Card.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Card/Card.jsx");
+  reactHotLoader.register(Card, "Card", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Card/Card.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Card/Card.jsx");
   leaveModule(module);
 })();
 
@@ -12801,7 +12863,7 @@ var _default = _Card__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Card/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Card/index.js");
   leaveModule(module);
 })();
 
@@ -12871,8 +12933,8 @@ var StyledEmptyIndicator = styled_components__WEBPACK_IMPORTED_MODULE_0__["defau
     return;
   }
 
-  reactHotLoader.register(StyledTable, "StyledTable", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/StyledTable.jsx");
-  reactHotLoader.register(StyledEmptyIndicator, "StyledEmptyIndicator", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/StyledTable.jsx");
+  reactHotLoader.register(StyledTable, "StyledTable", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/StyledTable.jsx");
+  reactHotLoader.register(StyledEmptyIndicator, "StyledEmptyIndicator", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/StyledTable.jsx");
   leaveModule(module);
 })();
 
@@ -13246,6 +13308,7 @@ function (_React$Component4) {
     return;
   }
 
+<<<<<<< Updated upstream
   reactHotLoader.register(SortTypes, "SortTypes", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/Table.jsx");
   reactHotLoader.register(Table, "Table", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/Table.jsx");
   reactHotLoader.register(SortIndicator, "SortIndicator", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/Table.jsx");
@@ -13254,6 +13317,16 @@ function (_React$Component4) {
   reactHotLoader.register(TextCell, "TextCell", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/Table.jsx");
   reactHotLoader.register(SortHeaderCell, "SortHeaderCell", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/Table.jsx");
   reactHotLoader.register(EmptyIndicator, "EmptyIndicator", "/Users/admin/Development/teleport/web/src/shared/components/DataTable/Table.jsx");
+=======
+  reactHotLoader.register(SortTypes, "SortTypes", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(Table, "Table", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(SortIndicator, "SortIndicator", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(Column, "Column", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(Cell, "Cell", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(TextCell, "TextCell", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(SortHeaderCell, "SortHeaderCell", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+  reactHotLoader.register(EmptyIndicator, "EmptyIndicator", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/DataTable/Table.jsx");
+>>>>>>> Stashed changes
   leaveModule(module);
 })();
 
@@ -13340,8 +13413,8 @@ var _default = Flex;
     return;
   }
 
-  reactHotLoader.register(Flex, "Flex", "/Users/admin/Development/teleport/web/src/shared/components/Flex/Flex.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Flex/Flex.jsx");
+  reactHotLoader.register(Flex, "Flex", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Flex/Flex.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Flex/Flex.jsx");
   leaveModule(module);
 })();
 
@@ -13380,7 +13453,7 @@ var _default = _Flex__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Flex/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Flex/index.js");
   leaveModule(module);
 })();
 
@@ -13466,8 +13539,8 @@ var _default = Heading;
     return;
   }
 
-  reactHotLoader.register(Heading, "Heading", "/Users/admin/Development/teleport/web/src/shared/components/Heading/Heading.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Heading/Heading.js");
+  reactHotLoader.register(Heading, "Heading", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Heading/Heading.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Heading/Heading.js");
   leaveModule(module);
 })();
 
@@ -13506,7 +13579,7 @@ var _default = _Heading__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Heading/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Heading/index.js");
   leaveModule(module);
 })();
 
@@ -13857,6 +13930,7 @@ var Linkedin = makeFontIcon('Linkedin');
     return;
   }
 
+<<<<<<< Updated upstream
   reactHotLoader.register(fontIconClasses, "fontIconClasses", "/Users/admin/Development/teleport/web/src/shared/components/Icon/Icon.jsx");
   reactHotLoader.register(makeFontIcon, "makeFontIcon", "/Users/admin/Development/teleport/web/src/shared/components/Icon/Icon.jsx");
   reactHotLoader.register(CarrotDown, "CarrotDown", "/Users/admin/Development/teleport/web/src/shared/components/Icon/Icon.jsx");
@@ -13957,6 +14031,108 @@ var Linkedin = makeFontIcon('Linkedin');
   reactHotLoader.register(FacebookSquare, "FacebookSquare", "/Users/admin/Development/teleport/web/src/shared/components/Icon/Icon.jsx");
   reactHotLoader.register(Youtube, "Youtube", "/Users/admin/Development/teleport/web/src/shared/components/Icon/Icon.jsx");
   reactHotLoader.register(Linkedin, "Linkedin", "/Users/admin/Development/teleport/web/src/shared/components/Icon/Icon.jsx");
+=======
+  reactHotLoader.register(fontIconClasses, "fontIconClasses", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(makeFontIcon, "makeFontIcon", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CarrotDown, "CarrotDown", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CarrotUp, "CarrotUp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CarrotLeft, "CarrotLeft", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CarrotRight, "CarrotRight", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CarrotSort, "CarrotSort", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Earth, "Earth", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CircleCheck, "CircleCheck", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CircleCross, "CircleCross", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CircleStop, "CircleStop", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CirclePlay, "CirclePlay", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CirclePause, "CirclePause", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Magnifier, "Magnifier", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Cluster, "Cluster", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Ellipsis, "Ellipsis", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Github, "Github", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Google, "Google", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(SortDesc, "SortDesc", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(SortAsc, "SortAsc", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Sort, "Sort", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CardView, "CardView", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CardViewSmall, "CardViewSmall", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ListView, "ListView", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Twitter, "Twitter", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Facebook, "Facebook", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CreditCard, "CreditCard", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CaretLeft, "CaretLeft", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CaretRight, "CaretRight", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Apple, "Apple", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Windows, "Windows", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Linux, "Linux", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Visa, "Visa", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(MasterCard, "MasterCard", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Discover, "Discover", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Amex, "Amex", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Paypal, "Paypal", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Stripe, "Stripe", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CreditCardAlt, "CreditCardAlt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Home, "Home", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Apartment, "Apartment", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Pencil, "Pencil", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Edit, "Edit", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Cloud, "Cloud", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Database, "Database", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Server, "Server", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ShieldCheck, "ShieldCheck", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Lock, "Lock", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Unlock, "Unlock", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Cog, "Cog", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Trash, "Trash", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Archive, "Archive", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Clipboard, "Clipboard", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ClipboardUser, "ClipboardUser", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(License, "License", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Play, "Play", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Camera, "Camera", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Label, "Label", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Profile, "Profile", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(User, "User", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Users, "Users", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(AddUsers, "AddUsers", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(CreditCardAlt2, "CreditCardAlt2", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Cash, "Cash", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Phone, "Phone", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(MapMarker, "MapMarker", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Calendar, "Calendar", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Signal, "Signal", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(SmartPhone, "SmartPhone", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Tablet, "Tablet", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Window, "Window", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Power, "Power", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Bubble, "Bubble", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Graph, "Graph", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Shart, "Shart", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Speed, "Speed", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Planet, "Planet", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(VolumeUp, "VolumeUp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Mute, "Mute", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Lan, "Lan", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(LanAlt, "LanAlt", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Wifi, "Wifi", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Cli, "Cli", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Code, "Code", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Link, "Link", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Cross, "Cross", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ListCheck, "ListCheck", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ListBullet, "ListBullet", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ArrowUp, "ArrowUp", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ArrowDown, "ArrowDown", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ArrowLeft, "ArrowLeft", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ArrowRight, "ArrowRight", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(ArrowsVertical, "ArrowsVertical", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Expand, "Expand", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Contract, "Contract", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Layers, "Layers", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Spinner, "Spinner", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(FacebookSquare, "FacebookSquare", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Youtube, "Youtube", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+  reactHotLoader.register(Linkedin, "Linkedin", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Icon/Icon.jsx");
+>>>>>>> Stashed changes
   leaveModule(module);
 })();
 
@@ -14082,10 +14258,10 @@ var _default = Indicator;
     return;
   }
 
-  reactHotLoader.register(WHEN_TO_DISPLAY, "WHEN_TO_DISPLAY", "/Users/admin/Development/teleport/web/src/shared/components/Indicator/Indicator.jsx");
-  reactHotLoader.register(Indicator, "Indicator", "/Users/admin/Development/teleport/web/src/shared/components/Indicator/Indicator.jsx");
-  reactHotLoader.register(StyledSpinner, "StyledSpinner", "/Users/admin/Development/teleport/web/src/shared/components/Indicator/Indicator.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Indicator/Indicator.jsx");
+  reactHotLoader.register(WHEN_TO_DISPLAY, "WHEN_TO_DISPLAY", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Indicator/Indicator.jsx");
+  reactHotLoader.register(Indicator, "Indicator", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Indicator/Indicator.jsx");
+  reactHotLoader.register(StyledSpinner, "StyledSpinner", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Indicator/Indicator.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Indicator/Indicator.jsx");
   leaveModule(module);
 })();
 
@@ -14124,7 +14300,7 @@ var _default = _Indicator__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Indicator/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Indicator/index.js");
   leaveModule(module);
 })();
 
@@ -14185,8 +14361,8 @@ var _default = Input;
     return;
   }
 
-  reactHotLoader.register(Input, "Input", "/Users/admin/Development/teleport/web/src/shared/components/Input/Input.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Input/Input.jsx");
+  reactHotLoader.register(Input, "Input", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Input/Input.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Input/Input.jsx");
   leaveModule(module);
 })();
 
@@ -14225,7 +14401,7 @@ var _default = _Input__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Input/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Input/index.js");
   leaveModule(module);
 })();
 
@@ -14281,8 +14457,8 @@ var _default = Label;
     return;
   }
 
-  reactHotLoader.register(Label, "Label", "/Users/admin/Development/teleport/web/src/shared/components/Label/Label.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Label/Label.jsx");
+  reactHotLoader.register(Label, "Label", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Label/Label.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Label/Label.jsx");
   leaveModule(module);
 })();
 
@@ -14321,7 +14497,7 @@ var _default = _Label__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Label/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Label/index.js");
   leaveModule(module);
 })();
 
@@ -14383,9 +14559,9 @@ var StyledImg = styled_components__WEBPACK_IMPORTED_MODULE_1__["default"].img.wi
     return;
   }
 
-  reactHotLoader.register(Logo, "Logo", "/Users/admin/Development/teleport/web/src/shared/components/Logo/Logo.jsx");
-  reactHotLoader.register(StyledImg, "StyledImg", "/Users/admin/Development/teleport/web/src/shared/components/Logo/Logo.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Logo/Logo.jsx");
+  reactHotLoader.register(Logo, "Logo", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Logo/Logo.jsx");
+  reactHotLoader.register(StyledImg, "StyledImg", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Logo/Logo.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Logo/Logo.jsx");
   leaveModule(module);
 })();
 
@@ -14424,7 +14600,7 @@ var _default = _Logo__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Logo/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Logo/index.js");
   leaveModule(module);
 })();
 
@@ -14639,9 +14815,9 @@ var _default = Menu;
     return;
   }
 
-  reactHotLoader.register(POSITION, "POSITION", "/Users/admin/Development/teleport/web/src/shared/components/Menu/Menu.jsx");
-  reactHotLoader.register(Menu, "Menu", "/Users/admin/Development/teleport/web/src/shared/components/Menu/Menu.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Menu/Menu.jsx");
+  reactHotLoader.register(POSITION, "POSITION", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/Menu.jsx");
+  reactHotLoader.register(Menu, "Menu", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/Menu.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/Menu.jsx");
   leaveModule(module);
 })();
 
@@ -14733,9 +14909,9 @@ var _default = MenuItem;
     return;
   }
 
-  reactHotLoader.register(MenuItem, "MenuItem", "/Users/admin/Development/teleport/web/src/shared/components/Menu/MenuItem.jsx");
-  reactHotLoader.register(StyledMenuItem, "StyledMenuItem", "/Users/admin/Development/teleport/web/src/shared/components/Menu/MenuItem.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Menu/MenuItem.jsx");
+  reactHotLoader.register(MenuItem, "MenuItem", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/MenuItem.jsx");
+  reactHotLoader.register(StyledMenuItem, "StyledMenuItem", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/MenuItem.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/MenuItem.jsx");
   leaveModule(module);
 })();
 
@@ -14865,9 +15041,9 @@ var _default = MenuList;
     return;
   }
 
-  reactHotLoader.register(MenuList, "MenuList", "/Users/admin/Development/teleport/web/src/shared/components/Menu/MenuList.jsx");
-  reactHotLoader.register(StyledMenuList, "StyledMenuList", "/Users/admin/Development/teleport/web/src/shared/components/Menu/MenuList.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Menu/MenuList.jsx");
+  reactHotLoader.register(MenuList, "MenuList", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/MenuList.jsx");
+  reactHotLoader.register(StyledMenuList, "StyledMenuList", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/MenuList.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Menu/MenuList.jsx");
   leaveModule(module);
 })();
 
@@ -15310,12 +15486,12 @@ var StyledModal = styled_components__WEBPACK_IMPORTED_MODULE_1__["default"].div.
     return;
   }
 
-  reactHotLoader.register(getHasTransition, "getHasTransition", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Modal.jsx");
-  reactHotLoader.register(Modal, "Modal", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Modal.jsx");
-  reactHotLoader.register(Backdrop, "Backdrop", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Modal.jsx");
-  reactHotLoader.register(StyledBackdrop, "StyledBackdrop", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Modal.jsx");
-  reactHotLoader.register(StyledModal, "StyledModal", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Modal.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Modal.jsx");
+  reactHotLoader.register(getHasTransition, "getHasTransition", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Modal.jsx");
+  reactHotLoader.register(Modal, "Modal", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Modal.jsx");
+  reactHotLoader.register(Backdrop, "Backdrop", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Modal.jsx");
+  reactHotLoader.register(StyledBackdrop, "StyledBackdrop", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Modal.jsx");
+  reactHotLoader.register(StyledModal, "StyledModal", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Modal.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Modal.jsx");
   leaveModule(module);
 })();
 
@@ -15515,10 +15691,10 @@ var _default = Portal;
     return;
   }
 
-  reactHotLoader.register(Portal, "Portal", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Portal.jsx");
-  reactHotLoader.register(getContainer, "getContainer", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Portal.jsx");
-  reactHotLoader.register(getOwnerDocument, "getOwnerDocument", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Portal.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Modal/Portal.jsx");
+  reactHotLoader.register(Portal, "Portal", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Portal.jsx");
+  reactHotLoader.register(getContainer, "getContainer", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Portal.jsx");
+  reactHotLoader.register(getOwnerDocument, "getOwnerDocument", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Portal.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/Portal.jsx");
   leaveModule(module);
 })();
 
@@ -15657,9 +15833,9 @@ var _default = RootRef;
     return;
   }
 
-  reactHotLoader.register(RootRef, "RootRef", "/Users/admin/Development/teleport/web/src/shared/components/Modal/RootRef.jsx");
-  reactHotLoader.register(setRef, "setRef", "/Users/admin/Development/teleport/web/src/shared/components/Modal/RootRef.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Modal/RootRef.jsx");
+  reactHotLoader.register(RootRef, "RootRef", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/RootRef.jsx");
+  reactHotLoader.register(setRef, "setRef", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/RootRef.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/RootRef.jsx");
   leaveModule(module);
 })();
 
@@ -15698,7 +15874,7 @@ var _default = _Modal__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Modal/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Modal/index.js");
   leaveModule(module);
 })();
 
@@ -16227,14 +16403,14 @@ var _default = Popover;
     return;
   }
 
-  reactHotLoader.register(StyledPopover, "StyledPopover", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(getOffsetTop, "getOffsetTop", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(getOffsetLeft, "getOffsetLeft", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(getTransformOriginValue, "getTransformOriginValue", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(getScrollParent, "getScrollParent", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(getAnchorEl, "getAnchorEl", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(Popover, "Popover", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(StyledPopover, "StyledPopover", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(getOffsetTop, "getOffsetTop", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(getOffsetLeft, "getOffsetLeft", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(getTransformOriginValue, "getTransformOriginValue", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(getScrollParent, "getScrollParent", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(getAnchorEl, "getAnchorEl", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(Popover, "Popover", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Popover.jsx");
   leaveModule(module);
 })();
 
@@ -16340,8 +16516,8 @@ var _default = Transition;
     return;
   }
 
-  reactHotLoader.register(Transition, "Transition", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Transition.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Popover/Transition.jsx");
+  reactHotLoader.register(Transition, "Transition", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Transition.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/Transition.jsx");
   leaveModule(module);
 })();
 
@@ -16383,7 +16559,7 @@ var _default = _Popover__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Popover/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Popover/index.js");
   leaveModule(module);
 })();
 
@@ -16414,11 +16590,19 @@ __webpack_require__.r(__webpack_exports__);
 var SideNav = styled_components__WEBPACK_IMPORTED_MODULE_0__["default"].nav.withConfig({
   displayName: "SideNav",
   componentId: "h5sul4-0"
+<<<<<<< Updated upstream
 })(["background:", ";bottom:0;width:240px;left:0;overflow:auto;padding-top:72px;position:", ";top:0;z-index:", ";"], function (props) {
   return props.theme.background.secondary;
 }, function (props) {
   return props.static ? 'relative' : 'fixed';
 }, _constants__WEBPACK_IMPORTED_MODULE_1__["z"].zmax1);
+=======
+})(["background:", ";bottom:0;width:240px;left:0;overflow:auto;position:", ";top:0;"], function (props) {
+  return props.theme.background.secondary;
+}, function (props) {
+  return props.static ? 'relative' : 'fixed';
+});
+>>>>>>> Stashed changes
 SideNav.displayName = 'SideNav';
 var _default = SideNav;
 /* harmony default export */ __webpack_exports__["default"] = (_default);
@@ -16433,8 +16617,8 @@ var _default = SideNav;
     return;
   }
 
-  reactHotLoader.register(SideNav, "SideNav", "/Users/admin/Development/teleport/web/src/shared/components/SideNav/SideNav.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/SideNav/SideNav.jsx");
+  reactHotLoader.register(SideNav, "SideNav", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/SideNav/SideNav.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/SideNav/SideNav.jsx");
   leaveModule(module);
 })();
 
@@ -16495,8 +16679,8 @@ var _default = SideNavItem;
     return;
   }
 
-  reactHotLoader.register(SideNavItem, "SideNavItem", "/Users/admin/Development/teleport/web/src/shared/components/SideNav/SideNavItem.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/SideNav/SideNavItem.jsx");
+  reactHotLoader.register(SideNavItem, "SideNavItem", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/SideNav/SideNavItem.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/SideNav/SideNavItem.jsx");
   leaveModule(module);
 })();
 
@@ -16540,7 +16724,7 @@ var _default = _SideNav__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/SideNav/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/SideNav/index.js");
   leaveModule(module);
 })();
 
@@ -16649,13 +16833,13 @@ var _default = Text;
     return;
   }
 
-  reactHotLoader.register(caps, "caps", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
-  reactHotLoader.register(regular, "regular", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
-  reactHotLoader.register(bold, "bold", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
-  reactHotLoader.register(italic, "italic", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
-  reactHotLoader.register(Text, "Text", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
-  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(caps, "caps", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(regular, "regular", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(bold, "bold", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(italic, "italic", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(Text, "Text", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(numberStringOrArray, "numberStringOrArray", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/Text.jsx");
   leaveModule(module);
 })();
 
@@ -16694,7 +16878,7 @@ var _default = _Text__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/Text/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/Text/index.js");
   leaveModule(module);
 })();
 
@@ -16752,7 +16936,7 @@ var GlobalStyle = Object(styled_components__WEBPACK_IMPORTED_MODULE_0__["createG
     return;
   }
 
-  reactHotLoader.register(GlobalStyle, "GlobalStyle", "/Users/admin/Development/teleport/web/src/shared/components/ThemeProvider/globals.js");
+  reactHotLoader.register(GlobalStyle, "GlobalStyle", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/ThemeProvider/globals.js");
   leaveModule(module);
 })();
 
@@ -16805,8 +16989,8 @@ var _default = ThemeProvider;
     return;
   }
 
-  reactHotLoader.register(ThemeProvider, "ThemeProvider", "/Users/admin/Development/teleport/web/src/shared/components/ThemeProvider/index.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/ThemeProvider/index.js");
+  reactHotLoader.register(ThemeProvider, "ThemeProvider", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/ThemeProvider/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/ThemeProvider/index.js");
   leaveModule(module);
 })();
 
@@ -16883,9 +17067,9 @@ var _default = TopNav;
     return;
   }
 
-  reactHotLoader.register(TopNav, "TopNav", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNav.jsx");
-  reactHotLoader.register(StyledNav, "StyledNav", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNav.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNav.jsx");
+  reactHotLoader.register(TopNav, "TopNav", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNav.jsx");
+  reactHotLoader.register(StyledNav, "StyledNav", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNav.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNav.jsx");
   leaveModule(module);
 })();
 
@@ -16953,8 +17137,8 @@ var _default = TopNavItem;
     return;
   }
 
-  reactHotLoader.register(TopNavItem, "TopNavItem", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavItem.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavItem.jsx");
+  reactHotLoader.register(TopNavItem, "TopNavItem", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavItem.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavItem.jsx");
   leaveModule(module);
 })();
 
@@ -17027,9 +17211,9 @@ var _default = TopNavLogo;
     return;
   }
 
-  reactHotLoader.register(TopNavLogo, "TopNavLogo", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx");
-  reactHotLoader.register(StyledLogo, "StyledLogo", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx");
+  reactHotLoader.register(TopNavLogo, "TopNavLogo", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx");
+  reactHotLoader.register(StyledLogo, "StyledLogo", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavLogo/TopNavLogo.jsx");
   leaveModule(module);
 })();
 
@@ -17197,9 +17381,16 @@ var AvatarButton = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div
     return;
   }
 
+<<<<<<< Updated upstream
   reactHotLoader.register(TopNavUserMenu, "TopNavUserMenu", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
   reactHotLoader.register(AvatarButton, "AvatarButton", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
   reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
+=======
+  reactHotLoader.register(TopNavUserMenu, "TopNavUserMenu", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
+  reactHotLoader.register(AvatarButton, "AvatarButton", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
+  reactHotLoader.register(menuListCss, "menuListCss", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavUserMenu/TopNavUserMenu.jsx");
+>>>>>>> Stashed changes
   leaveModule(module);
 })();
 
@@ -17249,7 +17440,7 @@ var _default = _TopNavUserMenu__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/TopNavUserMenu/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/TopNavUserMenu/index.js");
   leaveModule(module);
 })();
 
@@ -17293,7 +17484,7 @@ var _default = _TopNav__WEBPACK_IMPORTED_MODULE_0__["default"];
     return;
   }
 
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/TopNav/index.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/TopNav/index.js");
   leaveModule(module);
 })();
 
@@ -17529,22 +17720,22 @@ function getMonoFont() {
     return;
   }
 
-  reactHotLoader.register(fontMonoLinux, "fontMonoLinux", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(fontMonoWin, "fontMonoWin", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(fontMonoMac, "fontMonoMac", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(font, "font", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(fonts, "fonts", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(regular, "regular", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(bold, "bold", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(fontSizes, "fontSizes", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(fontWeights, "fontWeights", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(space, "space", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(background, "background", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(colors, "colors", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(borders, "borders", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(theme, "theme", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(getMonoFont, "getMonoFont", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
-  reactHotLoader.register(_default, "default", "/Users/admin/Development/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(fontMonoLinux, "fontMonoLinux", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(fontMonoWin, "fontMonoWin", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(fontMonoMac, "fontMonoMac", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(font, "font", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(fonts, "fonts", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(regular, "regular", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(bold, "bold", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(fontSizes, "fontSizes", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(fontWeights, "fontWeights", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(space, "space", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(background, "background", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(colors, "colors", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(borders, "borders", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(theme, "theme", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(getMonoFont, "getMonoFont", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
+  reactHotLoader.register(_default, "default", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/theme.js");
   leaveModule(module);
 })();
 
@@ -17707,13 +17898,13 @@ function calculatePosition(placement, overlayNode, target, container, padding) {
     return;
   }
 
-  reactHotLoader.register(ownerDocument, "ownerDocument", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
-  reactHotLoader.register(ownerWindow, "ownerWindow", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
-  reactHotLoader.register(getContainer, "getContainer", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
-  reactHotLoader.register(getContainerDimensions, "getContainerDimensions", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
-  reactHotLoader.register(getTopDelta, "getTopDelta", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
-  reactHotLoader.register(getLeftDelta, "getLeftDelta", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
-  reactHotLoader.register(calculatePosition, "calculatePosition", "/Users/admin/Development/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(ownerDocument, "ownerDocument", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(ownerWindow, "ownerWindow", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(getContainer, "getContainer", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(getContainerDimensions, "getContainerDimensions", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(getTopDelta, "getTopDelta", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(getLeftDelta, "getLeftDelta", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
+  reactHotLoader.register(calculatePosition, "calculatePosition", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/index.js");
   leaveModule(module);
 })();
 
@@ -17759,8 +17950,8 @@ var platform = getPlatform();
     return;
   }
 
-  reactHotLoader.register(getPlatform, "getPlatform", "/Users/admin/Development/teleport/web/src/shared/components/utils/platform.js");
-  reactHotLoader.register(platform, "platform", "/Users/admin/Development/teleport/web/src/shared/components/utils/platform.js");
+  reactHotLoader.register(getPlatform, "getPlatform", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/platform.js");
+  reactHotLoader.register(platform, "platform", "/home/akontsevoy/go/src/github.com/gravitational/teleport/web/src/shared/components/utils/platform.js");
   leaveModule(module);
 })();
 

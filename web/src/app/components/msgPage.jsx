@@ -52,8 +52,6 @@ const ErrorPage = withDocTitle("Error", ({ params, location }) => {
   switch (type) {
     case ErrorPageEnum.FAILED_TO_LOGIN:
       return <LoginFailed message={details} />
-    case ErrorPageEnum.EXPIRED_INVITE:
-      return <ExpiredLink />
     case ErrorPageEnum.NOT_FOUND:
       return <NotFound />
     case ErrorPageEnum.ACCESS_DENIED:

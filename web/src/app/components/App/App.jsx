@@ -18,11 +18,10 @@ import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom'
 import styled from 'styled-components';
 import { connect } from './../nuclear';
-import AppBar from './AppBar';
-import appGetters from 'app/flux/app/getters';
+import { getters } from 'app/flux/app/appStore';
 import { Failed } from './../msgPage.jsx';
 import { initApp } from 'app/flux/app/actions';
-import { Box, Indicator } from 'shared/components';
+import { Indicator } from 'shared/components';
 import withAuth from './../withAuth';
 import FeatureActivator from './../../featureActivator';
 import Clusters from './../Clusters';
@@ -53,10 +52,7 @@ class App extends Component {
     }
 
     return (
-      <StyledApp flexDirection="column">
-        <Box>
-          <AppBar />
-        </Box>
+      <StyledApp>
         <Switch>
           <Route exact path={cfg.routes.app} component={Clusters} />
           <Route path={cfg.routes.cluster}
@@ -72,7 +68,7 @@ class App extends Component {
 
 function mapStateToProps() {
   return {
-    initAttempt: appGetters.initAttempt
+    initAttempt: getters.initAttempt
   }
 }
 
@@ -82,6 +78,4 @@ const StyledApp = styled.div`
   position: fixed;
   height: 100%;
   width: 100%;
-  display: flex;
-  flex-direction: column;
 `

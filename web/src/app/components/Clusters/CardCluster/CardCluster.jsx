@@ -27,9 +27,10 @@ export class CardCluster extends React.Component {
   }
 
   render() {
-    const { name, status, connectedAt, ...rest } = this.props;
-    const public_addr = public_addr || 'wolfe.gravitational.com';
-    const version = version || '#.#.#';
+
+    const { name, nodeCount, status, connectedAt, ...rest } = this.props;
+    const public_addr = 'wolfe.gravitational.com';
+    const version = '#.#.#';
 
     const props = {
       p: 4,
@@ -48,34 +49,29 @@ export class CardCluster extends React.Component {
         <ClusterHeader>
           <ClusterStatus status={status} />
           <h2>{name}</h2>
-          <h3>{} NODES</h3>
-
+          <h3>{nodeCount} NODES</h3>
           <ClusterSettings>
             <Icons.Ellipsis />
           </ClusterSettings>
         </ClusterHeader>
-
-        <ClusterContent><ClusterIcon>
-            <Icons.Cluster />
+        <ClusterContent>
+          <ClusterIcon>
+            <Icons.Cluster fontSize="40px" />
           </ClusterIcon>
-
           <ul>
             <li><strong>STATUS: {status}</strong></li>
             <li>{public_addr}</li>
             <li>Teleport v{version}</li>
           </ul>
         </ClusterContent>
-
         <ClusterFooter>{lastSeen}</ClusterFooter>
       </StyledCardCluster>
     );
   }
 }
 
-
-
 const StyledCardCluster = styled(Box)`
-  background: ${props => props.theme.background.secondary };
+  background: ${props => props.theme.colors.bgSecondary };
   border-radius: 4px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, .24);
   cursor: pointer;
@@ -89,7 +85,7 @@ const StyledCardCluster = styled(Box)`
 `
 
 const ClusterHeader = styled.header`
-  background: ${props => props.theme.background.tertiary };
+  background: ${props => props.theme.colors.bgTertiary };
   border-radius: 4px 4px 0 0;
   padding: 16px 16px 8px 40px;
   position: relative;
@@ -115,7 +111,7 @@ const ClusterStatus = styled.div`
   background: ${props => props.status !== "online" ? props.theme.colors.error : props.theme.colors.success };
   box-shadow: 0 2px 16px ${props => props.status !== "online" ? props.theme.colors.error : props.theme.colors.success };
   border-radius: 200px;
-  border: 1px solid ${props => props.theme.background.tertiary };
+  border: 1px solid ${props => props.theme.colors.bgTertiary };
   height: 8px;
   left: 16px;
   position: absolute;
@@ -132,9 +128,8 @@ const ClusterSettings = styled.div`
   z-index: 2;
 `
 
-
 const ClusterIcon = styled.div`
-  background: ${props => props.theme.background.quaternary };
+  background: ${props => props.theme.colors.bgQuaternary };
   border-radius: 4px;
   box-sizing: border-box;
   float: left;
@@ -143,13 +138,6 @@ const ClusterIcon = styled.div`
   padding: 16px;
   text-align: center;
   width: 72px;
-
-  .icon {
-    font-size: 40px;
-    display: block;
-    line-height: 40px;
-    margin: 0 auto;
-  }
 `
 
 const ClusterContent = styled.div`
@@ -176,7 +164,7 @@ const ClusterContent = styled.div`
   }
 `
 const ClusterFooter = styled.footer`
-  background: ${props => props.theme.background.quaternary };
+  background: ${props => props.theme.colors.bgQuaternary };
   box-sizing: border-box;
   border-radius: 0 0 4px 4px;
   clear: both;

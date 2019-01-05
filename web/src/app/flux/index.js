@@ -17,7 +17,6 @@ limitations under the License.
 import reactor from 'app/reactor';
 import termStore from './terminal/store';
 import userAcl from './userAcl/store';
-import appStore from './app/appStore';
 import nodeStore from './nodes/nodeStore';
 import settingsStore from './settings/store';
 import StatusStore from './status/statusStore';
@@ -28,17 +27,14 @@ import eventStore from './sessions/eventStore';
 import archivedSessionStore from './sessions/archivedSessionStore';
 import activeSessionStore from './sessions/activeSessionStore';
 import storedSessionFilterStore from './storedSessionsFilter/storedSessionFilterStore';
+
 import { register as registerSshHistory } from './sshHistory/store';
 import { register as registerMisc } from './misc/store';
 import { register as registerFileTransfer } from './fileTransfer';
-
-registerSshHistory(reactor);
-registerMisc(reactor);
-registerFileTransfer(reactor);
+import { register as registerAppStore } from './app/appStore';
 
 reactor.registerStores({
   'tlpt_settings': settingsStore,
-  'tlpt': appStore,
   'tlpt_terminal': termStore,
   'tlpt_nodes': nodeStore,
   'tlpt_user': userStore,
@@ -51,3 +47,8 @@ reactor.registerStores({
   'tlpt_sessions_active': activeSessionStore,
   'tlpt_sessions_filter': storedSessionFilterStore,
 });
+
+registerAppStore(reactor)
+registerSshHistory(reactor);
+registerMisc(reactor);
+registerFileTransfer(reactor);

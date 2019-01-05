@@ -11,9 +11,7 @@ class TopNavUserMenu extends React.Component {
 
   static defaultProps = {
     avatar: defaultAvatar,
-    open: false,
-    onShow: () => {alert('show')},
-    onClose: () => {alert('close')},
+    open: false
   }
 
   static propTypes = {
@@ -49,6 +47,7 @@ class TopNavUserMenu extends React.Component {
           <img src={avatar} />
         </AvatarButton>
         <Menu
+          menuListCss={menuListCss}
           anchorOrigin={anchorOrigin}
           transformOrigin={transformOrigin}
           anchorEl={anchorEl}
@@ -65,10 +64,6 @@ class TopNavUserMenu extends React.Component {
 export default TopNavUserMenu;
 
 const AvatarButton = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-
   img {
     display: inline-block;
     float: right;
@@ -83,3 +78,8 @@ const AvatarButton = styled.div`
     margin: 0;
   }
 `;
+
+/** Custom css styles for MenuList */
+const menuListCss = () => `
+
+`

@@ -6,7 +6,7 @@ import { space } from 'styled-system'
 const Input = styled.input`
   appearance: none;
   border-radius: 4px;
-  background: ${props => props.hasError ? props.theme.background.error : '#FFF' };
+  background: ${props => props.hasError ? props.theme.colors.bgError : '#FFF' };
   border: ${props => props.hasError ? `2px solid ${props.theme.colors.warning}` : 'none' };
   box-sizing: border-box;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);

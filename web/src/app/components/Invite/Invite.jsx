@@ -28,15 +28,15 @@ import logoSvg from 'shared/assets/images/teleport-medallion.svg';
 export class Invite extends React.Component {
 
   componentDidMount() {
-    this.props.fetchInvite(this.props.params.inviteToken);
+    this.props.fetchInvite(this.props.inviteToken);
   }
 
   onSubmitWithU2f = (username, password) => {
-    this.props.acceptInviteWithU2f(username, password, this.props.params.inviteToken);
+    this.props.acceptInviteWithU2f(username, password, this.props.inviteToken);
   }
 
   onSubmit = (username, password, token) => {
-    this.props.acceptInvite(username, password, token, this.props.params.inviteToken);
+    this.props.acceptInvite(username, password, token, this.props.inviteToken);
   }
 
   render() {
@@ -79,12 +79,15 @@ function mapStateToProps() {
   }
 }
 
-function mapActionsToProps() {
+function mapActionsToProps(props) {
   return {
     fetchInvite: actions.fetchInvite,
     acceptInviteWithU2f: actions.acceptInviteWithU2f,
     acceptInvite: actions.acceptInvite,
+    inviteToken: props.match.params.inviteToken,
   }
 }
 
-export default withDocTitle("Invite", connect(mapStateToProps, mapActionsToProps)(Invite));
+export default withDocTitle("Invite",
+  connect(mapStateToProps, mapActionsToProps)(Invite)
+);

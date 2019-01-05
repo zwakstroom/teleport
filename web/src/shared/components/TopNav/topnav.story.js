@@ -5,7 +5,6 @@ import TopNav from './TopNav';
 import TopNavItem from './TopNavItem';
 import TopNavUserMenu from './TopNavUserMenu';
 import MenuItem from './../Menu/MenuItem';
-import teleportSvg from './../../assets/images/teleport-logo.svg';
 
 storiesOf('TopNav', module)
   .addDecorator(withInfo)
@@ -18,7 +17,7 @@ storiesOf('TopNav', module)
   })
   .add('TopNav component', () => {
     return (
-      <TopNav isStatic={true} logoSrc={teleportSvg} version="5.3.2">
+      <TopNav>
         <TopNavItem>
           Action 1
         </TopNavItem>

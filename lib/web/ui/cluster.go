@@ -20,7 +20,11 @@ import (
 	"sort"
 	"time"
 
+	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/reversetunnel"
+	"github.com/gravitational/teleport/lib/services"
+
+	"github.com/gravitational/trace"
 )
 
 // Cluster describes a cluster
@@ -31,24 +35,37 @@ type Cluster struct {
 	LastConnected time.Time `json:"last_connected"`
 	// Status is the cluster status
 	Status string `json:"status"`
+	// NodeCount is the number of nodes
+	NodeCount int `json:"nodeCount"`
 }
 
 // AvailableClusters describes all available clusters
 type AvailableClusters struct {
 	// Current describes current cluster
 	Current Cluster `json:"current"`
-	// Trusted describes trusted clusters
+	// Trusted describees trusted clusters
 	Trusted []Cluster `json:"trusted"`
 }
 
 // NewAvailableClusters returns all available clusters
-func NewAvailableClusters(currentClusterName string, remoteClusters []reversetunnel.RemoteSite) *AvailableClusters {
+func NewAvailableClusters(currentClusterName string, remoteClusters []reversetunnel.RemoteSite) (*AvailableClusters, error) {
 	out := AvailableClusters{}
 	for _, item := range remoteClusters {
+		accessPoint, err := item.CachingAccessPoint()
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+
+		nodes, err := accessPoint.GetNodes(defaults.Namespace, services.SkipValidation())
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+
 		cluster := Cluster{
 			Name:          item.GetName(),
 			LastConnected: item.GetLastConnected(),
 			Status:        item.GetStatus(),
+			NodeCount:     len(nodes),
 		}
 
 		if item.GetName() == currentClusterName {
@@ -62,5 +79,5 @@ func NewAvailableClusters(currentClusterName string, remoteClusters []reversetun
 		return out.Trusted[i].Name < out.Trusted[j].Name
 	})
 
-	return &out
+	return &out, nil
 }
