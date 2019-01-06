@@ -25,6 +25,8 @@ import cfg from './config';
 import App from './components/App';
 import ThemeProvider from './../shared/components/ThemeProvider';
 import { hot, setConfig } from 'react-hot-loader'
+import AppError from './components/AppError';
+import LoginSuccessful from './components/LoginSuccessful';
 
 setConfig({
   logLevel: 'no-errors-please'
@@ -35,6 +37,8 @@ const Root = props => (
     <Provider reactor={props.reactor}>
       <ThemeProvider>
         <Switch>
+          <Route path={cfg.routes.error} component={AppError} />
+          <Route path={cfg.routes.successfulLogin} component={LoginSuccessful }/>
           <Route path={cfg.routes.login} component={Login} />
           <Route path={cfg.routes.newUser} component={Invite} />
           <Route path={cfg.routes.app} component={App} />

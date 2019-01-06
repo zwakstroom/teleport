@@ -40,7 +40,7 @@ export function fetchStoredSession(sid, siteId) {
     });
 }
 
-export function fetchSiteEvents(start, end){
+export function fetchSiteEvents(siteId, start, end){
   // default values
   start = start || moment(new Date()).endOf('day').toDate();
   end = end || moment(end).subtract(3, 'day').startOf('day').toDate();
@@ -48,7 +48,6 @@ export function fetchSiteEvents(start, end){
   start = start.toISOString();
   end = end.toISOString();
 
-  const siteId = reactor.evaluate(appGetters.siteId);
   return api.get(cfg.api.getSiteEventsFilterUrl({ start, end, siteId }))
     .then(json => {
       if (json && json.events) {

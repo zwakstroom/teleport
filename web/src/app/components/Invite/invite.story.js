@@ -4,7 +4,7 @@ import { Invite } from './Invite';
 import "font-awesome/css/font-awesome.css";
 
 storiesOf('Teleport/Invite', module)
-  .add('basic rendering', () => {
+  .add('Invite', () => {
     const props = {
       ...defaultProps,
       auth2faType: "off"
@@ -15,7 +15,7 @@ storiesOf('Teleport/Invite', module)
         {...props}
       />);
   })
-  .add('with expired invite', () => {
+  .add('Expired Invite', () => {
     const props = {
       ...defaultProps,
       auth2faType: "off",

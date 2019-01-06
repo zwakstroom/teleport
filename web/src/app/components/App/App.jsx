@@ -19,7 +19,7 @@ import { Route, Switch } from 'react-router-dom'
 import styled from 'styled-components';
 import { connect } from './../nuclear';
 import { getters } from 'app/flux/app/appStore';
-import { Failed } from './../msgPage.jsx';
+import { Failed } from './../Errors';
 import { initApp } from 'app/flux/app/actions';
 import { Indicator } from 'shared/components';
 import withAuth from './../withAuth';

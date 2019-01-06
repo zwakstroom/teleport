@@ -14,14 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {fetchSiteEvents} from './../sessions/actions';
-import Logger from 'app/lib/logger';
-const logger = Logger.create('Modules/Sessions');
+import React from 'react';
+import styled from 'styled-components'
+import { withDocTitle } from './../documentTitle';
 
-export function fetchSiteEventsWithinTimeRange(clusterId, start, end){
-  return fetchSiteEvents(clusterId, start, end)
-    .catch(err => {
-      logger.error('fetching filtered set of sessions', err.message);
-    });
-}
+const MSG_INFO_LOGIN_SUCCESS = 'Login was successful, you can close this window and continue using tsh.';
 
+export const LoginSuccessful = () => (
+  <StyledLoginSuccessful>
+    <h1>{MSG_INFO_LOGIN_SUCCESS}</h1>
+  </StyledLoginSuccessful>
+)
+
+export default withDocTitle("Success", LoginSuccessful)
+
+const StyledLoginSuccessful = styled.div`
+  margin: 0 auto;
+`

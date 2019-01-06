@@ -15,16 +15,14 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Link } from  'react-router';
-import {Cell} from  'app/components/table.jsx';
+import { NavLink } from 'react-router-dom';
+import { Cell } from  'shared/components/DataTable';
 import moment from 'moment';
-import Layout from 'app/components/layout';
-import MoreButton from 'app/components/moreButton';
-import Popover from 'app/components/popover';
 import classnames from 'classnames';
+import { Flex } from 'shared/components';
 
 const DateCreatedCell = ({ rowIndex, data, ...props }) => {
-  let { createdDisplayText } = data[rowIndex];  
+  let { createdDisplayText } = data[rowIndex];
   return (
     <Cell {...props}>
       { createdDisplayText }
@@ -33,7 +31,7 @@ const DateCreatedCell = ({ rowIndex, data, ...props }) => {
 };
 
 const DurationCell = ({ rowIndex, data, ...props }) => {
-  let { duration } = data[rowIndex];    
+  let { duration } = data[rowIndex];
   let displayDate = moment.duration(duration).humanize();
   return (
     <Cell {...props}>
@@ -42,27 +40,27 @@ const DurationCell = ({ rowIndex, data, ...props }) => {
   )
 };
 
-const SingleUserCell = ({ rowIndex, data, ...props }) => {  
+const SingleUserCell = ({ rowIndex, data, ...props }) => {
   let { user } = data[rowIndex];
   return (
     <Cell {...props}>
-      <span className="grv-sessions-user label label-default">{user}</span>
+      <span>{user}</span>
     </Cell>
   )
 };
 
 const UsersCell = ({ rowIndex, data, ...props }) => {
-  let { parties, user } = data[rowIndex];
-  let $users = <div className="grv-sessions-user">{user}</div> 
+  const { parties, user } = data[rowIndex];
+  let $users = <div>{user}</div>
 
   if (parties.length > 0) {
-    $users = parties.map((item, itemIndex) => {      
+    $users = parties.map((item, itemIndex) => {
       return(
-        <div key={itemIndex} className="grv-sessions-user">{item}</div>
+        <div key={itemIndex}>{item}</div>
       )
-    })    
+    })
   }
-      
+
   return (
     <Cell {...props}>
       <div>
@@ -72,46 +70,35 @@ const UsersCell = ({ rowIndex, data, ...props }) => {
   )
 };
 
-const sessionInfo = sid => (
-  <Popover className="grv-sessions-stored-details">
-    <div>{sid}</div>
-  </Popover>
-);
-
-const SessionIdCell = ({ rowIndex, canJoin, data, container, ...props }) => {
-  const { sessionUrl, active, sid } = data[rowIndex];    
+const SessionIdCell = ({ rowIndex, canJoin, data, ...props }) => {
+  const { sessionUrl, active, sid } = data[rowIndex];
   const isDisabled = active && !canJoin;
-  const sidShort = sid.slice(0, 8);  
+  const sidShort = sid.slice(0, 8);
   const actionText = active ? 'join' : 'play';
-  
+
   const btnClass = classnames('btn btn-xs m-r-sm', {
     'btn-primary': !active,
     'btn-warning': active,
     'disabled': isDisabled
-  });    
-  
+  });
+
   return (
     <Cell {...props}>
-      <Layout.Flex dir="row" align="center">
+      <Flex flexDirection="row" align="center">
         {isDisabled && <button className={btnClass}>{actionText}</button> }
         {!isDisabled && (
-          <Link to={sessionUrl} className={btnClass} type="button" >
+          <NavLink to={sessionUrl} className={btnClass} type="button" >
             {actionText}
-          </Link>
+          </NavLink>
         )}
-        <span style={{ width: "75px" }}>{sidShort}</span>        
-        <MoreButton.WithOverlay
-          trigger="click"
-          placement="bottom"
-          container={container}
-          overlay={sessionInfo(sid)} />                  
-      </Layout.Flex>  
+        <span style={{ width: "75px" }}>{sidShort}</span>
+      </Flex>
     </Cell>
   )
 }
 
 const NodeCell = ({ rowIndex, data, ...props }) => {
-  let { nodeDisplayText } = data[rowIndex];       
+  let { nodeDisplayText } = data[rowIndex];
   return (
     <Cell {...props}>
       {nodeDisplayText}

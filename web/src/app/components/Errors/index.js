@@ -1,5 +1,5 @@
 /*
-Copyright 2015 Gravitational, Inc.
+Copyright 2018 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {fetchSiteEvents} from './../sessions/actions';
-import Logger from 'app/lib/logger';
-const logger = Logger.create('Modules/Sessions');
+import { NotFound, Failed, AccessDenied, LoginFailed } from './Errors'
 
-export function fetchSiteEventsWithinTimeRange(clusterId, start, end){
-  return fetchSiteEvents(clusterId, start, end)
-    .catch(err => {
-      logger.error('fetching filtered set of sessions', err.message);
-    });
+export {
+  NotFound,
+  Failed,
+  AccessDenied,
+  LoginFailed
 }
-

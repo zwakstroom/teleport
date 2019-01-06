@@ -24,6 +24,7 @@ import cfg from 'app/config';
 import clusterGetters from 'app/flux/sites/getters';
 import { Flex, Box, SideNav, SideNavItem } from 'shared/components';
 import ClusterNodes from './../ClusterNodes';
+import ClusterSessions from './../ClusterSessions';
 import ClusterSelector from './ClusterSelector';
 import NavLogo from './../NavLogo';
 import { changeCluster } from 'app/flux/sites/actions';
@@ -60,7 +61,7 @@ export class Cluster extends React.Component {
             <SideNavItem as={props => (
               <NavLink className={props.className}
                 to={cfg.getClusterSessionsUrl(clusterId)}>
-                Sessions
+                Audit Log
               </NavLink>
               )}
             />
@@ -81,7 +82,10 @@ export class Cluster extends React.Component {
                 <Route exact path={cfg.routes.cluster} >
                   <ClusterNodes clusterId={clusterId} />
                 </Route>
-                </Switch>
+                <Route exact path={cfg.routes.clusterSessions} >
+                  <ClusterSessions clusterId={clusterId} />
+                </Route>
+              </Switch>
             </Box>
           </Content>
         </Flex>

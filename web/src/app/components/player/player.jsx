@@ -18,7 +18,7 @@ import initScroll from 'perfect-scrollbar/jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import ReactSlider from '../slider.jsx';
+import ReactSlider from './slider.jsx';
 import GrvTerminal from 'app/lib/term/terminal';
 import { TtyPlayer } from 'app/lib/term/ttyPlayer';
 import Indicator from './../indicator.jsx';

@@ -15,23 +15,12 @@ limitations under the License.
 */
 
 import React from 'react';
-import classNames from 'classnames';
-import OverlayTrigger from 'app/components/overlayTrigger';
+import { storiesOf } from '@storybook/react';
+import { LoginSuccessful } from './LoginSuccessful';
 
-const classes = {
- 'btn grv-btn-details': true
-}
-
-const MoreButton = props => (
-  <button className={classNames(props.className, classes)} >
-    <span>…</span>
-  </button>
-)
-
-MoreButton.WithOverlay = props => (
-  <OverlayTrigger {...props}>
-    <MoreButton/>          
-  </OverlayTrigger>
-)
-
-export default MoreButton;
+storiesOf('Teleport/LoginSuccessful', module)
+  .add('LoginSuccessful', () => {
+    return (
+      <LoginSuccessful />
+    );
+  });
