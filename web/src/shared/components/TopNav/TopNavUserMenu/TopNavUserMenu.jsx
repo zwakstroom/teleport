@@ -10,6 +10,7 @@ class TopNavUserMenu extends React.Component {
   static displayName = 'TopNavMenu';
 
   static defaultProps = {
+    menuListCss: () => { },
     avatar: defaultAvatar,
     open: false
   }
@@ -36,7 +37,8 @@ class TopNavUserMenu extends React.Component {
       avatar,
       anchorOrigin,
       transformOrigin,
-      children
+      children,
+      menuListCss,
     } = this.props;
 
     const anchorEl = open ? this.btnRef : null;
@@ -78,8 +80,3 @@ const AvatarButton = styled.div`
     margin: 0;
   }
 `;
-
-/** Custom css styles for MenuList */
-const menuListCss = () => `
-
-`

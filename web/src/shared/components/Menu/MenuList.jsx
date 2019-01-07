@@ -19,11 +19,13 @@ class MenuList extends React.Component {
 }
 
 const StyledMenuList = styled.div`
-  background-color: ${props => props.theme.colors.bgSecondary};
+  background-color: ${props => props.theme.colors.bgLight};
+  border-radius: 4px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
   max-height: calc(100% - 96px);
   position: relative;
   width: 200px;
+  padding: 4px 0;
 
   ${ props => props.menuListCss && props.menuListCss(props) }
 `

@@ -6,7 +6,6 @@ function MenuItem(props) {
   return (
     <StyledMenuItem
       tabIndex={-1}
-
       {...props}
     />
   );
@@ -43,7 +42,9 @@ const StyledMenuItem = styled.div`
   box-sizing: content-box;
   color: ${props => props.theme.colors.text};
   cursor: pointer;
-  display: block;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   font-size: 11px;
   font-weight: bold;
   line-height: 48px;
@@ -57,7 +58,6 @@ const StyledMenuItem = styled.div`
   white-space: nowrap;
   white-space: nowrap;
   width: auto;
-
   &:hover,
   &:focus {
     color: ${props => props.theme.colors.link};
@@ -66,12 +66,7 @@ const StyledMenuItem = styled.div`
   }
 
   &:last-child {
-    border-radius: 0 0 4px 4px;
     border: none;
-  }
-
-  &:first-child {
-    border-radius: 4px 4px 0 0;
   }
 
 `
