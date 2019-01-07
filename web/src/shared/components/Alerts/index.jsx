@@ -5,7 +5,7 @@ import { space } from 'styled-system'
 import { colors } from '../theme';
 
 const alertType = props => {
-  switch (props.type) {
+  switch (props.status) {
     case 'danger':
       return {
         background: colors.bgError,
@@ -60,8 +60,8 @@ const numberStringOrArray = PropTypes.oneOfType([
 ])
 
 Alert.propTypes = {
-  /** Size */
-  type: PropTypes.oneOf(['danger', 'info', 'warning', 'success']),
+  /** Status */
+  status: PropTypes.oneOf(['danger', 'info', 'warning', 'success']),
 
   /** Margin */
   m: numberStringOrArray,
@@ -83,25 +83,25 @@ export default Alert
 
 
 export const Danger = props => (
-  <Alert type="danger">
+  <Alert status="danger">
     {props.children}
   </Alert>
 )
 
 export const Warning = props => (
-  <Alert type="warning">
+  <Alert status="warning">
     {props.children}
   </Alert>
 )
 
 export const Info = props => (
-  <Alert type="info">
+  <Alert status="info">
     {props.children}
   </Alert>
 )
 
 export const Success = props => (
-  <Alert type="success">
+  <Alert status="success">
     {props.children}
   </Alert>
 )
