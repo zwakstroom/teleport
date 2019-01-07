@@ -33,12 +33,6 @@ const TopNavItem = styled.button`
     color: ${props => props.theme.colors.light};
     border-bottom:  ${props => props.active ? `4px solid ${props.theme.colors.accent}` : 'none'};
   }
-
-  &.active {
-    color: ${props => props.theme.colors.light};
-    line-height: 68px;
-    border-bottom: ${props => `4px solid ${props.theme.colors.accent}` }
-  }
 `
 
 TopNavItem.displayName = 'TopNavItem';

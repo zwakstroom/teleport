@@ -4,10 +4,8 @@ import { getters } from 'app/flux/user';
 import { logout } from 'app/flux/user/actions';
 import TopNavUserMenu from 'shared/components/TopNav/TopNavUserMenu'
 import { TopNav } from 'shared/components';
-import NavLogo from './../NavLogo';
 import MenuItem from 'shared/components/Menu/MenuItem';
 import Button from 'shared/components/Button';
-import teleportLogoSvg from 'app/../shared/assets/images/teleport-logo.svg';
 
 export class AppBar extends React.Component {
 
@@ -33,10 +31,9 @@ export class AppBar extends React.Component {
   }
 
   render() {
-    const { username, withLogo, children } = this.props;
+    const { username, children } = this.props;
     return (
       <TopNav>
-        {withLogo && <NavLogo src={teleportLogoSvg} />}
         {children}
         <TopNavUserMenu
           open={this.state.open}

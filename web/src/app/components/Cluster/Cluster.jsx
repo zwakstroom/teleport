@@ -17,8 +17,7 @@ limitations under the License.
 import React from 'react';
 import styled from 'styled-components';
 import { Route, Switch, NavLink } from 'react-router-dom'
-import teleportLogoSvg from 'shared/assets/images/teleport-logo.svg';
-import TopNav from './../TopNav/TopNav';
+import AppBar from './../AppBar/AppBar';
 import { connect } from './../nuclear';
 import cfg from 'app/config';
 import clusterGetters from 'app/flux/sites/getters';
@@ -26,7 +25,6 @@ import { Flex, Box, SideNav, SideNavItem } from 'shared/components';
 import ClusterNodes from './../ClusterNodes';
 import ClusterSessions from './../ClusterSessions';
 import ClusterSelector from './ClusterSelector';
-import NavLogo from './../NavLogo';
 import { changeCluster } from 'app/flux/sites/actions';
 
 export class Cluster extends React.Component {
@@ -44,29 +42,24 @@ export class Cluster extends React.Component {
 
     return (
       <Flex height="100%">
-        <div>
-          <SideNav>
-            <SideNavItem as={() => (
-              <NavLogo src={teleportLogoSvg} />
-            )}/>
-            <SideNavItem as={props => (
-              <NavLink className={props.className}
-                exact
-                to={cfg.getClusterUrl(clusterId)}
-              >
-                Nodes
-              </NavLink>
-              )}
-            />
-            <SideNavItem as={props => (
-              <NavLink className={props.className}
-                to={cfg.getClusterSessionsUrl(clusterId)}>
-                Audit Log
-              </NavLink>
-              )}
-            />
-          </SideNav>
-        </div>
+        <ClusterNav>
+          <SideNavItem as={props => (
+            <NavLink className={props.className}
+              exact
+              to={cfg.getClusterUrl(clusterId)}
+            >
+              Nodes
+            </NavLink>
+            )}
+          />
+          <SideNavItem as={props => (
+            <NavLink className={props.className}
+              to={cfg.getClusterSessionsUrl(clusterId)}>
+              Audit Log
+            </NavLink>
+            )}
+          />
+        </ClusterNav>
         <Flex flexDirection="column" width="100%">
           <div>
             <ClusterSelector
@@ -74,7 +67,7 @@ export class Cluster extends React.Component {
               onChange={this.onChangeCluster}
               options={clusterOptions}
             />
-            <TopNav />
+            <AppBar />
           </div>
           <Content>
             <Box m={2} width="100%">
@@ -110,6 +103,11 @@ const Content = styled(Flex)`
   overflow: auto;
   width: 100%;
   height: 100%;
+`
+
+const ClusterNav = styled(SideNav)`
+  padding-top: 80px;
+  flex-shrink: 0;
 `
 
 export default connect(mapStoreToProps, mapStateToProps)(Cluster);

@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import NavLogo from './NavLogo';
-export default NavLogo;
+import AppBar from './AppBar';
+export default AppBar;

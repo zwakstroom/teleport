@@ -20,11 +20,10 @@ import { connect } from './../nuclear';
 import InputSearch from './../InputSearch';
 import userAclGetters from 'app/flux/userAcl/getters';
 import nodeGetters from 'app/flux/nodes/getters';
-
 import { getters as sshHistoryGetters } from 'app/flux/sshHistory/store';
 import NodeList from './NodeList'
 
-class ClusterNodes extends React.Component {
+export class ClusterNodes extends React.Component {
 
   state = {
     filter: ''

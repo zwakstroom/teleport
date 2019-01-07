@@ -5,28 +5,29 @@ import { NavLink } from 'react-router-dom'
 import TopNavItem from 'shared/components/TopNav/TopNavItem'
 import cfg from 'app/config';
 
-const NavLogo = ({
+const AppLogo = ({
   src,
-  version = ''
+  version = '',
+  className
 }) => {
   return (
-    <NavLink to={cfg.routes.app}>
-      <StyledLogo>
+    <StyledLogo className={className} as={props => (
+      <NavLink className={props.className} to={cfg.routes.app} >
         <img src={src} />
         <em>{version}</em>
-      </StyledLogo>
-    </NavLink>
+      </NavLink>
+    )}/>
   );
 };
 
-NavLogo.propTypes = {
+AppLogo.propTypes = {
   src: PropTypes.string,
   version: PropTypes.string,
 };
 
-NavLogo.displayName = 'NavLogo';
+AppLogo.displayName = 'AppLogo';
 
-const StyledLogo = styled(TopNavItem)`
+export const StyledLogo = styled(TopNavItem)`
   margin: 0;
   width: 240px;
 
@@ -47,4 +48,4 @@ const StyledLogo = styled(TopNavItem)`
 `;
 
 
-export default NavLogo;
+export default AppLogo;

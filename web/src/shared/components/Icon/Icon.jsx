@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components'
 import { space, fontSize, width, color } from 'styled-system'
 import './../../assets/icomoon/style.css';

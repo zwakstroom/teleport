@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { connect } from './../nuclear';
-import TopNav from './../TopNav/TopNav';
+import AppBar from './../AppBar/AppBar';
 import siteGetters from 'app/flux/sites/getters';
 import { Flex, Box, Heading } from 'shared/components';
 import CardCluster from './CardCluster';
@@ -49,7 +49,7 @@ export class Clusters extends React.Component {
     return (
       <Flex flexDirection="column" height="100%">
         <div>
-          <TopNav withLogo={true} />
+          <AppBar withLogo={true} />
         </div>
         <div style={{ overflow: "auto" }}>
           <Box m={4}>

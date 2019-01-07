@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import TopNav from './TopNav';
-export default TopNav;
+import AppLogo from './AppLogo';
+export default AppLogo;
