@@ -17,6 +17,9 @@ limitations under the License.
 import React from 'react';
 import { getUrlParameter } from 'app/services/browser';
 import { withDocTitle } from './../documentTitle';
+import Logo from 'shared/components/Logo';
+import logoSvg from 'shared/assets/images/teleport-medallion.svg';
+
 import {
   NotFound,
   Failed,
@@ -31,16 +34,25 @@ export const AppErrorEnum = {
 };
 
 export const AppError = ({ type, message }) => {
+  let err = null;
+
   switch (type) {
     case AppErrorEnum.FAILED_TO_LOGIN:
-      return <LoginFailed message={message} />
+      err = <LoginFailed message={message} />; break;
     case AppErrorEnum.NOT_FOUND:
-      return <NotFound />
+      err = <NotFound />; break;
     case AppErrorEnum.ACCESS_DENIED:
-      return <AccessDenied message={message} />
+      err = <AccessDenied message={message} />; break;
     default:
-      return <Failed message={message} />
+      err = <Failed message={message} />;
   }
+
+  return (
+    <div>
+      <Logo src={logoSvg}/>
+      {err}
+    </div>
+  );
 };
 
 export default withDocTitle("Error", ({ match }) => {

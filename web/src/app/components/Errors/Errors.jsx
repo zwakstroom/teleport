@@ -16,6 +16,8 @@ limitations under the License.
 
 import React from 'react';
 import styled from 'styled-components'
+import {colors} from 'shared/components/theme';
+import {Danger} from 'shared/components/Alerts';
 
 const MSG_ERROR_LOGIN_FAILED = 'Login unsuccessful. Please try again, if the problem persists, contact your system administrator.';
 const MSG_ERROR_DEFAULT = 'Internal Error';
@@ -25,39 +27,40 @@ const MSG_ERROR_ACCESS_DENIED = 'Access denied';
 
 const Details = ({ message='' }) => (
   <div>
-    <small>{message}</small>
+    <Danger mt={4}>{message}</Danger>
     <p>
-      <small>If you believe this is an issue with Teleport, please <a href="https://github.com/gravitational/teleport/issues/new">create a GitHub issue.</a></small>
+      If you believe this is an issue with Teleport,
+      please <a href="https://github.com/gravitational/teleport/issues/new">create a GitHub issue.</a>
     </p>
   </div>
 )
 
 const NotFound = () => (
-  <Box>
+  <Card>
     <h1>{MSG_ERROR_NOT_FOUND}</h1>
     <Details message={MSG_ERROR_NOT_FOUND_DETAILS}/>
-  </Box>
+  </Card>
 )
 
 const AccessDenied = ({message}) => (
-  <Box>
+  <Card>
     <h1>{MSG_ERROR_ACCESS_DENIED}</h1>
     <Details message={message}/>
-  </Box>
+  </Card>
 )
 
 const Failed = ({message}) => (
-  <Box>
+  <Card>
     <h1>{MSG_ERROR_DEFAULT}</h1>
     <Details message={message}/>
-  </Box>
+  </Card>
 )
 
 const LoginFailed = ({ message }) => (
-  <Box>
+  <Card>
     <h1>{MSG_ERROR_LOGIN_FAILED}</h1>
     <Details message={message}/>
-  </Box>
+  </Card>
 )
 
 export {
@@ -67,6 +70,26 @@ export {
   LoginFailed
 };
 
-const Box = styled.div`
-  margin: 0 auto;
+const Card = styled.div`
+  background-color: ${colors.bgLight};
+  border-radius: 8px;
+  box-sizing: border-box;
+  box-shadow: 0 0 32px rgba(0, 0, 0, .12), 0 8px 32px rgba(0, 0, 0, .24);
+  color: ${colors.text};
+  margin: 32px auto;
+  padding: 40px;
+  width: 540px;
+
+  h1 {
+    color: ${colors.text};
+    font-size: 20px;
+    margin: 0;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  p {
+    line-height: 32px;
+  }
 `
+

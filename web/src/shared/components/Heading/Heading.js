@@ -6,17 +6,18 @@ const Heading = Text.withComponent('h3')
 Heading.displayName = 'Heading'
 
 Heading.defaultProps = {
-  regular: true,
   fontSize: 4,
   m: 0,
-  theme: theme
+  theme: theme,
+  fontWeight: 300
 }
 
 Heading.h1 = Heading.withComponent('h1')
 Heading.h1.defaultProps = {
-  bold: true,
-  fontSize: 6,
-  m: 0
+  fontWeight: '300',
+  fontSize: '36px',
+  lineHeight: '40px',
+  m: 0,
 }
 
 Heading.h2 = Heading.withComponent('h2')
