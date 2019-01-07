@@ -5,10 +5,10 @@ import PropTypes from 'prop-types'
 const LogoButton = ({
   src,
   version,
-  href
+  ...rest
 }) => {
   return (
-    <StyledLogo href={href}>
+    <StyledLogo {...rest}>
       <img src={src} />
       <em>v{version}</em>
     </StyledLogo>
@@ -74,6 +74,5 @@ const StyledLogo = styled.a`
     margin: 0;
   }
 `;
-
 
 export default LogoButton;

@@ -8,7 +8,7 @@ import { TopNav } from 'shared/components';
 import MenuItem from 'shared/components/Menu/MenuItem';
 import Button from 'shared/components/Button';
 import * as Icons from 'shared/components/Icon';
-import Text from 'shared/components/Text';
+
 export class AppBar extends React.Component {
 
   state = {
@@ -45,9 +45,7 @@ export class AppBar extends React.Component {
           user={username} >
           <MenuItem>
             <Icons.Lock fontSize={3} mr={1} />
-            <Text>
               Change Password
-            </Text>
           </MenuItem>
           <LogoutMenuItem onClick={this.onLogout}>
             <Button block>

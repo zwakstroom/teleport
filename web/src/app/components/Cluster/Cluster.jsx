@@ -18,6 +18,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Route, Switch, NavLink } from 'react-router-dom'
 import AppBar from './../AppBar/AppBar';
+import AppLogo from './../AppLogo';
 import { connect } from './../nuclear';
 import cfg from 'app/config';
 import clusterGetters from 'app/flux/sites/getters';
@@ -26,6 +27,7 @@ import ClusterNodes from './../ClusterNodes';
 import ClusterSessions from './../ClusterSessions';
 import ClusterSelector from './ClusterSelector';
 import { changeCluster } from 'app/flux/sites/actions';
+
 
 export class Cluster extends React.Component {
 
@@ -43,6 +45,7 @@ export class Cluster extends React.Component {
     return (
       <Flex height="100%">
         <ClusterNav>
+          <AppLogo />
           <SideNavItem as={props => (
             <NavLink className={props.className}
               exact
@@ -106,7 +109,6 @@ const Content = styled(Flex)`
 `
 
 const ClusterNav = styled(SideNav)`
-  padding-top: 80px;
   flex-shrink: 0;
 `
 
