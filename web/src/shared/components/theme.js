@@ -13,7 +13,7 @@ export const fonts = {
 
 export const regular = 400
 export const bold = 600
-export const fontSizes = [12, 14, 16, 20, 24, 32, 48];
+export const fontSizes = [12, 14, 16, 20, 24, 32, 36];
 export const fontWeights = { regular, bold }
 export const space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 
@@ -21,12 +21,21 @@ export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
-  error: '#FF1744',
-  warning: '#FA2A6A',
   subtle: '#EDF0F2',
-  success: '#00BFA5',
   highlight: '#E1F5FE',
   link: '#039BE5',
+
+  // ALERTS/NOTICE COLORS
+  error: '#FF1744',
+  errorDark: '#D41439',
+  warning: '#FF9100',
+  warningDark: '#F57C00',
+  info: '#039BE5',
+  infoDark: '#0288D1',
+  success: '#00BFA5',
+  successDark: '#26A69A',
+
+
 
   primary: '#00BFA5',
   primaryLight: '#00EAC3',
@@ -35,13 +44,6 @@ export const colors = {
   secondary: '#0C143D',
   secondaryLight: '#222C59',
   text: '#263238',
-
-  lightBlue: '#cdf',
-  blue: '#007aff',
-  darkBlue: '#049',
-  lightGreen: '#cec',
-  green: '#0a0',
-  darkGreen: '#060',
 
   bgError: '#FEE5ED',
   bgLight: '#FFFFFF',

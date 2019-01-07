@@ -8,46 +8,45 @@ const alertType = props => {
   switch (props.status) {
     case 'danger':
       return {
-        background: colors.bgError,
-        borderColor: colors.error,
-        color: colors.error
+        background: colors.error,
+        color: colors.light
       }
     case 'info':
       return {
-        background: colors.bgError,
-        color: colors.text
+        background: colors.info,
+        color: colors.light
       }
     case 'warning':
       return {
-        background: colors.bgError,
-        color: colors.text
+        background: colors.warning,
+        color: colors.light
       }
     case 'success':
       return {
-        background: colors.bgError,
-        color: colors.text
+        background: colors.success,
+        color: colors.light
       }
     default:
       return {
-        background: colors.bgError,
-        color: colors.text
+        background: colors.error,
+        color: colors.light
       }
   }
 }
 
 
 const Alert = styled.div`
-  border-width: 2px;
-  border-style: solid;
   border-radius: 8px;
-  font-weight: bold;
-  font-size: 14px;
+  box-sizing: border-box;
+  box-shadow: 0 0 2px rgba(0, 0, 0, .12),  0 2px 2px rgba(0, 0, 0, .24);
+  font-weight: 700;
+  font-size: 16px;
   line-height: 24px;
   margin: 0 0 16px 0;
-  padding: 8px 16px;
+  min-height: 56px;
+  padding: 16px;
   text-align: center;
   -webkit-font-smoothing: antialiased;
-  word-break: break-all;
 
   ${space}
   ${alertType}
