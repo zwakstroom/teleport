@@ -16,55 +16,61 @@ limitations under the License.
 
 import React from 'react';
 import styled from 'styled-components'
-import { Button } from '../../../../shared/components';
+import { Button } from 'shared/components';
+import * as Icons from 'shared/components/Icon';
+import { fade } from 'shared/components/utils/colorManipulator';
 
-const pickSso = type => {
+const SsoButton = props => {
+  const { color, Icon } = pickSso(props.type);
+  return (
+    <StyledButton color={color} block size="large" {...props}>
+      {Boolean(Icon) && (
+        <IconBox>
+          <Icon />
+        </IconBox>
+      )}
+      {props.children}
+    </StyledButton>
+  )
+}
+
+function pickSso(type) {
   switch (type) {
     case 'microsoft':
-      return { color: '#2672ec', className: 'fa fa-windows' };
+      return { color: '#2672ec', Icon: Icons.Windows };
     case 'github':
-      return { color: '#444444', className: 'fa fa-github' };
+      return { color: '#444444', Icon: Icons.Github };
     case 'bitbucket':
-      return { color: '#205081', className: 'fa fa-bitbucket' };
+      return { color: '#205081', Icon: Icons.BitBucket };
     case 'google':
-      return { color: '#dd4b39', className: 'fa fa-google' };
-    case 'btn-openid':
-      return { color: '#f7931e', className: 'fa fa-openid' };
+      return { color: '#dd4b39', Icon: Icons.Google };
+    case 'openid':
+      return { color: '#f7931e', Icon: Icons.OpenID };
     default:
     return { color: '#f7931e' };
   }
 }
 
-const SsoButton = props => {
-  const iconClass = pickSso(props.type).className;
-  return (
-    <Button block size="large" {...props} color="light">
-      { iconClass &&
-        <Icon>
-          <span className={iconClass} />
-        </Icon>
-      }
-      {props.children}
-    </Button>
-  )
-}
+const StyledButton = styled(Button)`
+  background-color: ${ props => props.color};
+  &:hover, &:focus {
+    background: ${ props => fade(props.color, 0.4 ) };
+  }
 
-export const StyledSsoButton = styled(SsoButton)`
-  background-color: ${ props => pickSso(props.type).color};
   position: relative;
   box-sizing: border-box;
   margin: 32px 0 0 0;
 `
 
-const Icon = styled.div`
+const IconBox = styled.div`
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 32px;
-  font-size: 1.6em;
+  font-size: 1.3em;
   text-align: center;
   border-right: 1px solid rgba(0,0,0,.2);
 `
 
-export default StyledSsoButton;
+export default SsoButton;

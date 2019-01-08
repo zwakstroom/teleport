@@ -367,18 +367,6 @@ Popover.propTypes = {
    */
   onEntering: PropTypes.func,
   /**
-   * Callback fired before the component is exiting.
-   */
-  onExit: PropTypes.func,
-  /**
-   * Callback fired when the component has exited.
-   */
-  onExited: PropTypes.func,
-  /**
-   * Callback fired when the component is exiting.
-   */
-  onExiting: PropTypes.func,
-  /**
    * If `true`, the popover is visible.
    */
   open: PropTypes.bool.isRequired,

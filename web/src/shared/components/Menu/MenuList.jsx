@@ -8,8 +8,6 @@ class MenuList extends React.Component {
     return (
       <StyledMenuList
         role="menu"
-        onKeyDown={this.handleKeyDown}
-        onBlur={this.handleBlur}
         {...other}
       >
         {children}

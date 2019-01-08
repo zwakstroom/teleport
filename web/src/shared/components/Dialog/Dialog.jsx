@@ -3,9 +3,7 @@ import Modal from './../Modal';
 import Box from './../Box';
 import styled from 'styled-components';
 
-/**
- * Dialogs are overlaid modal paper based components with a backdrop.
- */
+
 class Dialog extends React.Component {
 
   handleBackdropClick = event => {

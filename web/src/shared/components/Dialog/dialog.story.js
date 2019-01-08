@@ -20,7 +20,7 @@ const DialogTitle = props => {
       <Heading.h4>
         {children}
       </Heading.h4>
-      <Button size="sm" onClick={onClose} >
+      <Button size="small" onClick={onClose} >
         Close Icon
       </Button>
     </StyledDialogTitle>
@@ -65,6 +65,7 @@ class SampleDialog extends React.Component {
           Open dialog
         </Button>
         <Dialog
+          disableEscapeKeyDown={false}
           onClose={this.handleClose}
           aria-labelledby="customized-dialog-title"
           open={this.state.open}
