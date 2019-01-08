@@ -7,7 +7,7 @@ const Input = styled.input`
   appearance: none;
   border-radius: 4px;
   background: ${props => props.hasError ? props.theme.colors.bgError : '#FFF' };
-  border: ${props => props.hasError ? `2px solid ${props.theme.colors.warning}` : 'none' };
+  border: ${props => props.hasError ? `2px solid ${props.theme.colors.error}` : 'none' };
   box-sizing: border-box;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);
   color: ${colors.text};

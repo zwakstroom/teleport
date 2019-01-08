@@ -25,6 +25,7 @@ import SessionList from './SessionList';
 import InputSearch from './../InputSearch';
 import { DocumentTitle } from './../documentTitle';
 import withStorage from './../withStorage.jsx';
+import Typography from 'shared/components/Typography';
 
 const end = moment(new Date()).endOf('day').toDate();
 const start = moment(end).subtract(20, 'day').startOf('day').toDate();
@@ -62,7 +63,7 @@ export class ClusterSessions extends React.Component {
     return (
       <DocumentTitle title={title}>
         <Header>
-          <h1> Audit Log</h1>
+          <Typography.h1> Audit Log</Typography.h1>
           <InputSearch value={searchValue} onChange={this.onSearchValueChange} />
         </Header>
         <div className="grv-page grv-sessions">
@@ -108,10 +109,6 @@ const Header = styled.header`
   }
 
   h1 {
-    font-size: 36px;
-    font-weight: 300;
     float: left;
-    line-height: 40px;
-    margin: 0 40px 0 0;
   }
 `;

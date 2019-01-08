@@ -40,7 +40,7 @@ export const AppError = ({ category, err, message }) => {
     case AppErrorEnum.FAILED_TO_LOGIN:
       content = <LoginFailed err={err} message={message} />; break;
     case AppErrorEnum.NOT_FOUND:
-      content = <NotFound  err={err} message={message} />; break;
+      content = <NotFound  err={err} />; break;
     case AppErrorEnum.ACCESS_DENIED:
       content = <AccessDenied err={err} message={message} />; break;
     default:

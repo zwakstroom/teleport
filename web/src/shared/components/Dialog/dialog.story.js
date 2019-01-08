@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/react'
 import styled from 'styled-components';
 import Dialog from './../Dialog';
 import Box from './../Box';
-import Heading from './../Heading';
+import Typography from './../Typography';
 import Button from './../Button';
 
 storiesOf('Dialog', module)
@@ -17,9 +17,9 @@ const DialogTitle = props => {
   const { children, onClose } = props;
   return (
     <StyledDialogTitle>
-      <Heading.h4>
+      <Typography.h4>
         {children}
-      </Heading.h4>
+      </Typography.h4>
       <Button size="sm" onClick={onClose} >
         Close Icon
       </Button>

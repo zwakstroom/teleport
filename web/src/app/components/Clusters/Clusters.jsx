@@ -18,7 +18,7 @@ import React from 'react';
 import { connect } from './../nuclear';
 import AppBar from './../AppBar/AppBar';
 import siteGetters from 'app/flux/sites/getters';
-import { Flex, Box, Heading } from 'shared/components';
+import { Flex, Box, Typography } from 'shared/components';
 import CardCluster from './CardCluster';
 import { showCluster } from 'app/flux/sites/actions';
 
@@ -53,9 +53,7 @@ export class Clusters extends React.Component {
         </div>
         <div style={{ overflow: "auto" }}>
           <Box m={4}>
-            <Heading.h2>
-              Clusters
-            </Heading.h2>
+            <Typography.h1 m={2}>Clusters</Typography.h1>
             <Flex flexWrap="wrap" >
               {$clusters}
             </Flex>

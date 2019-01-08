@@ -12,11 +12,19 @@ Typography.h1 = styled(Text)`
   line-height: 40px;
 `;
 
+Typography.h1.defaultProps = {
+  as: "h1"
+}
+
 Typography.h2 = styled(Text)`
   font-weight: 300;
   font-size: 36px;
   line-height: 40px;
 `;
+
+Typography.h2.defaultProps = {
+  as: "h2"
+}
 
 Typography.h3 = styled(Text)`
   font-weight: 300;

@@ -41,7 +41,7 @@ const Details = ({err='', message=''}) => {
   );
 }
 
-const NotFound = ({err, message}) => (
+const NotFound = ({err}) => (
   <Card>
     <Typography.h1 mb={4} textAlign="center">{MSG_ERROR_NOT_FOUND}</Typography.h1>
     <Details err={err} message={MSG_ERROR_NOT_FOUND_DETAILS}/>

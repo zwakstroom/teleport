@@ -47,10 +47,10 @@ const color = props => {
 
   if(props.warning) {
     color = {
-      background: props.theme.colors.warning,
+      background: props.theme.colors.error,
 
       '&:hover, &:focus': {
-        background: props.theme.colors.error
+        background: props.theme.colors.errorDark
       },
 
       '&:active': {

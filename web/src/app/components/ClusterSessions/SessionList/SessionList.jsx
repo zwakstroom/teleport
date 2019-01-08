@@ -92,49 +92,47 @@ class SessionList extends React.Component {
     // always display active sessions first
     const data = [...active, ...stored];
     return (
-      <div>
-        <Table rowCount={data.length} data={data}>
-            <Column
-              header={<Cell> Session ID </Cell> }
-              cell={
-                <SessionIdCell canJoin={canJoin} container={this} />
-              }
-            />
-            <Column
-              header={<Cell> User </Cell> }
-              cell={<UsersCell /> }
-            />
-            <Column
-              columnKey="nodeIp"
-              header={
-                <Cell>Node</Cell>
-              }
-              cell={<NodeCell /> }
-            />
-            <Column
-              columnKey="created"
-              header={
-                <SortHeaderCell
-                  sortDir={this.state.colSortDirs.created}
-                  onSortChange={this.onSortChange}
-                  title="Created (UTC)"
-                />
-              }
-              cell={<DateCreatedCell /> }
-            />
-            <Column
-              columnKey="duration"
-              header={
-                <SortHeaderCell
-                  sortDir={this.state.colSortDirs.duration}
-                  onSortChange={this.onSortChange}
-                  title="Duration"
-                />
-              }
-              cell={<DurationCell /> }
-            />
-          </Table>
-      </div>
+      <Table rowCount={data.length} data={data}>
+          <Column
+            header={<Cell> Session ID </Cell> }
+            cell={
+              <SessionIdCell canJoin={canJoin} container={this} />
+            }
+          />
+          <Column
+            header={<Cell> User </Cell> }
+            cell={<UsersCell /> }
+          />
+          <Column
+            columnKey="nodeIp"
+            header={
+              <Cell>Node</Cell>
+            }
+            cell={<NodeCell /> }
+          />
+          <Column
+            columnKey="created"
+            header={
+              <SortHeaderCell
+                sortDir={this.state.colSortDirs.created}
+                onSortChange={this.onSortChange}
+                title="Created (UTC)"
+              />
+            }
+            cell={<DateCreatedCell /> }
+          />
+          <Column
+            columnKey="duration"
+            header={
+              <SortHeaderCell
+                sortDir={this.state.colSortDirs.duration}
+                onSortChange={this.onSortChange}
+                title="Duration"
+              />
+            }
+            cell={<DurationCell /> }
+          />
+        </Table>
     )
   }
 }

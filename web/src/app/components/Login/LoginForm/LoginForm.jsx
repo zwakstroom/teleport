@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Card, Heading, Input, Label, Button } from '../../../../shared/components';
+import { Card, Typography, Input, Label, Button } from '../../../../shared/components';
 import * as Alerts from '../../../../shared/components/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
@@ -119,7 +119,7 @@ export default class LoginForm extends React.Component {
 
     return (
       <React.Fragment>
-        <Label mb={1} hasError={userError}>
+        <Label hasError={userError}>
           Email
           {userError && errors.user}
         </Label>
@@ -145,7 +145,7 @@ export default class LoginForm extends React.Component {
           placeholder="Password"/>
         {this.isOTP() && (
           <>
-            <Label mt={3} mb={1} hasError={tokenError}>
+            <Label mt={3} hasError={tokenError}>
               Two factor token
               {tokenError && errors.token}
             </Label>
@@ -175,9 +175,9 @@ export default class LoginForm extends React.Component {
           {
             props => (
               <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">
-                <Heading.h5 textAlign="center" mb="3" color="light">
+                <Typography.h1 textAlign="center" mb="3" color="light">
                   SIGN INTO TELEPORT
-                </Heading.h5>
+                </Typography.h1>
                 { isFailed && <Alerts.Danger> {message} </Alerts.Danger>  }
                 {this.renderInputFields(props)}
                 {this.renderLoginBtn(props.handleSubmit)}

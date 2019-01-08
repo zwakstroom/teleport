@@ -204,41 +204,39 @@ class NodeList extends React.Component {
     }
 
     return (
-      <div>
-        <Table rowCount={data.length} data={data}>
-          <Column
-            columnKey="hostname"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.hostname}
-                onSortChange={this.onSortChange}
-                title="Hostname"
-              />
-            }
-            cell={<TextCell/> }
-          />
-          <Column
-            columnKey="addr"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.addr}
-                onSortChange={this.onSortChange}
-                title="Address"
-              />
-            }
-            cell={<TextCell/> }
-          />
-          <Column
-            header={<Cell>Labels</Cell> }
-            cell={<TagCell/> }
-          />
-          <Column
-            onLoginClick={onLoginClick}
-            header={<Cell>Login as</Cell> }
-            cell={<LoginCell logins={logins}/> }
-          />
-        </Table>
-      </div>
+      <Table rowCount={data.length} data={data}>
+        <Column
+          columnKey="hostname"
+          header={
+            <SortHeaderCell
+              sortDir={this.state.colSortDirs.hostname}
+              onSortChange={this.onSortChange}
+              title="Hostname"
+            />
+          }
+          cell={<TextCell/> }
+        />
+        <Column
+          columnKey="addr"
+          header={
+            <SortHeaderCell
+              sortDir={this.state.colSortDirs.addr}
+              onSortChange={this.onSortChange}
+              title="Address"
+            />
+          }
+          cell={<TextCell/> }
+        />
+        <Column
+          header={<Cell>Labels</Cell> }
+          cell={<TagCell/> }
+        />
+        <Column
+          onLoginClick={onLoginClick}
+          header={<Cell>Login as</Cell> }
+          cell={<LoginCell logins={logins}/> }
+        />
+      </Table>
     )
   }
 }
