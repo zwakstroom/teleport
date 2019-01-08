@@ -9,11 +9,8 @@ const AppLogo = ({
   version = '3.1.2.beta',
 }) => {
   return (
-    <LogoButton as={props => (
-      <NavLink className={props.className} to={cfg.routes.app} >
-        <img src={teleportLogo} />
-        <em>{version}</em>
-      </NavLink>
+    <LogoButton src={teleportLogo} version={version} as={props => (
+      <NavLink {...props} to={cfg.routes.app} />
     )}/>
   );
 };

@@ -18,7 +18,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { sortBy } from 'lodash';
 import { isMatch } from 'app/lib/objectUtils';
-import { Table, Column, Cell, TextCell, SortHeaderCell, SortTypes, EmptyIndicator } from 'shared/components/DataTable';
+import { TablePaged, Column, Cell, TextCell, SortHeaderCell, SortTypes, EmptyIndicator } from 'shared/components/DataTable';
 import cfg from 'app/config';
 import history from 'app/services/history';
 
@@ -204,7 +204,7 @@ class NodeList extends React.Component {
     }
 
     return (
-      <Table rowCount={data.length} data={data}>
+      <TablePaged rowCount={data.length} data={data} pageSize={100}>
         <Column
           columnKey="hostname"
           header={
@@ -236,7 +236,7 @@ class NodeList extends React.Component {
           header={<Cell>Login as</Cell> }
           cell={<LoginCell logins={logins}/> }
         />
-      </Table>
+      </TablePaged>
     )
   }
 }

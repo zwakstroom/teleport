@@ -13,6 +13,7 @@ function makeFontIcon(name, iconClassName) {
   return Icon;
 }
 
+
 export const AddUsers = makeFontIcon('AddUsers', 'icon-users-plus');
 export const Amex = makeFontIcon('Amex', 'icon-cc-amex');
 export const Apartment = makeFontIcon('Apartment', 'icon-apartment');
@@ -23,7 +24,7 @@ export const ArrowLeft = makeFontIcon('ArrowLeft', 'icon-chevron-left');
 export const ArrowRight = makeFontIcon('ArrowRight', 'icon-chevron-right');
 export const ArrowsVertical = makeFontIcon('ArrowsVertical', 'icon-chevrons-expand-vertical');
 export const ArrowUp = makeFontIcon('ArrowUp', 'icon-chevron-up');
-export const Bitbucket = makeFontIcon('Bitbucket', 'icon-bitbucket');
+export const BitBucket = makeFontIcon('Bitbucket', 'icon-bitbucket');
 export const Bubble = makeFontIcon('Bubble', 'icon-bubble');
 export const Calendar = makeFontIcon('Calendar', 'icon-calendar-empty');
 export const Camera = makeFontIcon('Camera', 'icon-camera');
