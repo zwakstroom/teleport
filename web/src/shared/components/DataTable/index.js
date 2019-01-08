@@ -9,9 +9,12 @@ import {
   EmptyIndicator
 } from './Table';
 
+import TablePaged from './Paged';
+
 export {
   Column,
   Table,
+  TablePaged,
   Cell,
   TextCell,
   SortHeaderCell,

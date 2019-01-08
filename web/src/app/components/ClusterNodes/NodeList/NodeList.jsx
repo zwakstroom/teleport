@@ -18,7 +18,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { sortBy } from 'lodash';
 import { isMatch } from 'app/lib/objectUtils';
-import { Table, Column, Cell, TextCell, SortHeaderCell, SortTypes, EmptyIndicator } from 'shared/components/DataTable';
+import { TablePaged, Column, Cell, TextCell, SortHeaderCell, SortTypes, EmptyIndicator } from 'shared/components/DataTable';
 import cfg from 'app/config';
 import history from 'app/services/history';
 
@@ -204,41 +204,39 @@ class NodeList extends React.Component {
     }
 
     return (
-      <div>
-        <Table rowCount={data.length} data={data}>
-          <Column
-            columnKey="hostname"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.hostname}
-                onSortChange={this.onSortChange}
-                title="Hostname"
-              />
-            }
-            cell={<TextCell/> }
-          />
-          <Column
-            columnKey="addr"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.addr}
-                onSortChange={this.onSortChange}
-                title="Address"
-              />
-            }
-            cell={<TextCell/> }
-          />
-          <Column
-            header={<Cell>Labels</Cell> }
-            cell={<TagCell/> }
-          />
-          <Column
-            onLoginClick={onLoginClick}
-            header={<Cell>Login as</Cell> }
-            cell={<LoginCell logins={logins}/> }
-          />
-        </Table>
-      </div>
+      <TablePaged rowCount={data.length} data={data} pageSize={100}>
+        <Column
+          columnKey="hostname"
+          header={
+            <SortHeaderCell
+              sortDir={this.state.colSortDirs.hostname}
+              onSortChange={this.onSortChange}
+              title="Hostname"
+            />
+          }
+          cell={<TextCell/> }
+        />
+        <Column
+          columnKey="addr"
+          header={
+            <SortHeaderCell
+              sortDir={this.state.colSortDirs.addr}
+              onSortChange={this.onSortChange}
+              title="Address"
+            />
+          }
+          cell={<TextCell/> }
+        />
+        <Column
+          header={<Cell>Labels</Cell> }
+          cell={<TagCell/> }
+        />
+        <Column
+          onLoginClick={onLoginClick}
+          header={<Cell>Login as</Cell> }
+          cell={<LoginCell logins={logins}/> }
+        />
+      </TablePaged>
     )
   }
 }

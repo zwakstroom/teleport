@@ -4,6 +4,7 @@ import { storiesOf } from '@storybook/react'
 import match from './../utils/match';
 import {
   Table,
+  TablePaged,
   Column,
   TextCell,
   SortHeaderCell,
@@ -12,14 +13,19 @@ import {
 } from './../DataTable';
 
 storiesOf('DataTable', module)
-  .add('Basic', () => (
-    <TableSample data={data}/>
+  .add('DataTable', () => (
+    <TableSample TableComponent={Table} data={data}/>
   ))
-  .add('Empty Table', () => (
-    <TableSample data={[]}/>
+  .add('Empty', () => (
+    <TableSample TableComponent={Table} data={[]}/>
   ))
   .add('Nothing found', () => (
-    <TableSample data={data} filter="no_results"/>
+    <TableSample TableComponent={Table} data={data} filter="no_results"/>
+  ))
+
+storiesOf('DataTable/Paged', module)
+  .add('Page size 3', () => (
+    <TableSample TableComponent={TablePaged} tableProps={ { pageSize: 3 }} data={data}/>
   ))
 
 class TableSample extends React.Component {
@@ -75,7 +81,7 @@ class TableSample extends React.Component {
   }
 
   render() {
-    let { data } = this.props;
+    let { data, TableComponent, tableProps } = this.props;
     data = this.sortAndFilter(data);
     const nothingFound = data.length === 0 && this.state.filter.length > 0;
 
@@ -87,8 +93,14 @@ class TableSample extends React.Component {
       )
     }
 
+    const props = {
+      rowCount: data.length,
+      data: data,
+      ...tableProps
+    }
+
     return (
-      <Table rowCount={data.length} data={data} >
+      <TableComponent {...props} >
         <Column
           columnKey="hostname"
           header={
@@ -111,7 +123,7 @@ class TableSample extends React.Component {
           }
           cell={<TextCell /> }
         />
-      </Table>
+      </TableComponent>
     )
   }
 }
@@ -127,4 +139,12 @@ const data = [{
 {
   hostname: <strong>host-c</strong>,
   addr: '192.168.7.3'
-}]
+},
+{
+  hostname: <strong>host-d</strong>,
+  addr: '192.168.7.4'
+},
+{
+  hostname: <strong>host-3</strong>,
+  addr: '192.168.7.4'
+}];
