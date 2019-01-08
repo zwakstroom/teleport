@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 import auth from "app/services/auth";
-import api from "app/services/api";
 import session from "app/services/session";
 import Logger from "app/lib/logger";
 import * as status from "./../status/actions";

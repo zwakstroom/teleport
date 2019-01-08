@@ -14,18 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
-import classnames from 'classnames';
-
-export const Danger = props => (  
-  <div className={classnames("grv-alert grv-alert-danger", props.className)}>{props.children}</div>
-)
-
-export const Info = props => (  
-  <div className={classnames("grv-alert grv-alert-info", props.className)}>{props.children}</div>
-)
-  
-export const Success = props => (  
-  <div className={classnames("grv-alert grv-alert-success", props.className)}> <i className="fa fa-check m-r-xs" /> {props.children}</div>
-)
-
+import PasswordForm from './PasswordForm';
+export default PasswordForm;

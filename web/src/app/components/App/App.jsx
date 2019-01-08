@@ -26,6 +26,7 @@ import withAuth from './../withAuth';
 import FeatureActivator from './../../featureActivator';
 import Clusters from './../Clusters';
 import Cluster from './../Cluster';
+import Account from './../Settings';
 import cfg from 'app/config';
 
 class App extends Component {
@@ -55,6 +56,7 @@ class App extends Component {
       <StyledApp>
         <Switch>
           <Route exact path={cfg.routes.app} component={Clusters} />
+          <Route exact path={cfg.routes.settingsAccount} component={Account} />
           <Route path={cfg.routes.cluster}
             render={ ({match}) => (
               <Cluster path={match.path} clusterId={match.params.clusterId} />

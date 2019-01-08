@@ -18,7 +18,7 @@ import React from 'react';
 import styled from 'styled-components'
 import PropTypes from 'prop-types';
 import { Auth2faTypeEnum } from 'app/services/enums';
-import { Card, Input, Label, Button } from '../../../../shared/components';
+import { Card, Input, Label, Button } from 'shared/components';
 import { Formik } from 'formik';
 import Invite2faData from './TwoFaInfo';
 
@@ -80,11 +80,9 @@ export class InviteForm extends React.Component {
     const tokenError = errors.token && touched.token;
     const { user } = this.props.invite;
 
-
     return (
       <React.Fragment>
         <UserName>{user}</UserName>
-
         <Label hasError={passError}>
           {passError || "Password"}
         </Label>
