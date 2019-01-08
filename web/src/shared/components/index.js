@@ -7,7 +7,7 @@ import Heading from './Heading';
 import Box from './Box';
 import Indicator from './Indicator';
 import SideNav, { SideNavItem } from './SideNav';
-import TopNav, { TopNavItem, TopNavLogo } from './TopNav';
+import TopNav, { TopNavItem } from './TopNav';
 import Flex from './Flex';
 
 export {
@@ -23,6 +23,5 @@ export {
   SideNavItem,
   Text,
   TopNav,
-  TopNavItem,
-  TopNavLogo
+  TopNavItem
 }
