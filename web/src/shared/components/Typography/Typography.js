@@ -29,10 +29,16 @@ Typography.h2.defaultProps = {
 }
 
 Typography.h3 = styled(Text)`
-  font-weight: 300;
-  font-size: 36px;
-  line-height: 40px;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 24px;
+  margin: 0 0 24px 0;
 `;
+
+Typography.h3.defaultProps = {
+  as: "h3",
+  margin: "0 0 24px 0",
+}
 
 Typography.h4 = styled(Text)`
   font-weight: 300;

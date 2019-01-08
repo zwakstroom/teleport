@@ -23,7 +23,7 @@ import { fade } from 'shared/components/utils/colorManipulator';
 const SsoButton = props => {
   const { color, Icon } = pickSso(props.type);
   return (
-    <StyledButton color={color} block size="large" {...props}>
+    <StyledButton color={color} block {...props}>
       {Boolean(Icon) && (
         <IconBox>
           <Icon />
@@ -53,13 +53,19 @@ function pickSso(type) {
 
 const StyledButton = styled(Button)`
   background-color: ${ props => props.color};
+
   &:hover, &:focus {
     background: ${ props => fade(props.color, 0.4 ) };
   }
-
+  height: 48px;
+  line-height: 48px;
   position: relative;
   box-sizing: border-box;
-  margin: 32px 0 0 0;
+  margin: 0 0 32px 0;
+
+  &:last-child {
+    margin: 0;
+  }
 `
 
 const IconBox = styled.div`
@@ -67,8 +73,8 @@ const IconBox = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 32px;
-  font-size: 1.3em;
+  width: 56px;
+  font-size: 24px;
   text-align: center;
   border-right: 1px solid rgba(0,0,0,.2);
 `

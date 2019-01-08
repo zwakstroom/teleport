@@ -21,7 +21,7 @@ export const colors = {
   accent: '#FA2A6A',
   dark: '#000',
   light: '#fff',
-  subtle: '#EDF0F2',
+  subtle: '#CFD8DC',
   highlight: '#E1F5FE',
   link: '#039BE5',
 

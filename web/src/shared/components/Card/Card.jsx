@@ -8,6 +8,10 @@ const Card = styled(Box)`
   border-radius: 12px;
   background-color: ${props => props.theme.colors.bgSecondary};
   box-sizing: border-box;
+
+  footer {
+    background-color: ${props => props.theme.colors.bgPrimary};
+  }
 `
 
 Card.propTypes = {

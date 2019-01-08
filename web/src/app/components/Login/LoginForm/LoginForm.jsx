@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Card, Typography, Input, Label, Button } from '../../../../shared/components';
+import { Card, Box, Typography, Input, Label, Button } from '../../../../shared/components';
 import * as Alerts from '../../../../shared/components/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
@@ -104,11 +104,13 @@ export default class LoginForm extends React.Component {
     }
 
     return (
-      <SsoButtonList
-        prefixText="Login with "
-        isDisabled={attempt.isProcessing}
-        providers={authProviders}
-        onClick={this.onLoginWithSso} />
+      <Box p="5">
+        <SsoButtonList
+          prefixText="Login with "
+          isDisabled={attempt.isProcessing}
+          providers={authProviders}
+          onClick={this.onLoginWithSso} />
+      </Box>
     )
   }
 
@@ -174,14 +176,18 @@ export default class LoginForm extends React.Component {
         >
           {
             props => (
-              <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px" p="5">
-                <Typography.h1 textAlign="center" mb="3" color="light">
+              <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="456px">
+                <Box p="5">
+                <Typography.h3 textAlign="center" color="light">
                   SIGN INTO TELEPORT
-                </Typography.h1>
+                </Typography.h3>
                 { isFailed && <Alerts.Danger> {message} </Alerts.Danger>  }
                 {this.renderInputFields(props)}
                 {this.renderLoginBtn(props.handleSubmit)}
-                {this.renderSsoBtns()}
+                </Box>
+                <footer>
+                  {this.renderSsoBtns()}
+                </footer>
               </Card>
             )
         }
