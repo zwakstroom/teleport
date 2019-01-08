@@ -17,7 +17,6 @@ limitations under the License.
 import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom'
 import styled from 'styled-components';
-import AppLogo from './../AppLogo';
 import { connect } from './../nuclear';
 import { getters } from 'app/flux/app/appStore';
 import { Failed } from './../Errors';
@@ -28,7 +27,6 @@ import FeatureActivator from './../../featureActivator';
 import Clusters from './../Clusters';
 import Cluster from './../Cluster';
 import cfg from 'app/config';
-import teleportLogoSvg from 'app/../shared/assets/images/teleport-logo.svg';
 
 class App extends Component {
 
@@ -55,7 +53,6 @@ class App extends Component {
 
     return (
       <StyledApp>
-        <TeleportLogo src={teleportLogoSvg} />
         <Switch>
           <Route exact path={cfg.routes.app} component={Clusters} />
           <Route path={cfg.routes.cluster}
@@ -81,9 +78,4 @@ const StyledApp = styled.div`
   position: fixed;
   height: 100%;
   width: 100%;
-`
-
-const TeleportLogo = styled(AppLogo)`
-  position: absolute;
-
 `

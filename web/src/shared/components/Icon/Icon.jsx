@@ -2,213 +2,114 @@ import styled from 'styled-components'
 import { space, fontSize, width, color } from 'styled-system'
 import './../../assets/icomoon/style.css';
 
-const fontIconClasses = {
-  "CarrotDown": 'icon-caret-down',
-  "CarrotUp": 'icon-caret-up',
-  "CarrotLeft": 'icon-caret-left',
-  "CarrotRight": 'icon-caret-right',
-  "CarrotSort": 'icon-sort',
-  "Earth": 'icon-earth',
-  "CircleCheck": 'icon-checkmark-circle',
-  "CircleCross": 'icon-cross-circle',
-  "CircleStop": 'icon-stop-circle',
-  "CirclePlay": 'icon-play-circle',
-  "CirclePause": 'icon-pause-circle',
-  "Magnifier": 'icon-magnifier',
-  "Cluster": 'icon-site-map',
-  "Ellipsis": 'icon-ellipsis',
-  "Github": 'icon-github',
-  "Google": 'icon-google-plus2',
-  "SortDesc": 'icon-chevron-down',
-  "SortAsc": 'icon-chevron-up',
-  "Sort": 'icon-chevrons-expand-vertical',
-  "CardView": 'icon-th-large',
-  "CardViewSmall": 'icon-th',
-  "ListView": 'icon-th-list',
-  "Twitter": 'icon-twitter',
-  "Facebook": 'icon-facebook',
-  "CreditCard": 'icon-credit-card1',
-  "CaretLeft": 'icon-caret-left',
-  "CaretRight": 'icon-caret-right',
-  "Apple": 'icon-apple',
-  "Windows": 'icon-windows',
-  "Linux": 'icon-linux',
-  "Visa": 'icon-cc-visa',
-  "MasterCard": 'icon-cc-mastercard',
-  "Discover": 'icon-cc-discover',
-  "Amex": 'icon-cc-amex',
-  "Paypal": 'icon-cc-paypal',
-  "Stripe": 'icon-cc-stripe',
-  "CreditCardAlt": 'icon-credit-card-alt',
-  "Home": 'icon-home3',
-  "Apartment": 'icon-apartment',
-  "Pencil": 'icon-pencil',
-  "Edit": 'icon-pencil4',
-  "Cloud": 'icon-cloud',
-  "Database": 'icon-database',
-  "Server": 'icon-server',
-  "ShieldCheck": 'icon-shield-check',
-  "Lock": 'icon-lock',
-  "Unlock": 'icon-unlock',
-  "Cog": 'icon-cog',
-  "Trash": 'icon-trash2',
-  "Archive": 'icon-archive2',
-  "Clipboard": 'icon-clipboard-text',
-  "ClipboardUser": 'icon-clipboard-user',
-  "License": 'icon-license2',
-  "Play": 'icon-play',
-  "Camera": 'icon-camera',
-  "Label": 'icon-label',
-  "Profile": 'icon-profile',
-  "User": 'icon-user',
-  "Users": 'icon-users2',
-  "AddUsers": 'icon-users-plus',
-  "CreditCardAlt2": 'icon-credit-card',
-  "Cash": 'icon-cash-dollar',
-  "Phone": 'icon-telephone',
-  "MapMarker": 'icon-map-marker',
-  "Calendar": 'icon-calendar-empty',
-  "Signal": 'icon-signal',
-  "SmartPhone": 'icon-smartphone-embed',
-  "Tablet": 'icon-tablet2',
-  "Window": 'icon-window',
-  "Power": 'icon-power',
-  "Bubble": 'icon-bubble',
-  "Graph": 'icon-graph',
-  "Shart": 'icon-chart-bars',
-  "Speed": 'icon-speed-fast',
-  "Planet": 'icon-planet',
-  "VolumeUp": 'icon-volume-high',
-  "Mute": 'icon-mute',
-  "Lan": 'icon-lan',
-  "LanAlt": 'icon-lan2',
-  "Wifi": 'icon-wifi',
-  "Cli": 'icon-cli',
-  "Code": 'icon-code',
-  "Link": 'icon-link',
-  "Cross": 'icon-cross',
-  "ListCheck": 'icon-list3',
-  "ListBullet": 'icon-list4',
-  "ArrowUp": 'icon-chevron-up',
-  "ArrowDown": 'icon-chevron-down',
-  "ArrowLeft": 'icon-chevron-left',
-  "ArrowRight": 'icon-chevron-right',
-  "ArrowsVertical": 'icon-chevrons-expand-vertical',
-  "Expand": 'icon-frame-expand',
-  "Contract": 'icon-frame-contract',
-  "Layers": 'icon-layers',
-  "Spinner": 'icon-spinner8',
-  "FacebookSquare": 'icon-facebook2',
-  "Youtube": 'icon-youtube',
-  "Linkedin": 'icon-linkedin',
-}
-
-function makeFontIcon(kind) {
-  const className = `icon ${fontIconClasses[kind]}`;
+function makeFontIcon(name, iconClassName) {
+  const className = `icon ${iconClassName}`;
   const Icon = styled.span.attrs({className: className})`
     ${space} ${width} ${color} ${fontSize}
   `
 
-  Icon.displayName = `Icon.${kind}`;
+  Icon.displayName = `Icon.${name}`;
 
   return Icon;
 }
 
-export const CarrotDown = makeFontIcon('CarrotDown');
-export const CarrotUp = makeFontIcon('CarrotUp');
-export const CarrotLeft = makeFontIcon('CarrotLeft');
-export const CarrotRight = makeFontIcon('CarrotRight');
-export const CarrotSort = makeFontIcon('CarrotSort');
-export const Earth = makeFontIcon('Earth');
-export const CircleCheck = makeFontIcon('CircleCheck');
-export const CircleCross = makeFontIcon('CircleCross');
-export const CircleStop = makeFontIcon('CircleStop');
-export const CirclePlay = makeFontIcon('CirclePlay');
-export const CirclePause = makeFontIcon('CirclePause');
-export const Magnifier = makeFontIcon('Magnifier');
-export const Cluster = makeFontIcon('Cluster');
-export const Ellipsis = makeFontIcon('Ellipsis');
-export const Github = makeFontIcon('Github');
-export const Google = makeFontIcon('Google');
-export const SortDesc = makeFontIcon('SortDesc');
-export const SortAsc = makeFontIcon('SortAsc');
-export const Sort = makeFontIcon('Sort');
-export const CardView = makeFontIcon('CardView');
-export const CardViewSmall = makeFontIcon('CardViewSmall');
-export const ListView = makeFontIcon('ListView');
-export const Twitter = makeFontIcon('Twitter');
-export const Facebook = makeFontIcon('Facebook');
-export const CreditCard = makeFontIcon('CreditCard');
-export const CaretLeft = makeFontIcon('CaretLeft');
-export const CaretRight = makeFontIcon('CaretRight');
-export const Apple = makeFontIcon('Apple');
-export const Windows = makeFontIcon('Windows');
-export const Linux = makeFontIcon('Linux');
-export const Visa = makeFontIcon('Visa');
-export const MasterCard = makeFontIcon('MasterCard');
-export const Discover = makeFontIcon('Discover');
-export const Amex = makeFontIcon('Amex');
-export const Paypal = makeFontIcon('Paypal');
-export const Stripe = makeFontIcon('Stripe');
-export const CreditCardAlt = makeFontIcon('CreditCardAlt');
-export const Home = makeFontIcon('Home');
-export const Apartment = makeFontIcon('Apartment');
-export const Pencil = makeFontIcon('Pencil');
-export const Edit = makeFontIcon('Edit');
-export const Cloud = makeFontIcon('Cloud');
-export const Database = makeFontIcon('Database');
-export const Server = makeFontIcon('Server');
-export const ShieldCheck = makeFontIcon('ShieldCheck');
-export const Lock = makeFontIcon('Lock');
-export const Unlock = makeFontIcon('Unlock');
-export const Cog = makeFontIcon('Cog');
-export const Trash = makeFontIcon('Trash');
-export const Archive = makeFontIcon('Archive');
-export const Clipboard = makeFontIcon('Clipboard');
-export const ClipboardUser = makeFontIcon('ClipboardUser');
-export const License = makeFontIcon('License');
-export const Play = makeFontIcon('Play');
-export const Camera = makeFontIcon('Camera');
-export const Label = makeFontIcon('Label');
-export const Profile = makeFontIcon('Profile');
-export const User = makeFontIcon('User');
-export const Users = makeFontIcon('Users');
-export const AddUsers = makeFontIcon('AddUsers');
-export const CreditCardAlt2 = makeFontIcon('CreditCardAlt2');
-export const Cash = makeFontIcon('Cash');
-export const Phone = makeFontIcon('Phone');
-export const MapMarker = makeFontIcon('MapMarker');
-export const Calendar = makeFontIcon('Calendar');
-export const Signal = makeFontIcon('Signal');
-export const SmartPhone = makeFontIcon('SmartPhone');
-export const Tablet = makeFontIcon('Tablet');
-export const Window = makeFontIcon('Window');
-export const Power = makeFontIcon('Power');
-export const Bubble = makeFontIcon('Bubble');
-export const Graph = makeFontIcon('Graph');
-export const Shart = makeFontIcon('Shart');
-export const Speed = makeFontIcon('Speed');
-export const Planet = makeFontIcon('Planet');
-export const VolumeUp = makeFontIcon('VolumeUp');
-export const Mute = makeFontIcon('Mute');
-export const Lan = makeFontIcon('Lan');
-export const LanAlt = makeFontIcon('LanAlt');
-export const Wifi = makeFontIcon('Wifi');
-export const Cli = makeFontIcon('Cli');
-export const Code = makeFontIcon('Code');
-export const Link = makeFontIcon('Link');
-export const Cross = makeFontIcon('Cross');
-export const ListCheck = makeFontIcon('ListCheck');
-export const ListBullet = makeFontIcon('ListBullet');
-export const ArrowUp = makeFontIcon('ArrowUp');
-export const ArrowDown = makeFontIcon('ArrowDown');
-export const ArrowLeft = makeFontIcon('ArrowLeft');
-export const ArrowRight = makeFontIcon('ArrowRight');
-export const ArrowsVertical = makeFontIcon('ArrowsVertical');
-export const Expand = makeFontIcon('Expand');
-export const Contract = makeFontIcon('Contract');
-export const Layers = makeFontIcon('Layers');
-export const Spinner = makeFontIcon('Spinner');
-export const FacebookSquare = makeFontIcon('FacebookSquare');
-export const Youtube = makeFontIcon('Youtube');
-export const Linkedin = makeFontIcon('Linkedin');
+export const AddUsers = makeFontIcon('AddUsers', 'icon-users-plus');
+export const Amex = makeFontIcon('Amex', 'icon-cc-amex');
+export const Apartment = makeFontIcon('Apartment', 'icon-apartment');
+export const Apple = makeFontIcon('Apple', 'icon-apple');
+export const Archive = makeFontIcon('Archive', 'icon-archive2');
+export const ArrowDown = makeFontIcon('ArrowDown', 'icon-chevron-down');
+export const ArrowLeft = makeFontIcon('ArrowLeft', 'icon-chevron-left');
+export const ArrowRight = makeFontIcon('ArrowRight', 'icon-chevron-right');
+export const ArrowsVertical = makeFontIcon('ArrowsVertical', 'icon-chevrons-expand-vertical');
+export const ArrowUp = makeFontIcon('ArrowUp', 'icon-chevron-up');
+export const Bitbucket = makeFontIcon('Bitbucket', 'icon-bitbucket');
+export const Bubble = makeFontIcon('Bubble', 'icon-bubble');
+export const Calendar = makeFontIcon('Calendar', 'icon-calendar-empty');
+export const Camera = makeFontIcon('Camera', 'icon-camera');
+export const CardView = makeFontIcon('CardView', 'icon-th-large');
+export const CardViewSmall = makeFontIcon('CardViewSmall', 'icon-th');
+export const CaretLeft = makeFontIcon('CaretLeft', 'icon-caret-left');
+export const CaretRight = makeFontIcon('CaretRight', 'icon-caret-right');
+export const CarrotDown = makeFontIcon('CarrotDown', 'icon-caret-down');
+export const CarrotLeft = makeFontIcon('CarrotLeft', 'icon-caret-left');
+export const CarrotRight = makeFontIcon('CarrotRight', 'icon-caret-right');
+export const CarrotSort = makeFontIcon('CarrotSort', 'icon-sort');
+export const CarrotUp = makeFontIcon('CarrotUp', 'icon-caret-up');
+export const Cash = makeFontIcon('Cash', 'icon-cash-dollar');
+export const CircleCheck = makeFontIcon('CircleCheck', 'icon-checkmark-circle');
+export const CircleCross = makeFontIcon('CircleCross', 'icon-cross-circle');
+export const CirclePause = makeFontIcon('CirclePause', 'icon-pause-circle');
+export const CirclePlay = makeFontIcon('CirclePlay', 'icon-play-circle');
+export const CircleStop = makeFontIcon('CircleStop', 'icon-stop-circle');
+export const Cli = makeFontIcon('Cli', 'icon-cli');
+export const Clipboard = makeFontIcon('Clipboard', 'icon-clipboard-text');
+export const ClipboardUser = makeFontIcon('ClipboardUser', 'icon-clipboard-user');
+export const Cloud = makeFontIcon('Cloud', 'icon-cloud');
+export const Cluster = makeFontIcon('Cluster', 'icon-site-map');
+export const Code = makeFontIcon('Code', 'icon-code');
+export const Cog = makeFontIcon('Cog', 'icon-cog');
+export const Contract = makeFontIcon('Contract', 'icon-frame-contract');
+export const CreditCard = makeFontIcon('CreditCard', 'icon-credit-card1');
+export const CreditCardAlt = makeFontIcon('CreditCardAlt', 'icon-credit-card-alt');
+export const CreditCardAlt2 = makeFontIcon('CreditCardAlt2', 'icon-credit-card');
+export const Cross = makeFontIcon('Cross', 'icon-cross');
+export const Database = makeFontIcon('Database', 'icon-database');
+export const Discover = makeFontIcon('Discover', 'icon-cc-discover');
+export const Earth = makeFontIcon('Earth', 'icon-earth');
+export const Edit = makeFontIcon('Edit', 'icon-pencil4');
+export const Ellipsis = makeFontIcon('Ellipsis', 'icon-ellipsis');
+export const Expand = makeFontIcon('Expand', 'icon-frame-expand');
+export const Facebook = makeFontIcon('Facebook', 'icon-facebook');
+export const FacebookSquare = makeFontIcon('FacebookSquare', 'icon-facebook2');
+export const Github = makeFontIcon('Github', 'icon-github');
+export const Google = makeFontIcon('Google', 'icon-google-plus');
+export const Graph = makeFontIcon('Graph', 'icon-graph');
+export const Home = makeFontIcon('Home', 'icon-home3');
+export const Label = makeFontIcon('Label', 'icon-label');
+export const Lan = makeFontIcon('Lan', 'icon-lan');
+export const LanAlt = makeFontIcon('LanAlt', 'icon-lan2');
+export const Layers = makeFontIcon('Layers', 'icon-layers');
+export const License = makeFontIcon('License', 'icon-license2');
+export const Link = makeFontIcon('Link', 'icon-link');
+export const Linkedin = makeFontIcon('Linkedin', 'icon-linkedin');
+export const Linux = makeFontIcon('Linux', 'icon-linux');
+export const ListBullet = makeFontIcon('ListBullet', 'icon-list4');
+export const ListCheck = makeFontIcon('ListCheck', 'icon-list3');
+export const ListView = makeFontIcon('ListView', 'icon-th-list');
+export const Lock = makeFontIcon('Lock', 'icon-lock');
+export const Magnifier = makeFontIcon('Magnifier', 'icon-magnifier');
+export const MapMarker = makeFontIcon('MapMarker', 'icon-map-marker');
+export const MasterCard = makeFontIcon('MasterCard', 'icon-cc-mastercard');
+export const Mute = makeFontIcon('Mute', 'icon-mute');
+export const OpenID = makeFontIcon('OpenID', 'icon-openid');
+export const Paypal = makeFontIcon('Paypal', 'icon-cc-paypal');
+export const Pencil = makeFontIcon('Pencil', 'icon-pencil');
+export const Phone = makeFontIcon('Phone', 'icon-telephone');
+export const Planet = makeFontIcon('Planet', 'icon-planet');
+export const Play = makeFontIcon('Play', 'icon-play');
+export const Power = makeFontIcon('Power', 'icon-power');
+export const Profile = makeFontIcon('Profile', 'icon-profile');
+export const Server = makeFontIcon('Server', 'icon-server');
+export const Shart = makeFontIcon('Shart', 'icon-chart-bars');
+export const ShieldCheck = makeFontIcon('ShieldCheck', 'icon-shield-check');
+export const Signal = makeFontIcon('Signal', 'icon-signal');
+export const SmartPhone = makeFontIcon('SmartPhone', 'icon-smartphone-embed');
+export const Sort = makeFontIcon('Sort', 'icon-chevrons-expand-vertical');
+export const SortAsc = makeFontIcon('SortAsc', 'icon-chevron-up');
+export const SortDesc = makeFontIcon('SortDesc', 'icon-chevron-down');
+export const Speed = makeFontIcon('Speed', 'icon-speed-fast');
+export const Spinner = makeFontIcon('Spinner', 'icon-spinner8');
+export const Stripe = makeFontIcon('Stripe', 'icon-cc-stripe');
+export const Tablet = makeFontIcon('Tablet', 'icon-tablet2');
+export const Trash = makeFontIcon('Trash', 'icon-trash2');
+export const Twitter = makeFontIcon('Twitter', 'icon-twitter');
+export const Unlock = makeFontIcon('Unlock', 'icon-unlock');
+export const User = makeFontIcon('User', 'icon-user');
+export const Users = makeFontIcon('Users', 'icon-users2');
+export const Visa = makeFontIcon('Visa', 'icon-cc-visa');
+export const VolumeUp = makeFontIcon('VolumeUp', 'icon-volume-high');
+export const Wifi = makeFontIcon('Wifi', 'icon-wifi');
+export const Window = makeFontIcon('Window', 'icon-window');
+export const Windows = makeFontIcon('Windows', 'icon-windows');
+export const Youtube = makeFontIcon('Youtube', 'icon-youtube');

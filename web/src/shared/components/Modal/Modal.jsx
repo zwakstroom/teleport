@@ -140,6 +140,24 @@ class Modal extends React.Component {
     this.dialogRef = ref;
   };
 
+  autoFocus() {
+    // We might render an empty child.
+    if (this.props.disableAutoFocus || !this.dialogRef) {
+      return;
+    }
+
+    const currentActiveElement = ownerDocument(this.mountNode).activeElement;
+
+    if (!this.dialogRef.contains(currentActiveElement)) {
+      if (!this.dialogRef.hasAttribute('tabIndex')) {
+        this.dialogRef.setAttribute('tabIndex', -1);
+      }
+
+      this.lastFocus = currentActiveElement;
+      this.dialogRef.focus();
+    }
+  }
+
   restoreLastFocus() {
     if (this.props.disableRestoreFocus || !this.lastFocus) {
       return;
@@ -156,7 +174,7 @@ class Modal extends React.Component {
   }
 
   isTopModal() {
-    //return this.props.manager.isTopModal(this);
+    return true;
   }
 
   render() {

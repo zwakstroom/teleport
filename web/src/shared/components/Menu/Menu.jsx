@@ -46,7 +46,6 @@ class Menu extends React.Component {
       children,
       popoverCss,
       menuListCss,
-      MenuListProps,
       ...other
     } = this.props;
 
@@ -59,7 +58,7 @@ class Menu extends React.Component {
         transformOrigin={POSITION}
         {...other}
       >
-        <MenuList menuListCss={menuListCss} {...MenuListProps} ref={this.handleMenuListRef}>
+        <MenuList menuListCss={menuListCss} ref={this.handleMenuListRef}>
           {children}
         </MenuList>
       </Popover>
@@ -78,20 +77,12 @@ Menu.propTypes = {
   children: PropTypes.node,
 
   /**
-   * Properties applied to the [`MenuList`](/api/menu-list/) element.
-   */
-  MenuListProps: PropTypes.object,
-  /**
    * Callback fired when the component requests to be closed.
    *
    * @param {object} event The event source of the callback
    * @param {string} reason Can be:`"escapeKeyDown"`, `"backdropClick"`, `"tabKeyDown"`
    */
   onClose: PropTypes.func,
-  /**
-   * Callback fired when the Menu has entered.
-   */
-  onEntered: PropTypes.func,
   /**
    * Callback fired when the Menu is entering.
    */

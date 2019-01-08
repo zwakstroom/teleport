@@ -17,4 +17,4 @@ class Transition extends React.Component {
 }
 
 
-export default Transition
+export default Transition;

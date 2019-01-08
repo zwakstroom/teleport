@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { space } from 'styled-system'
-import theme from './../theme'
+import defaultTheme from './../theme'
 
 const size = props => {
   switch (props.size) {
@@ -33,33 +33,31 @@ const size = props => {
 }
 
 const color = props => {
-  let color = {background: props.theme.colors.primary};
-
-  if(props.secondary) {
-    color = {
-      background: props.theme.colors.secondary,
-
+  const { theme, secondary, warning } = props;
+  if(secondary) {
+    return  {
+      background: theme.colors.secondary,
       '&:hover, &:focus': {
-        background: props.theme.colors.secondaryLight,
+        background: theme.colors.secondaryLight,
       }
     };
   }
 
-  if(props.warning) {
-    color = {
-      background: props.theme.colors.error,
-
+  if(warning) {
+    return {
+      background: theme.colors.error,
       '&:hover, &:focus': {
-        background: props.theme.colors.errorDark
+        background: theme.colors.errorDark
       },
-
       '&:active': {
         opacity: .56
       }
     };
   }
 
-  return color;
+  return {
+    background: theme.colors.primary
+  };
 }
 
 const block = props => (props.block ? {
@@ -69,10 +67,10 @@ const block = props => (props.block ? {
 } : null)
 
 const Button = styled.button`
-  background: ${props => props.theme.colors.primary};
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   border-radius: 4px;
-  color: ${props => props.theme.colors.light};
+  color: ${({ theme }) => theme.colors.light};
   cursor: pointer;
   font-family: inherit;
   font-weight: bold;
@@ -86,11 +84,11 @@ const Button = styled.button`
   -webkit-font-smoothing: antialiased;
 
   &:hover, &:focus {
-    background: ${props => props.theme.colors.primaryLight};
+    background: ${({ theme }) => theme.colors.primaryLight};
   }
 
   &:active {
-    background: ${props => props.theme.colors.primaryDark};
+    background: ${({ theme }) => theme.colors.primaryDark};
     color: rgba(255, 255, 255, .24);
     box-shadow: none;
   }
@@ -129,7 +127,7 @@ Button.propTypes = {
 
 Button.defaultProps = {
   size: 'medium',
-  theme: theme
+  theme: defaultTheme
 }
 
 Button.displayName = 'Button'
