@@ -10,6 +10,7 @@ Typography.h1 = styled(Text)`
   font-weight: 300;
   font-size: 36px;
   line-height: 40px;
+  margin: 0 0 32px 0;
 `;
 
 Typography.h1.defaultProps = {
@@ -17,9 +18,10 @@ Typography.h1.defaultProps = {
 }
 
 Typography.h2 = styled(Text)`
-  font-weight: 300;
-  font-size: 36px;
-  line-height: 40px;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 56px;
+  text-transform: uppercase;
 `;
 
 Typography.h2.defaultProps = {
@@ -45,9 +47,11 @@ Typography.h5 = styled(Text)`
 `;
 
 Typography.p = styled(Text)`
-  font-weight: 400;
+  font-weight: 300;
   font-size: 16px;
-  line-height: 24px;
+  line-height: 32px;
+    margin: 0 0 32px 0;
+
 `;
 
 export default Typography

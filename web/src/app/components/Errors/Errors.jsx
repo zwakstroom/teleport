@@ -86,13 +86,6 @@ const Card = styled.div`
   padding: 40px;
   width: 540px;
 
-  h1 {
-    color: ${colors.text};
-    font-size: 20px;
-    margin: 0;
-    text-align: center;
-    text-transform: uppercase;
-  }
 
   p {
     line-height: 32px;

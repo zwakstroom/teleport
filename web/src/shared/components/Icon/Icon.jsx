@@ -1,10 +1,13 @@
 import styled from 'styled-components'
 import { space, fontSize, width, color } from 'styled-system'
 import './../../assets/icomoon/style.css';
+import {colors} from 'shared/components/theme';
 
 function makeFontIcon(name, iconClassName) {
   const className = `icon ${iconClassName}`;
   const Icon = styled.span.attrs({className: className})`
+    color: ${colors.light};
+    display: inline-block;
     ${space} ${width} ${color} ${fontSize}
   `
 

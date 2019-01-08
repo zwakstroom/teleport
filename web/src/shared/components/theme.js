@@ -35,8 +35,6 @@ export const colors = {
   success: '#00BFA5',
   successDark: '#26A69A',
 
-
-
   primary: '#00BFA5',
   primaryLight: '#00EAC3',
   primaryDark: '#008A7E',
