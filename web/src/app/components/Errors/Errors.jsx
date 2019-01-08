@@ -18,48 +18,54 @@ import React from 'react';
 import styled from 'styled-components'
 import {colors} from 'shared/components/theme';
 import {Danger} from 'shared/components/Alerts';
+import Typography from 'shared/components/Typography';
 
-const MSG_ERROR_LOGIN_FAILED = 'Login unsuccessful. Please try again, if the problem persists, contact your system administrator.';
+const MSG_ERROR_LOGIN_FAILED = 'Login unsuccessful';
 const MSG_ERROR_DEFAULT = 'Internal Error';
 const MSG_ERROR_NOT_FOUND = '404 Not Found';
 const MSG_ERROR_NOT_FOUND_DETAILS = `Looks like the page you are looking for isn't here any longer.`;
 const MSG_ERROR_ACCESS_DENIED = 'Access denied';
 
-const Details = ({ message='' }) => (
-  <div>
-    <Danger mt={4}>{message}</Danger>
-    <p>
-      If you believe this is an issue with Teleport,
-      please <a href="https://github.com/gravitational/teleport/issues/new">create a GitHub issue.</a>
-    </p>
-  </div>
-)
+const Details = ({err='', message=''}) => {
+  const details = message ? <p>{message}</p> : null;
+  const errMessage = err ? <Danger mt={4}>{err}</Danger> : null;
 
-const NotFound = () => (
+  return (
+    <div>
+      {errMessage} {details}
+      <p>
+        If you believe this is an issue with Teleport,
+        please <a href="https://github.com/gravitational/teleport/issues/new">create a GitHub issue.</a>
+      </p>
+    </div>
+  );
+}
+
+const NotFound = ({err, message}) => (
   <Card>
-    <h1>{MSG_ERROR_NOT_FOUND}</h1>
-    <Details message={MSG_ERROR_NOT_FOUND_DETAILS}/>
+    <Typography.h1 mb={4} textAlign="center">{MSG_ERROR_NOT_FOUND}</Typography.h1>
+    <Details err={err} message={MSG_ERROR_NOT_FOUND_DETAILS}/>
   </Card>
 )
 
-const AccessDenied = ({message}) => (
+const AccessDenied = ({err, message}) => (
   <Card>
-    <h1>{MSG_ERROR_ACCESS_DENIED}</h1>
-    <Details message={message}/>
+    <Typography.h1 mb={4} textAlign="center">{MSG_ERROR_ACCESS_DENIED}</Typography.h1>
+    <Details err={err} message={message}/>
   </Card>
 )
 
-const Failed = ({message}) => (
+const Failed = ({err, message}) => (
   <Card>
-    <h1>{MSG_ERROR_DEFAULT}</h1>
-    <Details message={message}/>
+    <Typography.h1 mb={4} textAlign="center">{MSG_ERROR_DEFAULT}</Typography.h1>
+    <Details err={err} message={message}/>
   </Card>
 )
 
-const LoginFailed = ({ message }) => (
+const LoginFailed = ({err, message }) => (
   <Card>
-    <h1>{MSG_ERROR_LOGIN_FAILED}</h1>
-    <Details message={message}/>
+    <Typography.h1 mb={4} textAlign="center">{MSG_ERROR_LOGIN_FAILED}</Typography.h1>
+    <Details err={err} message={message}/>
   </Card>
 )
 

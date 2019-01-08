@@ -33,32 +33,32 @@ export const AppErrorEnum = {
   ACCESS_DENIED: 'access_denied'
 };
 
-export const AppError = ({ type, message }) => {
-  let err = null;
+export const AppError = ({ category, err, message }) => {
+  let content = null;
 
-  switch (type) {
+  switch (category) {
     case AppErrorEnum.FAILED_TO_LOGIN:
-      err = <LoginFailed message={message} />; break;
+      content = <LoginFailed err={err} message={message} />; break;
     case AppErrorEnum.NOT_FOUND:
-      err = <NotFound />; break;
+      content = <NotFound  err={err} message={message} />; break;
     case AppErrorEnum.ACCESS_DENIED:
-      err = <AccessDenied message={message} />; break;
+      content = <AccessDenied err={err} message={message} />; break;
     default:
-      err = <Failed message={message} />;
+      content = <Failed err={err} message={message} />;
   }
 
   return (
     <div>
       <Logo src={logoSvg}/>
-      {err}
+      {content}
     </div>
   );
 };
 
 export default withDocTitle("Error", ({ match }) => {
-  const { type } = match.params;
+  const { category, err } = match.params;
   const message = getUrlParameter('details');
   return (
-    <AppError type={type} message={message} />
+    <AppError category={category} err={err} message={message} />
   )
 });

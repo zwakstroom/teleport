@@ -1,8 +1,21 @@
-import React from 'react'
-import { storiesOf } from '@storybook/react'
-import Alert from './index'
+import React from 'react';
+import { storiesOf } from '@storybook/react';
+import { withInfo } from '@storybook/addon-info';
+import Alert from './index';
 
 storiesOf('Alert', module)
+  .addDecorator(withInfo)
+  .addParameters({
+    info: {
+      inline: true,
+      header: false,
+    },
+  })
+  .add('Alert Component', () => {
+    return (
+      <Alert>This is an error message</Alert>
+    );
+  })
   .add('Danger Alert', () => {
     return (
       <Alert status="danger">This is an error message</Alert>
