@@ -82,18 +82,23 @@ export default class LoginForm extends React.Component {
     const isDisabled = isProcessing;
 
     return (
-      <div>
+      <Box textAlign="center">
         <Button
           block
           disabled={isDisabled}
           size="large"
           type="submit"
           onClick={onClick}
-          mt={4}>
+          mt="5"
+          mb="2"
+          >
           LOGIN WITH EMAIL
-      </Button>
+        </Button>
+
+        <Typography.small textAlign="center">
         {$helpBlock}
-      </div>
+        </Typography.small>
+      </Box>
     );
   }
 

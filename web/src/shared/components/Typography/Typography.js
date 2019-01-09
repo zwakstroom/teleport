@@ -56,8 +56,19 @@ Typography.p = styled(Text)`
   font-weight: 300;
   font-size: 16px;
   line-height: 32px;
-    margin: 0 0 32px 0;
-
+  margin: 0 0 32px 0;
 `;
+
+Typography.small = styled(Text)`
+  display: inline-block;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 16px;
+  opacity: .87;
+`;
+
+Typography.small.defaultProps = {
+  as: "small"
+}
 
 export default Typography
