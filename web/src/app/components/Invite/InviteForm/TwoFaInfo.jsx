@@ -34,17 +34,15 @@ export default function Invite2faData(props) {
 
   if (auth2faType === Auth2faTypeEnum.UTF) {
     return (
-      <div className="grv-flex-column">
-        <h3>Insert your U2F key </h3>
-        <div className="m-t-md">Press the button on the U2F key after you press the sign up button</div>
-        <div className="m-t text-muted">
-          <small>Click
-            <a a target="_blank" href={U2F_HELP_URL}> here </a>
-            to learn more about U2F 2-Step Verification.
-          </small>
-        </div>
+      <div>
+        <Typography.h4>Insert your U2F key</Typography.h4>
+        <Typography.aside>Press the button on the U2F key after you press the sign up button</Typography.aside>
 
-    </div>
+
+        <Typography.aside>
+          <a a target="_blank" href={U2F_HELP_URL}>Learn more</a> about U2F 2-Step Verification.
+        </Typography.aside>
+      </div>
     )
   }
 

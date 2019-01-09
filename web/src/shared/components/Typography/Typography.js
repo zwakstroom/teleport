@@ -41,9 +41,10 @@ Typography.h3.defaultProps = {
 }
 
 Typography.h4 = styled(Text)`
-  font-weight: 300;
-  font-size: 36px;
+  font-weight: 500;
+  font-size: 14px;
   line-height: 40px;
+  margin: 0;
 `;
 
 Typography.h5 = styled(Text)`
@@ -73,7 +74,11 @@ Typography.aside = styled(Text)`
   font-size: 12px;
   line-height: 20px;
   margin: 0 0 16px 0;
-  opacity: .56;
+  opacity: .87;
+
+  a {
+    color: inherit;
+  }
 `;
 
 Typography.small.defaultProps = {
