@@ -180,7 +180,17 @@ export class InviteForm extends React.Component {
     const { auth2faType, invite, attempt } = this.props;
     const { isFailed, message } = attempt;
     const $error = isFailed ? <ErrorMessage message={message} /> : null;
-    const $2FCode = needs2fa(auth2faType) ? <Invite2faData auth2faType={auth2faType} qr={invite.qr} /> : null;
+    const needs2FAuth = needs2fa(auth2faType);
+    let $2FCode = null;
+    const boxWidth = needs2FAuth ? 712 : 464;
+
+    if(needs2FAuth) {
+      $2FCode = (
+        <Aside width="168px" p="5">
+          <Invite2faData auth2faType={auth2faType} qr={invite.qr} />
+        </Aside>
+      );
+    }
 
     return (
       <Formik
@@ -190,7 +200,7 @@ export class InviteForm extends React.Component {
       >
         {
           props => (
-            <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width="712px">
+            <Card bg="secondary" mt="4" mb="4" mr="auto" ml="auto" width={`${boxWidth}px`}>
               <Flex>
                 <Box width="464px" p="5">
                   {$error}
@@ -198,7 +208,7 @@ export class InviteForm extends React.Component {
                   {this.renderSubmitBtn(props.handleSubmit)}
                 </Box>
 
-                <Aside width="168px" p="5">{$2FCode}</Aside>
+                {$2FCode}
               </Flex>
             </Card>
           )
