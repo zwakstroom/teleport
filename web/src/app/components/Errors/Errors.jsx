@@ -17,7 +17,7 @@ limitations under the License.
 import React from 'react';
 import styled from 'styled-components'
 import {colors} from 'shared/components/theme';
-import {Danger} from 'shared/components/Alerts';
+import Alert from 'shared/components/Alerts';
 import Typography from 'shared/components/Typography';
 
 const MSG_ERROR_LOGIN_FAILED = 'Login unsuccessful';
@@ -28,7 +28,7 @@ const MSG_ERROR_ACCESS_DENIED = 'Access denied';
 
 const Details = ({err='', message=''}) => {
   const details = message ? <p>{message}</p> : null;
-  const errMessage = err ? <Danger mt={4}>{err}</Danger> : null;
+  const errMessage = err ? <Alert mt={4}>{err}</Alert> : null;
 
   return (
     <div>

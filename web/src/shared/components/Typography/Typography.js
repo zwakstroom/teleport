@@ -67,6 +67,15 @@ Typography.small = styled(Text)`
   opacity: .87;
 `;
 
+Typography.aside = styled(Text)`
+  display: block;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 20px;
+  margin: 0 0 16px 0;
+  opacity: .56;
+`;
+
 Typography.small.defaultProps = {
   as: "small"
 }

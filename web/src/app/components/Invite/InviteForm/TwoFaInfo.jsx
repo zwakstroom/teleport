@@ -16,6 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { Auth2faTypeEnum } from 'app/services/enums';
+import Typography from 'shared/components/Typography';
 
 const U2F_HELP_URL = 'https://support.google.com/accounts/answer/6103523?hl=en';
 
@@ -24,11 +25,9 @@ export default function Invite2faData(props) {
 
   if (auth2faType === Auth2faTypeEnum.OTP) {
     return (
-      <div className="grv-flex-column grv-invite-barcode">
-        <h4>Scan bar code for auth token <br />
-          <small>Scan below to generate your two factor token</small>
-        </h4>
-        <img className="img-thumbnail" src={ `data:image/png;base64,${qr}` } />
+      <div>
+        <Typography.aside>Scan the bar code with Google Authenticator to generate a two factor token.</Typography.aside>
+        <img width="168" className="img-thumbnail" src={ `data:image/png;base64,${qr}` } />
       </div>
     )
   }

@@ -34,28 +34,20 @@ const alertType = props => {
   }
 }
 
-export const Danger = props => (
-  <Alert status="danger">
-    {props.children}
-  </Alert>
+const Danger = props => (
+  <Alert status="danger">{props.children}</Alert>
 );
 
-export const Warning = props => (
-  <Alert status="warning">
-    {props.children}
-  </Alert>
+const Warning = props => (
+  <Alert status="warning">{props.children}</Alert>
 );
 
-export const Info = props => (
-  <Alert status="info">
-    {props.children}
-  </Alert>
+const Info = props => (
+  <Alert status="info">{props.children}</Alert>
 );
 
-export const Success = props => (
-  <Alert status="success">
-    {props.children}
-  </Alert>
+const Success = props => (
+  <Alert status="success">{props.children}</Alert>
 );
 
 const Alert = styled.div`
