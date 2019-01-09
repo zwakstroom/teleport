@@ -204,7 +204,7 @@ class NodeList extends React.Component {
     }
 
     return (
-      <TablePaged rowCount={data.length} data={data} pageSize={100}>
+      <TablePaged rowCount={data.length} data={data} pageSize={50}>
         <Column
           columnKey="hostname"
           header={

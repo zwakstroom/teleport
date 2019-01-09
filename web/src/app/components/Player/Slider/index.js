@@ -14,19 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import history from 'app/services/history';
-import cfg from 'app/config';
-import { getAcl } from './../userAcl/store';
-
-export function open(siteId, sid) {
-  const routeUrl = cfg.getPlayerUrl({siteId, sid});
-  history.push(routeUrl);
-}
-
-export function close(clusterId) {
-  const canListSessions = getAcl().getSessionAccess().read;
-  const clusterSessionUrl = cfg.getClusterSessionsUrl(clusterId)
-  const redirect = canListSessions ? clusterSessionUrl : cfg.routes.app;
-
-  history.push(redirect);
-}
+import Slider from './Slider';
+export default Slider;

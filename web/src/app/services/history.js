@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import createHistory from 'history/createBrowserHistory';
-import { matchPattern } from 'app/lib/patternUtils';
+import { matchPath } from "react-router";
 import cfg from 'app/config';
 
 let _inst = null;
@@ -98,8 +98,10 @@ const history = {
 }
 
 const match = url => route => {
-  let { remainingPathname } = matchPattern(route, url);
-  return remainingPathname !== null && remainingPathname.length === 0;
+  return matchPath(url, {
+    path: route,
+    exact: true
+  })
 }
 
 export default history;

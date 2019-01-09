@@ -14,19 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
+import Terminal from './Terminal';
 
-export const ErrorIndicator = ({ text }) => (
-  <div className="grv-terminalhost-indicator-error">
-    <i className="fa fa-exclamation-triangle fa-3x text-warning"></i>
-    <div className="m-l">
-      <strong>{text || "Error"}</strong>      
-    </div>
-  </div>
-)
-
-export const WarningIndicator = ({ text }) => (
-  <div className="grv-terminalhost-indicator-error">    
-    <h3>{text}</h3>          
-  </div>
-)
+export default Terminal;

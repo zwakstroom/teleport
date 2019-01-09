@@ -15,20 +15,13 @@ limitations under the License.
 */
 
 import React from 'react';
-import { CloseIcon } from './../icons';
-import { connect } from './../nuclear';
+import styled from 'styled-components';
+import * as Icons from 'shared/components/Icon';
+import { connect } from 'app/components/nuclear';
 import { withRouter } from 'react-router';
 import { getters as ftGetters } from 'app/flux/fileTransfer';
 import * as ftActions from 'app/flux/fileTransfer/actions';
-import * as terminalActions from 'app/flux/terminal/actions';
-import classnames from 'classnames';
-
-const closeTextStyle = {
-  width: "30px",
-  height: "30px",
-  display: "block",
-  margin: "0 auto"
-}
+import { Flex } from 'shared/components';
 
 class ActionBar extends React.Component {
 
@@ -51,7 +44,7 @@ class ActionBar extends React.Component {
   }
 
   close = () => {
-    terminalActions.close();
+    this.props.onClose && this.props.onClose();
   }
 
   openUploadDialog = () => {
@@ -63,37 +56,54 @@ class ActionBar extends React.Component {
   }
 
   render() {
-    const { children, store } = this.props;
+    const { store, title } = this.props;
     const { isOpen } = store;
 
-    const fileTransferClass = classnames('grv-terminal-actions-files',
-      isOpen && '--isOpen'
-    );
 
     return (
-      <div className="grv-terminal-actions">
-        <div title="Close" style={closeTextStyle} onClick={this.close}>
-          <CloseIcon />
+      <Flex height="30px">
+        <div title="Close" onClick={this.close}>
+          <Icons.Cross />
+          {title}
         </div>
-        <div className="grv-terminal-actions-participans">
-          {children}
-        </div>
-        <div className={fileTransferClass}>
-          <a title="Download files"
-            className="grv-terminal-actions-files-btn m-b-sm"
+        <Flex>
+          <IconButton
+            title="Download files"
+            isOpen={isOpen}
             onClick={this.openDownloadDialog}>
-            <i className="fa fa-download" />
-          </a>
-          <a title="Upload files"
-            className="grv-terminal-actions-files-btn"
+            <Icons.ArrowDown />
+          </IconButton>
+          <IconButton
+            title="Upload files"
+            isOpen={isOpen}
             onClick={this.openUploadDialog}>
-            <i className="fa fa-upload" />
-          </a>
-        </div>
-      </div>
+            <Icons.ArrowUp />
+          </IconButton>
+        </Flex>
+      </Flex>
     )
   }
 }
+
+const isOpen = props => {
+  if (props.isOpen) {
+    return {
+      opacity: 0.5,
+      cursor: "not-allowed"
+    }
+  }
+}
+
+const IconButton = styled.div`
+  border-radius: 20px;
+  width: 30px;
+  height: 30px;
+  color: white;
+  display: flex;
+  align-Items: center;
+  justify-content: center;
+  ${isOpen};
+`
 
 function mapStateToProps() {
   return {

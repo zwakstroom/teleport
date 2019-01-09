@@ -29,7 +29,7 @@ const Buffer = BufferModule.Buffer;
 export const MAX_SIZE = 5242880; // 5mg
 
 export class EventProvider{
-  constructor({url}){
+  constructor({ url }) {
     this.url = url;
     this.events = [];
   }
@@ -76,17 +76,11 @@ export class EventProvider{
     const end = events.length - 1;
     const totalSize = events[end].offset - offset + events[end].bytes;
     const chunkCount = Math.ceil(totalSize / MAX_SIZE);
-
     // create a fetch request for each chunk
     const promises = [];
     for (let i = 0; i < chunkCount; i++){
       const url = `${this.url}/stream?offset=${offset}&bytes=${MAX_SIZE}`;
-      promises.push(api.ajax({
-        url,
-        processData: true,
-        dataType: 'text'
-      }));
-
+      promises.push(api.fetch(url, {}).then(response => response.text()));
       offset = offset + MAX_SIZE;
     }
 

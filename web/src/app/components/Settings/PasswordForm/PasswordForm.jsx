@@ -75,7 +75,7 @@ class PasswordForm extends React.Component {
     }
 
     if (!newPassConfirmed) {
-      errors.newPassConfirmed = 'Please confirm your password'
+      errors.newPassConfirmed = 'Please confirm your new password'
     }else if (newPassConfirmed !== newPass) {
       errors.newPassConfirmed = 'Password does not match'
     }
@@ -95,12 +95,12 @@ class PasswordForm extends React.Component {
     return this.props.auth2faType === Auth2faTypeEnum.OTP;
   }
 
-  renderNameAndPassFields({ values, errors, touched, handleChange }) {
+  renderFields({ values, errors, touched, handleChange }) {
     const isOtpEnabled = this.isOtp();
     const oldPassError = touched.oldPass && errors.oldPass;
     const newPassError = touched.newPass && errors.newPass;
     const newPassConfirmedError = touched.newPassConfirmed && errors.newPassConfirmed;
-    const tokenError = errors.token && touched.token;
+    const tokenError = touched.token && errors.token;
 
     return (
       <React.Fragment>
@@ -121,6 +121,7 @@ class PasswordForm extends React.Component {
               {tokenError || "2nd factor token"}
             </Label>
             <Input
+              width="50%"
               hasError={Boolean(tokenError)}
               value={values.oldPass}
               onChange={handleChange}
@@ -198,7 +199,7 @@ class PasswordForm extends React.Component {
         {props => (
           <Card bg="secondary" mt="4" mb="4" width="456px" p="5">
             {this.renderAttempt(attempt)}
-            {this.renderNameAndPassFields(props)}
+            {this.renderFields(props)}
             <Button
               block
               disabled={attempt.isProcessing}

@@ -1,6 +1,6 @@
 import { platform } from './utils/platform';
 
-const fontMonoLinux = `"Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback`;
+const fontMonoLinux = `"Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback"`;
 const fontMonoWin = `Consolas, "Courier New", monospace`;
 const fontMonoMac = `Menlo, Monaco, "Courier New", monospace`;
 
@@ -50,6 +50,7 @@ export const colors = {
   bgSecondary: '#222C59',
   bgSuccess: '#00BFA5',
   bgTertiary: '#263266',
+  bgTerminal: '#252323'
 }
 
 export const borders = [

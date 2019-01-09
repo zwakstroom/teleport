@@ -17,15 +17,14 @@ limitations under the License.
 
 
 import React from 'react';
-import { connect } from './../nuclear';
+import { connect } from 'app/components/nuclear';
 import sessionGetters from 'app/flux/sessions/getters';
-import { UserIcon } from './../icons.jsx';
 
 const PartyList = props => {
   let parties = props.parties || [];
   let userIcons = parties.map((item, index)=>(
     <div key={index} className="animated m-t">
-      <UserIcon colorIndex={index}
+      <div colorIndex={index}
         isDark={true}
         name={item.user} />
     </div>

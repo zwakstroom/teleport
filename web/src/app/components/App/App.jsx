@@ -28,8 +28,23 @@ import Clusters from './../Clusters';
 import Cluster from './../Cluster';
 import Account from './../Settings';
 import cfg from 'app/config';
+import Logger from 'app/lib/logger';
+
+const logger = Logger.create('components/app');
 
 class App extends Component {
+
+  state = {
+    renderingError: null
+  }
+
+  static getDerivedStateFromError(error) {
+    return { renderingError: error };
+  }
+
+  componentDidCatch(err) {
+    logger.error('render', err);
+  }
 
   componentDidMount() {
     const featureActivator = new FeatureActivator();
@@ -40,12 +55,16 @@ class App extends Component {
     const { initAttempt } = this.props;
     const { isProcessing, isSuccess, isFailed, message } = initAttempt;
 
-    if (isProcessing) {
-      return <Indicator />
-    }
-
     if (isFailed) {
       return <Failed message={message}/>
+    }
+
+    if (this.state.renderingError) {
+      return <Failed message={this.state.renderingError.message}/>
+    }
+
+    if (isProcessing) {
+      return <Indicator />
     }
 
     if (!isSuccess) {
@@ -57,11 +76,8 @@ class App extends Component {
         <Switch>
           <Route exact path={cfg.routes.app} component={Clusters} />
           <Route exact path={cfg.routes.settingsAccount} component={Account} />
-          <Route path={cfg.routes.cluster}
-            render={ ({match}) => (
-              <Cluster path={match.path} clusterId={match.params.clusterId} />
-            )}
-          />
+          <Route path={cfg.routes.cluster} component={Cluster} />
+        />
         </Switch>
       </StyledApp>
     );
@@ -77,7 +93,9 @@ function mapStateToProps() {
 export default withAuth(connect(mapStateToProps)(App));
 
 const StyledApp = styled.div`
-  position: fixed;
+  position: absolute;
   height: 100%;
   width: 100%;
+  top: 0;
+  bottom: 0;
 `

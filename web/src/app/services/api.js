@@ -28,44 +28,33 @@ const defaultCfg = {
 const api = {
 
   get(url){
-    return api.ajax(url);
+    return api.fetchJson(url);
   },
 
   post(url, data){
-    return api.ajax(url, {
+    return api.fetchJson(url, {
       body: JSON.stringify(data),
       method: 'POST'
     });
   },
 
   delete(url, data){
-    return api.ajax(url, {
+    return api.fetchJson(url, {
       body: JSON.stringify(data),
       method: 'DELETE'
     });
   },
 
   put(url, data){
-    return api.ajax(url, {
+    return api.fetchJson(url, {
       body: JSON.stringify(data),
       method: 'PUT'
     });
   },
 
-  ajax(url, params) {
-    url = cfg.baseUrl + url;
-    const options = {
-      ...defaultCfg,
-      ...params
-    };
-
-    options.headers = {
-      ...options.headers,
-      ...getAuthHeaders()
-    }
-
+  fetchJson(url, params) {
     return new Promise((resolve, reject) => {
-      fetch(url, options)
+      this.fetch(url, params)
         .then(parseJSON)
         .then(response => {
           if (response.ok) {
@@ -80,7 +69,24 @@ const api = {
           reject(err);
         })
     });
-  }
+  },
+
+  fetch(url, params = {}) {
+    url = cfg.baseUrl + url;
+    const options = {
+      ...defaultCfg,
+      ...params
+    };
+
+    options.headers = {
+      ...options.headers,
+      ...getAuthHeaders()
+    }
+
+    // native call
+    return fetch(url, options);
+  },
+
 }
 
 function parseJSON(response) {

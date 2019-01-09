@@ -16,7 +16,6 @@ limitations under the License.
 
 import { generatePath } from "react-router";
 import { merge } from 'lodash';
-import { formatPattern } from 'app/lib/patternUtils';
 import { isTestEnv } from './services/utils'
 
 const baseUrl = isTestEnv() ? 'localhost' : window.location.origin;
@@ -48,8 +47,8 @@ const cfg = {
     newUser: '/web/newuser/:inviteToken',
     error: '/web/msg/error/:type?',
     successfulLogin: '/web/msg/info/login_success',
-    terminal: '/web/cluster/:siteId/node/:serverId/:login(/:sid)',
-    player: '/web/player/cluster/:siteId/sid/:sid',
+    terminal: '/web/cluster/:siteId/node/:serverId/:login/:sid?',
+    player: '/web/cluster/:siteId/player/sid/:sid',
     webApi: '/v1/webapi/*',
     settingsBase: '/web/settings',
     settingsAccount: '/web/settings/account',
@@ -82,65 +81,60 @@ const cfg = {
     ttyWsAddr: ':fqdm/v1/webapi/sites/:cluster/connect?access_token=:token&params=:params',
 
     getSiteUrl(siteId) {
-      return formatPattern(cfg.api.sitePath, { siteId });
+      return generatePath(cfg.api.sitePath, { siteId });
     },
 
     getSiteNodesUrl(siteId='-current-') {
-      return formatPattern(cfg.api.nodesPath, { siteId });
+      return generatePath(cfg.api.nodesPath, { siteId });
     },
 
     getSiteSessionUrl(siteId='-current-') {
-      return formatPattern(cfg.api.siteSessionPath, { siteId });
+      return generatePath(cfg.api.siteSessionPath, { siteId });
     },
 
     getSsoUrl(providerUrl, providerName, redirect) {
-      return cfg.baseUrl + formatPattern(providerUrl, { redirect, providerName });
+      return cfg.baseUrl + generatePath(providerUrl, { redirect, providerName });
     },
 
     getSiteEventsFilterUrl({start, end, siteId}){
-      return formatPattern(cfg.api.siteEventsFilterPath, {start, end, siteId});
+      return generatePath(cfg.api.siteEventsFilterPath, {start, end, siteId});
     },
 
     getSessionEventsUrl({sid, siteId}){
-      return formatPattern(cfg.api.sessionEventsPath, {sid, siteId});
+      return generatePath(cfg.api.sessionEventsPath, {sid, siteId});
     },
 
     getScpUrl({ siteId, serverId, login, location, filename }) {
-      return formatPattern(cfg.api.scp, {siteId, serverId, login, location, filename});
+      return generatePath(cfg.api.scp, {siteId, serverId, login, location, filename});
     },
 
     getFetchSessionsUrl(siteId){
-      return formatPattern(cfg.api.siteEventSessionFilterPath, {siteId});
+      return generatePath(cfg.api.siteEventSessionFilterPath, {siteId});
     },
 
     getFetchSessionUrl({sid, siteId}){
-      return formatPattern(cfg.api.siteSessionPath+'/:sid', {sid, siteId});
+      return generatePath(cfg.api.siteSessionPath+'/:sid', {sid, siteId});
     },
 
     getInviteUrl(inviteToken){
-      return formatPattern(cfg.api.invitePath, {inviteToken});
+      return generatePath(cfg.api.invitePath, {inviteToken});
     },
 
     getU2fCreateUserChallengeUrl(inviteToken){
-      return formatPattern(cfg.api.u2fCreateUserChallengePath, {inviteToken});
+      return generatePath(cfg.api.u2fCreateUserChallengePath, {inviteToken});
     }
   },
 
   getPlayerUrl({siteId, sid}) {
-    return formatPattern(cfg.routes.player, { siteId, sid });
+    return generatePath(cfg.routes.player, { siteId, sid });
   },
 
   getTerminalLoginUrl({siteId, serverId, login, sid}) {
-    if (!sid) {
-      let url = this.stripOptionalParams(cfg.routes.terminal);
-      return formatPattern(url, {siteId, serverId, login });
-    }
-
-    return formatPattern(cfg.routes.terminal, { siteId, serverId, login, sid });
+    return generatePath(cfg.routes.terminal, { siteId, serverId, login, sid });
   },
 
   getCurrentSessionRouteUrl({sid, siteId}){
-    return formatPattern(cfg.routes.currentSession, {sid, siteId});
+    return generatePath(cfg.routes.currentSession, {sid, siteId});
   },
 
   getAuthProviders() {
