@@ -15,13 +15,12 @@ limitations under the License.
 */
 
 import React from 'react';
-import styled from 'styled-components';
 import { connect } from './../nuclear';
-import InputSearch from './../InputSearch';
 import userAclGetters from 'app/flux/userAcl/getters';
 import nodeGetters from 'app/flux/nodes/getters';
 import { getters as sshHistoryGetters } from 'app/flux/sshHistory/store';
 import NodeList from './NodeList'
+import Header from 'app/components/Header';
 
 export class ClusterNodes extends React.Component {
 
@@ -49,10 +48,7 @@ export class ClusterNodes extends React.Component {
 
     return (
       <div>
-        <Header>
-          <h1>Nodes</h1>
-          <InputSearch value={filter} onChange={this.onFilterChange} />
-        </Header>
+        <Header title="Nodes" searchValue={filter} onSearchChange={this.onFilterChange} />
         <NodeList
           searchValue={filter}
           sshHistory={sshHistory}
@@ -66,25 +62,6 @@ export class ClusterNodes extends React.Component {
     );
   }
 }
-
-const Header = styled.header`
-  height: 40px;
-  margin: 40px 0;
-
-  &::after {
-    content: "";
-    clear: both;
-    display: table;
-  }
-
-  h1 {
-    font-size: 36px;
-    font-weight: 300;
-    float: left;
-    line-height: 40px;
-    margin: 0 40px 0 0;
-  }
-`;
 
 function mapStoreToProps(props) {
   const { clusterId } = props;

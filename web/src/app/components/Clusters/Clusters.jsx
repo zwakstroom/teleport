@@ -19,9 +19,10 @@ import { connect } from './../nuclear';
 import AppBar from './../AppBar/AppBar';
 import AppLogo from './../AppLogo';
 import siteGetters from 'app/flux/sites/getters';
-import { Flex, Box, Typography } from 'shared/components';
+import { Flex, Box } from 'shared/components';
 import CardCluster from './CardCluster';
 import { showCluster } from 'app/flux/sites/actions';
+import Header from 'app/components/Header';
 
 export class Clusters extends React.Component {
 
@@ -55,12 +56,12 @@ export class Clusters extends React.Component {
           </AppBar>
         </div>
         <div style={{ overflow: "auto" }}>
-          <Box m={4}>
-            <Typography.h1 m={2}>Clusters</Typography.h1>
-            <Flex flexWrap="wrap" >
-              {$clusters}
-            </Flex>
+          <Box mx={2} my={3}>
+            <Header title="Clusters" />
           </Box>
+          <Flex flexWrap="wrap" >
+            {$clusters}
+          </Flex>
         </div>
       </Flex>
     );

@@ -44,7 +44,7 @@ export class Cluster extends React.Component {
 
     return (
       <Flex height="100%">
-        <SideNav>
+        <SideNav height="100%">
           <AppLogo />
           <SideNavItem as={props => (
             <NavLink className={props.className}

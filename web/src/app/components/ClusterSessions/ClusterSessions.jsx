@@ -16,16 +16,14 @@ limitations under the License.
 
 import moment from 'moment';
 import React from 'react';
-import styled from 'styled-components';
 import { connect } from './../nuclear';
 import { fetchSiteEventsWithinTimeRange } from 'app/flux/storedSessionsFilter/actions';
 import sessionGetters from 'app/flux/sessions/getters';
 import AjaxPoller from './../dataProvider.jsx';
 import SessionList from './SessionList';
-import InputSearch from './../InputSearch';
 import { DocumentTitle } from './../documentTitle';
 import withStorage from './../withStorage.jsx';
-import Typography from 'shared/components/Typography';
+import Header from 'app/components/Header';
 
 const end = moment(new Date()).endOf('day').toDate();
 const start = moment(end).subtract(20, 'day').startOf('day').toDate();
@@ -62,10 +60,7 @@ export class ClusterSessions extends React.Component {
 
     return (
       <DocumentTitle title={title}>
-        <Header>
-          <Typography.h1 mr="4"> Audit Log</Typography.h1>
-          <InputSearch value={searchValue} onChange={this.onSearchValueChange} />
-        </Header>
+        <Header title="Audit Log" searchValue={searchValue} onSearchChange={this.onSearchValueChange} />
         <div className="grv-page grv-sessions">
           <SessionList
             searchValue={searchValue}
@@ -97,19 +92,3 @@ function mapActionsToProps() {
 const SessionsWithStorage = withStorage(ClusterSessions);
 
 export default connect(mapStoreToProps, mapActionsToProps)(SessionsWithStorage);
-
-const Header = styled.header`
-  height: 40px;
-  margin: 40px 0;
-
-  &::after {
-    content: "";
-    clear: both;
-    display: table;
-  }
-
-  h1 {
-    float: left;
-    margin: 0 40px 0 0;
-  }
-`;

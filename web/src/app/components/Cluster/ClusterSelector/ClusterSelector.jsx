@@ -40,7 +40,7 @@ const customStyles = {
   }),
 
   container: (provided) => ({
-    // ...provided,
+    ...provided,
     height: '24px',
     lineHeight: '24px',
     width: '200px',
