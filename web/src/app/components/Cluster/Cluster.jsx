@@ -44,7 +44,7 @@ export class Cluster extends React.Component {
 
     return (
       <Flex height="100%">
-        <ClusterNav>
+        <SideNav>
           <AppLogo />
           <SideNavItem as={props => (
             <NavLink className={props.className}
@@ -62,8 +62,8 @@ export class Cluster extends React.Component {
             </NavLink>
             )}
           />
-        </ClusterNav>
-        <Flex flexDirection="column" width="100%">
+        </SideNav>
+        <Flex flexDirection="column" width="100%" px={5}>
           <div>
             <ClusterSelector
               value={clusterId}
@@ -73,16 +73,14 @@ export class Cluster extends React.Component {
             <AppBar />
           </div>
           <Content>
-            <Box m={2} width="100%">
-              <Switch>
-                <Route exact path={cfg.routes.cluster} >
-                  <ClusterNodes clusterId={clusterId} />
-                </Route>
-                <Route exact path={cfg.routes.clusterSessions} >
-                  <ClusterSessions clusterId={clusterId} />
-                </Route>
-              </Switch>
-            </Box>
+            <Switch>
+              <Route exact path={cfg.routes.cluster} >
+                <ClusterNodes clusterId={clusterId} />
+              </Route>
+              <Route exact path={cfg.routes.clusterSessions} >
+                <ClusterSessions clusterId={clusterId} />
+              </Route>
+            </Switch>
           </Content>
         </Flex>
       </Flex>
@@ -102,14 +100,10 @@ function mapStateToProps() {
   }
 }
 
-const Content = styled(Flex)`
+const Content = styled(Box)`
   overflow: auto;
   width: 100%;
   height: 100%;
-`
-
-const ClusterNav = styled(SideNav)`
-  flex-shrink: 0;
 `
 
 export default connect(mapStoreToProps, mapStateToProps)(Cluster);

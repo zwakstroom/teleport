@@ -63,7 +63,7 @@ export class ClusterSessions extends React.Component {
     return (
       <DocumentTitle title={title}>
         <Header>
-          <Typography.h1> Audit Log</Typography.h1>
+          <Typography.h1 mr="4"> Audit Log</Typography.h1>
           <InputSearch value={searchValue} onChange={this.onSearchValueChange} />
         </Header>
         <div className="grv-page grv-sessions">
@@ -110,5 +110,6 @@ const Header = styled.header`
 
   h1 {
     float: left;
+    margin: 0 40px 0 0;
   }
 `;

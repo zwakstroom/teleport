@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { space } from 'styled-system'
@@ -33,22 +32,6 @@ const alertType = props => {
       }
   }
 }
-
-const Danger = props => (
-  <Alert status="danger">{props.children}</Alert>
-);
-
-const Warning = props => (
-  <Alert status="warning">{props.children}</Alert>
-);
-
-const Info = props => (
-  <Alert status="info">{props.children}</Alert>
-);
-
-const Success = props => (
-  <Alert status="success">{props.children}</Alert>
-);
 
 const Alert = styled.div`
   border-radius: 8px;

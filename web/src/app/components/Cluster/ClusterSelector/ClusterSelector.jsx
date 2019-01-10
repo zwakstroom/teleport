@@ -40,10 +40,11 @@ const customStyles = {
   }),
 
   container: (provided) => ({
-    ...provided,
+    // ...provided,
     height: '24px',
     lineHeight: '24px',
     width: '200px',
+    padding: 0,
     position: 'absolute',
     top: "15px",
     marginLeft: "15px"
