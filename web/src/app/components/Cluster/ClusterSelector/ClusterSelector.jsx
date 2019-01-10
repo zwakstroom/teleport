@@ -39,15 +39,67 @@ const customStyles = {
     color: state.isSelected ? 'red' : 'blue',
   }),
 
+  input: (provided) => ({
+    ...provided,
+    backgroundColor: 'red',
+    color: 'rgba(255, 255, 255, .87)',
+    margin: 0,
+    padding: 0,
+    width: '100%',
+  }),
+
+  singleValue: (provided) => ({
+    ...provided,
+    backgroundColor: 'yellow',
+    color: 'rgba(255, 255, 255, .87)',
+  }),
+
+  dropdownIndicator: () => ({
+    border: 'none',
+    height: '24px',
+    margin: '0',
+    opacity: .56,
+    width: '24px'
+  }),
+
+  valueContainer: () => ({
+    backgroundColor: 'green',
+    width: '100%',
+  }),
+
+
   container: (provided) => ({
     ...provided,
+    backgroundColor: 'teal',
+    border: 'none',
     height: '24px',
-    lineHeight: '24px',
+    marginBottom: '40px',
+    padding: '0',
     width: '200px',
+  }),
+
+  indicatorsContainer: (provided) => ({
+    ...provided,
+    border: 'none',
+    background: 'orange',
+    color: 'rgba(255, 255, 255, .87)',
+    height: '24px',
     padding: 0,
     position: 'absolute',
-    top: "15px",
-    marginLeft: "15px"
+    right: 0,
+    top: 0,
+  }),
+
+  control: (provided) => ({
+    ...provided,
+    border: 'none',
+    background: 'magenta',
+    color: 'rgba(255, 255, 255, .87)',
+    height: '24px',
+    lineHeight: '24px',
+    minHeight: 'auto',
+    width: '100%',
+    padding: '0 24px 0 0',
   }),
 
   singleValue: (provided, state) => {

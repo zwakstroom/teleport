@@ -65,12 +65,13 @@ export class Cluster extends React.Component {
         </SideNav>
         <Flex flexDirection="column" width="100%" px={5}>
           <div>
-            <ClusterSelector
-              value={clusterId}
-              onChange={this.onChangeCluster}
-              options={clusterOptions}
-            />
-            <AppBar />
+            <AppBar>
+              <ClusterSelector
+                value={clusterId}
+                onChange={this.onChangeCluster}
+                options={clusterOptions}
+              />
+            </AppBar>
           </div>
           <Content>
             <Switch>
