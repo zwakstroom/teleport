@@ -20,7 +20,7 @@ import { isMatch } from 'app/lib/objectUtils';
 import { Table, Column, Cell, SortHeaderCell, SortTypes } from 'shared/components/DataTable';
 
 import moment from 'moment';
-import { SessionIdCell, NodeCell, UsersCell, DateCreatedCell, DurationCell } from './SessionListCells';
+import { SessionIdCell, NodeCell, UsersCell, TypeCell, DateCreatedCell, DurationCell } from './SessionListCells';
 import cfg from 'app/config';
 
 class SessionList extends React.Component {
@@ -93,14 +93,13 @@ class SessionList extends React.Component {
     const data = [...active, ...stored];
     return (
       <Table rowCount={data.length} data={data}>
+
           <Column
-            header={<Cell> Session ID </Cell> }
-            cell={
-              <SessionIdCell canJoin={canJoin} container={this} />
-            }
+            header={<Cell> Type </Cell> }
+            cell={<TypeCell /> }
           />
           <Column
-            header={<Cell> User </Cell> }
+            header={<Cell> User / IP Address </Cell> }
             cell={<UsersCell /> }
           />
           <Column
@@ -109,6 +108,17 @@ class SessionList extends React.Component {
               <Cell>Node</Cell>
             }
             cell={<NodeCell /> }
+          />
+          <Column
+            columnKey="duration"
+            header={
+              <SortHeaderCell
+                sortDir={this.state.colSortDirs.duration}
+                onSortChange={this.onSortChange}
+                title="Duration"
+              />
+            }
+            cell={<DurationCell /> }
           />
           <Column
             columnKey="created"
@@ -122,15 +132,10 @@ class SessionList extends React.Component {
             cell={<DateCreatedCell /> }
           />
           <Column
-            columnKey="duration"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.duration}
-                onSortChange={this.onSortChange}
-                title="Duration"
-              />
+            header={<Cell> Session ID </Cell> }
+            cell={
+              <SessionIdCell canJoin={canJoin} container={this} />
             }
-            cell={<DurationCell /> }
           />
         </Table>
     )

@@ -20,6 +20,7 @@ import { Cell } from  'shared/components/DataTable';
 import moment from 'moment';
 import classnames from 'classnames';
 import { Flex } from 'shared/components';
+import Button from 'shared/components/Button';
 
 const DateCreatedCell = ({ rowIndex, data, ...props }) => {
   let { createdDisplayText } = data[rowIndex];
@@ -45,6 +46,24 @@ const SingleUserCell = ({ rowIndex, data, ...props }) => {
   return (
     <Cell {...props}>
       <span>{user}</span>
+    </Cell>
+  )
+};
+
+const TypeCell = ({ rowIndex, data, ...props }) => {
+  const {event = '' } = data[rowIndex];
+  let message = '';
+
+  switch(event) {
+    case 'session': message = ''; break;
+    case 'active-session': message = ''; break;
+    case 'session': message = ''; break;
+    default: message = "Terminal Session";
+  }
+
+  return (
+    <Cell {...props}>
+      <div>{message}</div>
     </Cell>
   )
 };
@@ -76,11 +95,13 @@ const SessionIdCell = ({ rowIndex, canJoin, data, ...props }) => {
   const sidShort = sid.slice(0, 8);
   const actionText = active ? 'join' : 'play';
 
-  const btnClass = classnames('btn btn-xs m-r-sm', {
-    'btn-primary': !active,
-    'btn-warning': active,
+  const btnClass = classnames({
+    '': !active,
+    'warning': active,
     'disabled': isDisabled
   });
+
+
 
   return (
     <Cell {...props}>
@@ -88,10 +109,11 @@ const SessionIdCell = ({ rowIndex, canJoin, data, ...props }) => {
         {isDisabled && <button className={btnClass}>{actionText}</button> }
         {!isDisabled && (
           <NavLink to={sessionUrl} className={btnClass} type="button" >
-            {actionText}
+            <Button size="small" status={btnClass} title={sidShort}>
+                {actionText} Session
+            </Button>
           </NavLink>
         )}
-        <span style={{ width: "75px" }}>{sidShort}</span>
       </Flex>
     </Cell>
   )
@@ -112,5 +134,6 @@ export {
   DurationCell,
   DateCreatedCell,
   SingleUserCell,
-  NodeCell
+  NodeCell,
+  TypeCell
 };
