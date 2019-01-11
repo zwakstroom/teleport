@@ -15,7 +15,10 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import Select from 'react-select';
+import * as Icon from 'shared/components/Icon';
+import theme from 'shared/components/theme';
 
 class ClusterSelector extends React.Component {
   render() {
@@ -23,12 +26,15 @@ class ClusterSelector extends React.Component {
     const selected = options.find(o => o.value === value);
 
     return (
+      <StyledSelector>
+        <Icon.Cluster />
         <Select
           styles={customStyles}
           value={selected}
           onChange={onChange}
           options={options}
         />
+      </StyledSelector>
     );
   }
 }
@@ -36,44 +42,56 @@ class ClusterSelector extends React.Component {
 const customStyles = {
   option: (provided, state) => ({
     ...provided,
-    color: state.isSelected ? 'red' : 'blue',
+    color: state.isSelected ? theme.colors.light : theme.colors.text,
   }),
 
   input: (provided) => ({
     ...provided,
-    backgroundColor: 'red',
+    border: 'none',
     color: 'rgba(255, 255, 255, .87)',
     margin: 0,
     padding: 0,
     width: '100%',
   }),
 
-  singleValue: (provided) => ({
+  noOptionsMessage: (provided) => ({
     ...provided,
-    backgroundColor: 'yellow',
-    color: 'rgba(255, 255, 255, .87)',
+    color: 'blue',
+    margin: 0,
+    padding: 0,
+    width: '100%',
+  }),
+
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    border: 'none',
+    margin: 0,
+    padding: 0,
+    width: '100%',
   }),
 
   dropdownIndicator: () => ({
     border: 'none',
     height: '24px',
     margin: '0',
-    opacity: .56,
-    width: '24px'
+    opacity: .24,
+    width: '24px',
   }),
 
   valueContainer: () => ({
-    backgroundColor: 'green',
+    border: 'none',
+    color: 'rgba(255, 255, 255, .87)',
     width: '100%',
   }),
 
 
-  container: (provided) => ({
+  container: (provided, state) => ({
     ...provided,
-    backgroundColor: 'teal',
     border: 'none',
+    color: 'rgba(255, 255, 255, .87)',
     height: '24px',
-    marginBottom: '40px',
+    marginBottom: '16px',
     padding: '0',
     width: '200px',
   }),
@@ -81,7 +99,6 @@ const customStyles = {
   indicatorsContainer: (provided) => ({
     ...provided,
     border: 'none',
-    background: 'orange',
     color: 'rgba(255, 255, 255, .87)',
     height: '24px',
     padding: 0,
@@ -90,10 +107,14 @@ const customStyles = {
     top: 0,
   }),
 
+  indicatorSeparator: () => ({
+    display: 'none'
+  }),
+
   control: (provided) => ({
     ...provided,
     border: 'none',
-    background: 'magenta',
+    background: 'none',
     color: 'rgba(255, 255, 255, .87)',
     height: '24px',
     lineHeight: '24px',
@@ -106,8 +127,29 @@ const customStyles = {
     const opacity = state.isDisabled ? 0.5 : 1;
     const transition = 'opacity 300ms';
 
-    return { ...provided, opacity, transition };
+    return {
+      ...provided,
+      border: 'none',
+      color: 'rgba(255, 255, 255, .87)',
+      fontSize: '14px',
+      opacity,
+      transition
+    };
   }
 }
+
+
+const StyledSelector = styled.div`
+  display: inline-bock;
+  padding-left: 24px;
+  position: relative;
+
+  .icon {
+    opacity: .56;
+    position: absolute;
+    top: 3px;
+    left: 0;
+  }
+`
 
 export default ClusterSelector;
