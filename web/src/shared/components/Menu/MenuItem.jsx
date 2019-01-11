@@ -32,7 +32,6 @@ MenuItem.propTypes = {
 
 MenuItem.defaultProps = {
   component: 'li',
-  disableGutters: false,
   role: 'menuitem',
 };
 

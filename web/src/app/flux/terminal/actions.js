@@ -37,8 +37,7 @@ function initStore(params) {
   });
 }
 
-function createSid(routeParams) {
-  const { login, siteId } = routeParams;
+function createSid(login, siteId) {
   const data = {
     session: {
       terminal_params: {
@@ -52,10 +51,10 @@ function createSid(routeParams) {
   return api.post(cfg.api.getSiteSessionUrl(siteId), data);
 }
 
-export function initTerminal(routeParams) {
-  logger.info('attempt to open a terminal', routeParams);
+export function initTerminal(params) {
+  logger.info('attempt to open a terminal', params);
 
-  const { sid } = routeParams;
+  const { sid, login, siteId } = params;
 
   setStatus({ isLoading: true });
 
@@ -63,7 +62,7 @@ export function initTerminal(routeParams) {
     const activeSession = reactor.evaluate(sessionGetters.activeSessionById(sid));
     if (activeSession) {
       // init store with existing sid
-      initStore(routeParams);
+      initStore(params);
       setStatus({ isReady: true });
     } else {
       setStatus({ isNotFound: true });
@@ -72,18 +71,17 @@ export function initTerminal(routeParams) {
     return;
   }
 
-  createSid(routeParams)
+  createSid(login, siteId)
     .then(json => {
       const sid = json.session.id;
       const newRouteParams = {
-        ...routeParams,
+        ...params,
         sid
       };
       initStore(newRouteParams)
       setStatus({ isReady: true });
       updateRoute(newRouteParams);
-
-      saveSshLogin(routeParams);
+      saveSshLogin(params);
     })
     .catch(err => {
       setStatus({
@@ -93,12 +91,13 @@ export function initTerminal(routeParams) {
     });
 }
 
-export function close() {
+export function close(clusterId) {
   reactor.dispatch(TLPT_TERMINAL_CLOSE);
-  history.push(cfg.routes.nodes);
+  const clusterUrl = cfg.getClusterNodesUrl(clusterId);
+  history.push(clusterUrl);
 }
 
 export function updateRoute(newRouteParams) {
-  let routeUrl = cfg.getTerminalLoginUrl(newRouteParams);
+  const routeUrl = cfg.getTerminalLoginUrl(newRouteParams);
   history.push(routeUrl);
 }

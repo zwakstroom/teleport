@@ -17,6 +17,8 @@ limitations under the License.
 import React from 'react';
 import styled from 'styled-components';
 import { Route, Switch, NavLink } from 'react-router-dom'
+import Terminal from './../Terminal';
+import PlayerBox from './../Player';
 import AppBar from './../AppBar/AppBar';
 import AppLogo from './../AppLogo';
 import { connect } from './../nuclear';
@@ -27,7 +29,6 @@ import ClusterNodes from './../ClusterNodes';
 import ClusterSessions from './../ClusterSessions';
 import ClusterSelector from './ClusterSelector';
 import { changeCluster } from 'app/flux/sites/actions';
-
 
 export class Cluster extends React.Component {
 
@@ -74,14 +75,19 @@ export class Cluster extends React.Component {
             </AppBar>
           </div>
           <Content>
-            <Switch>
-              <Route exact path={cfg.routes.cluster} >
-                <ClusterNodes clusterId={clusterId} />
-              </Route>
-              <Route exact path={cfg.routes.clusterSessions} >
-                <ClusterSessions clusterId={clusterId} />
-              </Route>
-            </Switch>
+
+            <Box m={2} width="100%">
+              <Switch>
+                <Route exact path={cfg.routes.cluster} >
+                  <ClusterNodes clusterId={clusterId} />
+                </Route>
+                <Route exact path={cfg.routes.clusterSessions} >
+                  <ClusterSessions clusterId={clusterId} />
+                </Route>
+                <Route path={cfg.routes.terminal} component={Terminal} />
+                <Route path={cfg.routes.player} component={PlayerBox} />
+              </Switch>
+            </Box>
           </Content>
         </Flex>
       </Flex>
@@ -95,9 +101,11 @@ function mapStoreToProps() {
   }
 }
 
-function mapStateToProps() {
+function mapStateToProps(props) {
+  const { clusterId } = props.match.params;
   return {
     onChangeCluster: changeCluster,
+    clusterId
   }
 }
 

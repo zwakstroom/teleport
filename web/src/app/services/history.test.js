@@ -44,7 +44,12 @@ describe('services/history', () => {
     })
 
     it('should push if allowed else fallback to default route', () => {
-      history.getRoutes.mockReturnValue(['/valid', '/']);
+      history.getRoutes.mockReturnValue([
+        '/valid',
+        '/', '/test/:param',
+        '/test/:param/:optional?',
+        '/web/cluster/:siteId/node/:serverId/:login/:sid?',
+      ]);
       push('invalid').andExpect(fallbackRoute);
       push('.').andExpect(fallbackRoute);
       push('/valid/test').andExpect(fallbackRoute);
@@ -52,6 +57,16 @@ describe('services/history', () => {
       push('/valid').andExpect('/valid');
       push('').andExpect('');
       push('/').andExpect('/');
+      push('/test/param1').andExpect('/test/param1');
+      push('/test/param1/param2').andExpect('/test/param1/param2');
+
+      // test option parameters
+      push('/web/cluster/one/node/xxx/root/yyyy/xxx/unknown')
+        .andExpect(fallbackRoute);
+      push('/web/cluster/one/node/xxx/root')
+        .andExpect('/web/cluster/one/node/xxx/root')
+      push('/web/cluster/one/node/xxx/root/yyy')
+        .andExpect('/web/cluster/one/node/xxx/root/yyy')
     })
 
     it('should refresh a page if called withRefresh=true', () => {

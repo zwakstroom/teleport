@@ -15,17 +15,22 @@ limitations under the License.
 */
 
 import React from 'react';
-import XTerm from 'app/lib/term/terminal';
+import "xterm/dist/xterm.css";
+import XTermCtrl from 'app/lib/term/terminal';
 import { TermEventEnum } from 'app/lib/term/enums';
 import TtyAddressResolver from 'app/lib/term/ttyAddressResolver';
 
-export class Terminal extends React.Component {
+export default class XTerm extends React.Component {
+
+  onRef = ref => {
+    this.containerRef = ref;
+  };
 
   componentDidMount() {
     const { onSessionEnd, ttyParams, title } = this.props;
     const addressResolver = new TtyAddressResolver(ttyParams);
-    this.terminal = new XTerm({
-      el: this.refs.container,
+    this.terminal = new XTermCtrl({
+      el: this.containerRef,
       addressResolver
     });
 
@@ -48,6 +53,6 @@ export class Terminal extends React.Component {
   }
 
   render() {
-    return ( <div ref="container"/> );
+    return ( <div ref={this.onRef} /> );
   }
 }

@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {colors} from './../theme'
-import { space } from 'styled-system'
+import { space, width } from 'styled-system'
 
 const Input = styled.input`
   appearance: none;
@@ -30,7 +30,7 @@ const Input = styled.input`
     color: ${props => props.theme.colors.subtle};
   }
 
-  ${space};
+  ${space} ${width};
 `
 
 Input.displayName = 'Input'
