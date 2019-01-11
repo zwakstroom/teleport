@@ -6,7 +6,7 @@ import LogoButton from 'shared/components/LogoButton';
 import teleportLogo from 'shared/assets/images/teleport-logo.svg';
 
 const AppLogo = ({
-  version = '3.1.2.beta',
+  version = '3.1.2-b',
 }) => {
   return (
     <LogoButton src={teleportLogo} version={version} as={props => (

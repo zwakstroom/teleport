@@ -50,16 +50,14 @@ export class Clusters extends React.Component {
 
     return (
       <Flex flexDirection="column" height="100%">
-        <div>
-          <AppBar >
-            <AppLogo/>
-          </AppBar>
-        </div>
-        <div style={{ overflow: "auto" }}>
-          <Box mx={2} my={3}>
+        <AppBar >
+          <AppLogo/>
+        </AppBar>
+        <div style={{ overflow: "auto", height: '100%' }}>
+          <Box mx={4} mb={3} mt="1">
             <Header title="Clusters" />
           </Box>
-          <Flex flexWrap="wrap" >
+          <Flex flexWrap="wrap" mx={2} >
             {$clusters}
           </Flex>
         </div>

@@ -45,7 +45,7 @@ export const colors = {
 
   bgError: '#FEE5ED',
   bgLight: '#FFFFFF',
-  bgPrimary: '#111B48',
+  bgPrimary: '#0C143D',
   bgQuaternary: '#1B234A',
   bgSecondary: '#222C59',
   bgSuccess: '#00BFA5',

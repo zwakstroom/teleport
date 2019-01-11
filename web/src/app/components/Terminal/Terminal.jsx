@@ -160,9 +160,9 @@ function mapStateToProps(props) {
 export default connect(mapStoreToProps, mapStateToProps)(Terminal);
 
 const StyledTerminal = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  left: 0;
+  right: 0;
+  position: fixed;
   top: 0;
   bottom: 0;
   background-color:${props => props.theme.colors.bgTerminal};

@@ -12,8 +12,8 @@ Typography.displayName = 'Typography';
 
 
 Typography.h1 = styled(Typography)`
-  font-weight: 300;
-  font-size: 36px;
+  font-weight: 200;
+  font-size: 34px;
   line-height: 40px;
   margin: 0 0 32px 0;
 `;

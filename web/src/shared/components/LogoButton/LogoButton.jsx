@@ -72,6 +72,8 @@ const StyledLogo = styled.a`
     font-weight: bold;
     font-style: normal;
     margin: 0;
+    opacity: .56;
+    text-transform: none;
   }
 `;
 

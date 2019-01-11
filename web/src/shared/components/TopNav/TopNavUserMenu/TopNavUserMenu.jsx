@@ -75,7 +75,7 @@ const AvatarButton = styled.div`
 
   em {
     font-size: 10px;
-    font-weight: bold
+    font-weight: 800;
     font-style: normal;
     margin: 0;
   }
