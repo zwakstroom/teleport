@@ -57,17 +57,19 @@ class LoginCell extends React.Component {
   }
 
   onShowLoginsClick = () => {
-    this.refs.customLogin.focus()
+    this.refs.customLogin.focus();
   }
 
   makeUrl(login) {
     const { data, rowIndex } = this.props;
     const { siteId, id } = data[rowIndex];
+    const onLogin = login || function() {};
+
     return cfg.getTerminalLoginUrl({
       siteId: siteId,
       serverId: id,
-      login
-    })
+      login: onLogin
+    });
   }
 
   render() {

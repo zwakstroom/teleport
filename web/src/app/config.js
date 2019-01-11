@@ -22,7 +22,7 @@ const baseUrl = isTestEnv() ? 'localhost' : window.location.origin;
 
 const cfg = {
 
-  baseUrl,
+  baseUrl: baseUrl,
 
   helpUrl: 'https://gravitational.com/teleport/docs/quickstart/',
 
