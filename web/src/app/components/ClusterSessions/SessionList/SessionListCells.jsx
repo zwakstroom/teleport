@@ -57,7 +57,6 @@ const TypeCell = ({ rowIndex, data, ...props }) => {
   switch(event) {
     case 'session': message = ''; break;
     case 'active-session': message = ''; break;
-    case 'session': message = ''; break;
     default: message = "Terminal Session";
   }
 

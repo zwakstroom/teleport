@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-// import Text from './../Text'
 import { space, color, textAlign } from 'styled-system'
 
 const Typography = styled.div`
@@ -97,4 +96,4 @@ Typography.small.defaultProps = {
   as: "small"
 }
 
-export default Typography
+export default Typography;
