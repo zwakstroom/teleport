@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { connect } from './../nuclear';
-import { Box, Heading } from 'shared/components';
+import { Box, Typography } from 'shared/components';
 import cfg from 'app/config';
 import { getters } from 'app/flux/user';
 import { withDocTitle } from './../documentTitle';
@@ -42,9 +42,9 @@ export class Settings extends React.Component {
           <AppLogo/>
         </AppBar>
         <Box m={4}>
-          <Heading.h2>
+          <Typography.h2>
             Account Settings
-          </Heading.h2>
+          </Typography.h2>
           <PasswordForm
             auth2faType={auth2faType}
             onChangePass={onChangePass}

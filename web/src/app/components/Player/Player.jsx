@@ -17,7 +17,7 @@ import React from 'react';
 import styled from 'styled-components';
 import Slider from './Slider';
 import Xterm from './Xterm';
-import * as Alerts from 'shared/components/Alerts';
+import Alert from 'shared/components/Alerts';
 import { TtyPlayer } from 'app/lib/term/ttyPlayer';
 import { Indicator, Text } from 'shared/components';
 
@@ -88,20 +88,20 @@ export default class Player extends React.Component {
 
     if (isError) {
       return (
-        <Alerts.Danger>
+        <Alert status="danger">
           Connection error
           <Text fontSize={1}> {errText || "Error"} </Text>
-        </Alerts.Danger>
+        </Alert>
       )
     }
 
     if (!isLoading && eventCount === 0 ) {
       return (
-        <Alerts.Warning>
+        <Alert status="warning">
           <Text fontSize={1}>
             recording for this session is not available.
           </Text>
-        </Alerts.Warning>
+        </Alert>
       )
     }
 

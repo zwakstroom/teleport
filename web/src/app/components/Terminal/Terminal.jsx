@@ -27,7 +27,7 @@ import { Indicator, Flex, Text, Button, Box } from 'shared/components';
 import Xterm from './Xterm/Xterm';
 import { FileTransferDialog } from './../files';
 import Portal from 'shared/components/Modal/Portal';
-import * as Alerts from 'shared/components/Alerts';
+import Alert from 'shared/components/Alerts';
 import { fonts } from 'shared/components/theme';
 
 class Terminal extends React.Component {
@@ -117,14 +117,14 @@ class Terminal extends React.Component {
 }
 
 const ErrorIndicator = ({ text }) => (
-  <Alerts.Danger>
+  <Alert status="danger">
     Connection error
     <Text fontSize={1}> {text} </Text>
-  </Alerts.Danger>
+  </Alert>
 )
 
 const SidNotFoundError = ({ onNew, onReplay }) => (
-  <Alerts.Danger>
+  <Alert status="danger">
     <strong>The session is no longer active</strong>
     <Box mt={2}>
       <Button onClick={onNew} mr={2}>
@@ -134,7 +134,7 @@ const SidNotFoundError = ({ onNew, onReplay }) => (
         Replay
       </Button>
     </Box>
-  </Alerts.Danger>
+  </Alert>
 )
 
 function mapStoreToProps() {
