@@ -18,19 +18,20 @@ import React from 'react';
 import styled from 'styled-components';
 import Select from 'react-select';
 import * as Icon from 'shared/components/Icon';
-import theme from 'shared/components/theme';
+import {colors} from 'shared/components/theme';
 
 class ClusterSelector extends React.Component {
   render() {
     const { value, options, onChange } = this.props;
     const selected = options.find(o => o.value === value);
+    const title = {label: `${selected.value} Cluster`, value: selected.value};
 
     return (
       <StyledSelector>
         <Icon.Cluster />
         <Select
           styles={customStyles}
-          value={selected}
+          value={title}
           onChange={onChange}
           options={options}
         />
@@ -42,7 +43,7 @@ class ClusterSelector extends React.Component {
 const customStyles = {
   option: (provided, state) => ({
     ...provided,
-    color: state.isSelected ? theme.colors.light : theme.colors.text,
+    color: state.isSelected ? colors.light : colors.text,
   }),
 
   input: (provided) => ({
@@ -86,7 +87,7 @@ const customStyles = {
   }),
 
 
-  container: (provided, state) => ({
+  container: (provided) => ({
     ...provided,
     border: 'none',
     color: 'rgba(255, 255, 255, .87)',
