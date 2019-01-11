@@ -19,7 +19,7 @@ import { Formik } from 'formik';
 import PropTypes from 'prop-types';
 import { Auth2faTypeEnum } from 'app/services/enums';
 import { Card, Input, Label, Button } from 'shared/components';
-import * as Alerts from 'shared/components/Alerts';
+import Alert from 'shared/components/Alerts';
 
 const defaultState = {
   oldPass: '',
@@ -163,25 +163,25 @@ class PasswordForm extends React.Component {
 
     if (isFailed) {
       return (
-        <Alerts.Danger>
+        <Alert status="danger">
           {message}
-        </Alerts.Danger>
+        </Alert>
       )
     }
 
     if (isSuccess) {
       return (
-        <Alerts.Success>
+        <Alert status="success">
           Your password has been changed
-        </Alerts.Success>
+        </Alert>
       )
     }
 
     if (waitForU2fKeyResponse) {
       return (
-        <Alerts.Info>
+        <Alert status="info">
           Insert your U2F key and press the button on the key
-        </Alerts.Info>
+        </Alert>
       )
     }
 
