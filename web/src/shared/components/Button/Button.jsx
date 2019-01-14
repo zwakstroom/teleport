@@ -33,12 +33,27 @@ const size = props => {
 }
 
 const color = props => {
-  const { theme, secondary, warning } = props;
+  const { theme, secondary, warning, link } = props;
+
   if(secondary) {
     return  {
       background: theme.colors.secondary,
       '&:hover, &:focus': {
         background: theme.colors.secondaryLight,
+      }
+    };
+  }
+
+  if(link) {
+    return  {
+      color: theme.colors.link,
+      fontWeight: 'normal',
+      background: 'none',
+      textDecoration: 'underline',
+      textTransform: 'none',
+
+      '&:hover, &:focus': {
+        background: theme.colors.bgSecondary,
       }
     };
   }

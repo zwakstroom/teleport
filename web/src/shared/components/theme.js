@@ -50,7 +50,7 @@ export const colors = {
   bgSecondary: '#222C59',
   bgSuccess: '#00BFA5',
   bgTertiary: '#263266',
-  bgTerminal: '#252323'
+  bgTerminal: '#010B1C'
 }
 
 export const borders = [

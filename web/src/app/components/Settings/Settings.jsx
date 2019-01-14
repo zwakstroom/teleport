@@ -25,6 +25,7 @@ import PasswordForm from './PasswordForm';
 
 import AppBar from './../AppBar/AppBar';
 import AppLogo from './../AppLogo';
+import Header from 'app/components/Header';
 
 export class Settings extends React.Component {
 
@@ -41,10 +42,11 @@ export class Settings extends React.Component {
         <AppBar >
           <AppLogo/>
         </AppBar>
-        <Box m={4}>
-          <Typography.h2>
-            Account Settings
-          </Typography.h2>
+
+        <Box mx={4} mb={3} mt="1">
+          <Header title="Account Settings" />
+        </Box>
+        <Box mx={4}>
           <PasswordForm
             auth2faType={auth2faType}
             onChangePass={onChangePass}

@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 import React from 'react';
-import "xterm/dist/xterm.css";
 import XTermCtrl from 'app/lib/term/terminal';
 import { TermEventEnum } from 'app/lib/term/enums';
 import TtyAddressResolver from 'app/lib/term/ttyAddressResolver';

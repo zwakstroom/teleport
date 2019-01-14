@@ -55,6 +55,10 @@ class ActionBar extends React.Component {
     this.openFileTransferDialog(false);
   }
 
+  renderTab() {
+
+  }
+
   render() {
     const { store, title } = this.props;
     const { isOpen } = store;
@@ -95,9 +99,8 @@ const isOpen = props => {
 }
 
 const IconButton = styled.div`
-  border-radius: 20px;
   width: 30px;
-  height: 30px;
+  height: 32p;
   color: white;
   display: flex;
   align-Items: center;

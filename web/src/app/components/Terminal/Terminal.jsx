@@ -168,13 +168,21 @@ const StyledTerminal = styled.div`
   background-color:${props => props.theme.colors.bgTerminal};
 
   .grv-terminal {
+    background: none;
     height: 100%;
     width: 100%;
     font-size: 14px;
-    line-height: normal
+    line-height: 18px;
+    padding: 48px 16px 16px 16px;
+  }
+
+  .terminal .xterm-rows > div {
+    line-height: 18px;
+    white-space: nowrap;
   }
 
   .grv-terminal .terminal {
+    background: none;
     font-family: ${ fonts.mono };
     border: none;
     font-size: inherit;
@@ -183,11 +191,11 @@ const StyledTerminal = styled.div`
   }
 
   .grv-terminal .terminal .xterm-viewport {
+    background: none;
     overflow-y: hidden;
-    background-color: #252323;
   }
 
   .grv-terminal .terminal * {
-    font-weight: normal!important;
+
   }
 `

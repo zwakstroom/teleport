@@ -61,16 +61,14 @@ export class ClusterSessions extends React.Component {
     return (
       <DocumentTitle title={title}>
         <Header title="Audit Log" searchValue={searchValue} onSearchChange={this.onSearchValueChange} />
-        <div className="grv-page grv-sessions">
-          <SessionList
-            searchValue={searchValue}
-            storage={this.props.storage}
-            activeSessions={activeSessions}
-            storedSessions={storedSessions}
-            filter={dateFilter}
-          />
-          <AjaxPoller onFetch={this.refresh} />
-        </div>
+        <SessionList
+          searchValue={searchValue}
+          storage={this.props.storage}
+          activeSessions={activeSessions}
+          storedSessions={storedSessions}
+          filter={dateFilter}
+        />
+        <AjaxPoller onFetch={this.refresh} />
       </DocumentTitle>
     );
   }

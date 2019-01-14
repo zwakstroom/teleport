@@ -92,7 +92,7 @@ const customStyles = {
     border: 'none',
     color: 'rgba(255, 255, 255, .87)',
     height: '24px',
-    marginBottom: '16px',
+    marginBottom: '8px',
     padding: '0',
     width: '200px',
   }),

@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Card, Box, Typography, Input, Label, Button } from '../../../../shared/components';
+import { Card, Box, Flex, Typography, Input, Label, Button } from '../../../../shared/components';
 import Alert from '../../../../shared/components/Alerts';
 import { Auth2faTypeEnum } from '../../../services/enums';
 import SsoButtonList from './SsoButtons';
@@ -125,6 +125,39 @@ export default class LoginForm extends React.Component {
     )
   }
 
+  renderTokenField({ values, errors, touched, handleChange}) {
+    const isOTP = this.isOTP();
+      const tokenError = Boolean(errors.token && touched.token);
+
+    let $tokenField = null;
+
+    if(isOTP) {
+      $tokenField = (
+        <Flex>
+          <Box width="45%" mr="0">
+            <Label mt={3} hasError={tokenError}>
+              Two factor token
+              {tokenError && errors.token}
+            </Label>
+            <Input id="token" fontSize={0}
+              hasError={tokenError}
+              autoComplete="off"
+              value={values.token}
+              onChange={handleChange}
+              placeholder="123 456"
+              />
+          </Box>
+
+          <Box ml="2" width="55%" textAlign="center" pt={3}>
+            <Button target="_blank" block as="a" size="small" link href="https://support.google.com/accounts/answer/1066447?co=GENIE.Platform%3DiOS&hl=en&oco=0">Download Google Authenticator</Button>
+          </Box>
+        </Flex>
+      );
+    }
+
+    return $tokenField;
+  }
+
   renderInputFields({ values, errors, touched, handleChange }) {
     const userError = Boolean(errors.user && touched.user);
     const passError = Boolean(errors.password && touched.password);
@@ -156,22 +189,6 @@ export default class LoginForm extends React.Component {
           type="password"
           name="password"
           placeholder="Password"/>
-        {this.isOTP() && (
-          <>
-            <Label mt={3} hasError={tokenError}>
-              Two factor token
-              {tokenError && errors.token}
-            </Label>
-            <Input id="token" fontSize={0}
-              hasError={tokenError}
-              autoComplete="off"
-              value={values.token}
-              onChange={handleChange}
-              placeholder="Two factor token (Google Authenticator)"
-              />
-            </>
-          )
-        }
       </React.Fragment>
     )
   }
@@ -194,6 +211,7 @@ export default class LoginForm extends React.Component {
                 </Typography.h3>
                 { isFailed && <Alert status="danger"> {message} </Alert>  }
                 {this.renderInputFields(props)}
+                {this.renderTokenField(props)}
                 {this.renderLoginBtn(props.handleSubmit)}
                 </Box>
                 <footer>

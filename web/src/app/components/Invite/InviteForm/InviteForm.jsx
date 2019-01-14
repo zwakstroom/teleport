@@ -109,18 +109,24 @@ export class InviteForm extends React.Component {
           placeholder="Password"
         />
         {this.isOTP() && (
-          <React.Fragment>
-            <Label mt={3} mb={1} hasError={tokenError}>
-              {(tokenError && errors.token) || "Two factor token"}
-            </Label>
-            <Input id="token" fontSize={0}
-              hasError={tokenError}
-              autoComplete="off"
-              value={values.token}
-              onChange={handleChange}
-              placeholder="Two factor token (Google Authenticator)"
-            />
-          </React.Fragment>
+          <Flex>
+            <Box width="45%" mr="0">
+              <Label mt={3} mb={1} hasError={tokenError}>
+                {(tokenError && errors.token) || "Two factor token"}
+              </Label>
+              <Input id="token" fontSize={0}
+                hasError={tokenError}
+                autoComplete="off"
+                value={values.token}
+                onChange={handleChange}
+                placeholder="123 456"
+              />
+            </Box>
+
+            <Box ml="2" width="55%" textAlign="center" pt={3}>
+              <Button target="_blank" block as="a" size="small" link href="https://support.google.com/accounts/answer/1066447?co=GENIE.Platform%3DiOS&hl=en&oco=0">Download Google Authenticator</Button>
+            </Box>
+          </Flex>
         ) }
       </React.Fragment>
     )
