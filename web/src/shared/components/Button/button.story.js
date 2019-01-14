@@ -19,7 +19,8 @@ storiesOf('Button', module)
     <div>
       <Button mr={2}>Primary</Button>
       <Button secondary mr={2}>Secondary</Button>
-      <Button warning>Warning</Button>
+      <Button warning mr={2}>Warning</Button>
+      <Button link >Link Button</Button>
     </div>
   ))
   .add('sizes', () => (

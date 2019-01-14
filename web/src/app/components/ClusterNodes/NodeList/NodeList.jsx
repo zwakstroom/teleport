@@ -72,6 +72,14 @@ class LoginCell extends React.Component {
     });
   }
 
+  renderLoginButton() {
+
+  }
+
+  renderEmptyMessage() {
+
+  }
+
   render() {
     const { logins, ...props } = this.props;
     const $lis = [];
@@ -208,6 +216,11 @@ class NodeList extends React.Component {
     return (
       <TablePaged rowCount={data.length} data={data} pageSize={50}>
         <Column
+          onLoginClick={onLoginClick}
+          header={<Cell>Login as</Cell> }
+          cell={<LoginCell logins={logins}/> }
+        />
+        <Column
           columnKey="hostname"
           header={
             <SortHeaderCell
@@ -233,11 +246,7 @@ class NodeList extends React.Component {
           header={<Cell>Labels</Cell> }
           cell={<TagCell/> }
         />
-        <Column
-          onLoginClick={onLoginClick}
-          header={<Cell>Login as</Cell> }
-          cell={<LoginCell logins={logins}/> }
-        />
+
       </TablePaged>
     )
   }

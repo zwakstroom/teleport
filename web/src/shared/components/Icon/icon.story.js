@@ -25,6 +25,12 @@ storiesOf('Icon', module)
       <Icon.CircleStop />
       <Icon.CirclePlay />
       <Icon.CirclePause />
+      <Icon.CircleArrowLeft />
+      <Icon.CircleArrowRight />
+      <Icon.ChevronCircleUp />
+      <Icon.ChevronCircleDown />
+      <Icon.ChevronCircleLeft />
+      <Icon.ChevronCircleRight />
       <Icon.Magnifier />
       <Icon.Cluster />
       <Icon.Ellipsis />

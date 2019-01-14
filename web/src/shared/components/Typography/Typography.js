@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { space, color, textAlign } from 'styled-system'
+import { space, color, textAlign } from 'styled-system';
+import {fontSizes} from 'shared/components/theme';
 
 const Typography = styled.div`
   margin: 0;

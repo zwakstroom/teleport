@@ -15,8 +15,11 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components'
+
 import classnames from 'classnames';
 import { Table } from './../Table';
+import * as Icon from 'shared/components/Icon';
 
 class PagedTable extends React.Component {
 
@@ -117,21 +120,81 @@ const PageInfo = props => {
   });
 
   return (
-    <div className="m-b-sm grv-table-paged-info">
-      <span className="m-r-sm">
-        <span className="text-muted">Showing </span>
-        <span className="font-bold">{startFrom+1}</span>
-        <span className="text-muted"> to </span>
-        <span className="font-bold">{endAt}</span>
-        <span className="text-muted"> of </span>
-        <span className="font-bold">{totalRows}</span>
-      </span>
-      <div className="btn-group btn-group-sm">
-        <a onClick={onPrev} className={prevBtnClass} type="button">Prev</a>
-        <a onClick={onNext} className={nextBtnClass} type="button">Next</a>
-      </div>
-    </div>
+    <Pager>
+      <h5>
+        SHOWING <strong>{startFrom+1}</strong> to <strong>{endAt}</strong> of <strong>{totalRows}</strong>
+      </h5>
+
+      <ul>
+        <li>
+          <button onClick={onPrev} title="Previous Page" className={prevBtnClass}>
+            <Icon.CircleArrowLeft fontSize="3" />
+          </button>
+        </li>
+
+        <li>
+          <button onClick={onNext} title="Next Page" className={nextBtnClass}>
+            <Icon.CircleArrowRight fontSize="3" />
+          </button>
+        </li>
+      </ul>
+    </Pager>
   )
 }
 
 export default PagedTable;
+
+const Pager = styled.nav`
+  display: flex;
+  margin: 0;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 8px;
+
+  h5 {
+    font-size: 11px;
+    font-weight: 300;
+    line-height: 24px;
+    margin: 0;
+    opacity: .87;
+    padding: 0;
+    width: 40%;
+  }
+
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 60%;
+    text-align: right;
+
+    li {
+      display: inline-block;
+    }
+  }
+
+  button {
+    background: none;
+    border: none;
+    border-radius: 200px;
+    cursor: pointer;
+    height: 24px;
+    padding: 0;
+    min-width: 24px;
+    outline: none;
+    transition: all .3s;
+
+    &:hover {
+      background: ${props => props.theme.colors.bgQuaternary };
+
+      .icon {
+        opacity: 1;
+      }
+    }
+
+    .icon {
+      opacity: .56;
+      transition: all .3s;
+    }
+  }
+`;
