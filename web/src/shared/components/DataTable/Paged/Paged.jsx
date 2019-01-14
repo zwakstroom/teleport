@@ -91,14 +91,10 @@ class PagedTable extends React.Component {
       totalRows
     }
 
+    const pager = <PageInfo {...infoProps} onPrev={this.onPrev} onNext={this.onNext} />;
+
     return (
-      <div className={className}>
-        <PageInfo {...infoProps} onPrev={this.onPrev} onNext={this.onNext} />
-        <div className={tableClass}>
-          <Table {...tableProps} />
-        </div>
-        <PageInfo {...infoProps} onPrev={this.onPrev} onNext={this.onNext} />
-      </div>
+      <Table {...tableProps} topbar={pager} footer={pager} />
     )
   }
 }
@@ -149,7 +145,7 @@ const Pager = styled.nav`
   margin: 0;
   height: 24px;
   line-height: 24px;
-  padding: 0 8px;
+  padding: 0;
 
   h5 {
     font-size: 11px;
@@ -180,6 +176,7 @@ const Pager = styled.nav`
     cursor: pointer;
     height: 24px;
     padding: 0;
+    margin: 0 2px;
     min-width: 24px;
     outline: none;
     transition: all .3s;

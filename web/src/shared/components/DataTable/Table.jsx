@@ -97,6 +97,30 @@ class Table extends React.Component {
      return content;
   }
 
+  renderFooter() {
+    let footer = null;
+
+    if(this.props.footer) {
+      footer = (
+        <tfoot><tr><td colSpan="100%">{this.props.footer}</td></tr></tfoot>
+      );
+    }
+
+    return footer;
+  }
+
+  renderTopBar() {
+    let topbar = null;
+
+    if(this.props.topbar) {
+      topbar = (
+        <thead><tr><td colSpan="100%">{this.props.topbar}</td></tr></thead>
+      );
+    }
+
+    return topbar;
+  }
+
   render() {
     const children = [];
     React.Children.forEach(this.props.children, child => {
@@ -113,8 +137,10 @@ class Table extends React.Component {
 
     return (
       <StyledTable>
+        {this.renderTopBar()}
         {this.renderHeader(children)}
         {this.renderBody(children)}
+        {this.renderFooter()}
       </StyledTable>
     );
   }
