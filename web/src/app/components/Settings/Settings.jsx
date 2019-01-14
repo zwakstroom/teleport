@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { connect } from './../nuclear';
-import { Box, Typography } from 'shared/components';
+import { Box } from 'shared/components';
 import cfg from 'app/config';
 import { getters } from 'app/flux/user';
 import { withDocTitle } from './../documentTitle';

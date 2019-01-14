@@ -13,7 +13,7 @@ export const fonts = {
 
 export const regular = 400
 export const bold = 600
-export const fontSizes = [12, 14, 16, 20, 24, 32, 36];
+export const fontSizes = [10, 12, 14, 16, 18, 28, 34];
 export const fontWeights = { regular, bold }
 export const space = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80];
 

@@ -161,7 +161,6 @@ export default class LoginForm extends React.Component {
   renderInputFields({ values, errors, touched, handleChange }) {
     const userError = Boolean(errors.user && touched.user);
     const passError = Boolean(errors.password && touched.password);
-    const tokenError = Boolean(errors.token && touched.token);
 
     return (
       <React.Fragment>

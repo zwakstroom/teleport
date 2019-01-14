@@ -62,7 +62,7 @@ class PagedTable extends React.Component {
 
   render(){
     const { startFrom, pageSize } = this.state;
-    const { data=[], tableClass='', className='' } = this.props;
+    const { data=[] } = this.props;
     const totalRows = data.length;
 
     let endAt = 0;

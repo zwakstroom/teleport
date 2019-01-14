@@ -1,12 +1,11 @@
 import styled from 'styled-components';
 import { space, color, textAlign } from 'styled-system';
-import {fontSizes} from 'shared/components/theme';
 
 const Typography = styled.div`
   margin: 0;
   ${space}
   ${color}
-  ${textAlign};
+  ${textAlign}
 `
 
 Typography.displayName = 'Typography';
@@ -14,7 +13,7 @@ Typography.displayName = 'Typography';
 
 Typography.h1 = styled(Typography)`
   font-weight: 200;
-  font-size: 34px;
+  font-size: ${props => props.theme.fontSizes[6]}px;
   line-height: 40px;
   margin: 0 0 32px 0;
 `;
@@ -25,7 +24,7 @@ Typography.h1.defaultProps = {
 
 Typography.h2 = styled(Typography)`
   font-weight: 600;
-  font-size: 28px;
+  font-size: ${props => props.theme.fontSizes[5]}px;
   line-height: 56px;
   text-transform: uppercase;
 `;
@@ -36,7 +35,7 @@ Typography.h2.defaultProps = {
 
 Typography.h3 = styled(Typography)`
   font-weight: 500;
-  font-size: 18px;
+  font-size: ${props => props.theme.fontSizes[4]}px;
   line-height: 24px;
   margin: 0 0 24px 0;
 `;
@@ -47,7 +46,7 @@ Typography.h3.defaultProps = {
 
 Typography.h4 = styled(Typography)`
   font-weight: 500;
-  font-size: 14px;
+  font-size: ${props => props.theme.fontSizes[2]}px;
   line-height: 40px;
   margin: 0;
 `;
@@ -59,7 +58,7 @@ Typography.h4.defaultProps = {
 Typography.h5 = styled(Typography)`
   display: block;
   font-weight: 300;
-  font-size: 12px;
+  font-size: ${props => props.theme.fontSizes[1]}px;
   line-height: 20px;
   margin: 0 0 16px 0;
   opacity: .87;
@@ -75,7 +74,7 @@ Typography.h5.defaultProps = {
 
 Typography.p = styled(Typography)`
   font-weight: 300;
-  font-size: 16px;
+  font-size: ${props => props.theme.fontSizes[3]}px;
   line-height: 32px;
   margin: 0 0 32px 0;
 `;
@@ -87,7 +86,7 @@ Typography.p.defaultProps = {
 Typography.small = styled(Typography)`
   display: inline-block;
   font-weight: 300;
-  font-size: 12px;
+  font-size: ${props => props.theme.fontSizes[1]}px;
   line-height: 16px;
   opacity: .87;
 `;
