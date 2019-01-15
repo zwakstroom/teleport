@@ -52,8 +52,10 @@ export default class ActionBar extends React.Component {
 
     return (
       <Flex height="30px">
-        <div title="Close" onClick={this.close}>
-          <Icons.Cross />
+        <div title="Close">
+          <button onClick={this.close}>
+            <Icons.Close />
+          </button>
           {title}
         </div>
         <Flex>
@@ -61,13 +63,13 @@ export default class ActionBar extends React.Component {
             title="Download files"
             isOpen={isFileTransferDialogOpen}
             onClick={onOpenDownloadDialog}>
-            <Icons.ArrowDown />
+            <Icons.Upload />
           </IconButton>
           <IconButton
             title="Upload files"
             isOpen={isFileTransferDialogOpen}
             onClick={onOpenUploadDialog}>
-            <Icons.ArrowUp />
+            <Icons.Download />
           </IconButton>
         </Flex>
       </Flex>

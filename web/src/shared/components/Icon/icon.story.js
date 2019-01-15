@@ -14,6 +14,8 @@ storiesOf('Icon', module)
   })
   .add('Icon components', () => (
     <Container>
+      <Icon.SmallArrowUp />
+      <Icon.SmallArrowDown />
       <Icon.CarrotDown />
       <Icon.CarrotUp />
       <Icon.CarrotLeft />
@@ -32,6 +34,9 @@ storiesOf('Icon', module)
       <Icon.ChevronCircleLeft />
       <Icon.ChevronCircleRight />
       <Icon.Magnifier />
+      <Icon.Close />
+      <Icon.Download />
+      <Icon.Upload />
       <Icon.Cluster />
       <Icon.Ellipsis />
       <Icon.Github />
@@ -118,6 +123,7 @@ storiesOf('Icon', module)
       <Icon.FacebookSquare />
       <Icon.Youtube />
       <Icon.Linkedin />
+      <Icon.VideoGame />
     </Container>
   ));
 
