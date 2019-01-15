@@ -44,6 +44,7 @@ const StyledSpinner = styled(SpinnerIcon)`
   display: inline-block;
   font-size: 32px;
   height: 32px;
+  opacity: .87;
   width: 32px;
   line-height: 32px;
   margin: 16px;

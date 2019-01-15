@@ -92,6 +92,7 @@ const Button = styled.button`
   display: inline-block;
   line-height: 40px;
   outline: none;
+  position: relative;
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
@@ -111,6 +112,16 @@ const Button = styled.button`
   &:disabled {
     background: rgba(255, 255, 255, .24);
     color: rgba(0, 0, 0, .24);
+  }
+
+  .icon {
+    font-size: 20px;
+    margin: -10px 0 0 0;
+    opacity: .87;
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    z-index: 1;
   }
 
   ${color}

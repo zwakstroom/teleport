@@ -23,7 +23,8 @@ import * as terminalActions  from 'app/flux/terminal/actions';
 import * as playerActions from 'app/flux/player/actions';
 import * as fileActions from 'app/flux/fileTransfer/actions';
 import ActionBar from './ActionBar/ActionBar';
-import { Indicator, Flex, Text, Button, Box } from 'shared/components';
+import { Indicator, Flex, Text, Button, Box, Typography } from 'shared/components';
+import * as Icon from 'shared/components/Icon';
 import Xterm from './Xterm/Xterm';
 import FileTransferDialog from './FileTransfer';
 import Portal from 'shared/components/Modal/Portal';
@@ -86,7 +87,11 @@ export class Terminal extends React.Component {
     let $content = null;
 
     if (status.isLoading) {
-      $content = (<Indicator />);
+      $content = (
+        <Box textAlign="center" m={10}>
+          <Indicator />
+        </Box>
+      );
     }
 
     if (status.isError) {
@@ -136,24 +141,22 @@ export class Terminal extends React.Component {
 }
 
 const ErrorIndicator = ({ text }) => (
-  <Alert status="danger">
+  <Alert status="danger" m={10}>
     Connection error
     <Text fontSize={1}> {text} </Text>
   </Alert>
 )
 
 const SidNotFoundError = ({ onNew, onReplay }) => (
-  <Alert status="danger">
-    <strong>The session is no longer active</strong>
-    <Box mt={2}>
-      <Button onClick={onNew} mr={2}>
-        Start New
+    <Box my={10} mx="auto" width="300px">
+      <Typography.h4 textAlign="center">The session is no longer active</Typography.h4>
+      <Button block onClick={onNew} my={4}>
+        <Icon.Cli /> Start New Session
       </Button>
-      <Button onClick={onReplay}>
-        Replay
+      <Button block  secondary onClick={onReplay}>
+        <Icon.CirclePlay /> Replay Session
       </Button>
     </Box>
-  </Alert>
 )
 
 function mapStoreToProps() {

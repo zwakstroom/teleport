@@ -52,12 +52,12 @@ export default class ActionBar extends React.Component {
 
     return (
       <Flex height="30px">
-        <div title="Close">
-          <button onClick={this.close}>
+        <StyledTab title={title}>
+          <button title="Close" onClick={this.close}>
             <Icons.Close />
           </button>
           {title}
-        </div>
+        </StyledTab>
         <Flex>
           <IconButton
             title="Download files"
@@ -88,18 +88,54 @@ ActionBar.propTypes = {
 const isOpen = props => {
   if (props.isOpen) {
     return {
-      opacity: 0.5,
+      opacity: 0.24,
       cursor: "not-allowed"
     }
   }
 }
 
-const IconButton = styled.div`
-  width: 30px;
-  height: 32p;
-  color: white;
+
+const StyledTab = styled.div`
+  box-sizing: border-box;
+  font-size: ${props => props.theme.fontSizes[1]}px;
+  height: 32px;
+  line-height: 16px;
+  padding: 8px 8px 8px 24px;
+  position: relative;
+
+  button {
+    background: ${props => props.theme.colors.errorDark};
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    height: 16px;
+    outline: none;
+    padding: 0;
+    position: absolute;
+    top: 8px;
+    transition: all .3s;
+    left: 0;
+    width: 16px;
+    z-index: 1;
+
+    &:hover {
+      background: ${props => props.theme.colors.error};
+    }
+  }
+`
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  border-radius: 2px;  width: 24px;
+  height: 32px;
+  color: ${props => props.theme.colors.light};
+  cursor: pointer;
+  font-size:  ${props => props.theme.fontSizes[4]}px;
   display: flex;
-  align-Items: center;
+  opacity: .87;
+  outline: none;
+  align-items: center;
   justify-content: center;
   ${isOpen};
 `
