@@ -6,7 +6,7 @@ const defaultProps = {
   onUpload: () => null
 }
 
-storiesOf('Teleport/Terminal/UploadForm', module)
+storiesOf('Teleport/Terminal/FileTransfer/UploadForm', module)
   .add('UploadForm', () => {
     return (
       <UploadForm {...defaultProps} />

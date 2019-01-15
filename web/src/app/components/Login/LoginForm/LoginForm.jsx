@@ -83,8 +83,6 @@ export default class LoginForm extends React.Component {
           Insert your U2F key and press the button on the key
         </Typography.small>
       );
-
-
     }
 
     const isDisabled = isProcessing;

@@ -25,14 +25,14 @@ export default class File extends Component {
 
   static propTypes = {
     file: PropTypes.object.isRequired,
+    httpResponse: PropTypes.object,
     onRemove: PropTypes.func.isRequired,
-    httpResponse: PropTypes.object
   }
 
   savedToDisk = false;
 
   onRemove = () => {
-    this.props.onRemove();
+    this.props.onRemove(this.props.file.id);
   }
 
   componentDidUpdate() {

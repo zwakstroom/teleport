@@ -71,23 +71,16 @@ export class Terminal extends React.Component {
     this.props.onOpenDownloadDialog(this.props.termParams);
   }
 
-  onTransferStart = json => {
-    this.props.onTransferStart(json);
-  }
-
   onClose = () => {
     this.props.onClose(this.props.termParams.siteId);
   }
 
-  render() {
-    const { termStore, fileStore } = this.props;
+  renderXterm(termStore) {
     const { status } = termStore;
     const title = termStore.getServerLabel();
 
-    let $content = null;
-
     if (status.isLoading) {
-      $content = (
+      return (
         <Box textAlign="center" m={10}>
           <Indicator />
         </Box>
@@ -95,11 +88,11 @@ export class Terminal extends React.Component {
     }
 
     if (status.isError) {
-      $content = (<ErrorIndicator text={status.errorText} />);
+      return <ErrorIndicator text={status.errorText} />;
     }
 
     if (status.isNotFound) {
-      $content = (
+      return (
         <SidNotFoundError
           onReplay={this.replay}
           onNew={this.startNew} />);
@@ -107,7 +100,7 @@ export class Terminal extends React.Component {
 
     if (status.isReady) {
       const ttyParams = termStore.getTtyParams();
-      $content = (
+      return (
         <Xterm ref={e => this.termRef = e}
           title={title}
           onSessionEnd={this.onClose}
@@ -115,15 +108,31 @@ export class Terminal extends React.Component {
       );
     }
 
+    return null;
+  }
+
+  render() {
+    const {
+      termStore,
+      fileStore,
+      onTransferUpdate,
+      onTransferStart,
+      onTransferRemove
+    } = this.props;
+
+    const title = termStore.getServerLabel();
     const isFileTransferDialogOpen = fileStore.isOpen;
+    const $xterm = this.renderXterm(termStore);
 
     return (
       <Portal>
         <StyledTerminal>
           <FileTransferDialog
             store={fileStore}
+            onTransferRemove={onTransferRemove}
+            onTransferUpdate={onTransferUpdate}
+            onTransferStart={onTransferStart}
             onClose={this.onCloseFileTransfer}
-            onTransfer={this.onTransferStart}
           />
           <Flex flexDirection="column" height="100%" width="100%">
             <ActionBar
@@ -132,7 +141,7 @@ export class Terminal extends React.Component {
               isOpen={isFileTransferDialogOpen}
               title={title}
               onClose={this.onClose} />
-              {$content}
+              {$xterm}
           </Flex>
         </StyledTerminal>
       </Portal>
@@ -171,7 +180,9 @@ function mapStateToProps(props) {
   return {
     onOpenUploadDialog: fileActions.openUploadDialog,
     onOpenDownloadDialog: fileActions.openDownloadDialog,
+    onTransferRemove: fileActions.removeFile,
     onTransferStart: fileActions.addFile,
+    onTransferUpdate: fileActions.updateStatus,
     onCloseFileTransfer: fileActions.closeDialog,
     onClose: terminalActions.close,
     onOpenPlayer: playerActions.open,
@@ -185,7 +196,6 @@ function mapStateToProps(props) {
     }
   }
 }
-
 
 export default connect(mapStoreToProps, mapStateToProps)(Terminal);
 

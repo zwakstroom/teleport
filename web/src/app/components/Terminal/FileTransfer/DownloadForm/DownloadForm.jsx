@@ -64,7 +64,7 @@ export default class FileDownloadSelector extends React.Component {
     return (
       <div className="grv-file-transfer-header m-b">
         <Text className="m-b">
-          <h4>SCP DOWNLOAD</h4>
+          <h4>(SCP) FILE DOWNLOAD</h4>
         </Text>
         <Text className="m-b-xs">
           File path
