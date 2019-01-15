@@ -10,6 +10,7 @@ let defaultProps = {
   onClose: () => null,
   onOpenPlayer: () => null,
   updateRoute: () => null,
+  onTransferRemove: () => null,
   onTransferStart: () => null,
   onTransferUpdate: () => null,
   initTerminal: () => null,
