@@ -22,7 +22,7 @@ import { getters } from 'app/flux/app/appStore';
 import { Failed } from './../Errors';
 import { initApp } from 'app/flux/app/actions';
 import { Indicator } from 'shared/components';
-import withAuth from './../withAuth';
+import { withAuth } from './../Hoc';
 import FeatureActivator from './../../featureActivator';
 import Clusters from './../Clusters';
 import Cluster from './../Cluster';

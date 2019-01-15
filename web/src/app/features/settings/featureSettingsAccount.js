@@ -19,7 +19,7 @@ import { SettingsFeatureBase }  from './featureSettings';
 import cfg from 'app/config'
 import { addNavItem } from './../../flux/settings/actions';
 import SettingsAccount from './../../components/settings/accountTab'
-import { withDocTitle } from './../../components/documentTitle';
+import { withDocTitle } from './../../components/DocumentTitle';
 
 const featureUrl = cfg.routes.settingsAccount;
 

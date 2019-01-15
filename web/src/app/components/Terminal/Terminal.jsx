@@ -25,45 +25,57 @@ import * as fileActions from 'app/flux/fileTransfer/actions';
 import ActionBar from './ActionBar/ActionBar';
 import { Indicator, Flex, Text, Button, Box } from 'shared/components';
 import Xterm from './Xterm/Xterm';
-import { FileTransferDialog } from './../files';
+import FileTransferDialog from './FileTransfer';
 import Portal from 'shared/components/Modal/Portal';
 import * as Alerts from 'shared/components/Alerts';
 import { fonts } from 'shared/components/theme';
 
-class Terminal extends React.Component {
+export class Terminal extends React.Component {
 
   constructor(props){
     super(props)
   }
 
   componentDidMount() {
-    setTimeout(() => terminalActions.initTerminal(this.props.term), 0);
+    setTimeout(() => this.props.initTerminal(this.props.termParams), 0);
   }
 
   startNew = () => {
     const newTermParams = {
-      ...this.props.term,
+      ...this.props.termParams,
       sid: undefined
     }
 
-    terminalActions.updateRoute(newTermParams);
-    terminalActions.initTerminal(newTermParams);
+    this.props.updateRoute(newTermParams);
+    this.props.initTerminal(newTermParams);
   }
 
   replay = () => {
-    const { siteId, sid } = this.props.term;
-    playerActions.open(siteId, sid);
+    const { siteId, sid } = this.props.termParams;
+    this.props.onOpenPlayer(siteId, sid);
   }
 
   onCloseFileTransfer = () => {
-    fileActions.closeDialog();
+    this.props.onCloseFileTransfer();
     if (this.termRef) {
       this.termRef.focus();
     }
   }
 
+  onOpenUploadDialog = () => {
+    this.props.onOpenUploadDialog(this.props.termParams);
+  }
+
+  onOpenDownloadDialog = () => {
+    this.props.onOpenDownloadDialog(this.props.termParams);
+  }
+
+  onTransferStart = json => {
+    this.props.onTransferStart(json);
+  }
+
   onClose = () => {
-    this.props.onClose(this.props.term.siteId);
+    this.props.onClose(this.props.termParams.siteId);
   }
 
   render() {
@@ -74,7 +86,7 @@ class Terminal extends React.Component {
     let $content = null;
 
     if (status.isLoading) {
-      $content = (<Indicator type="bounce" />);
+      $content = (<Indicator />);
     }
 
     if (status.isError) {
@@ -98,16 +110,23 @@ class Terminal extends React.Component {
       );
     }
 
+    const isFileTransferDialogOpen = fileStore.isOpen;
+
     return (
       <Portal>
         <StyledTerminal>
           <FileTransferDialog
             store={fileStore}
             onClose={this.onCloseFileTransfer}
-            onTransfer={fileActions.addFile}
+            onTransfer={this.onTransferStart}
           />
           <Flex flexDirection="column" height="100%" width="100%">
-            <ActionBar title={title} onClose={this.onClose} />
+            <ActionBar
+              onOpenUploadDialog={this.onOpenUploadDialog}
+              onOpenDownloadDialog={this.onOpenDownloadDialog}
+              isOpen={isFileTransferDialogOpen}
+              title={title}
+              onClose={this.onClose} />
               {$content}
           </Flex>
         </StyledTerminal>
@@ -147,8 +166,15 @@ function mapStoreToProps() {
 function mapStateToProps(props) {
   const { sid, login, siteId, serverId } = props.match.params;
   return {
+    onOpenUploadDialog: fileActions.openUploadDialog,
+    onOpenDownloadDialog: fileActions.openDownloadDialog,
+    onTransferStart: fileActions.addFile,
+    onCloseFileTransfer: fileActions.closeDialog,
     onClose: terminalActions.close,
-    term: {
+    onOpenPlayer: playerActions.open,
+    updateRoute: terminalActions.updateRoute,
+    initTerminal: terminalActions.initTerminal,
+    termParams: {
       sid,
       login,
       siteId,
@@ -156,6 +182,7 @@ function mapStateToProps(props) {
     }
   }
 }
+
 
 export default connect(mapStoreToProps, mapStateToProps)(Terminal);
 
@@ -175,7 +202,7 @@ const StyledTerminal = styled.div`
   }
 
   .grv-terminal .terminal {
-    font-family: ${ fonts.mono };
+    font-family: ${ fonts.mono};
     border: none;
     font-size: inherit;
     line-height: normal;
@@ -190,4 +217,4 @@ const StyledTerminal = styled.div`
   .grv-terminal .terminal * {
     font-weight: normal!important;
   }
-`
+`;

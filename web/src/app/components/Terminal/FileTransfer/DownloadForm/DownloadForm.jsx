@@ -16,9 +16,9 @@ limitations under the License.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Text } from './items';
+import { Text } from 'shared/components';
 
-export class FileDownloadSelector extends React.Component {
+export default class FileDownloadSelector extends React.Component {
 
   static propTypes = {
     onDownload: PropTypes.func.isRequired,

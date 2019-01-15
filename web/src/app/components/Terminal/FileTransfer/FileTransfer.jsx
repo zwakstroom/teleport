@@ -16,11 +16,12 @@ limitations under the License.
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FileDownloadSelector } from './download';
-import { FileUploadSelector } from './upload';
-import { FileTransfer } from './fileTransfer';
+import { FileToReceive, FileToSend } from './File';
+import DownloadForm from './DownloadForm';
+import UploadForm from './UploadForm';
+import { Text } from 'shared/components';
 
-export class FileTransferDialog extends Component {
+export default class FileTransferDialog extends Component {
 
   static propTypes = {
     store: PropTypes.object.isRequired,
@@ -78,9 +79,9 @@ export class FileTransferDialog extends Component {
     const latestFirst = files.toArray().reverse();
     return (
       <div className="grv-file-transfer p-sm" onKeyDown={this.onKeyDown}>
-        {!isUpload && <FileDownloadSelector onDownload={this.onDownload} />}
-        {isUpload && <FileUploadSelector onUpload={this.onUpload} /> }
-        <FileTransfer files={latestFirst}/>
+        {!isUpload && <DownloadForm onDownload={this.onDownload} />}
+        {isUpload && <UploadForm onUpload={this.onUpload} /> }
+        <FileList files={latestFirst}/>
         <div className="grv-file-transfer-footer">
           <button onClick={this.onClose}
             className="btn btn-sm  grv-file-transfer-btn">
@@ -90,4 +91,34 @@ export class FileTransferDialog extends Component {
       </div>
     )
   }
+}
+
+export const FileList  = ({ files }) => {
+  if (files.length === 0) {
+    return null;
+  }
+
+  const $files = files.map(file => {
+    const key = file.id
+    return file.isUpload ?
+      <FileToSend key={key} file={file}  /> :
+      <FileToReceive key={key} file={file} />
+  });
+
+  return (
+    <div className="m-t-sm">
+      <div className="grv-file-transfer-header m-b-sm">
+      </div>
+      <div className="grv-file-transfer-file-list-cols">
+        <Text> File </Text>
+        <Text>Status </Text>
+        <div> </div>
+      </div>
+      <div className="grv-file-transfer-content">
+        <div className="grv-file-transfer-file-list">
+          {$files}
+        </div>
+      </div>
+    </div>
+  )
 }

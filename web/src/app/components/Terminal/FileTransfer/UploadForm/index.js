@@ -1,5 +1,5 @@
 /*
-Copyright 2015 Gravitational, Inc.
+Copyright 2018 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
-import styled from 'styled-components'
-import { withDocTitle } from './../DocumentTitle';
-
-const MSG_INFO_LOGIN_SUCCESS = 'Login was successful, you can close this window and continue using tsh.';
-
-export const LoginSuccessful = () => (
-  <StyledLoginSuccessful>
-    <h1>{MSG_INFO_LOGIN_SUCCESS}</h1>
-  </StyledLoginSuccessful>
-)
-
-export default withDocTitle("Success", LoginSuccessful)
-
-const StyledLoginSuccessful = styled.div`
-  margin: 0 auto;
-`
+import UploadForm from './UploadForm';
+export default UploadForm;

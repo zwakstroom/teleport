@@ -37,17 +37,17 @@ const Access = new Record({
 	create: false,
 	remove: false
 })
-	
-class AccessListRec extends Record({  
+
+export class AccessListRec extends Record({
   authConnectors: new Access(),
   trustedClusters: new Access(),
   roles: new Access(),
   sessions: new Access(),
   sshLogins: new List()
 }){
-  constructor(json = {}) {    
-    const map = toImmutable(json);    
-    const sshLogins = new List(map.get('sshLogins'));            
+  constructor(json = {}) {
+    const map = toImmutable(json);
+    const sshLogins = new List(map.get('sshLogins'));
     const params = {
       sshLogins: sortLogins(sshLogins),
       authConnectors: new Access(map.get('authConnectors')),
@@ -55,28 +55,28 @@ class AccessListRec extends Record({
       roles: new Access(map.get('roles')),
       sessions: new Access(map.get('sessions'))
     }
-      
-    super(params);                
+
+    super(params);
   }
-        
+
   getSessionAccess() {
     return this.get('sessions');
   }
 
   getRoleAccess() {
-    return this.get('roles');    
+    return this.get('roles');
   }
 
   getConnectorAccess() {
-    return this.get('authConnectors');    
+    return this.get('authConnectors');
   }
-  
+
   getClusterAccess() {
-    return this.get('trustedClusters');    
+    return this.get('trustedClusters');
   }
-      
+
   getSshLogins() {
-    return this.get('sshLogins')    
+    return this.get('sshLogins')
   }
 }
 
@@ -89,7 +89,7 @@ export default Store({
     return new AccessListRec();
   },
 
-  initialize() {          
-    this.on(RECEIVE_USERACL, (state, json ) => new AccessListRec(json) );            
+  initialize() {
+    this.on(RECEIVE_USERACL, (state, json ) => new AccessListRec(json) );
   }
 })

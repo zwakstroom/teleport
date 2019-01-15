@@ -14,11 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
-import classnames from 'classnames';
-
-export const Text = props => (
-  <div className={classnames('grv-file-transfer-text', props.className)}>
-    {props.children}
-  </div>
-)
+import DocumentTitle, { withDocTitle } from './DocumentTitle';
+export default DocumentTitle;
+export {
+  withDocTitle
+}

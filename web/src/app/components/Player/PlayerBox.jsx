@@ -19,7 +19,7 @@ import styled from 'styled-components';
 import { fonts } from 'shared/components/theme';
 import { close } from 'app/flux/player/actions';
 import Player from './Player';
-import { DocumentTitle } from './../documentTitle';
+import DocumentTitle from './../DocumentTitle';
 import { Cross as CloseIcon } from 'shared/components/Icon';
 import cfg from 'app/config';
 

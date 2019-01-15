@@ -35,25 +35,25 @@ export class ServerRec extends Record({
   }
 }
 
-class NodeStoreRec extends Record({
+export class NodeStoreRec extends Record({
   servers: new List()
 }) {
-   
-  findServer(serverId) {    
-    return this.servers.find(s => s.id === serverId);      
+
+  findServer(serverId) {
+    return this.servers.find(s => s.id === serverId);
   }
 
   getSiteServers(siteId) {
-    return this.servers.filter(s => s.siteId === siteId);    
+    return this.servers.filter(s => s.siteId === siteId);
   }
 
-  addSiteServers(jsonItems) {      
+  addSiteServers(jsonItems) {
     const list = new List().withMutations(state => {
       jsonItems.forEach(item => state.push(new ServerRec(item)));
       return state;
     });
-    
-    return list.equals(this.servers) ? this : this.set('servers', list);    
+
+    return list.equals(this.servers) ? this : this.set('servers', list);
   }
 }
 

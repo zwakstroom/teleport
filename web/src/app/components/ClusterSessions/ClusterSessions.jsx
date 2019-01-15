@@ -20,11 +20,11 @@ import styled from 'styled-components';
 import { connect } from './../nuclear';
 import { fetchSiteEventsWithinTimeRange } from 'app/flux/storedSessionsFilter/actions';
 import sessionGetters from 'app/flux/sessions/getters';
-import AjaxPoller from './../dataProvider.jsx';
+import AjaxPoller from './DataProvider.jsx';
 import SessionList from './SessionList';
 import InputSearch from './../InputSearch';
-import { DocumentTitle } from './../documentTitle';
-import withStorage from './../withStorage.jsx';
+import DocumentTitle from './../DocumentTitle';
+import { withStorage } from './../Hoc';
 
 const end = moment(new Date()).endOf('day').toDate();
 const start = moment(end).subtract(20, 'day').startOf('day').toDate();
