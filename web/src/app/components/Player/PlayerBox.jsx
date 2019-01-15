@@ -17,6 +17,7 @@ limitations under the License.
 import React from 'react';
 import styled from 'styled-components';
 import { fonts } from 'shared/components/theme';
+import Portal from 'shared/components/Modal/Portal';
 import { close } from 'app/flux/player/actions';
 import Player from './Player';
 import DocumentTitle from './../DocumentTitle';
@@ -31,26 +32,29 @@ class PlayerHost extends React.Component {
     this.url = cfg.api.getFetchSessionUrl({ siteId, sid });
   }
 
-  onClose = clusterId => {
-    close(clusterId)
+  onClose = () => {
+    const { siteId } = this.props.match.params;
+    close(siteId)
   }
 
   render() {
     const { siteId } = this.props.match.params;
     const title = `${siteId} · Player`;
     return (
-      <DocumentTitle title={title}>
-        <StyledBox>
-          <CloseIcon onClick={this.onClose}/>
-          <Player url={this.url}/>
-        </StyledBox>
-      </DocumentTitle>
+      <Portal>
+        <DocumentTitle title={title}>
+          <StyledBox>
+            <CloseIcon onClick={this.onClose}/>
+            <Player url={this.url}/>
+          </StyledBox>
+        </DocumentTitle>
+      </Portal>
     );
   }
 }
 
 const StyledBox = styled.div`
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
