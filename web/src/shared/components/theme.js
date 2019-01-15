@@ -24,6 +24,7 @@ export const colors = {
   subtle: '#CFD8DC',
   highlight: '#E1F5FE',
   link: '#039BE5',
+  terminal: '#28FE14',
 
   // ALERTS/NOTICE COLORS
   error: '#FF1744',

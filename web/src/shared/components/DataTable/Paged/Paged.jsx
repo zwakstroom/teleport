@@ -65,6 +65,7 @@ class PagedTable extends React.Component {
     const { data=[] } = this.props;
     const totalRows = data.length;
 
+    let $pager = null;
     let endAt = 0;
     let pagedData = data;
 
@@ -91,10 +92,12 @@ class PagedTable extends React.Component {
       totalRows
     }
 
-    const pager = <PageInfo {...infoProps} onPrev={this.onPrev} onNext={this.onNext} />;
+    if(totalRows > pageSize) {
+      $pager = <PageInfo {...infoProps} onPrev={this.onPrev} onNext={this.onNext} />;
+    }
 
     return (
-      <Table {...tableProps} topbar={pager} footer={pager} />
+      <Table {...tableProps} topbar={$pager} footer={$pager} />
     )
   }
 }

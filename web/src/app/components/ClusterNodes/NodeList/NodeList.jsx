@@ -15,10 +15,12 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import { sortBy } from 'lodash';
 import { isMatch } from 'app/lib/objectUtils';
 import { TablePaged, Column, Cell, TextCell, SortHeaderCell, SortTypes, EmptyIndicator } from 'shared/components/DataTable';
+import * as Icon from 'shared/components/Icon';
 import cfg from 'app/config';
 import history from 'app/services/history';
 
@@ -31,24 +33,24 @@ const EmptyValue = ({ text='Empty' }) => (
 const TagCell = ({rowIndex, data, ...props}) => {
   const { tags } = data[rowIndex];
   let $content = tags.map((item, index) => (
-    <span key={index} title={`${item.name}:${item.value}`} className="label label-default grv-nodes-table-label">
-      {item.name} <li className="fa fa-long-arrow-right m-r-xs"/>
-      {item.value}
-    </span>
+    <StyledTag key={index} title={`${item.name}:${item.value}`}>
+      {item.name}: {item.value}
+    </StyledTag>
   ));
 
   if ($content.length === 0) {
-    $content = <EmptyValue text="No assigned labels"/>
+    $content = <EmptyValue text="No assigned labels"/>;
   }
 
-  return (
-    <Cell {...props}>
-      {$content}
-    </Cell>
-  )
+  return <Cell {...props}>{$content}</Cell>;
 }
 
+
 class LoginCell extends React.Component {
+  state = {
+    dropdownOpen: false
+  };
+
   onKeyPress = e => {
     if (e.key === 'Enter' && e.target.value) {
       const url = this.makeUrl(e.target.value);
@@ -57,7 +59,8 @@ class LoginCell extends React.Component {
   }
 
   onShowLoginsClick = () => {
-    this.refs.customLogin.focus();
+    this.setState({dropdownOpen: !this.state.dropdownOpen});
+    // this.refs.customLogin.focus();
   }
 
   makeUrl(login) {
@@ -85,6 +88,7 @@ class LoginCell extends React.Component {
     const $lis = [];
     const defaultLogin = logins[0] || '';
     const defaultTermUrl = this.makeUrl(defaultLogin);
+    let dropdown = null;
 
     for (var i = 0; i < logins.length; i++) {
       const termUrl = this.makeUrl(logins[i]);
@@ -97,34 +101,39 @@ class LoginCell extends React.Component {
       );
     }
 
+    if(this.state.dropdownOpen) {
+      dropdown = (
+        <ul>
+          <li>
+            <input ref="customLogin"
+              placeholder="Enter login name..."
+              onKeyPress={this.onKeyPress}
+              />
+          </li>
+          {$lis}
+        </ul>
+      );
+    }
+
     return (
       <Cell {...props}>
-        <div style={{ display: "flex" }}>
+        <div>
           {logins.length === 0 &&
             <EmptyValue text="No assigned logins"/>
           }
           {logins.length > 0 &&
-            <div style={{ display: "flex" }} className="btn-group">
+            <StyledSession>
               <NavLink to={defaultTermUrl}>
-                {defaultLogin}
+                <Icon.Cli/>
+                <strong>{defaultLogin}</strong>
               </NavLink>
-              <button data-toggle="dropdown"
-                onClick={this.onShowLoginsClick}
-                className="btn btn-default btn-xs dropdown-toggle">
-                <span className="caret"></span>
+
+              <button onClick={this.onShowLoginsClick} >
+                <Icon.CarrotDown/>
               </button>
-              <ul className="dropdown-menu pull-right">
-                <li>
-                  <div className="input-group-sm grv-nodes-custom-login">
-                    <input className="form-control" ref="customLogin"
-                      placeholder="Enter login name..."
-                      onKeyPress={this.onKeyPress}
-                    />
-                  </div>
-                </li>
-                {$lis}
-              </ul>
-            </div>
+
+              {dropdown}
+            </StyledSession>
           }
         </div>
       </Cell>
@@ -253,3 +262,140 @@ class NodeList extends React.Component {
 }
 
 export default NodeList;
+
+const StyledTag = styled.div`
+  background: ${props => props.theme.colors.bgQuaternary };
+  border-radius: 200px;
+  display: inline-block;
+  margin: 0 8px 0 0;
+  opacity: .56;
+  padding: 0 8px;
+`;
+
+
+const StyledSession = styled.div`
+  background: ${props => props.theme.colors.bgQuaternary };
+  border-radius: 2px;
+  display: flex;
+  height: 24px;
+  margin: 0 8px 0 0;
+  position: relative;
+  width: 56px;
+
+  > ul {
+    background: ${props => props.theme.colors.light };
+    border-radius: 4px;
+    box-sizing: border-box;
+    box-shadow: 0 0 8px rgba(0, 0, 0, .12),  0 8px 32px rgba(0, 0, 0, .24);
+    list-style-type: none;
+    margin: 0;
+    min-width: 136px;
+    padding: 8px;
+    position: absolute;
+    top: 26px;
+    z-index: 1;
+
+    li {
+      line-height: 32px;
+      margin: 0;
+
+      a {
+        color: ${props => props.theme.colors.link };
+        display: block;
+        line-height: 32px;
+        padding: 0 8px;
+        text-decoration: none;
+      }
+    }
+
+    input {
+      background: ${props => props.theme.colors.subtle };
+      border 1px solid ${props => props.theme.colors.subtle };
+      border-radius: 2px;
+      box-sizing: border-box;
+      color: ${props => props.theme.colors.text };
+      outline: none;
+      padding: 0 8px;
+      height: 40px;
+      transition: all .3s;
+      width: 100%;
+
+      &:focus {
+        background: ${props => props.theme.colors.light };
+        border 1px solid ${props => props.theme.colors.link };
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, .24);
+      }
+    }
+  }
+
+  > button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    height: 24px;
+    margin: 0;
+    outline: none;
+    padding: 0;
+    width: 24px;
+
+    .icon {
+      opacity: .56;
+      transition: all .3s;
+    }
+
+    &:hover, &:focus {
+      background: ${props => props.theme.colors.bgTertiary };
+      transition: all .3s;
+
+      .icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  > a {
+    background: ${props => props.theme.colors.bgTerminal };
+    border-radius: 2px 0 0 2px;
+    border: 1px solid ${props => props.theme.colors.dark};
+    box-sizing: border-box;
+    box-shadow: 0 0 2px rgba(0, 0, 0, .12),  0 2px 2px rgba(0, 0, 0, .24);
+    display: inline-block;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+    width: 32px;
+    text-decoration: none;
+
+    &:hover, &:focus {
+      box-shadow: 0 0 8px rgba(0, 0, 0, .12),  0 8px 8px rgba(0, 0, 0, .24);
+
+      > strong {
+        opacity: 1;
+      }
+
+      .icon {
+        opacity: 0;
+      }
+    }
+
+    > strong {
+      font-size:  ${props => props.theme.fontSizes[0] };
+      font-weight: 500;
+      color: ${props => props.theme.colors.terminal };
+      display: block;
+      opacity: 0;
+      text-align: center;
+      text-decoration: none;
+      transition: all .3s;
+    }
+
+    .icon {
+      font-size: 36px;
+      opacity: .56;
+      position: absolute;
+      top: -6px;
+      left: -2px;
+      transition: all .3s;
+    }
+  }
+`;
