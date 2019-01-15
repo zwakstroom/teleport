@@ -25,12 +25,14 @@ export default class FileTransferDialog extends Component {
 
   static propTypes = {
     store: PropTypes.object.isRequired,
-    onTransfer: PropTypes.func.isRequired,
+    onTransferRemove: PropTypes.func.isRequired,
+    onTransferStart: PropTypes.func.isRequired,
+    onTransferUpdate: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired
   }
 
   transfer(location, name, isUpload, blob=[]) {
-    this.props.onTransfer({
+    this.props.onTransferStart({
       location,
       name,
       isUpload,
@@ -70,7 +72,7 @@ export default class FileTransferDialog extends Component {
   }
 
   render() {
-    const { store } = this.props;
+    const { store, onTransferUpdate, onTransferRemove } = this.props;
     if (!store.isOpen) {
       return null;
     }
@@ -81,7 +83,10 @@ export default class FileTransferDialog extends Component {
       <div className="grv-file-transfer p-sm" onKeyDown={this.onKeyDown}>
         {!isUpload && <DownloadForm onDownload={this.onDownload} />}
         {isUpload && <UploadForm onUpload={this.onUpload} /> }
-        <FileList files={latestFirst}/>
+        <FileList
+          onRemove={onTransferRemove}
+          onUpdate={onTransferUpdate}
+          files={latestFirst} />
         <div className="grv-file-transfer-footer">
           <button onClick={this.onClose}
             className="btn btn-sm  grv-file-transfer-btn">
@@ -93,16 +98,23 @@ export default class FileTransferDialog extends Component {
   }
 }
 
-export const FileList  = ({ files }) => {
+export const FileList  = ({ files, onUpdate, onRemove }) => {
   if (files.length === 0) {
     return null;
   }
 
   const $files = files.map(file => {
     const key = file.id
+    const props = {
+      onUpdate,
+      key,
+      file,
+      onRemove
+    };
+
     return file.isUpload ?
-      <FileToSend key={key} file={file}  /> :
-      <FileToReceive key={key} file={file} />
+      <FileToSend {...props}  /> :
+      <FileToReceive {...props} />
   });
 
   return (

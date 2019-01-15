@@ -26,7 +26,7 @@ const defaultStatus = {
   error: "",
 }
 
-class File extends Record({
+export class File extends Record({
   id: '',
   url: '',
   name: '',

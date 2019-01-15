@@ -15,13 +15,17 @@ limitations under the License.
 */
 
 import React from 'react';
-import * as actions from 'app/flux/fileTransfer/actions';
+import PropTypes from 'prop-types';
 
 const withHttpRequest = httpCtor => component => {
 
   return class WithHttpRequestWrapper extends React.Component{
 
     static displayName = `WithHttpRequestWrapper`
+
+    static propTypes = {
+      onUpdate: PropTypes.func.isRequired,
+    }
 
     state = {
       progress: "0",
@@ -48,21 +52,21 @@ const withHttpRequest = httpCtor => component => {
 
       const handleCompleted = response => {
         this.state.response = response;
-        actions.updateStatus({
+        this.props.onUpdate({
           id: this.fileId,
           isCompleted: true,
         })
       };
 
       const handleFailed = err => {
-        actions.updateStatus({
+        this.props.onUpdate({
           id: this.fileId,
           isFailed: true,
           error: err.message
         })
       }
 
-      actions.updateStatus({
+      this.props.onUpdate({
         id: this.fileId,
         isProcessing: true,
       })
@@ -73,15 +77,10 @@ const withHttpRequest = httpCtor => component => {
       this.http.do(this.fileUrl, this.fileBlob)
     }
 
-    onRemove = () => {
-      actions.removeFile(this.fileId);
-    }
-
     render() {
       const { response, progress } = this.state;
       return React.createElement(component, {
         ...this.props,
-        onRemove: this.onRemove,
         httpResponse: response,
         httpProgress: progress,
       });
