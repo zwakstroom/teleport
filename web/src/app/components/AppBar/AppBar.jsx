@@ -9,7 +9,7 @@ import TopNavUserMenu from 'shared/components/TopNav/TopNavUserMenu'
 import { TopNav, Text } from 'shared/components';
 import MenuItem from 'shared/components/Menu/MenuItem';
 import Button from 'shared/components/Button';
-import * as Icons from 'shared/components/Icon';
+import * as Icon from 'shared/components/Icon';
 
 export class AppBar extends React.Component {
 
@@ -45,14 +45,14 @@ export class AppBar extends React.Component {
           onShow={this.onShowMenu}
           onClose={this.onCloseMenu}
           user={username} >
+
           <MenuItem as={props => <NavLink {...props} to={cfg.routes.settingsAccount}/> }>
-            <Icons.User fontSize={3} mr={1} />
+            <Icon.Profile fontSize={4} mr={1} color="text" />
             <Text fontSize={1}>Account Settings</Text>
           </MenuItem>
+
           <LogoutMenuItem onClick={this.onLogout}>
-            <Button block>
-              Logout
-            </Button>
+            <Button block>Sign Out</Button>
           </LogoutMenuItem>
         </TopNavUserMenu>
       </TopNav>
@@ -77,9 +77,9 @@ const menuListCss = () => `
   width: 250px;
 `
 
-const LogoutMenuItem = styled(MenuItem)`
-  margin: 8px 0;
-  justify-content: center;
+const LogoutMenuItem = styled.div`
+  margin: 32px 0 0 0;
+  padding: 16px;
 `
 
 export default connect(mapStoreToProps, mapActionsToProps)(AppBar);

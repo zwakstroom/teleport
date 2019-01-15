@@ -37,31 +37,35 @@ MenuItem.defaultProps = {
 
 const StyledMenuItem = styled.div`
   background-color: ${props => props.theme.colors.bgLight};
-  border-bottom: 1px solid ${props => props.theme.colors.subtle};
   box-sizing: content-box;
   color: ${props => props.theme.colors.text};
   cursor: pointer;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  font-size: 11px;
-  font-weight: bold;
+  font-size: ${props => props.theme.fontSizes[4]};
+  font-weight: 600;
   line-height: 48px;
   line-height: 48px;
   overflow: hidden;
   padding: 0 32px;
-  text-align: inherit;
+  text-align: left;
   text-decoration: none;
-  text-transform: uppercase;
   transition: all .3s;
   white-space: nowrap;
   white-space: nowrap;
   width: auto;
+
   &:hover,
   &:focus {
+    background: ${props => props.theme.colors.subtle};
     color: ${props => props.theme.colors.link};
     text-decoration: none;
     background-color: #f8f9fa;
+
+    .icon {
+      color: ${props => props.theme.colors.link};
+    }
   }
 
   &:last-child {

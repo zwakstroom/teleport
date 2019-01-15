@@ -8,6 +8,7 @@ function makeFontIcon(name, iconClassName) {
   const Icon = styled.span.attrs({className: className})`
     color: ${colors.light};
     display: inline-block;
+    transition: color .3s;
     ${space} ${width} ${color} ${fontSize}
   `
 
