@@ -1,4 +1,4 @@
-import api from './api';
+import { getAuthHeaders, getNoCacheHeaders } from './api';
 import { EventEmitter } from 'events';
 import Logger from 'app/lib/logger';
 
@@ -92,8 +92,7 @@ export class Uploader extends Transfer {
     });
 
     this._xhr.open('post', url, true);
-    api.setAuthHeaders(this._xhr);
-    api.setNoCacheHeaders(this._xhr);
+    setHeaders(this._xhr);
     this._xhr.send(blob)
   }
 }
@@ -109,7 +108,7 @@ export class Downloader extends Transfer {
       this.handleProgress(e);
     }
 
-    api.setAuthHeaders(this._xhr);
+    setHeaders(this._xhr);
     this._xhr.responseType = 'blob';
     this._xhr.send();
   }
@@ -180,4 +179,16 @@ function getErrorText(response, responseText) {
   }
 
   return errText;
+}
+
+
+function setHeaders(xhr) {
+  const headers = {
+    ...getAuthHeaders(),
+    ...getNoCacheHeaders()
+  }
+
+  Object.keys(headers).forEach(key => {
+    xhr.setRequestHeader(key, headers[key])
+  });
 }

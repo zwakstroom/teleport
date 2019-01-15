@@ -19,7 +19,7 @@ import { connect } from './../nuclear';
 import cfg from 'app/config';
 import * as actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
-import { withDocTitle } from './../documentTitle';
+import { withDocTitle } from './../DocumentTitle';
 import InviteForm from './InviteForm';
 import ExpiredInvite from './InviteForm/ExpiredInvite';
 import Logo from 'shared/components/Logo';

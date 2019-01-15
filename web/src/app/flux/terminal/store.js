@@ -33,7 +33,7 @@ const TermStatusRec = new Record({
   errorText: undefined,
 })
 
-export class TermRec extends Record({  
+export class TermRec extends Record({
   status: TermStatusRec(),
   hostname: null,
   login: null,
@@ -41,33 +41,37 @@ export class TermRec extends Record({
   serverId: null,
   sid: null
 }) {
-  
+
   getClusterName() {
     return this.siteId;
   }
 
-  getTtyParams(){            
+  getTtyParams(){
     const { accessToken } = localStorage.getBearerToken()
     const server_id = this.serverId;
     return {
       login: this.login,
       sid: this.sid,
       token: accessToken,
-      ttyUrl: cfg.api.ttyWsAddr,      
+      ttyUrl: cfg.api.ttyWsAddr,
       cluster: this.siteId,
       getTarget() {
         return { server_id };
       }
-    };            
+    };
   }
 
-  getServerLabel() {                 
+  setStatus(json) {
+    return this.setIn(['status'], new TermStatusRec(json));
+  }
+
+  getServerLabel() {
     if (this.hostname && this.login) {
-      return `${this.login}@${this.hostname}`;  
+      return `${this.login}@${this.hostname}`;
     }
 
     if (this.serverId && this.login) {
-      return `${this.login}@${this.serverId}`;  
+      return `${this.login}@${this.serverId}`;
     }
 
     return '';
@@ -80,20 +84,8 @@ export default Store({
   },
 
   initialize() {
-    this.on(TLPT_TERMINAL_INIT, init);
-    this.on(TLPT_TERMINAL_CLOSE, close);
-    this.on(TLPT_TERMINAL_SET_STATUS, changeStatus);
+    this.on(TLPT_TERMINAL_INIT, (state, json) => new TermRec(json));
+    this.on(TLPT_TERMINAL_CLOSE, () => new TermRec());
+    this.on(TLPT_TERMINAL_SET_STATUS, (state, json) => state.setStatus(json));
   }
-})
-
-function close(){
-  return new TermRec();
-}
-
-function init(state, json){
-  return new TermRec(json);
-}
-
-function changeStatus(state, status) {
-  return state.setIn(['status'], new TermStatusRec(status));  
-}
+});

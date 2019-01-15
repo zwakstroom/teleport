@@ -19,19 +19,18 @@ import { Record, Map } from 'immutable';
 import { ADD_ITEM }from './actionTypes';
 
 const STORE_NAME = 'tlpt_ssh_history';
-
-export class SshHistoryRec extends Record({    
-  clusterLogins: new Map() 
+export class SshHistoryRec extends Record({
+  clusterLogins: new Map()
 }){
-  constructor(params) {    
-    super(params);            
-  }
-   
-  getPrevLogins(siteId) {
-    return this.clusterLogins.get(siteId) || [];    
+  constructor(params) {
+    super(params);
   }
 
-  addLoginString({ login, serverId, siteId }) {    
+  getPrevLogins(siteId) {
+    return this.clusterLogins.get(siteId) || [];
+  }
+
+  addLoginString({ login, serverId, siteId }) {
     let logins = this.getIn(['clusterLogins', siteId]);
     if (!logins) {
       logins = [];
@@ -54,7 +53,7 @@ const store = Store({
     return new SshHistoryRec();
   },
 
-  initialize() {        
+  initialize() {
     this.on(ADD_ITEM, (state, params) => state.addLoginString(params));
   }
 });
@@ -62,7 +61,7 @@ const store = Store({
 export const register = reactor => {
   reactor.registerStores({
     [STORE_NAME]: store
-  })  
+  })
 }
 
 export const getters = {

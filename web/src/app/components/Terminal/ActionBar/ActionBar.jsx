@@ -15,32 +15,15 @@ limitations under the License.
 */
 
 import React from 'react';
+import PropTypes from 'prop-types'
 import styled from 'styled-components';
 import * as Icons from 'shared/components/Icon';
-import { connect } from 'app/components/nuclear';
-import { withRouter } from 'react-router';
-import { getters as ftGetters } from 'app/flux/fileTransfer';
-import * as ftActions from 'app/flux/fileTransfer/actions';
 import { Flex } from 'shared/components';
 
-class ActionBar extends React.Component {
+export default class ActionBar extends React.Component {
 
   componentWillUnmount() {
-    ftActions.closeDialog()
-  }
-
-  openFileTransferDialog = isUpload => {
-    const { store, params } = this.props;
-    // disable actions if file transfer dialog is open
-    if (store.isOpen) {
-      return;
-    }
-
-    if (isUpload) {
-      ftActions.openUploadDialog(params);
-    } else {
-      ftActions.openDownloadDialog(params);
-    }
+    this.close();
   }
 
   close = () => {
@@ -60,9 +43,12 @@ class ActionBar extends React.Component {
   }
 
   render() {
-    const { store, title } = this.props;
-    const { isOpen } = store;
-
+    const {
+      isFileTransferDialogOpen,
+      onOpenUploadDialog,
+      onOpenDownloadDialog,
+      title
+    } = this.props;
 
     return (
       <Flex height="30px">
@@ -73,14 +59,14 @@ class ActionBar extends React.Component {
         <Flex>
           <IconButton
             title="Download files"
-            isOpen={isOpen}
-            onClick={this.openDownloadDialog}>
+            isOpen={isFileTransferDialogOpen}
+            onClick={onOpenDownloadDialog}>
             <Icons.ArrowDown />
           </IconButton>
           <IconButton
             title="Upload files"
-            isOpen={isOpen}
-            onClick={this.openUploadDialog}>
+            isOpen={isFileTransferDialogOpen}
+            onClick={onOpenUploadDialog}>
             <Icons.ArrowUp />
           </IconButton>
         </Flex>
@@ -88,6 +74,14 @@ class ActionBar extends React.Component {
     )
   }
 }
+
+ActionBar.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onOpenDownloadDialog: PropTypes.func.isRequired,
+  onOpenUploadDialog: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+};
 
 const isOpen = props => {
   if (props.isOpen) {
@@ -107,14 +101,3 @@ const IconButton = styled.div`
   justify-content: center;
   ${isOpen};
 `
-
-function mapStateToProps() {
-  return {
-    store: ftGetters.store,
-  }
-}
-
-export default connect(mapStateToProps)(withRouter(ActionBar));
-
-
-

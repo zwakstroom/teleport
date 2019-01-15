@@ -20,7 +20,7 @@ import * as actions from 'app/flux/user/actions';
 import { getters } from 'app/flux/user';
 import cfg from 'app/config';
 import LoginForm from './LoginForm/';
-import { withDocTitle } from './../documentTitle';
+import { withDocTitle } from './../DocumentTitle';
 import Logo from 'shared/components/Logo';
 import logoSvg from 'shared/assets/images/teleport-medallion.svg';
 

@@ -16,7 +16,7 @@ limitations under the License.
 
 import React from 'react';
 import { getUrlParameter } from 'app/services/browser';
-import { withDocTitle } from './../documentTitle';
+import { withDocTitle } from './../DocumentTitle';
 import Logo from 'shared/components/Logo';
 import logoSvg from 'shared/assets/images/teleport-medallion.svg';
 

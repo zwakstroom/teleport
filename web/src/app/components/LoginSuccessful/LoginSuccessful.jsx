@@ -16,13 +16,14 @@ limitations under the License.
 
 import React from 'react';
 import styled from 'styled-components'
-import { withDocTitle } from './../documentTitle';
 import {colors} from 'shared/components/theme';
 import Typography from 'shared/components/Typography';
 import Logo from 'shared/components/Logo';
 import logoSvg from 'shared/assets/images/teleport-medallion.svg';
 import Button from 'shared/components/Button';
 import * as Icon from 'shared/components/Icon';
+import { withDocTitle } from './../DocumentTitle';
+
 
 export const LoginSuccessful = () => (
   <div>

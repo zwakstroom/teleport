@@ -19,7 +19,7 @@ import { connect } from './../nuclear';
 import { Box } from 'shared/components';
 import cfg from 'app/config';
 import { getters } from 'app/flux/user';
-import { withDocTitle } from './../documentTitle';
+import { withDocTitle } from './../DocumentTitle';
 import * as actions from 'app/flux/settingsAccount/actions';
 import PasswordForm from './PasswordForm';
 

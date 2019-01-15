@@ -1,5 +1,6 @@
 import React from "react";
 import styled from 'styled-components'
+import { Spinner as SpinnerIcon} from './../Icon';
 import './../../assets/icomoon/style.css';
 
 const WHEN_TO_DISPLAY = 100; // 0.2s;
@@ -32,19 +33,18 @@ class Indicator extends React.Component {
     }
 
     return (
-      <StyledSpinner />
+      <StyledSpinner {...this.props}/>
     )
   }
 }
 
-const StyledSpinner = styled.div.attrs({
-  className: 'icon icon-spinner8'
-})`
+const StyledSpinner = styled(SpinnerIcon)`
   animation: anim-rotate 2s infinite linear;
   color: #fff;
   display: inline-block;
   font-size: 32px;
   height: 32px;
+  width: 32px;
   line-height: 32px;
   margin: 16px;
   text-shadow: 0 0 .25em rgba(255,255,255, .3);

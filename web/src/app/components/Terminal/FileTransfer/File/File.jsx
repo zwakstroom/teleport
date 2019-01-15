@@ -17,41 +17,11 @@ limitations under the License.
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import { Text } from 'shared/components';
 import { Uploader, Downloader } from 'app/services/fileTransfer';
-import { Text } from './items';
 import withHttpRequest from './withHttpRequest';
 
-export const FileTransfer = ({ files }) => {
-  if (files.length === 0) {
-    return null;
-  }
-
-  const $files = files.map(file => {
-    const key = file.id
-    return file.isUpload ?
-      <FileToSend key={key} file={file}  /> :
-      <FileToReceive key={key} file={file} />
-  });
-
-  return (
-    <div className="m-t-sm">
-      <div className="grv-file-transfer-header m-b-sm">
-      </div>
-      <div className="grv-file-transfer-file-list-cols">
-        <Text> File </Text>
-        <Text>Status </Text>
-        <div> </div>
-      </div>
-      <div className="grv-file-transfer-content">
-        <div className="grv-file-transfer-file-list">
-          {$files}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export class File extends Component {
+export default class File extends Component {
 
   static propTypes = {
     file: PropTypes.object.isRequired,
@@ -146,3 +116,8 @@ export class File extends Component {
 
 const FileToSend = withHttpRequest(Uploader)(File);
 const FileToReceive = withHttpRequest(Downloader)(File);
+
+export {
+  FileToReceive,
+  FileToSend
+}

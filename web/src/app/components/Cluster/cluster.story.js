@@ -43,6 +43,42 @@ class ClusterPage extends React.Component {
 }
 
 function initReactor() {
+
+  reactor.dispatch("TLPT_USERACL_RECEIVE", {
+    "sessions": {
+      "list": true,
+      "read": true,
+      "edit": false,
+      "create": false,
+      "remove": false
+    },
+    "authConnectors": {
+      "list": true,
+      "read": true,
+      "edit": true,
+      "create": true,
+      "remove": true
+    },
+    "roles": {
+      "list": true,
+      "read": true,
+      "edit": true,
+      "create": true,
+      "remove": true
+    },
+    "trustedClusters": {
+      "list": true,
+      "read": true,
+      "edit": true,
+      "create": true,
+      "remove": true
+    },
+    "sshLogins": [
+      "root",
+      "akontsevoy"
+    ]
+  });
+
   reactor.dispatch("TLPT_NODES_RECEIVE",
     [
       {
