@@ -51,7 +51,7 @@ export default class ActionBar extends React.Component {
     } = this.props;
 
     return (
-      <Flex height="30px">
+      <Flex height="32px" mt={1}>
         <StyledTab title={title}>
           <button title="Close" onClick={this.close}>
             <Icons.Close />
@@ -100,7 +100,7 @@ const StyledTab = styled.div`
   font-size: ${props => props.theme.fontSizes[1]}px;
   height: 32px;
   line-height: 16px;
-  padding: 8px 8px 8px 24px;
+  padding: 8px 16px 8px 40px;
   position: relative;
 
   button {
@@ -114,7 +114,7 @@ const StyledTab = styled.div`
     position: absolute;
     top: 8px;
     transition: all .3s;
-    left: 0;
+    left: 16px;
     width: 16px;
     z-index: 1;
 
