@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { Invite } from './Invite';
-import "font-awesome/css/font-awesome.css";
 
 storiesOf('Teleport/Invite', module)
   .add('Invite', () => {

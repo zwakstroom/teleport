@@ -14,11 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import Player from './Player';
-import PlayerDialog from './PlayerDialog';
+import ProgressBar from './ProgressBar';
 
-export default PlayerDialog;
+export default ProgressBar;
 
-export {
-  Player
-};

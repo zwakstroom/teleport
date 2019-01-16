@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import LoginForm from './LoginForm';
-import "font-awesome/css/font-awesome.css";
 import { AuthProviderTypeEnum } from 'app/services/enums';
 
 const defaultProps = {
