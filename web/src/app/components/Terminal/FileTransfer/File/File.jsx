@@ -92,7 +92,7 @@ export default class File extends Component {
       <tr>
         <td colSpan="100%">
           <ProgressRow>
-            <ProgressIndicator progress={httpProgress}>{name}</ProgressIndicator>
+            <ProgressIndicator status={status} progress={httpProgress}>{name}</ProgressIndicator>
             {cancelButton}
             <ProgressStatus color={color}>{status}</ProgressStatus>
           </ProgressRow>
@@ -139,6 +139,8 @@ const ProgressIndicator = styled.div`
     ${props => props.theme.colors.terminalDark} ${props => props.progress}%,
     ${props => props.theme.colors.bgTerminal} 0%, ${props => props.theme.colors.bgTerminal} 100%
   );
+  background: ${props => props.status === "complete" ? 'none' : ''};
+  color: ${props => props.status === "complete" ? props.theme.colors.inverse : props.theme.colors.terminal};
   height: 24px;
   line-height: 24px;
   width: 80%;
