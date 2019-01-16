@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Text } from 'shared/components';
 
@@ -62,30 +63,70 @@ export default class FileDownloadSelector extends React.Component {
     const { path } = this.state;
     const isBtnDisabled = !this.isValidPath(path);
     return (
-      <div className="grv-file-transfer-header m-b">
-        <Text className="m-b">
-          <h4>(SCP) FILE DOWNLOAD</h4>
-        </Text>
-        <Text className="m-b-xs">
-          File path
-        </Text>
-        <div className="grv-file-transfer-download">
-          <input onChange={this.onChangePath}
-            ref={e => this.inputRef = e}
-            value={path}
-            className="grv-file-transfer-input m-r-sm"
-            autoFocus
-            onFocus={this.moveCaretAtEnd}
-            onKeyDown={this.onKeyDown}
-          />
-          <button className="btn btn-sm grv-file-transfer-btn"
-            style={{width:"105px"}}
-            disabled={isBtnDisabled}
-            onClick={this.onDownload}>
-            Download
-          </button>
-        </div>
-      </div>
+      <Downloader>
+        <header>(SCP) Download Files</header>
+
+        <StyledLabel>Full path of file</StyledLabel>
+        <StyledInput onChange={this.onChangePath}
+          ref={e => this.inputRef = e}
+          value={path}
+          autoFocus
+          onFocus={this.moveCaretAtEnd}
+          onKeyDown={this.onKeyDown}
+        />
+        <DownloadButton
+          disabled={isBtnDisabled}
+          onClick={this.onDownload}>
+          Download
+        </DownloadButton>
+      </Downloader>
     )
   }
 }
+
+
+
+const Downloader = styled.div`
+  font-size: ${props => props.theme.fontSizes[0]}px;
+  color: ${props => props.theme.colors.terminal};
+
+  header {
+    font-size: ${props => props.theme.fontSizes[0]}px;
+    font-weight: 800;
+    line-height: 16px;
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+  }
+`;
+
+const DownloadButton = styled.button`
+  background: none;
+  border: 1px solid ${props => props.theme.colors.terminal};
+  box-sizing: border-box;
+  color: ${props => props.theme.colors.terminal};
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+  width: 88px;
+`;
+
+const StyledLabel = styled.label`
+  color: ${props => props.theme.colors.terminal};
+  display: block;
+  margin: 0 0 8px 0;
+  line-height: 24px;
+  text-transform: uppercase;
+`
+
+const StyledInput = styled.input`
+  background: ${props => props.theme.colors.bgTerminal};
+  border: none;
+  box-sizing: border-box;
+  color: ${props => props.theme.colors.terminal};
+  height: 24px;
+  margin: 0 16px 32px 0;
+  outline: none;
+  padding: 0 8px;
+  width: 360px;
+`

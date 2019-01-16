@@ -15,11 +15,13 @@ limitations under the License.
 */
 
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { FileToReceive, FileToSend } from './File';
 import DownloadForm from './DownloadForm';
 import UploadForm from './UploadForm';
 import { Text } from 'shared/components';
+import * as Icon from 'shared/components/Icon';
 
 export default class FileTransferDialog extends Component {
 
@@ -80,7 +82,7 @@ export default class FileTransferDialog extends Component {
     const { files, isUpload } = store;
     const latestFirst = files.toArray().reverse();
     return (
-      <div className="grv-file-transfer p-sm" onKeyDown={this.onKeyDown}>
+      <StyledFileTransfer onKeyDown={this.onKeyDown}>
         {!isUpload && <DownloadForm onDownload={this.onDownload} />}
         {isUpload && <UploadForm onUpload={this.onUpload} /> }
         <FileList
@@ -88,12 +90,11 @@ export default class FileTransferDialog extends Component {
           onUpdate={onTransferUpdate}
           files={latestFirst} />
         <div className="grv-file-transfer-footer">
-          <button onClick={this.onClose}
-            className="btn btn-sm  grv-file-transfer-btn">
-            Close
-          </button>
+          <CloseButton onClick={this.onClose} >
+            <Icon.Close />
+          </CloseButton>
         </div>
-      </div>
+      </StyledFileTransfer>
     )
   }
 }
@@ -119,18 +120,78 @@ export const FileList  = ({ files, onUpdate, onRemove }) => {
 
   return (
     <div className="m-t-sm">
-      <div className="grv-file-transfer-header m-b-sm">
-      </div>
-      <div className="grv-file-transfer-file-list-cols">
-        <Text> File </Text>
-        <Text>Status </Text>
-        <div> </div>
-      </div>
-      <div className="grv-file-transfer-content">
-        <div className="grv-file-transfer-file-list">
-          {$files}
-        </div>
-      </div>
+      <TransferTable>
+        <thead>
+          <tr>
+            <th className="is-left">File Path</th>
+            <th className="is-right">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colSpan="100%">{$files}</td>
+          </tr>
+        </tbody>
+      </TransferTable>
     </div>
   )
 }
+
+
+const StyledFileTransfer = styled.div`
+  background: ${props => props.theme.colors.dark};
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .24);
+  box-sizing: border-box;
+  font-size: ${props => props.theme.fontSizes[0]}px;
+  color: ${props => props.theme.colors.terminal};
+  padding: 16px;
+  position: relative;
+  width: 496px;
+`
+
+
+const TransferTable = styled.table`
+  font-size: ${props => props.theme.fontSizes[0]}px;
+  width: 100%;
+
+  .is-left {
+    text-align: left;
+  }
+
+  .is-right {
+    text-align: right;
+  }
+
+  thead {
+    th {
+      text-transform: uppercase;
+
+
+    }
+  }
+`
+
+const CloseButton = styled.button`
+  background: ${props => props.theme.colors.dark};
+  border: none;
+  border-radius: 2px;
+  font-size: ${props => props.theme.fontSizes[4]}px;
+  color: ${props => props.theme.colors.light};
+  cursor: pointer;
+  height: 20px;
+  outline: none;
+  opacity: .56;
+  padding: 0;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  transition: all .3s;
+  width: 20px;
+  z-index: 1;
+
+  &:hover {
+    background: ${props => props.theme.colors.error};
+    opacity: 1;
+  }
+`
