@@ -13,14 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 import React from 'react';
 import styled from 'styled-components';
-import Slider from './Slider';
+import ProgressBar from './ProgressBar';
 import Xterm from './Xterm';
 import Alert from 'shared/components/Alerts';
 import { TtyPlayer } from 'app/lib/term/ttyPlayer';
 import { Indicator, Text } from 'shared/components';
-
 export default class Player extends React.Component {
 
   constructor(props) {
@@ -121,32 +121,6 @@ export default class Player extends React.Component {
         }
       </StyledPlayer>
      );
-  }
-}
-
-class ProgressBar extends React.Component {
-
-  render() {
-    const { isPlaying, min, max, value, onChange, onToggle, time } = this.props;
-    const btnClass = isPlaying ? 'fa fa-stop' : 'fa fa-play';
-    return (
-      <div className="grv-session-player-controls">
-        <button className="btn" onClick={onToggle}>
-          <i className={btnClass} />
-        </button>
-        <div className="grv-session-player-controls-time">{time}</div>
-        <div className="grv-flex-column">
-          <Slider
-            min={min}
-            max={max}
-            value={value}
-            onChange={onChange}
-            defaultValue={1}
-            withBars
-            className="grv-slider" />
-        </div>
-      </div>
-    )
   }
 }
 

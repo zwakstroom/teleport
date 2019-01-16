@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import InviteForm from './InviteForm';
-import "font-awesome/css/font-awesome.css";
 
 storiesOf('Teleport/Invite/InviteForm', module)
   .add('with user name and password', () => {

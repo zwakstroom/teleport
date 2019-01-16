@@ -24,7 +24,7 @@ import DocumentTitle from './../DocumentTitle';
 import { Cross as CloseIcon } from 'shared/components/Icon';
 import cfg from 'app/config';
 
-class PlayerHost extends React.Component {
+class PlayerDialog extends React.Component {
 
   constructor(props) {
     super(props);
@@ -87,4 +87,4 @@ const StyledBox = styled.div`
 
 `
 
-export default PlayerHost;
+export default PlayerDialog;
