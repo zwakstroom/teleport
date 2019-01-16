@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
+import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Text } from 'shared/components';
 
@@ -122,57 +123,105 @@ export default class UploadForm extends React.Component {
     const { remoteLocation, files } = this.state;
     const isDldBtnDisabled = !remoteLocation || files.length === 0;
     const hasFiles = files.length > 0;
+    let dropzoneMessage = <a onClick={this.onOpenFilePicker}>Select files to upload or drag & drop them here</a>;
+
+    if(hasFiles) {
+      dropzoneMessage = <a onClick={this.onOpenFilePicker}> {files.length} files selected </a>;
+    }
 
     return (
-      <div className="grv-file-transfer-header m-b">
-        <Text className="m-b">
-          <h4>SCP UPLOAD</h4>
-        </Text>
-        <div className="grv-file-transfer-upload">
-          <div className="grv-file-transfer-upload-selected-files"
-            ref={ e => this.refDropzone = e }
-            onDragOver={e => e.preventDefault()}
-            onDrop={this.onDrop}
-          >
-            {!hasFiles &&
-              <div>
-                <a onClick={this.onOpenFilePicker}>Select files</a> to upload or drag & drop them here
-              </div>
-            }
-            {hasFiles &&
-              <div>
-                <a onClick={this.onOpenFilePicker}> {files.length} files selected </a>
-              </div>
-            }
-          </div>
-          <Text className="m-b-xs m-t" >
-            Upload destination
-          </Text>
-          <div style={{ display: "flex" }}>
-            <input className="grv-file-transfer-input m-r-sm"
-              ref={e => this.inputRef = e}
-              value={remoteLocation}
-              autoFocus
-              onFocus={this.moveCaretAtEnd}
-              onChange={this.onFilePathChanged}
-              onKeyDown={this.onKeyDown}
-            />
-            <button className="btn btn-sm grv-file-transfer-btn"
-              style={{ width: "105px" }}
-              disabled={isDldBtnDisabled}
-              onClick={this.onUpload}>
-              Upload
-            </button>
-          </div>
-          <input ref={e => this.fileSelectorRef = e} type="file"
-            multiple
-            style={{ display: "none" }}
-            accept="*.*"
-            name="file"
-            onChange={this.onFileSelected}
-          />
-        </div>
-      </div>
+      <Uploader>
+        <header>(SCP) UPLOAD Files</header>
+        <StyledLabel>Enter location to upload files</StyledLabel>
+        <StyledInput className="grv-file-transfer-input m-r-sm"
+          ref={e => this.inputRef = e}
+          value={remoteLocation}
+          autoFocus
+          onFocus={this.moveCaretAtEnd}
+          onChange={this.onFilePathChanged}
+          onKeyDown={this.onKeyDown}
+        />
+
+        <input ref={e => this.fileSelectorRef = e} type="file"
+          multiple
+          style={{ display: "none" }}
+          accept="*.*"
+          name="file"
+          onChange={this.onFileSelected}
+        />
+
+        <Dropzone ref={ e => this.refDropzone = e } onDragOver={e => e.preventDefault()} onDrop={this.onDrop}>
+          {dropzoneMessage}
+        </Dropzone>
+
+        <UploadButton disabled={isDldBtnDisabled} onClick={this.onUpload}>
+          Upload
+        </UploadButton>
+      </Uploader>
     )
   }
 }
+
+const Uploader = styled.div`
+  font-size: ${props => props.theme.fontSizes[0]}px;
+  color: ${props => props.theme.colors.terminal};
+
+  header {
+    font-size: ${props => props.theme.fontSizes[0]}px;
+    font-weight: 800;
+    line-height: 16px;
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+  }
+`;
+
+const UploadButton = styled.button`
+  background: none;
+  border: 1px solid ${props => props.theme.colors.terminal};
+  box-sizing: border-box;
+  color: ${props => props.theme.colors.terminal};
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+  transition: all .3s;
+  width: 88px;
+
+  &:disabled {
+    border: 1px solid ${props => props.theme.colors.subtle};
+    color: ${props => props.theme.colors.subtle};
+    opacity: .24;
+  }
+`;
+
+const StyledLabel = styled.label`
+  color: ${props => props.theme.colors.terminal};
+  display: block;
+  margin: 0 0 8px 0;
+  line-height: 24px;
+  text-transform: uppercase;
+`
+
+const StyledInput = styled.input`
+  background: ${props => props.theme.colors.bgTerminal};
+  border: none;
+  box-sizing: border-box;
+  color: ${props => props.theme.colors.terminal};
+  height: 24px;
+  margin: 0;
+  outline: none;
+  padding: 0 8px;
+  width: 100%;
+`
+
+const Dropzone = styled.div`
+  background: ${props => props.theme.colors.bgTerminal};
+  border: 1px dashed ${props => props.theme.colors.text};
+  color: ${props => props.theme.colors.terminal};
+  display: block;
+  margin: 16px 0;
+  height: 72px;
+  line-height: 72px;
+  text-align: center;
+  text-transform: uppercase;
+`

@@ -22,9 +22,11 @@ export const colors = {
   dark: '#000',
   light: '#fff',
   subtle: '#CFD8DC',
+  inverse: '#B0BEC5',
   highlight: '#E1F5FE',
   link: '#039BE5',
   terminal: '#28FE14',
+  terminalDark: '#18381F',
 
   // ALERTS/NOTICE COLORS
   error: '#FF1744',

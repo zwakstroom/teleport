@@ -91,9 +91,8 @@ export default class File extends Component {
     return (
       <tr>
         <td colSpan="100%">
-
           <ProgressRow>
-            <ProgressIndicator progress={25}>{name}</ProgressIndicator>
+            <ProgressIndicator progress={httpProgress}>{name}</ProgressIndicator>
             {cancelButton}
             <ProgressStatus color={color}>{status}</ProgressStatus>
           </ProgressRow>
@@ -136,9 +135,9 @@ const ProgressStatus = styled(Text)`
 const ProgressIndicator = styled.div`
   background-image: linear-gradient(
     to right,
-    ${props => props.theme.colors.bgTerminal},
-    ${props => props.theme.colors.bgTerminal} ${props => props.progress}%,
-    ${props => props.theme.colors.dark} 0%, ${props => props.theme.colors.dark} 100%
+    ${props => props.theme.colors.terminalDark} 0%,
+    ${props => props.theme.colors.terminalDark} ${props => props.progress}%,
+    ${props => props.theme.colors.bgTerminal} 0%, ${props => props.theme.colors.bgTerminal} 100%
   );
   height: 24px;
   line-height: 24px;
