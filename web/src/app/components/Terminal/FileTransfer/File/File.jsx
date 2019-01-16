@@ -15,9 +15,11 @@ limitations under the License.
 */
 
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Text } from 'shared/components';
+import * as Icon from 'shared/components/Icon';
 import { Uploader, Downloader } from 'app/services/fileTransfer';
 import withHttpRequest from './withHttpRequest';
 
@@ -64,52 +66,41 @@ export default class File extends Component {
   }
 
   render() {
-    const {
-      name,
-      isFailed,
-      isProcessing,
-      isCompleted,
-      error,
-    } = this.props.file;
+    const { httpProgress, file } = this.props;
+    const {name, isFailed, isProcessing, isCompleted, error} = file;
+    let cancelButton = null;
+    let errMessage = null;
+    let status = null;
+    let color = "terminal";
 
-    const { httpProgress } = this.props;
+    if(isProcessing) {
+      cancelButton = <CloseButton onClick={this.onRemove}><Icon.Close/></CloseButton>;
+      status = `${httpProgress}%`;
+    }
 
-    const className = classnames(
-      "grv-file-transfer-file-list-item",
-      isFailed && "--failed",
-      isProcessing && "--processing",
-      isCompleted && "--completed",
-    )
+    if(isFailed) {
+      errMessage = <Text color="error">{error} </Text> ;
+      status = "failed";
+      color = "error";
+    }
+
+    if(isCompleted) {
+      status = "complete";
+    }
 
     return (
-      <div className={className}>
-        <div className="grv-file-transfer-file-path">
-          {name}
-          {isFailed && <div> {error} </div> }
-        </div>
-        <div className="grv-file-transfer-file-status">
-          {isFailed &&
-            <div>
-              failed
-            </div>
-          }
-          {isProcessing &&
-            <div>
-              {httpProgress}%
-            </div>
-          }
-          {isCompleted &&
-            <Text>completed</Text>
-          }
-        </div>
-        {isProcessing &&
-          <div className="grv-file-transfer-file-close">
-            <a onClick={this.onRemove}>
-              cancel
-            </a>
-          </div>
-        }
-      </div>
+      <tr>
+        <td colSpan="100%">
+
+          <ProgressRow>
+            <ProgressIndicator progress={25}>{name}</ProgressIndicator>
+            {cancelButton}
+            <ProgressStatus color={color}>{status}</ProgressStatus>
+          </ProgressRow>
+
+          <ErrorRow>{errMessage}</ErrorRow>
+        </td>
+      </tr>
     )
   }
 }
@@ -121,3 +112,55 @@ export {
   FileToReceive,
   FileToSend
 }
+
+const ErrorRow = styled.div`
+  display: block;
+  height: 16px;
+  line-height: 16px;
+`;
+
+const ProgressRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const ProgressStatus = styled(Text)`
+  fontSize: 12px;
+  height: 24px;
+  line-height: 24px;
+  width: 80px;
+  text-align: right;
+`;
+
+const ProgressIndicator = styled.div`
+  background-image: linear-gradient(
+    to right,
+    ${props => props.theme.colors.bgTerminal},
+    ${props => props.theme.colors.bgTerminal} ${props => props.progress}%,
+    ${props => props.theme.colors.dark} 0%, ${props => props.theme.colors.dark} 100%
+  );
+  height: 24px;
+  line-height: 24px;
+  width: 80%;
+`;
+
+const CloseButton = styled.button`
+  background: ${props => props.theme.colors.error};
+  border: none;
+  border-radius: 2px;
+  font-size: 12px;
+  color: ${props => props.theme.colors.light};
+  cursor: pointer;
+  height: 12px;
+  line-height: 12px;
+  margin: 6px 8px;
+  outline: none;
+  padding: 0;
+  transition: all .3s;
+  width: 12px;
+
+  &:hover {
+    background: ${props => props.theme.colors.error};
+  }
+`

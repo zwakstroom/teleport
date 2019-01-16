@@ -89,11 +89,10 @@ export default class FileTransferDialog extends Component {
           onRemove={onTransferRemove}
           onUpdate={onTransferUpdate}
           files={latestFirst} />
-        <div className="grv-file-transfer-footer">
-          <CloseButton onClick={this.onClose} >
-            <Icon.Close />
-          </CloseButton>
-        </div>
+
+        <CloseButton onClick={this.onClose} >
+          <Icon.Close />
+        </CloseButton>
       </StyledFileTransfer>
     )
   }
@@ -119,21 +118,17 @@ export const FileList  = ({ files, onUpdate, onRemove }) => {
   });
 
   return (
-    <div className="m-t-sm">
-      <TransferTable>
-        <thead>
-          <tr>
-            <th className="is-left">File Path</th>
-            <th className="is-right">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td colSpan="100%">{$files}</td>
-          </tr>
-        </tbody>
-      </TransferTable>
-    </div>
+    <TransferTable>
+      <thead>
+        <tr>
+          <th className="is-left">File Path</th>
+          <th width="60" className="is-right">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {$files}
+      </tbody>
+    </TransferTable>
   )
 }
 
@@ -166,8 +161,6 @@ const TransferTable = styled.table`
   thead {
     th {
       text-transform: uppercase;
-
-
     }
   }
 `
