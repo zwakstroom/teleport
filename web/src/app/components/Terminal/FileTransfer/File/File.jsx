@@ -17,7 +17,6 @@ limitations under the License.
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Text } from 'shared/components';
 import * as Icon from 'shared/components/Icon';
 import { Uploader, Downloader } from 'app/services/fileTransfer';

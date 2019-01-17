@@ -20,7 +20,8 @@ import ProgressBar from './ProgressBar';
 import Xterm from './Xterm';
 import Alert from 'shared/components/Alerts';
 import { TtyPlayer } from 'app/lib/term/ttyPlayer';
-import { Indicator, Text } from 'shared/components';
+import { Indicator, Text, Typography, Box } from 'shared/components';
+import { fonts } from 'shared/components/theme';
 export default class Player extends React.Component {
 
   constructor(props) {
@@ -46,7 +47,7 @@ export default class Player extends React.Component {
   }
 
   componentDidMount() {
-    this.tty.on('change', this.updateState)
+    this.tty.on('change', this.updateState);
     this.tty.connect();
     this.tty.play();
   }
@@ -64,7 +65,8 @@ export default class Player extends React.Component {
   onTogglePlayStop = () => {
     if(this.state.isPlaying){
       this.tty.stop();
-    }else{
+    }
+    else{
       this.tty.play();
     }
   }
@@ -73,84 +75,88 @@ export default class Player extends React.Component {
     this.tty.move(value);
   }
 
-  render() {
-    const {
-      isPlaying,
-      isLoading,
-      isError,
-      errText,
-      time,
-      min,
-      duration,
-      current,
-      eventCount
-    } = this.state;
+  renderConnectionError() {
+    const {errText} = this.state;
 
-    if (isError) {
-      return (
-        <Alert status="danger">
-          Connection error
-          <Text fontSize={1}> {errText || "Error"} </Text>
-        </Alert>
-      )
+    return (
+      <Alert status="danger" m={10}>
+        Connection Error
+        <Text fontSize={1}> {errText || "Error"} </Text>
+      </Alert>
+    );
+  }
+
+  renderNoSession() {
+    return (
+      <Box m={10} textAlign="center">
+        <Typography.h4>Recording for this session is not available.</Typography.h4>
+      </Box>
+    )
+  }
+
+  renderLoadingIndicator() {
+    return (
+      <Box textAlign="center" m={10}>
+        <Indicator />
+      </Box>
+    );
+  }
+
+  renderProgressBar() {
+    const {isPlaying, time, min, duration, current, eventCount} = this.state;
+    let $progressBar = null;
+
+    if(eventCount > 0) {
+      $progressBar = (
+        <ProgressBar
+        isPlaying={isPlaying}
+        time={time}
+        min={min}
+        max={duration}
+        value={current}
+        onToggle={this.onTogglePlayStop}
+        onChange={this.onMove}/>
+      );
     }
 
-    if (!isLoading && eventCount === 0 ) {
-      return (
-        <Alert status="warning">
-          <Text fontSize={1}>
-            recording for this session is not available.
-          </Text>
-        </Alert>
-      )
+    return $progressBar;
+  }
+
+  renderPlayer() {
+    return (
+      <div>
+        <Xterm tty={this.tty} />
+        {this.renderProgressBar()}
+      </div>
+    );
+  }
+
+  render() {
+    const {isError, isLoading, eventCount} = this.state;
+    let $content = null;
+
+    // error message
+    if(isError) {
+      $content = this.renderConnectionError();
+    }
+    // loading
+    else if(isLoading) {
+      $content = this.renderLoadingIndicator();
+    }
+    // no session available
+    else if(!isLoading && eventCount === 0 ) {
+      $content = this.renderNoSession();
+    }
+    // render session player
+    else {
+      $content = this.renderPlayer();
     }
 
     return (
-      <StyledPlayer>
-        <Xterm tty={this.tty} />
-        {isLoading && <Indicator />}
-        {eventCount > 0 && (
-          <ProgressBar
-            isPlaying={isPlaying}
-            time={time}
-            min={min}
-            max={duration}
-            value={current}
-            onToggle={this.onTogglePlayStop}
-            onChange={this.onMove}/>)
-        }
-      </StyledPlayer>
-     );
+      <StyledPlayer>{$content}</StyledPlayer>
+    );
   }
 }
 
 const StyledPlayer = styled.div`
-  .grv-slider{
-    height: 30px;
-    padding: 3px;
-  }
-
-  .grv-slider .bar{
-    height: 5px;
-  }
-
-  .grv-slider .handle{
-    width: 14px;
-    height: 14px;
-    left: -10px;
-    top: -4px;
-    z-index: 1;
-    border-radius: 14px;
-    background: #FFF;
-    box-shadow: inset 0 0 1px #FFF, inset 0 1px 7px #EBEBEB, 0 3px 6px -3px #BBB;
-  }
-
-  .grv-slider .bar-0{
-    background: none repeat scroll 0 0 #bbbbbb;
-    box-shadow: none;
-  }
-
-  .grv-slider .bar-1{
-    background-color: #333;
-  }
 `;

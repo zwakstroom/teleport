@@ -21,7 +21,7 @@ import Portal from 'shared/components/Modal/Portal';
 import { close } from 'app/flux/player/actions';
 import Player from './Player';
 import DocumentTitle from './../DocumentTitle';
-import { Cross as CloseIcon } from 'shared/components/Icon';
+import { Close } from 'shared/components/Icon';
 import cfg from 'app/config';
 
 class PlayerDialog extends React.Component {
@@ -44,7 +44,9 @@ class PlayerDialog extends React.Component {
       <Portal>
         <DocumentTitle title={title}>
           <StyledBox>
-            <CloseIcon onClick={this.onClose}/>
+            <CloseButton>
+              <Close onClick={this.onClose}/>
+            </CloseButton>
             <Player url={this.url}/>
           </StyledBox>
         </DocumentTitle>
@@ -53,38 +55,34 @@ class PlayerDialog extends React.Component {
   }
 }
 
+const CloseButton = styled.button`
+  background: ${props => props.theme.colors.errorDark};
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  height: 16px;
+  outline: none;
+  padding: 0;
+  position: absolute;
+  top: 16px;
+  transition: all .3s;
+  left: 16px;
+  width: 16px;
+  z-index: 1;
+
+  &:hover {
+    background: ${props => props.theme.colors.error};
+  }
+`
+
 const StyledBox = styled.div`
+  background-color: ${props => props.theme.colors.bgTerminal};
+  left: 0;
+  padding: 32px 16px 16px 16px;
   position: fixed;
-  width: 100%;
-  height: 100%;
+  right: 0;
   top: 0;
   bottom: 0;
-  background-color:${props => props.theme.colors.bgTerminal};
-
-  .grv-terminal {
-    height: 100%;
-    width: 100%;
-    font-size: 14px;
-    line-height: normal
-  }
-
-  .grv-terminal .terminal {
-    font-family: ${ fonts.mono };
-    border: none;
-    font-size: inherit;
-    line-height: normal;
-    position: relative;
-  }
-
-  .grv-terminal .terminal .xterm-viewport {
-    overflow-y: hidden;
-    background-color: #252323;
-  }
-
-  .grv-terminal .terminal * {
-    font-weight: normal!important;
-  }
-
 `
 
 export default PlayerDialog;

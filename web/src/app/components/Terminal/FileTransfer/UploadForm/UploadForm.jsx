@@ -17,7 +17,6 @@ limitations under the License.
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { Text } from 'shared/components';
 
 export default class UploadForm extends React.Component {
 

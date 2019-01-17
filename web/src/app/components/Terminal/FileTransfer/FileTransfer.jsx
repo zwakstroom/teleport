@@ -20,7 +20,6 @@ import PropTypes from 'prop-types';
 import { FileToReceive, FileToSend } from './File';
 import DownloadForm from './DownloadForm';
 import UploadForm from './UploadForm';
-import { Text } from 'shared/components';
 import * as Icon from 'shared/components/Icon';
 
 export default class FileTransferDialog extends Component {

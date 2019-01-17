@@ -17,20 +17,20 @@ limitations under the License.
 import React from 'react';
 import Slider from './Slider';
 import styled from 'styled-components';
-import { Text, Button } from 'shared/components';
+import { Text } from 'shared/components';
 import * as Icons from 'shared/components/Icon';
 import { fonts } from 'shared/components/theme';
 
 export default class ProgressBar extends React.Component {
   render() {
     const { isPlaying, min, max, value, onChange, onToggle, time } = this.props;
-    const Icon = isPlaying ? Icons.Play : Icons.CircleStop;
+    const Icon = isPlaying ? Icons.CirclePause : Icons.CirclePlay;
     return (
       <StyledProgessBar>
-        <Button size="small" onClick={onToggle}>
+        <ActionButton onClick={onToggle}>
           <Icon />
-        </Button>
-        <TimeText >{time}</TimeText>
+        </ActionButton>
+        <TimeText>{time}</TimeText>
         <SliderContainer>
           <Slider
             min={min}
@@ -54,85 +54,76 @@ const SliderContainer = styled.div`
 
 const TimeText = styled(Text)`
   font-family: ${fonts.mono};
+  font-size: ${props => props.theme.fontSizes[1]}px;
+  line-height: 24px;
+  margin-right: 16px;
+  opacity: .56;
 `
 
+const ActionButton = styled.button`
+  background: ${props => props.theme.colors.dark};
+  border: none;
+  color: ${props => props.theme.colors.light};
+  cursor: pointer;
+  font-size: 24px;
+  height: 24px;
+  margin-right: 16px;
+  outline: none;
+  opacity: .87;
+  padding: 0;
+  text-align: center;
+  transition: all .3s;
+  width: 24px;
+
+  &:hover {
+    opacity: 1;
+
+    .icon {
+      color: ${props => props.theme.colors.primary};
+    }
+  }
+
+  .icon {
+    height: 24px;
+    width: 24px;
+  }
+`;
+
 const StyledProgessBar = styled.div`
-  margin-top: 10px;
+  background-color: ${props => props.theme.colors.dark};
   display: flex;
-  color: #ddd;
+  color: ${props => props.theme.colors.light};
+  padding: 16px;
 
-
-  .grv-slider{
+  .grv-slider {
     display: block;
-    height: 10px;
     padding: 0;
-    margin-top: 4px;
-    height: 30px;
-    padding: 3px;
+    height: 24px;
   }
 
-  .grv-slider .bar{
-    height: 5px;
+  .grv-slider .bar {
+    border-radius: 200px;
+    height: 8px;
+    margin: 8px 0;
   }
 
-  .grv-slider .handle{
-    width: 14px;
-    height: 14px;
-    left: -10px;
-    top: -4px;
+  .grv-slider .handle {
+    background-color: ${props => props.theme.colors.light};
+    border-radius: 200px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, .12), 0 4px 4px rgba(0, 0, 0, .24);
+    width: 16px;
+    height: 16px;
+    left: -8px;
+    top: 4px;
     z-index: 1;
-    border-radius: 14px;
-    background: #FFF;
-    box-shadow: inset 0 0 1px #FFF, inset 0 1px 7px #EBEBEB, 0 3px 6px -3px #BBB;
   }
 
-  .grv-slider .bar-0{
-    background: none repeat scroll 0 0 #bbbbbb;
+  .grv-slider .bar-0 {
+    background-color: ${props => props.theme.colors.success};
     box-shadow: none;
   }
 
-  .grv-slider .bar-1{
-    background-color: #333;
+  .grv-slider .bar-1 {
+    background-color: ${props => props.theme.colors.text};
   }
-
-
-
 `
-
-/*
-
-.grv-session-player-controls{
-    margin-top: 10px;
-    display: flex;
-    color: #ddd;
-
-    .grv-flex-column{
-      align-self: center;
-    }
-
-    .btn{
-      width: 15px;
-      background-color: transparent;
-      padding: 0 12px 0 0;
-
-      &:focus, &:hover{
-        color: #ddd;
-      }
-    }
-
-    .grv-session-player-controls-time{
-      min-width: 40px;
-      margin: 2px 10px 0 7px;
-      display: block;
-      font-family: $grv-font-mono;
-    }
-
-    .grv-slider{
-      display: block;
-      height: 10px;
-      padding: 0;
-      margin-top: 4px;
-    }
-  }
-
-*/
