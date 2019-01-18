@@ -98,7 +98,7 @@ export default class LoginForm extends React.Component {
           mt="5"
           mb="2"
           >
-          LOGIN WITH EMAIL
+          SIGN INTO TELEPORT
         </Button>
 
         {$helpBlock}
@@ -163,7 +163,7 @@ export default class LoginForm extends React.Component {
     return (
       <React.Fragment>
         <Label hasError={userError}>
-          Email
+          USERNAME
           {userError && errors.user}
         </Label>
         <Input id="user" fontSize={0}

@@ -31,6 +31,17 @@ const DateCreatedCell = ({ rowIndex, data, ...props }) => {
   )
 };
 
+const DescriptionCell = ({ rowIndex, data, ...props }) => {
+  let rowData = data[rowIndex];
+
+  console.log(rowData);
+  return (
+    <Cell {...props}>
+    Description
+    </Cell>
+  )
+};
+
 const DurationCell = ({ rowIndex, data, ...props }) => {
   let { duration } = data[rowIndex];
   let displayDate = moment.duration(duration).humanize();
@@ -130,6 +141,7 @@ const NodeCell = ({ rowIndex, data, ...props }) => {
 export {
   SessionIdCell,
   UsersCell,
+  DescriptionCell,
   DurationCell,
   DateCreatedCell,
   SingleUserCell,

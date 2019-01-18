@@ -20,7 +20,7 @@ import { isMatch } from 'app/lib/objectUtils';
 import { TablePaged, Column, Cell, SortHeaderCell, SortTypes } from 'shared/components/DataTable';
 
 import moment from 'moment';
-import { SessionIdCell, NodeCell, UsersCell, TypeCell, DateCreatedCell, DurationCell } from './SessionListCells';
+import { SessionIdCell, NodeCell, UsersCell, TypeCell, DateCreatedCell, DescriptionCell, DurationCell } from './SessionListCells';
 import cfg from 'app/config';
 
 class SessionList extends React.Component {
@@ -74,6 +74,17 @@ class SessionList extends React.Component {
     return sorted;
   }
 
+  getDescription(eventType) {
+    let description;
+
+    switch(eventType) {
+      case 'session': description = ""; break;
+      default: description = "adsf" ;
+    }
+
+    return description;
+  }
+
   render() {
     const { filter, searchValue, storedSessions, activeSessions } = this.props;
     const { start, end } = filter;
@@ -102,24 +113,15 @@ class SessionList extends React.Component {
             header={<Cell> User / IP Address </Cell> }
             cell={<UsersCell /> }
           />
+
           <Column
-            columnKey="nodeIp"
+            columnKey="description"
             header={
-              <Cell>Node</Cell>
+              <Cell>Description</Cell>
             }
-            cell={<NodeCell /> }
+            cell={<DescriptionCell /> }
           />
-          <Column
-            columnKey="duration"
-            header={
-              <SortHeaderCell
-                sortDir={this.state.colSortDirs.duration}
-                onSortChange={this.onSortChange}
-                title="Duration"
-              />
-            }
-            cell={<DurationCell /> }
-          />
+
           <Column
             columnKey="created"
             header={
@@ -132,7 +134,7 @@ class SessionList extends React.Component {
             cell={<DateCreatedCell /> }
           />
           <Column
-            header={<Cell> Session ID </Cell> }
+            header={<Cell> Actions </Cell> }
             cell={
               <SessionIdCell canJoin={canJoin} container={this} />
             }
