@@ -20,44 +20,44 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/x509"
+	//"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+	//"io/ioutil"
 	"net"
-	"net/http/httptest"
-	"net/url"
+	//"net/http/httptest"
+	//"net/url"
 	"os"
-	"os/exec"
+	//"os/exec"
 	"os/user"
-	"path/filepath"
+	//"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"golang.org/x/crypto/ssh"
+	//"golang.org/x/crypto/ssh"
 
-	"github.com/gravitational/teleport"
+	//"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/auth/testauthority"
-	"github.com/gravitational/teleport/lib/backend"
+	//"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/client"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
-	"github.com/gravitational/teleport/lib/pam"
+	//"github.com/gravitational/teleport/lib/pam"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/service"
 	"github.com/gravitational/teleport/lib/services"
-	"github.com/gravitational/teleport/lib/session"
+	//"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
 
-	log "github.com/sirupsen/logrus"
+	//log "github.com/sirupsen/logrus"
 	"gopkg.in/check.v1"
 )
 
@@ -149,7 +149,14 @@ func (s *IntSuite) newTeleport(c *check.C, logins []string, enableSSH bool) *Tel
 // Teleport instance with the passed in user, instance secrets, and Teleport
 // configuration.
 func (s *IntSuite) newTeleportWithConfig(c *check.C, logins []string, instanceSecrets []*InstanceSecrets, teleportConfig *service.Config) *TeleInstance {
-	t := NewInstance(InstanceConfig{ClusterName: Site, HostID: HostID, NodeName: Host, Ports: s.getPorts(5), Priv: s.priv, Pub: s.pub})
+	t := NewInstance(InstanceConfig{
+		ClusterName: Site,
+		HostID:      HostID,
+		NodeName:    Host,
+		Ports:       s.getPorts(5),
+		Priv:        s.priv,
+		Pub:         s.pub,
+	})
 
 	// use passed logins, but use suite's default login if nothing was passed
 	if logins == nil || len(logins) == 0 {
@@ -170,6 +177,7 @@ func (s *IntSuite) newTeleportWithConfig(c *check.C, logins []string, instanceSe
 	return t
 }
 
+/*
 // TestAuditOn creates a live session, records a bunch of data through it
 // and then reads it back and compares against simulated reality.
 func (s *IntSuite) TestAuditOn(c *check.C) {
@@ -487,11 +495,13 @@ func (s *IntSuite) TestAuditOn(c *check.C) {
 		}
 	}
 }
+*/
 
 func replaceNewlines(in string) string {
 	return regexp.MustCompile(`\r?\n`).ReplaceAllString(in, `\n`)
 }
 
+/*
 // TestInteroperability checks if Teleport and OpenSSH behave in the same way
 // when executing commands.
 func (s *IntSuite) TestInteroperability(c *check.C) {
@@ -718,6 +728,7 @@ func (s *IntSuite) TestShutdown(c *check.C) {
 		c.Fatalf("Failed to shut down the server.")
 	}
 }
+*/
 
 type disconnectTestCase struct {
 	recordingMode     string
@@ -725,6 +736,7 @@ type disconnectTestCase struct {
 	disconnectTimeout time.Duration
 }
 
+/*
 // TestDisconnectScenarios tests multiple scenarios with client disconnects
 func (s *IntSuite) TestDisconnectScenarios(c *check.C) {
 	tr := utils.NewTracer(utils.ThisFunction()).Start()
@@ -847,6 +859,7 @@ func (s *IntSuite) runDisconnectTest(c *check.C, tc disconnectTestCase) {
 		// session closed
 	}
 }
+*/
 
 func enterInput(c *check.C, person *Terminal, command, pattern string) {
 	person.Type(command)
@@ -869,6 +882,7 @@ func enterInput(c *check.C, person *Terminal, command, pattern string) {
 	}
 }
 
+/*
 // TestInvalidLogins validates that you can't login with invalid login or
 // with invalid 'site' parameter
 func (s *IntSuite) TestEnvironmentVariables(c *check.C) {
@@ -1937,6 +1951,7 @@ func (s *IntSuite) TestDiscovery(c *check.C) {
 	c.Assert(remote.Stop(true), check.IsNil)
 	c.Assert(main.Stop(true), check.IsNil)
 }
+*/
 
 // TestDiscoveryNode makes sure the discovery protocol works with nodes.
 func (s *IntSuite) TestDiscoveryNode(c *check.C) {
@@ -1979,106 +1994,113 @@ func (s *IntSuite) TestDiscoveryNode(c *check.C) {
 	main := s.newTeleportWithConfig(mainConfig())
 	defer main.Stop(true)
 
-	// Create a Teleport instance with a Proxy.
-	nodePorts := s.getPorts(3)
-	proxyReverseTunnelPort, proxyWebPort, proxySSHPort := nodePorts[0], nodePorts[1], nodePorts[2]
-	proxyConfig := ProxyConfig{
-		Name:              "cluster-main-proxy",
-		SSHPort:           proxySSHPort,
-		WebPort:           proxyWebPort,
-		ReverseTunnelPort: proxyReverseTunnelPort,
-	}
-	proxyTunnel, err := main.StartProxy(proxyConfig)
-	c.Assert(err, check.IsNil)
-
-	proxyOneBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, main.GetPortReverseTunnel()))
-	lb.AddBackend(*proxyOneBackend)
-	proxyTwoBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, strconv.Itoa(proxyReverseTunnelPort)))
-	lb.AddBackend(*proxyTwoBackend)
-
-	// Create a Teleport instance with a Node.
-	nodeConfig := func() *service.Config {
-		tconf := service.MakeDefaultConfig()
-		tconf.Hostname = "cluster-main-node"
-		tconf.Console = nil
-		tconf.Token = "token"
-		tconf.AuthServers = []utils.NetAddr{
-			utils.NetAddr{
-				AddrNetwork: "tcp",
-				Addr:        net.JoinHostPort(Loopback, main.GetPortWeb()),
-			},
+	/*
+		// Create a Teleport instance with a Proxy.
+		//nodePorts := s.getPorts(3)
+		//proxyReverseTunnelPort, proxyWebPort, proxySSHPort := nodePorts[0], nodePorts[1], nodePorts[2]
+		proxyConfig := ProxyConfig{
+			Name: "cluster-main-proxy",
+			//SSHPort:           proxySSHPort,
+			//WebPort:           proxyWebPort,
+			//ReverseTunnelPort: proxyReverseTunnelPort,
 		}
+		//proxyProcess, proxyTunnel, err := main.StartProxy(proxyConfig)
+		proxyProcess, _, err := main.StartProxy(proxyConfig)
+		c.Assert(err, check.IsNil)
 
-		tconf.Auth.Enabled = false
+		_, proxyOneTunnelPort, _ := net.SplitHostPort(main.Process.Config.Proxy.ReverseTunnelListenAddr.String())
+		_, proxyTwoTunnelPort, _ := net.SplitHostPort(proxyProcess.Config.Proxy.ReverseTunnelListenAddr.String())
 
-		tconf.Proxy.Enabled = false
+		proxyOneBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, proxyOneTunnelPort))
+		lb.AddBackend(*proxyOneBackend)
+		proxyTwoBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, proxyTwoTunnelPort))
+		lb.AddBackend(*proxyTwoBackend)
 
-		tconf.SSH.Enabled = true
+		// Create a Teleport instance with a Node.
+		nodeConfig := func() *service.Config {
+			tconf := service.MakeDefaultConfig()
+			tconf.Hostname = "cluster-main-node"
+			tconf.Console = nil
+			tconf.Token = "token"
+			tconf.AuthServers = []utils.NetAddr{
+				utils.NetAddr{
+					AddrNetwork: "tcp",
+					Addr:        net.JoinHostPort(Loopback, main.GetPortWeb()),
+				},
+			}
 
-		return tconf
-	}
-	_, err = main.StartNode(nodeConfig())
-	c.Assert(err, check.IsNil)
+			tconf.Auth.Enabled = false
 
-	// Wait for active tunnel connections to be established.
-	waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
-	waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
+			tconf.Proxy.Enabled = false
 
-	// Execute the connection via first proxy.
-	cfg := ClientConfig{
-		Login:   s.me.Username,
-		Cluster: Site,
-		Host:    "cluster-main-node",
-	}
-	output, err := runCommand(main, []string{"echo", "hello world"}, cfg, 1)
-	c.Assert(err, check.IsNil)
-	c.Assert(output, check.Equals, "hello world\n")
+			tconf.SSH.Enabled = true
 
-	// Execute the connection via second proxy, should work. This command is
-	// tried 10 times with 250 millisecond delay between each attempt to allow
-	// the discovery request to be received and the connection added to the agent
-	// pool.
-	cfgProxy := ClientConfig{
-		Login:   s.me.Username,
-		Cluster: Site,
-		Host:    "cluster-main-node",
-		Proxy:   &proxyConfig,
-	}
+			return tconf
+		}
+		_, err = main.StartNode(nodeConfig())
+		c.Assert(err, check.IsNil)
 
-	output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 10)
-	c.Assert(err, check.IsNil)
-	c.Assert(output, check.Equals, "hello world\n")
+		/*
+			// Wait for active tunnel connections to be established.
+			waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
+			waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
 
-	// Remove second proxy from LB.
-	lb.RemoveBackend(*proxyTwoBackend)
-	waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
+			// Execute the connection via first proxy.
+			cfg := ClientConfig{
+				Login:   s.me.Username,
+				Cluster: Site,
+				Host:    "cluster-main-node",
+			}
+			output, err := runCommand(main, []string{"echo", "hello world"}, cfg, 1)
+			c.Assert(err, check.IsNil)
+			c.Assert(output, check.Equals, "hello world\n")
 
-	// Requests going via main proxy will succeed. Requests going via second
-	// proxy will fail.
-	output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
-	c.Assert(err, check.IsNil)
-	c.Assert(output, check.Equals, "hello world\n")
-	output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 1)
-	c.Assert(err, check.NotNil)
+			// Execute the connection via second proxy, should work. This command is
+			// tried 10 times with 250 millisecond delay between each attempt to allow
+			// the discovery request to be received and the connection added to the agent
+			// pool.
+			cfgProxy := ClientConfig{
+				Login:   s.me.Username,
+				Cluster: Site,
+				Host:    "cluster-main-node",
+				Proxy:   &proxyConfig,
+			}
 
-	// Add second proxy to LB, both should have a connection.
-	lb.AddBackend(*proxyTwoBackend)
-	waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
-	waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
+			output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 10)
+			c.Assert(err, check.IsNil)
+			c.Assert(output, check.Equals, "hello world\n")
 
-	// Requests going via both proxies will succeed.
-	output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
-	c.Assert(err, check.IsNil)
-	c.Assert(output, check.Equals, "hello world\n")
-	output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 40)
-	c.Assert(err, check.IsNil)
-	c.Assert(output, check.Equals, "hello world\n")
+			// Remove second proxy from LB.
+			lb.RemoveBackend(*proxyTwoBackend)
+			waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
 
-	// Stop everything.
-	err = proxyTunnel.Shutdown(context.Background())
-	c.Assert(err, check.IsNil)
-	err = main.Stop(true)
-	c.Assert(err, check.IsNil)
+			// Requests going via main proxy will succeed. Requests going via second
+			// proxy will fail.
+			output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
+			c.Assert(err, check.IsNil)
+			c.Assert(output, check.Equals, "hello world\n")
+			output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 1)
+			c.Assert(err, check.NotNil)
+
+			// Add second proxy to LB, both should have a connection.
+			lb.AddBackend(*proxyTwoBackend)
+			waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
+			waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
+
+			// Requests going via both proxies will succeed.
+			output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
+			c.Assert(err, check.IsNil)
+			c.Assert(output, check.Equals, "hello world\n")
+			output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 40)
+			c.Assert(err, check.IsNil)
+			c.Assert(output, check.Equals, "hello world\n")
+
+			// Stop everything.
+			err = proxyTunnel.Shutdown(context.Background())
+			c.Assert(err, check.IsNil)
+			err = main.Stop(true)
+			c.Assert(err, check.IsNil)
+	*/
 }
 
 // waitForActiveTunnelConnections  waits for remote cluster to report a minimum number of active connections
@@ -2157,6 +2179,7 @@ func waitForTunnelConnections(c *check.C, authServer *auth.AuthServer, clusterNa
 	c.Fatalf("proxy count on %v: %v, expected %v", clusterName, len(conns), expectedCount)
 }
 
+/*
 // TestExternalClient tests if we can connect to a node in a Teleport
 // cluster. Both normal and recording proxies are tested.
 func (s *IntSuite) TestExternalClient(c *check.C) {
@@ -3616,6 +3639,7 @@ func (s *IntSuite) TestDataTransfer(c *check.C) {
 	c.Assert(eventFields.GetInt(events.DataReceived) > MB, check.Equals, true)
 	c.Assert(eventFields.GetInt(events.DataTransmitted) > KB, check.Equals, true)
 }
+*/
 
 // findEventInLog tries to find an event in the audit log file 10 times.
 func findEventInLog(t *TeleInstance, eventName string) (events.EventFields, error) {

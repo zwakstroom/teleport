@@ -900,7 +900,8 @@ func (process *TeleportProcess) newClientDirect(authServers []utils.NetAddr, ide
 	if process.Config.ClientTimeout != 0 {
 		return auth.NewTLSClient(auth.ClientConfig{
 			Addrs: authServers,
-			TLS:   tlsConfig}, auth.ClientTimeout(process.Config.ClientTimeout))
+			TLS:   tlsConfig},
+			auth.ClientTimeout(process.Config.ClientTimeout))
 	}
 	return auth.NewTLSClient(auth.ClientConfig{Addrs: authServers, TLS: tlsConfig})
 }

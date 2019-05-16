@@ -171,6 +171,10 @@ type Config struct {
 
 	// FIPS means FedRAMP/FIPS 140-2 compliant configuration was requested.
 	FIPS bool
+
+	// Integration mode means Teleport will allow the kernel to decide what
+	// port to listen on.
+	Integration bool
 }
 
 // ApplyToken assigns a given token to all internal services but only if token

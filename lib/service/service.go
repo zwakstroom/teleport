@@ -967,6 +967,26 @@ func (process *TeleportProcess) initAuthService() error {
 
 	process.setLocalAuth(authServer)
 
+	// Auth server listens on SSH and TLS, reusing the same socket.
+	listener, err := process.importOrCreateListener(teleport.ComponentAuth, cfg.Auth.SSHAddr.Addr)
+	if err != nil {
+		log.Errorf("PID: %v Failed to bind to address %v: %v, exiting.", os.Getpid(), cfg.Auth.SSHAddr.Addr, err)
+		return trace.Wrap(err)
+	}
+	// clean up unused descriptors passed for proxy, but not used by it
+	warnOnErr(process.closeImportedDescriptors(teleport.ComponentAuth))
+	if cfg.Auth.EnableProxyProtocol {
+		log.Infof("Starting Auth service with PROXY protocol support.")
+	}
+
+	// In integration mode, the port to bind to is set to 0 to allow the kernel
+	// to find a free port and assign. Once the listener has been allocated
+	// (above), update the address with the real host:port.
+	if cfg.Integration {
+		cfg.Auth.SSHAddr = utils.FromAddr(listener.Addr())
+		cfg.AuthServers = []utils.NetAddr{cfg.Auth.SSHAddr}
+	}
+
 	connector, err := process.connectToAuthService(teleport.RoleAdmin)
 	if err != nil {
 		return trace.Wrap(err)
@@ -1027,17 +1047,24 @@ func (process *TeleportProcess) initAuthService() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	// auth server listens on SSH and TLS, reusing the same socket
-	listener, err := process.importOrCreateListener(teleport.ComponentAuth, cfg.Auth.SSHAddr.Addr)
-	if err != nil {
-		log.Errorf("PID: %v Failed to bind to address %v: %v, exiting.", os.Getpid(), cfg.Auth.SSHAddr.Addr, err)
-		return trace.Wrap(err)
-	}
-	// clean up unused descriptors passed for proxy, but not used by it
-	warnOnErr(process.closeImportedDescriptors(teleport.ComponentAuth))
-	if cfg.Auth.EnableProxyProtocol {
-		log.Infof("Starting Auth service with PROXY protocol support.")
-	}
+	//// auth server listens on SSH and TLS, reusing the same socket
+	//listener, err := process.importOrCreateListener(teleport.ComponentAuth, cfg.Auth.SSHAddr.Addr)
+	//if err != nil {
+	//	log.Errorf("PID: %v Failed to bind to address %v: %v, exiting.", os.Getpid(), cfg.Auth.SSHAddr.Addr, err)
+	//	return trace.Wrap(err)
+	//}
+	//// If the listen address had a port defined, this is a NOP. If the listen
+	//// address had 0 for the port (allow the kernel to find a free port and
+	//// allocate), then this updates the listen address with the real address.
+	//cfg.Auth.SSHAddr = utils.FromAddr(listener.Addr())
+	//fmt.Printf("--> Setting auth listen addr: %v.\n", cfg.Auth.SSHAddr)
+	//process.AuthListenAddr = listener.Addr()
+
+	//// clean up unused descriptors passed for proxy, but not used by it
+	//warnOnErr(process.closeImportedDescriptors(teleport.ComponentAuth))
+	//if cfg.Auth.EnableProxyProtocol {
+	//	log.Infof("Starting Auth service with PROXY protocol support.")
+	//}
 	mux, err := multiplexer.New(multiplexer.Config{
 		EnableProxyProtocol: cfg.Auth.EnableProxyProtocol,
 		Listener:            listener,
@@ -1433,6 +1460,10 @@ func (process *TeleportProcess) initSSH() error {
 			}
 			// clean up unused descriptors passed for proxy, but not used by it
 			warnOnErr(process.closeImportedDescriptors(teleport.ComponentNode))
+
+			if cfg.Integration {
+				cfg.SSH.Addr = utils.FromAddr(listener.Addr())
+			}
 
 			log.Infof("Service is starting on %v %v.", cfg.SSH.Addr.Addr, process.Config.CachePolicy)
 			utils.Consolef(cfg.Console, teleport.ComponentNode, "Service is starting on %v.", cfg.SSH.Addr.Addr)
@@ -1917,9 +1948,21 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		return trace.Wrap(err)
 	}
 
+	// Kube, Web, Reverse Tunnel
 	listeners, err := process.setupProxyListeners()
 	if err != nil {
 		return trace.Wrap(err)
+	}
+	// SSH
+	listener, err := process.importOrCreateListener(teleport.Component(teleport.ComponentProxy, "ssh"), cfg.Proxy.SSHAddr.Addr)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	if cfg.Integration {
+		cfg.Proxy.SSHAddr = utils.FromAddr(listener.Addr())
+		cfg.Proxy.WebAddr = utils.FromAddr(listeners.web.Addr())
+		cfg.Proxy.ReverseTunnelListenAddr = utils.FromAddr(listeners.reverseTunnel.Addr())
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -2043,10 +2086,6 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 	}
 
 	// Register SSH proxy server - SSH jumphost proxy server
-	listener, err := process.importOrCreateListener(teleport.Component(teleport.ComponentProxy, "ssh"), cfg.Proxy.SSHAddr.Addr)
-	if err != nil {
-		return trace.Wrap(err)
-	}
 	sshProxy, err := regular.New(cfg.Proxy.SSHAddr,
 		cfg.Hostname,
 		[]ssh.Signer{conn.ServerIdentity.KeySigner},

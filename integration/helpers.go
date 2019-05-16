@@ -294,27 +294,39 @@ func (s *InstanceSecrets) GetIdentity() *auth.Identity {
 }
 
 func (i *TeleInstance) GetPortSSHInt() int {
-	return i.Ports[0]
+	port, _ := strconv.Atoi(i.GetPortSSH())
+	return port
+	//return i.Ports[0]
 }
 
 func (i *TeleInstance) GetPortSSH() string {
-	return strconv.Itoa(i.GetPortSSHInt())
+	_, port, _ := net.SplitHostPort(i.Config.SSH.Addr.String())
+	return port
+	//return strconv.Itoa(i.GetPortSSHInt())
 }
 
 func (i *TeleInstance) GetPortAuth() string {
-	return strconv.Itoa(i.Ports[1])
+	_, port, _ := net.SplitHostPort(i.Config.Auth.SSHAddr.String())
+	return port
+	//return strconv.Itoa(i.Ports[1])
 }
 
 func (i *TeleInstance) GetPortProxy() string {
-	return strconv.Itoa(i.Ports[2])
+	_, port, _ := net.SplitHostPort(i.Config.Proxy.SSHAddr.String())
+	return port
+	//return strconv.Itoa(i.Ports[2])
 }
 
 func (i *TeleInstance) GetPortWeb() string {
-	return strconv.Itoa(i.Ports[3])
+	_, port, _ := net.SplitHostPort(i.Config.Proxy.WebAddr.String())
+	return port
+	//return strconv.Itoa(i.Ports[3])
 }
 
 func (i *TeleInstance) GetPortReverseTunnel() string {
-	return strconv.Itoa(i.Ports[4])
+	_, port, _ := net.SplitHostPort(i.Config.Proxy.ReverseTunnelListenAddr.String())
+	return port
+	//return strconv.Itoa(i.Ports[4])
 }
 
 // GetSiteAPI() is a helper which returns an API endpoint to a site with
@@ -447,6 +459,8 @@ func (i *TeleInstance) GenerateConfig(trustedSecrets []*InstanceSecrets, tconf *
 	if tconf == nil {
 		tconf = service.MakeDefaultConfig()
 	}
+	tconf.Integration = true
+
 	tconf.DataDir = dataDir
 	tconf.UploadEventsC = i.UploadEventsC
 	tconf.CachePolicy.Enabled = true
@@ -481,7 +495,8 @@ func (i *TeleInstance) GenerateConfig(trustedSecrets []*InstanceSecrets, tconf *
 	}
 	tconf.Proxy.ReverseTunnelListenAddr.Addr = i.Secrets.ListenAddr
 	tconf.HostUUID = i.Secrets.GetIdentity().ID.HostUUID
-	tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, i.GetPortSSH())
+	//tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, i.GetPortSSH())
+	tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, "0")
 	tconf.SSH.PublicAddrs = []utils.NetAddr{
 		utils.NetAddr{
 			AddrNetwork: "tcp",
@@ -492,9 +507,13 @@ func (i *TeleInstance) GenerateConfig(trustedSecrets []*InstanceSecrets, tconf *
 			Addr:        Host,
 		},
 	}
-	tconf.Auth.SSHAddr.Addr = net.JoinHostPort(i.Hostname, i.GetPortAuth())
-	tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, i.GetPortProxy())
-	tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, i.GetPortWeb())
+	//tconf.Auth.SSHAddr.Addr = net.JoinHostPort(i.Hostname, i.GetPortAuth())
+	tconf.Auth.SSHAddr.Addr = net.JoinHostPort(i.Hostname, "0")
+	//tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, i.GetPortProxy())
+	tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, "0")
+	//tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, i.GetPortWeb())
+	tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, "0")
+
 	tconf.Proxy.PublicAddrs = []utils.NetAddr{
 		utils.NetAddr{
 			AddrNetwork: "tcp",
@@ -616,6 +635,8 @@ func (i *TeleInstance) StartNode(tconf *service.Config) (*service.TeleportProces
 		Enabled:   true,
 		RecentTTL: &ttl,
 	}
+	tconf.SSH.Enabled = true
+	tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, "0")
 	tconf.SSH.PublicAddrs = []utils.NetAddr{
 		utils.NetAddr{
 			AddrNetwork: "tcp",
@@ -680,13 +701,16 @@ func (i *TeleInstance) StartNodeAndProxy(name string, sshPort, proxyWebPort, pro
 	tconf.Auth.Enabled = false
 
 	tconf.Proxy.Enabled = true
-	tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", proxySSHPort))
-	tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", proxyWebPort))
+	//tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", proxySSHPort))
+	//tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", proxyWebPort))
+	tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, "0")
+	tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, "0")
 	tconf.Proxy.DisableReverseTunnel = true
 	tconf.Proxy.DisableWebService = true
 
 	tconf.SSH.Enabled = true
-	tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", sshPort))
+	//tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", sshPort))
+	tconf.SSH.Addr.Addr = net.JoinHostPort(i.Hostname, "0")
 	tconf.SSH.PublicAddrs = []utils.NetAddr{
 		utils.NetAddr{
 			AddrNetwork: "tcp",
@@ -737,13 +761,14 @@ type ProxyConfig struct {
 }
 
 // StartProxy starts another Proxy Server and connects it to the cluster.
-func (i *TeleInstance) StartProxy(cfg ProxyConfig) (reversetunnel.Server, error) {
+func (i *TeleInstance) StartProxy(cfg ProxyConfig) (*service.TeleportProcess, reversetunnel.Server, error) {
 	dataDir, err := ioutil.TempDir("", "cluster-"+i.Secrets.SiteName+"-"+cfg.Name)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, nil, trace.Wrap(err)
 	}
 
 	tconf := service.MakeDefaultConfig()
+	tconf.Integration = true
 
 	authServer := utils.MustParseAddr(net.JoinHostPort(i.Hostname, i.GetPortAuth()))
 	tconf.AuthServers = append(tconf.AuthServers, *authServer)
@@ -759,7 +784,8 @@ func (i *TeleInstance) StartProxy(cfg ProxyConfig) (reversetunnel.Server, error)
 	tconf.SSH.Enabled = false
 
 	tconf.Proxy.Enabled = true
-	tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", cfg.SSHPort))
+	//tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", cfg.SSHPort))
+	tconf.Proxy.SSHAddr.Addr = net.JoinHostPort(i.Hostname, "0")
 	tconf.Proxy.PublicAddrs = []utils.NetAddr{
 		utils.NetAddr{
 			AddrNetwork: "tcp",
@@ -770,8 +796,10 @@ func (i *TeleInstance) StartProxy(cfg ProxyConfig) (reversetunnel.Server, error)
 			Addr:        Host,
 		},
 	}
-	tconf.Proxy.ReverseTunnelListenAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", cfg.ReverseTunnelPort))
-	tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", cfg.WebPort))
+	//tconf.Proxy.ReverseTunnelListenAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", cfg.ReverseTunnelPort))
+	tconf.Proxy.ReverseTunnelListenAddr.Addr = net.JoinHostPort(i.Hostname, "0")
+	//tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, fmt.Sprintf("%v", cfg.WebPort))
+	tconf.Proxy.WebAddr.Addr = net.JoinHostPort(i.Hostname, "0")
 	tconf.Proxy.DisableReverseTunnel = false
 	tconf.Proxy.DisableWebService = true
 
@@ -779,7 +807,7 @@ func (i *TeleInstance) StartProxy(cfg ProxyConfig) (reversetunnel.Server, error)
 	// compose this "cluster".
 	process, err := service.NewTeleport(tconf)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, nil, trace.Wrap(err)
 	}
 	i.Nodes = append(i.Nodes, process)
 
@@ -793,7 +821,7 @@ func (i *TeleInstance) StartProxy(cfg ProxyConfig) (reversetunnel.Server, error)
 	// Start the process and block until the expected events have arrived.
 	receivedEvents, err := startAndWait(process, expectedEvents)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, nil, trace.Wrap(err)
 	}
 
 	// Extract and set reversetunnel.Server and reversetunnel.AgentPool upon
@@ -812,7 +840,7 @@ func (i *TeleInstance) StartProxy(cfg ProxyConfig) (reversetunnel.Server, error)
 
 	log.Debugf("Teleport proxy (in instance %v) started: %v/%v events received.",
 		i.Secrets.SiteName, len(expectedEvents), len(receivedEvents))
-	return tunnel, nil
+	return process, tunnel, nil
 }
 
 // Reset re-creates the teleport instance based on the same configuration
