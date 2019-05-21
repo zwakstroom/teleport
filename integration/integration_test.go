@@ -1994,113 +1994,121 @@ func (s *IntSuite) TestDiscoveryNode(c *check.C) {
 	main := s.newTeleportWithConfig(mainConfig())
 	defer main.Stop(true)
 
-	/*
-		// Create a Teleport instance with a Proxy.
-		//nodePorts := s.getPorts(3)
-		//proxyReverseTunnelPort, proxyWebPort, proxySSHPort := nodePorts[0], nodePorts[1], nodePorts[2]
-		proxyConfig := ProxyConfig{
-			Name: "cluster-main-proxy",
-			//SSHPort:           proxySSHPort,
-			//WebPort:           proxyWebPort,
-			//ReverseTunnelPort: proxyReverseTunnelPort,
+	// Create a Teleport instance with a Proxy.
+	//nodePorts := s.getPorts(3)
+	//proxyReverseTunnelPort, proxyWebPort, proxySSHPort := nodePorts[0], nodePorts[1], nodePorts[2]
+	proxyConfig := ProxyConfig{
+		Name: "cluster-main-proxy",
+		//SSHPort:           proxySSHPort,
+		//WebPort:           proxyWebPort,
+		//ReverseTunnelPort: proxyReverseTunnelPort,
+	}
+	proxyProcess, proxyTunnel, err := main.StartProxy(proxyConfig)
+	c.Assert(err, check.IsNil)
+
+	_, proxyOneTunnelPort, _ := net.SplitHostPort(main.Process.Config.Proxy.ReverseTunnelListenAddr.String())
+	//proxyOneTunnelPortInt, _ := strconv.Atoi(proxyOneTunnelPort)
+	_, proxyTwoTunnelPort, _ := net.SplitHostPort(proxyProcess.Config.Proxy.ReverseTunnelListenAddr.String())
+	proxyTwoTunnelPortInt, _ := strconv.Atoi(proxyTwoTunnelPort)
+
+	proxyOneBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, proxyOneTunnelPort))
+	lb.AddBackend(*proxyOneBackend)
+	proxyTwoBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, proxyTwoTunnelPort))
+	lb.AddBackend(*proxyTwoBackend)
+
+	// Create a Teleport instance with a Node.
+	nodeConfig := func() *service.Config {
+		tconf := service.MakeDefaultConfig()
+		tconf.Hostname = "cluster-main-node"
+		tconf.Console = nil
+		tconf.Token = "token"
+		tconf.AuthServers = []utils.NetAddr{
+			utils.NetAddr{
+				AddrNetwork: "tcp",
+				Addr:        net.JoinHostPort(Loopback, main.GetPortWeb()),
+			},
 		}
-		//proxyProcess, proxyTunnel, err := main.StartProxy(proxyConfig)
-		proxyProcess, _, err := main.StartProxy(proxyConfig)
-		c.Assert(err, check.IsNil)
 
-		_, proxyOneTunnelPort, _ := net.SplitHostPort(main.Process.Config.Proxy.ReverseTunnelListenAddr.String())
-		_, proxyTwoTunnelPort, _ := net.SplitHostPort(proxyProcess.Config.Proxy.ReverseTunnelListenAddr.String())
+		tconf.Auth.Enabled = false
 
-		proxyOneBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, proxyOneTunnelPort))
-		lb.AddBackend(*proxyOneBackend)
-		proxyTwoBackend := utils.MustParseAddr(net.JoinHostPort(Loopback, proxyTwoTunnelPort))
-		lb.AddBackend(*proxyTwoBackend)
+		tconf.Proxy.Enabled = false
 
-		// Create a Teleport instance with a Node.
-		nodeConfig := func() *service.Config {
-			tconf := service.MakeDefaultConfig()
-			tconf.Hostname = "cluster-main-node"
-			tconf.Console = nil
-			tconf.Token = "token"
-			tconf.AuthServers = []utils.NetAddr{
-				utils.NetAddr{
-					AddrNetwork: "tcp",
-					Addr:        net.JoinHostPort(Loopback, main.GetPortWeb()),
-				},
-			}
+		tconf.SSH.Enabled = true
 
-			tconf.Auth.Enabled = false
+		return tconf
+	}
+	_, err = main.StartNode(nodeConfig())
+	c.Assert(err, check.IsNil)
 
-			tconf.Proxy.Enabled = false
+	// Wait for active tunnel connections to be established.
+	waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
+	waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
 
-			tconf.SSH.Enabled = true
+	// Execute the connection via first proxy.
+	cfg := ClientConfig{
+		Login:   s.me.Username,
+		Cluster: Site,
+		Host:    "cluster-main-node",
+	}
+	output, err := runCommand(main, []string{"echo", "hello world"}, cfg, 1)
+	c.Assert(err, check.IsNil)
+	c.Assert(output, check.Equals, "hello world\n")
 
-			return tconf
-		}
-		_, err = main.StartNode(nodeConfig())
-		c.Assert(err, check.IsNil)
+	_, proxyTwoWebPort, _ := net.SplitHostPort(proxyProcess.Config.Proxy.WebAddr.String())
+	proxyTwoWebPortInt, _ := strconv.Atoi(proxyTwoWebPort)
+	_, proxyTwoSSHPort, _ := net.SplitHostPort(proxyProcess.Config.Proxy.SSHAddr.String())
+	proxyTwoSSHPortInt, _ := strconv.Atoi(proxyTwoSSHPort)
 
-		/*
-			// Wait for active tunnel connections to be established.
-			waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
-			waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
+	// Execute the connection via second proxy, should work. This command is
+	// tried 10 times with 250 millisecond delay between each attempt to allow
+	// the discovery request to be received and the connection added to the agent
+	// pool.
+	cfgProxy := ClientConfig{
+		Login:   s.me.Username,
+		Cluster: Site,
+		Host:    "cluster-main-node",
+		Proxy: &ProxyConfig{
+			Name:              "cluster-main-proxy",
+			WebPort:           proxyTwoWebPortInt,
+			SSHPort:           proxyTwoSSHPortInt,
+			ReverseTunnelPort: proxyTwoTunnelPortInt,
+		},
+	}
 
-			// Execute the connection via first proxy.
-			cfg := ClientConfig{
-				Login:   s.me.Username,
-				Cluster: Site,
-				Host:    "cluster-main-node",
-			}
-			output, err := runCommand(main, []string{"echo", "hello world"}, cfg, 1)
-			c.Assert(err, check.IsNil)
-			c.Assert(output, check.Equals, "hello world\n")
+	output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 10)
+	c.Assert(err, check.IsNil)
+	c.Assert(output, check.Equals, "hello world\n")
 
-			// Execute the connection via second proxy, should work. This command is
-			// tried 10 times with 250 millisecond delay between each attempt to allow
-			// the discovery request to be received and the connection added to the agent
-			// pool.
-			cfgProxy := ClientConfig{
-				Login:   s.me.Username,
-				Cluster: Site,
-				Host:    "cluster-main-node",
-				Proxy:   &proxyConfig,
-			}
+	// Remove second proxy from LB.
+	lb.RemoveBackend(*proxyTwoBackend)
+	waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
 
-			output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 10)
-			c.Assert(err, check.IsNil)
-			c.Assert(output, check.Equals, "hello world\n")
+	// Requests going via main proxy will succeed. Requests going via second
+	// proxy will fail.
+	output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
+	c.Assert(err, check.IsNil)
+	c.Assert(output, check.Equals, "hello world\n")
+	output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 1)
+	c.Assert(err, check.NotNil)
 
-			// Remove second proxy from LB.
-			lb.RemoveBackend(*proxyTwoBackend)
-			waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
+	// Add second proxy to LB, both should have a connection.
+	lb.AddBackend(*proxyTwoBackend)
+	waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
+	waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
 
-			// Requests going via main proxy will succeed. Requests going via second
-			// proxy will fail.
-			output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
-			c.Assert(err, check.IsNil)
-			c.Assert(output, check.Equals, "hello world\n")
-			output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 1)
-			c.Assert(err, check.NotNil)
+	// Requests going via both proxies will succeed.
+	output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
+	c.Assert(err, check.IsNil)
+	c.Assert(output, check.Equals, "hello world\n")
+	output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 40)
+	c.Assert(err, check.IsNil)
+	c.Assert(output, check.Equals, "hello world\n")
 
-			// Add second proxy to LB, both should have a connection.
-			lb.AddBackend(*proxyTwoBackend)
-			waitForActiveTunnelConnections(c, main.Tunnel, Site, 1)
-			waitForActiveTunnelConnections(c, proxyTunnel, Site, 1)
-
-			// Requests going via both proxies will succeed.
-			output, err = runCommand(main, []string{"echo", "hello world"}, cfg, 1)
-			c.Assert(err, check.IsNil)
-			c.Assert(output, check.Equals, "hello world\n")
-			output, err = runCommand(main, []string{"echo", "hello world"}, cfgProxy, 40)
-			c.Assert(err, check.IsNil)
-			c.Assert(output, check.Equals, "hello world\n")
-
-			// Stop everything.
-			err = proxyTunnel.Shutdown(context.Background())
-			c.Assert(err, check.IsNil)
-			err = main.Stop(true)
-			c.Assert(err, check.IsNil)
-	*/
+	// Stop everything.
+	err = proxyTunnel.Shutdown(context.Background())
+	c.Assert(err, check.IsNil)
+	err = main.Stop(true)
+	c.Assert(err, check.IsNil)
 }
 
 // waitForActiveTunnelConnections  waits for remote cluster to report a minimum number of active connections

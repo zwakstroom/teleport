@@ -203,6 +203,7 @@ func NewInstance(cfg InstanceConfig) *TeleInstance {
 		NotAfter:  clock.Now().UTC().Add(time.Hour * 24),
 	})
 	fatalIf(err)
+	fmt.Printf("--> cert: %v, tlsCert: %v.\n", cert, tlsCert)
 
 	i := &TeleInstance{
 		Ports:         cfg.Ports,
@@ -210,19 +211,19 @@ func NewInstance(cfg InstanceConfig) *TeleInstance {
 		UploadEventsC: make(chan *events.UploadEvent, 100),
 	}
 	secrets := InstanceSecrets{
-		SiteName:     cfg.ClusterName,
-		PrivKey:      cfg.Priv,
-		PubKey:       cfg.Pub,
-		Cert:         cert,
-		TLSCACert:    tlsCACert,
-		TLSCert:      tlsCert,
-		ListenAddr:   net.JoinHostPort(cfg.NodeName, i.GetPortReverseTunnel()),
-		WebProxyAddr: net.JoinHostPort(cfg.NodeName, i.GetPortWeb()),
-		Users:        make(map[string]*User),
+		SiteName:  cfg.ClusterName,
+		PrivKey:   cfg.Priv,
+		PubKey:    cfg.Pub,
+		Cert:      cert,
+		TLSCACert: tlsCACert,
+		TLSCert:   tlsCert,
+		//ListenAddr:   net.JoinHostPort(cfg.NodeName, i.GetPortReverseTunnel()),
+		//WebProxyAddr: net.JoinHostPort(cfg.NodeName, i.GetPortWeb()),
+		Users: make(map[string]*User),
 	}
-	if cfg.MultiplexProxy {
-		secrets.ListenAddr = secrets.WebProxyAddr
-	}
+	//if cfg.MultiplexProxy {
+	//	secrets.ListenAddr = secrets.WebProxyAddr
+	//}
 	i.Secrets = secrets
 	return i
 }
