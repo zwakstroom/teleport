@@ -1088,6 +1088,66 @@ func (i *TeleInstance) Stop(removeData bool) error {
 	return i.Process.Wait()
 }
 
+//type processPorts struct {
+//	authTLS     int
+//	proxyWeb    int
+//	proxyTunnel int
+//	proxySSH    int
+//	nodeSSH     int
+//}
+//
+//func getPorts(proc *service.TeleportProcess) (*processPorts, error) {
+//	var p processPorts
+//
+//	// Extract and parse auth ports.
+//	_, authTLS, err := net.SplitHostPort(proc.Config.Auth.SSHAddr.String())
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	p.authTLS, err = strconv.Atoi(authTLS)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	// Extract and parse proxy ports.
+//	_, proxyWeb, err := net.SplitHostPort(proc.Config.Proxy.WebAddr.String())
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	p.proxyWeb, err = strconv.Atoi(proxyWeb)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	_, proxySSH, err := net.SplitHostPort(proc.Config.Proxy.SSHAddr.String())
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	p.proxySSH, err = strconv.Atoi(proxySSH)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	_, proxyTunnel, err := net.SplitHostPort(proc.Config.Proxy.ReverseTunnelListenAddr.String())
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	p.proxyTunnel, err = strconv.Atoi(proxyTunnel)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	// Extract and parse node ports.
+//	_, nodeSSH, err := net.SplitHostPort(proc.Config.SSH.Addr.String())
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//	p.nodeSSH, err = strconv.Atoi(nodeSSH)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	return &p, nil
+//}
+
 func startAndWait(process *service.TeleportProcess, expectedEvents []string) ([]service.Event, error) {
 	// register to listen for all ready events on the broadcast channel
 	broadcastCh := make(chan service.Event)

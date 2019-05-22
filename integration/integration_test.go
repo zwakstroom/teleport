@@ -83,21 +83,10 @@ func TestIntegrations(t *testing.T) { check.TestingT(t) }
 
 var _ = check.Suite(&IntSuite{})
 
-func (s *IntSuite) TearDownSuite(c *check.C) {
-	var err error
-	// restore os.Stdin to its original condition: connected to /dev/null
-	os.Stdin.Close()
-	os.Stdin, err = os.Open("/dev/null")
-	c.Assert(err, check.IsNil)
-}
-
-func (s *IntSuite) SetUpTest(c *check.C) {
-	os.RemoveAll(client.FullProfilePath(""))
-}
-
 func (s *IntSuite) SetUpSuite(c *check.C) {
 	var err error
 	utils.InitLoggerForTests(testing.Verbose())
+
 	SetTestTimeouts(time.Millisecond * time.Duration(100))
 
 	s.priv, s.pub, err = testauthority.New().GenerateKeyPair("")
@@ -116,6 +105,21 @@ func (s *IntSuite) SetUpSuite(c *check.C) {
 		os.Stdin.Close()
 		os.Stdin = stdin
 	}
+}
+
+func (s *IntSuite) TearDownSuite(c *check.C) {
+	var err error
+	// restore os.Stdin to its original condition: connected to /dev/null
+	os.Stdin.Close()
+	os.Stdin, err = os.Open("/dev/null")
+	c.Assert(err, check.IsNil)
+}
+
+func (s *IntSuite) SetUpTest(c *check.C) {
+	os.RemoveAll(client.FullProfilePath(""))
+}
+
+func (s *IntSuite) TearDownTest(c *check.C) {
 }
 
 // newTeleport helper returns a created but not started Teleport instance pre-configured
@@ -2105,7 +2109,9 @@ func (s *IntSuite) TestDiscoveryNode(c *check.C) {
 	c.Assert(output, check.Equals, "hello world\n")
 
 	// Stop everything.
-	err = proxyTunnel.Shutdown(context.Background())
+	err = main.StopNodes()
+	c.Assert(err, check.IsNil)
+	err = main.StopProxy()
 	c.Assert(err, check.IsNil)
 	err = main.Stop(true)
 	c.Assert(err, check.IsNil)
