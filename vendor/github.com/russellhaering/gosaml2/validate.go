@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/russellhaering/gosaml2/types"
+	log "github.com/sirupsen/logrus"
 )
 
 //ErrParsing indicates that the value present in an assertion could not be
@@ -64,6 +65,7 @@ func (sp *SAMLServiceProvider) VerifyAssertionConditions(assertion *types.Assert
 	}
 
 	if now.Before(notBefore) {
+		log.Warningf("CASE17 invalid time 0: Received assertion, now %v is before time %v.", now, notBefore)
 		warningInfo.InvalidTime = true
 	}
 
@@ -77,6 +79,7 @@ func (sp *SAMLServiceProvider) VerifyAssertionConditions(assertion *types.Assert
 	}
 
 	if now.After(notOnOrAfter) {
+		log.Warningf("CASE17 invalid time 1: Received assertion, now %v is after notOnOrAfter time %v.", now, notOnOrAfter)
 		warningInfo.InvalidTime = true
 	}
 
