@@ -29,11 +29,12 @@ import (
 	"crypto/subtle"
 	"crypto/x509"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"math/rand"
 	"net/url"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/backend"
@@ -653,12 +654,12 @@ func (s *AuthServer) ExtendWebSession(user string, prevSessionID string, identit
 
 // CreateWebSession creates a new web session for user without any
 // checks, is used by admins
-func (s *AuthServer) CreateWebSession(user string, identity *tlsca.Identity) (services.WebSession, error) {
-	roles, traits, err := services.ExtractFromIdentity(s, identity)
+func (s *AuthServer) CreateWebSession(user string) (services.WebSession, error) {
+	u, err := s.GetUser(user)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	sess, err := s.NewWebSession(user, roles, traits)
+	sess, err := s.NewWebSession(user, u.GetRoles(), u.GetTraits())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
