@@ -311,22 +311,28 @@ func prepareCommand(ctx *ServerContext) (*exec.Cmd, error) {
 	c.Dir = osUser.HomeDir
 
 	// Lookup all groups the user is a member of.
+	fmt.Printf("--> exec.go: Calling osUser.GroupIds().\n")
 	userGroups, err := osUser.GroupIds()
+	fmt.Printf("--> exec.go: Result: %v: %v.\n", userGroups, err)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	fmt.Printf("--> exec.go: Converting groups.\n")
 	groups := make([]uint32, 0)
 	for _, sgid := range userGroups {
 		igid, err := strconv.Atoi(sgid)
+		fmt.Printf("--> exec.go: Converted %v to %v: %v.\n", sgid, igid, err)
 		if err != nil {
 			log.Warnf("Cannot interpret user group: '%v'", sgid)
 		} else {
 			groups = append(groups, uint32(igid))
 		}
 	}
+	fmt.Printf("--> exec.go: No supplementary groups found, using defaults.\n")
 	if len(groups) == 0 {
 		groups = append(groups, uint32(gid))
 	}
+	fmt.Printf("--> exec.go: Supplementary groups are: %v.\n", groups)
 
 	// Only set process credentials if the UID/GID of the requesting user are
 	// different than the process (Teleport).
