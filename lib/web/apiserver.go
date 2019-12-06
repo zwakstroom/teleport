@@ -1143,19 +1143,27 @@ func (h *Handler) logout(w http.ResponseWriter, ctx *SessionContext) error {
 func (h *Handler) renewSession(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx *SessionContext) (interface{}, error) {
 	newSess, err := ctx.ExtendWebSession()
 	if err != nil {
+		fmt.Printf("--> Failed to extend web session: %v.\n", err)
 		return nil, trace.Wrap(err)
 	}
 	// transfer ownership over connections that were opened in the
 	// sessionContext
 	newContext, err := ctx.parent.ValidateSession(newSess.GetUser(), newSess.GetName())
 	if err != nil {
+		fmt.Printf("--> Failed to validate session: %v.\n", err)
 		return nil, trace.Wrap(err)
 	}
 	newContext.AddClosers(ctx.TransferClosers()...)
 	if err := SetSession(w, newSess.GetUser(), newSess.GetName()); err != nil {
+		fmt.Printf("--> Failed to set session: %v.\n", err)
 		return nil, trace.Wrap(err)
 	}
-	return NewSessionResponse(newContext)
+	resp, err := NewSessionResponse(newContext)
+	if err != nil {
+		fmt.Printf("--> Failed to create new session response: %v.\n", err)
+		return nil, trace.Wrap(err)
+	}
+	return resp, nil
 }
 
 type renderUserInviteResponse struct {
