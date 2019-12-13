@@ -360,7 +360,7 @@ func (s *WebSuite) createUser(c *C, user string, login string, pass string, otpS
 	role := services.RoleForUser(teleUser)
 	role.SetLogins(services.Allow, []string{login})
 	options := role.GetOptions()
-	options.ForwardAgent = services.NewBool(true)
+	options.ForwardAgent = services.NewBoolOption(true)
 	role.SetOptions(options)
 	err = s.server.Auth().UpsertRole(role)
 	c.Assert(err, IsNil)

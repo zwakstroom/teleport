@@ -457,7 +457,7 @@ message RoleSpecV3 {
 // RoleOptions is a set of role options
 message RoleOptions  {
     // ForwardAgent is SSH agent forwarding.
-    bool ForwardAgent = 1 [(gogoproto.jsontag) = "forward_agent", (gogoproto.casttype) = "Bool"];
+    BoolValue ForwardAgent = 1 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "forward_agent,omitempty", (gogoproto.customtype) = "BoolOption"];
 
 	// MaxSessionTTL defines how long a SSH session can last for.
 	int64 MaxSessionTTL = 2 [(gogoproto.jsontag) = "max_session_ttl,omitempty", (gogoproto.casttype) = "Duration"];

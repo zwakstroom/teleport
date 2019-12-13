@@ -99,8 +99,8 @@ func NewAdminRole() Role {
 			Options: RoleOptions{
 				CertificateFormat: teleport.CertificateFormatStandard,
 				MaxSessionTTL:     NewDuration(defaults.MaxCertDuration),
+				ForwardAgent:      NewBoolOption(true),
 				PortForwarding:    NewBoolOption(true),
-				ForwardAgent:      NewBool(true),
 				BPF:               defaults.EnhancedEvents(),
 			},
 			Allow: RoleConditions{
@@ -150,8 +150,8 @@ func RoleForUser(u User) Role {
 			Options: RoleOptions{
 				CertificateFormat: teleport.CertificateFormatStandard,
 				MaxSessionTTL:     NewDuration(defaults.MaxCertDuration),
+				ForwardAgent:      NewBoolOption(true),
 				PortForwarding:    NewBoolOption(true),
-				ForwardAgent:      NewBool(true),
 				BPF:               defaults.EnhancedEvents(),
 			},
 			Allow: RoleConditions{
@@ -690,9 +690,9 @@ func (r *RoleV3) String() string {
 
 // Equals checks if all the key/values in the RoleOptions map match.
 func (o RoleOptions) Equals(other RoleOptions) bool {
-	return (o.ForwardAgent.Value() == other.ForwardAgent.Value() &&
+	return (o.ForwardAgent.Equals(other.ForwardAgent) &&
+		o.PortForwarding.Equals(other.PortForwarding) &&
 		o.MaxSessionTTL.Value() == other.MaxSessionTTL.Value() &&
-		BoolDefaultTrue(o.PortForwarding) == BoolDefaultTrue(other.PortForwarding) &&
 		o.CertificateFormat == other.CertificateFormat &&
 		o.ClientIdleTimeout.Value() == other.ClientIdleTimeout.Value() &&
 		o.DisconnectExpiredCert.Value() == other.DisconnectExpiredCert.Value() &&
@@ -1208,7 +1208,7 @@ func (r *RoleV2) V3() *RoleV3 {
 
 	// translate old v2 agent forwarding to a v3 option
 	if r.CanForwardAgent() {
-		role.Spec.Options.ForwardAgent = NewBool(true)
+		role.Spec.Options.ForwardAgent = NewBoolOption(true)
 	}
 
 	// translate old v2 resources to v3 rules
@@ -1738,7 +1738,8 @@ func (set RoleSet) CheckAccessToServer(login string, s Server) error {
 // CanForwardAgents returns true if role set allows forwarding agents.
 func (set RoleSet) CanForwardAgents() bool {
 	for _, role := range set {
-		if role.GetOptions().ForwardAgent.Value() {
+		if role.GetOptions().ForwardAgent &&
+			role.GetOptions().ForwardAgent.Value {
 			return true
 		}
 	}
@@ -1748,7 +1749,8 @@ func (set RoleSet) CanForwardAgents() bool {
 // CanPortForward returns true if a role in the RoleSet allows port forwarding.
 func (set RoleSet) CanPortForward() bool {
 	for _, role := range set {
-		if BoolDefaultTrue(role.GetOptions().PortForwarding) {
+		if role.GetOptions().PortForwarding &&
+			role.GetOptions().PortForwarding.Value {
 			return true
 		}
 	}
@@ -1820,7 +1822,9 @@ func (set RoleSet) CheckAgentForward(login string) error {
 	// in the first place.
 	for _, role := range set {
 		for _, l := range role.GetLogins(Allow) {
-			if role.GetOptions().ForwardAgent.Value() && l == login {
+			if role.GetOptions().ForwardAgent &&
+				role.GetOptions().ForwardAgent.Value &&
+				l == login {
 				return nil
 			}
 		}
@@ -1918,6 +1922,17 @@ func NewBool(b bool) Bool {
 func NewBoolOption(b bool) *BoolOption {
 	v := BoolOption{Value: b}
 	return &v
+}
+
+// Equals returns true if both values match.
+func (b *BoolOption) Equals(other *BoolOption) bool {
+	if b == nil && other == nil {
+		return true
+	}
+	if b == nil || other == nil {
+		return false
+	}
+	return b.Value == other.Value
 }
 
 // BoolDefaultTrue returns true if v is not set (pointer is nil)

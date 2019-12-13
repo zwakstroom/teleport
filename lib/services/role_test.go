@@ -332,9 +332,9 @@ func (s *RoleSuite) TestRoleParse(c *C) {
 				Spec: RoleSpecV3{
 					Options: RoleOptions{
 						CertificateFormat:     teleport.CertificateFormatStandard,
-						ForwardAgent:          NewBool(true),
-						MaxSessionTTL:         NewDuration(20 * time.Hour),
+						ForwardAgent:          NewBoolOption(true),
 						PortForwarding:        NewBoolOption(true),
+						MaxSessionTTL:         NewDuration(20 * time.Hour),
 						ClientIdleTimeout:     NewDuration(0),
 						DisconnectExpiredCert: NewBool(false),
 						BPF:                   defaults.EnhancedEvents(),
@@ -395,9 +395,9 @@ func (s *RoleSuite) TestRoleParse(c *C) {
 				Spec: RoleSpecV3{
 					Options: RoleOptions{
 						CertificateFormat:     teleport.CertificateFormatStandard,
-						ForwardAgent:          NewBool(true),
-						MaxSessionTTL:         NewDuration(20 * time.Hour),
+						ForwardAgent:          NewBoolOption(true),
 						PortForwarding:        NewBoolOption(true),
+						MaxSessionTTL:         NewDuration(20 * time.Hour),
 						ClientIdleTimeout:     NewDuration(0),
 						DisconnectExpiredCert: NewBool(false),
 						BPF:                   defaults.EnhancedEvents(),
@@ -1498,6 +1498,27 @@ func (s *RoleSuite) TestExtractFromLegacy(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(roles, DeepEquals, newRoles)
 	c.Assert(traits, DeepEquals, newTraits)
+}
+
+// TestBoolOptions makes sure that bool options (like agent forwarding and
+// port forwarding) can be disabled in a role.
+func (s *RoleSuite) TestBoolOptions(c *C) {
+	set := NewRoleSet(&RoleV3{
+		Kind:    KindRole,
+		Version: V3,
+		Metadata: Metadata{
+			Name:      "role-name",
+			Namespace: defaults.Namespace,
+		},
+		Spec: RoleSpecV3{
+			Options: RoleOptions{
+				ForwardAgent:   NewBoolOption(false),
+				PortForwarding: NewBoolOption(false),
+			},
+		},
+	})
+	c.Assert(set.CanPortForward(), Equals, false)
+	c.Assert(set.CanForwardAgents(), Equals, false)
 }
 
 // BenchmarkCheckAccessToServer tests how long it takes to run

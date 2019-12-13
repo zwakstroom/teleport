@@ -382,7 +382,7 @@ func SetupUser(process *service.TeleportProcess, username string, roles []servic
 
 		// allow tests to forward agent, still needs to be passed in client
 		roleOptions := role.GetOptions()
-		roleOptions.ForwardAgent = services.NewBool(true)
+		roleOptions.ForwardAgent = services.NewBoolOption(true)
 		role.SetOptions(roleOptions)
 
 		err = auth.UpsertRole(role)
@@ -572,7 +572,7 @@ func (i *TeleInstance) CreateEx(trustedSecrets []*InstanceSecrets, tconf *servic
 
 			// allow tests to forward agent, still needs to be passed in client
 			roleOptions := role.GetOptions()
-			roleOptions.ForwardAgent = services.NewBool(true)
+			roleOptions.ForwardAgent = services.NewBoolOption(true)
 			role.SetOptions(roleOptions)
 
 			err = auth.UpsertRole(role)
