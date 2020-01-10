@@ -25,6 +25,8 @@ import "C"
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/binary"
 	"io/ioutil"
 	"os"
 	"path"
@@ -32,7 +34,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"unsafe"
 
 	"golang.org/x/sys/unix"
 
@@ -326,20 +327,26 @@ func (s *Service) unmount() error {
 	return nil
 }
 
+type fileHandle struct {
+	CgroupID uint64
+}
+
 // ID returns the cgroup ID for the given session.
 func (s *Service) ID(sessionID string) (uint64, error) {
+	var fh fileHandle
 	path := path.Join(s.teleportRoot, sessionID)
 
-	cpath := C.CString(path)
-	defer C.free(unsafe.Pointer(cpath))
-
-	// Returns the cgroup ID of a given path.
-	cgid := C.cgroup_id(cpath)
-	if cgid == 0 {
-		return 0, trace.BadParameter("cgroup resolution failed")
+	handle, _, err := unix.NameToHandleAt(unix.AT_FDCWD, path, 0)
+	if err != nil {
+		return 0, trace.Wrap(err)
 	}
 
-	return uint64(cgid), nil
+	err = binary.Read(bytes.NewBuffer(handle.Bytes()), binary.LittleEndian, &fh)
+	if err != nil {
+		return 0, trace.Wrap(err)
+	}
+
+	return fh.CgroupID, nil
 }
 
 var (
