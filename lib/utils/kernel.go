@@ -19,6 +19,7 @@ package utils
 import (
 	"io/ioutil"
 	"runtime"
+	"strings"
 
 	"github.com/gravitational/teleport"
 
@@ -39,7 +40,7 @@ func KernelVersion() (*semver.Version, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	ver, err := semver.NewVersion(string(buf))
+	ver, err := semver.NewVersion(strings.TrimSpace(string(buf)))
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
