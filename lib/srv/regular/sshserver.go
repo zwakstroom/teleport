@@ -927,67 +927,130 @@ func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn,
 
 	ctx.Debugf("Opening direct-tcpip channel from %v to %v", srcAddr, dstAddr)
 
-	// If PAM is enabled check the account and open a session.
-	var pamContext *pam.PAM
-	if s.pamConfig != nil && s.pamConfig.Enabled {
-		// Note, stdout/stderr is discarded here, otherwise MOTD would be printed to
-		// the users screen during port forwarding.
-		pamContext, err = pam.Open(&pam.Config{
-			ServiceName: s.pamConfig.ServiceName,
-			Login:       ctx.Identity.Login,
-			Stdin:       ch,
-			Stderr:      ioutil.Discard,
-			Stdout:      ioutil.Discard,
-		})
-		if err != nil {
-			ctx.Errorf("Unable to open PAM context for direct-tcpip request: %v.", err)
-			ch.Stderr().Write([]byte(err.Error()))
-			return
-		}
-
-		ctx.Debugf("Opening PAM context for direct-tcpip request.")
-	}
-
-	conn, err := net.Dial("tcp", dstAddr)
+	// TODO: Make this srv.buildForward()
+	cmd, err := buildForwardExec()
 	if err != nil {
-		ctx.Infof("Failed to connect to: %v: %v", dstAddr, err)
+		ch.Stderr().Write([]byte(""))
 		return
 	}
-	defer conn.Close()
 
-	// audit event:
-	s.EmitAuditEvent(events.PortForward, events.EventFields{
-		events.PortForwardAddr:    dstAddr,
-		events.PortForwardSuccess: true,
-		events.EventLogin:         ctx.Identity.Login,
-		events.EventUser:          ctx.Identity.TeleportUser,
-		events.LocalAddr:          sconn.LocalAddr().String(),
-		events.RemoteAddr:         sconn.RemoteAddr().String(),
-	})
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		io.Copy(ch, conn)
-		ch.Close()
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		io.Copy(conn, srv.NewTrackingReader(ctx, ch))
-		conn.Close()
-	}()
-	wg.Wait()
-
-	// If PAM is enabled, close the PAM context after port forwarding is complete.
-	if s.pamConfig != nil && s.pamConfig.Enabled {
-		err = pamContext.Close()
-		if err != nil {
-			ctx.Errorf("Unable to close PAM context for direct-tcpip request: %v.", err)
-			return
-		}
-		ctx.Debugf("Closing PAM context for direct-tcpip request.")
+	err = cmd.Start()
+	if err != nil {
+		ch.Stderr().Write([]byte("Failed to re-exec"))
+		return
 	}
+
+	go func() {
+		go func() {
+			io.Copy(ch, cmd.Stdout)
+			ch.Close()
+		}()
+		wg.Add(1)
+		go func() {
+			io.Copy(cmd.Stdin, srv.NewTrackingReader(ctx, ch))
+			conn.Close()
+		}()
+	}()
+
+	err = cmd.Wait()
+	if err != nil {
+		ch.Stderr().Write([]byte(""))
+		return
+	}
+
+	if cmd.Process.ExitCode() == 0 {
+		//// audit event:
+		//s.EmitAuditEvent(events.PortForward, events.EventFields{
+		//	events.PortForwardAddr:    dstAddr,
+		//	events.PortForwardSuccess: true,
+		//	events.EventLogin:         ctx.Identity.Login,
+		//	events.EventUser:          ctx.Identity.TeleportUser,
+		//	events.LocalAddr:          sconn.LocalAddr().String(),
+		//	events.RemoteAddr:         sconn.RemoteAddr().String(),
+		//})
+	}
+
+	//// If PAM is enabled check the account and open a session.
+	//var pamContext *pam.PAM
+	//if s.pamConfig != nil && s.pamConfig.Enabled {
+	//	// Note, stdout/stderr is discarded here, otherwise MOTD would be printed to
+	//	// the users screen during port forwarding.
+	//	pamContext, err = pam.Open(&pam.Config{
+	//		ServiceName: s.pamConfig.ServiceName,
+	//		Login:       ctx.Identity.Login,
+	//		Stdin:       ch,
+	//		Stderr:      ioutil.Discard,
+	//		Stdout:      ioutil.Discard,
+	//	})
+	//	if err != nil {
+	//		ctx.Errorf("Unable to open PAM context for direct-tcpip request: %v.", err)
+	//		ch.Stderr().Write([]byte(err.Error()))
+	//		return
+	//	}
+
+	//	ctx.Debugf("Opening PAM context for direct-tcpip request.")
+	//}
+
+	//conn, err := net.Dial("tcp", dstAddr)
+	//if err != nil {
+	//	ctx.Infof("Failed to connect to: %v: %v", dstAddr, err)
+	//	return
+	//}
+	//defer conn.Close()
+
+	//// audit event:
+	//s.EmitAuditEvent(events.PortForward, events.EventFields{
+	//	events.PortForwardAddr:    dstAddr,
+	//	events.PortForwardSuccess: true,
+	//	events.EventLogin:         ctx.Identity.Login,
+	//	events.EventUser:          ctx.Identity.TeleportUser,
+	//	events.LocalAddr:          sconn.LocalAddr().String(),
+	//	events.RemoteAddr:         sconn.RemoteAddr().String(),
+	//})
+	//wg := &sync.WaitGroup{}
+	//wg.Add(1)
+	//go func() {
+	//	defer wg.Done()
+	//	io.Copy(ch, conn)
+	//	ch.Close()
+	//}()
+	//wg.Add(1)
+	//go func() {
+	//	defer wg.Done()
+	//	io.Copy(conn, srv.NewTrackingReader(ctx, ch))
+	//	conn.Close()
+	//}()
+	//wg.Wait()
+
+	//// If PAM is enabled, close the PAM context after port forwarding is complete.
+	//if s.pamConfig != nil && s.pamConfig.Enabled {
+	//	err = pamContext.Close()
+	//	if err != nil {
+	//		ctx.Errorf("Unable to close PAM context for direct-tcpip request: %v.", err)
+	//		return
+	//	}
+	//	ctx.Debugf("Closing PAM context for direct-tcpip request.")
+	//}
+}
+
+func buildForwardExec() (*exec.Cmd, error) {
+	// Find the Teleport executable and it's directory on disk.
+	executable, err := os.Executable()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	executableDir, _ := filepath.Split(executable)
+
+	// Build the "teleport exec" command.
+	return &exec.Cmd{
+		Path: executable,
+		Args: []string{
+			executable,
+			"port-forward",
+		},
+		Dir: executableDir,
+		//ExtraFiles: []*os.File{},
+	}, nil
 }
 
 // handleSessionRequests handles out of band session requests once the session

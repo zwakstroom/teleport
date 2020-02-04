@@ -58,9 +58,17 @@ const (
 // execCommand contains the payload to "teleport exec" will will be used to
 // construct and execute a shell.
 type execCommand struct {
+	// CommandType is the type of command to re-execute. It's either an exec
+	// command (for a shell or exec command) or a forward command for port
+	// forwarding.
+	CommandType string `json:"type"`
+
 	// Command is the command to execute. If a interactive session is being
 	// requested, will be empty.
 	Command string `json:"command"`
+
+	// DestinationAddress is the target address to dial to.
+	DestinationAddress string `json:"dst_addr"`
 
 	// Username is the username associated with the Teleport identity.
 	Username string `json:"username"`
@@ -406,6 +414,73 @@ func RunCommand() (io.Writer, int, error) {
 	// an exit code.
 	err = cmd.Wait()
 	return ioutil.Discard, exitCode(err), trace.Wrap(err)
+}
+
+func RunPortForwardd() (io.Writer, int, error) {
+	// Parent sends the command payload in the third file descriptor.
+	cmdfd := os.NewFile(uintptr(3), "/proc/self/fd/3")
+	if cmdfd == nil {
+		return errorWriter, teleport.RemoteCommandFailure, trace.BadParameter("command pipe not found")
+	}
+
+	// Read in the command payload.
+	var b bytes.Buffer
+	_, err := b.ReadFrom(cmdfd)
+	if err != nil {
+		return errorWriter, teleport.RemoteCommandFailure, trace.Wrap(err)
+	}
+	var c execCommand
+	err = json.Unmarshal(b.Bytes(), &c)
+	if err != nil {
+		return errorWriter, teleport.RemoteCommandFailure, trace.Wrap(err)
+	}
+
+	// If PAM is enabled, open a PAM context. This has to be done before anything
+	// else because PAM is sometimes used to create the local user used to
+	// launch the shell under.
+	var pamEnvironment []string
+	if c.PAM {
+		// Set Teleport specific environment variables that PAM modules like
+		// pam_script.so can pick up to potentially customize the account/session.
+		os.Setenv("TELEPORT_USERNAME", c.Username)
+		os.Setenv("TELEPORT_LOGIN", c.Login)
+		os.Setenv("TELEPORT_ROLES", strings.Join(c.Roles, " "))
+
+		// Open the PAM context.
+		pamContext, err := pam.Open(&pam.Config{
+			ServiceName: c.ServiceName,
+			Login:       c.Login,
+			Stdin:       os.Stdin,
+			Stdout:      os.Stdout,
+			Stderr:      os.Stderr,
+		})
+		if err != nil {
+		}
+		defer pamContext.Close()
+
+		// Save off any environment variables that come from PAM.
+		pamEnvironment = pamContext.Environment()
+	}
+
+	conn, err := net.Dial("tcp", dstAddr)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	go func() {
+		io.Copy(conn, os.Stdout)
+	}()
+	go func() {
+		io.Copy(os.Stdin, conn)
+	}()
+
+	select {
+	case <-ctx.Done():
+	}
+
+	return
+
 }
 
 func (e *localExec) transformSecureCopy() error {
