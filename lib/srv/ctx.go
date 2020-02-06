@@ -273,6 +273,20 @@ type ServerContext struct {
 	// to the child process.
 	contr *os.File
 	contw *os.File
+
+	// ChannelType holds the type of the channel. For example "session" or
+	// "direct-tcpip".
+	ChannelType string
+
+	// SrcAddr is the source address of the request. This the originator IP
+	// address and port in a SSH "direct-tcpip" request. This value is only
+	// populated for port forwarding requests.
+	SrcAddr string
+
+	// DstAddr is the destination address of the request. This is the host and
+	// port to connect to in a "direct-tcpip" request. This value is only
+	// populated for port forwarding requests.
+	DstAddr string
 }
 
 // NewServerContext creates a new *ServerContext which is used to pass and
@@ -652,14 +666,25 @@ func (c *ServerContext) ExecCommand() (*execCommand, error) {
 		roleNames = c.Identity.RoleSet.RoleNames()
 	}
 
+	var command string
+	if c.ExecRequest != nil {
+		command = c.ExecRequest.GetCommand()
+	}
+
+	var requestType string
+	if c.request != nil {
+		requestType = c.request.Type
+	}
+
 	// Create the execCommand that will be sent to the child process.
 	return &execCommand{
-		Command:               c.ExecRequest.GetCommand(),
+		Command:               command,
+		DestinationAddress:    c.DstAddr,
 		Username:              c.Identity.TeleportUser,
 		Login:                 c.Identity.Login,
 		Roles:                 roleNames,
-		Terminal:              c.termAllocated || c.ExecRequest.GetCommand() == "",
-		RequestType:           c.request.Type,
+		Terminal:              c.termAllocated || command == "",
+		RequestType:           requestType,
 		PermitUserEnvironment: c.srv.PermitUserEnvironment(),
 		Environment:           buildEnvironment(c),
 		PAM:                   pamEnabled,

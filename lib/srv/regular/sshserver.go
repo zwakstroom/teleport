@@ -815,13 +815,6 @@ func (s *Server) HandleRequest(r *ssh.Request) {
 	}
 }
 
-const (
-	// ChanDirectTCPIP is a direct tcp ip channel
-	ChanDirectTCPIP = "direct-tcpip"
-	// ChanSession is a SSH session channel
-	ChanSession = "session"
-)
-
 // HandleNewChan is called when new channel is opened
 func (s *Server) HandleNewChan(wconn net.Conn, sconn *ssh.ServerConn, nch ssh.NewChannel) {
 	identityContext, err := s.authHandlers.CreateIdentityContext(sconn)
@@ -835,7 +828,7 @@ func (s *Server) HandleNewChan(wconn net.Conn, sconn *ssh.ServerConn, nch ssh.Ne
 		switch channelType {
 		// Channels of type "direct-tcpip", for proxies, it's equivalent
 		// of teleport proxy: subsystem
-		case ChanDirectTCPIP:
+		case teleport.ChanDirectTCPIP:
 			req, err := sshutils.ParseDirectTCPIPReq(nch.ExtraData())
 			if err != nil {
 				log.Errorf("Failed to parse request data: %v, err: %v.", string(nch.ExtraData()), err)
@@ -853,7 +846,7 @@ func (s *Server) HandleNewChan(wconn net.Conn, sconn *ssh.ServerConn, nch ssh.Ne
 		// Channels of type "session" handle requests that are involved in running
 		// commands on a server. In the case of proxy mode subsystem and agent
 		// forwarding requests occur over the "session" channel.
-		case ChanSession:
+		case teleport.ChanSession:
 			ch, requests, err := nch.Accept()
 			if err != nil {
 				log.Warnf("Unable to accept channel: %v.", err)
@@ -871,7 +864,7 @@ func (s *Server) HandleNewChan(wconn net.Conn, sconn *ssh.ServerConn, nch ssh.Ne
 	switch channelType {
 	// Channels of type "session" handle requests that are involved in running
 	// commands on a server, subsystem requests, and agent forwarding.
-	case ChanSession:
+	case teleport.ChanSession:
 		ch, requests, err := nch.Accept()
 		if err != nil {
 			log.Warnf("Unable to accept channel: %v.", err)
@@ -880,7 +873,7 @@ func (s *Server) HandleNewChan(wconn net.Conn, sconn *ssh.ServerConn, nch ssh.Ne
 		}
 		go s.handleSessionRequests(wconn, sconn, identityContext, ch, requests)
 	// Channels of type "direct-tcpip" handles request for port forwarding.
-	case ChanDirectTCPIP:
+	case teleport.ChanDirectTCPIP:
 		req, err := sshutils.ParseDirectTCPIPReq(nch.ExtraData())
 		if err != nil {
 			log.Errorf("Failed to parse request data: %v, err: %v.", string(nch.ExtraData()), err)
@@ -912,145 +905,104 @@ func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn,
 	ctx.Connection = wconn
 	ctx.IsTestStub = s.isTestStub
 	ctx.AddCloser(ch)
+	ctx.ChannelType = teleport.ChanDirectTCPIP
 	defer ctx.Debugf("direct-tcp closed")
 	defer ctx.Close()
 
-	srcAddr := net.JoinHostPort(req.Orig, strconv.Itoa(int(req.OrigPort)))
-	dstAddr := net.JoinHostPort(req.Host, strconv.Itoa(int(req.Port)))
+	ctx.SrcAddr = net.JoinHostPort(req.Orig, strconv.Itoa(int(req.OrigPort)))
+	ctx.DstAddr = net.JoinHostPort(req.Host, strconv.Itoa(int(req.Port)))
 
-	// check if the role allows port forwarding for this user
-	err = s.authHandlers.CheckPortForward(dstAddr, ctx)
+	// Check if the role allows port forwarding for this user.
+	err = s.authHandlers.CheckPortForward(ctx.DstAddr, ctx)
 	if err != nil {
 		ch.Stderr().Write([]byte(err.Error()))
 		return
 	}
 
-	ctx.Debugf("Opening direct-tcpip channel from %v to %v", srcAddr, dstAddr)
+	ctx.Debugf("Opening direct-tcpip channel from %v to %v.", ctx.SrcAddr, ctx.DstAddr)
+	fmt.Printf("--> Before fork.\n")
 
-	// TODO: Make this srv.buildForward()
-	cmd, err := buildForwardExec()
+	// TODO: add "forward" and "dstAddr" here.
+	// Create command to re-exec Teleport which will perform a net.Dial. The
+	// reason it's not done directly is because the PAM stack needs to be called
+	// from another process.
+	cmd, err := srv.ConfigureCommand(ctx)
 	if err != nil {
-		ch.Stderr().Write([]byte(""))
-		return
+		ch.Stderr().Write([]byte(err.Error()))
+	}
+
+	r, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	w, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		ch.Stderr().Write([]byte("Failed to re-exec"))
+		ch.Stderr().Write([]byte(err.Error()))
 		return
 	}
 
 	go func() {
-		go func() {
-			io.Copy(ch, cmd.Stdout)
-			ch.Close()
-		}()
-		wg.Add(1)
-		go func() {
-			io.Copy(cmd.Stdin, srv.NewTrackingReader(ctx, ch))
-			conn.Close()
-		}()
+		io.Copy(w, ch)
+
+		ch.Close()
+		w.Close()
+		r.Close()
+	}()
+	go func() {
+		io.Copy(ch, r)
+
+		//ch.Close()
+		//w.Close()
+		//r.Close()
 	}()
 
+	//cmd.Stdout = ch
+	//cmd.Stderr = ch.Stderr()
+
+	//inputWriter, err := cmd.StdinPipe()
+	//if err != nil {
+	//	ch.Stderr().Write([]byte(err.Error()))
+	//	return
+	//}
+	//go func() {
+	//	io.Copy(inputWriter, ch)
+	//	inputWriter.Close()
+	//}()
+
+	//// Start copying from std{in,out} to the SSH channel.
+	//go io.Copy(ch, cmd.Stdin)
+	//go io.Copy(cmd.Stdout, srv.NewTrackingReader(ctx, ch))
+	//ch.Close()
+	//conn.Close()
+
+	fmt.Printf("--> Waiting...\n")
+
+	// TODO: Should Wait be in it's own goroutine and then we have a context
+	// that signals when the io.Copy routine is done.
 	err = cmd.Wait()
+	fmt.Printf("--> After Wait: %v.\n", err)
 	if err != nil {
-		ch.Stderr().Write([]byte(""))
+		ch.Stderr().Write([]byte(err.Error()))
 		return
 	}
 
-	if cmd.Process.ExitCode() == 0 {
-		//// audit event:
-		//s.EmitAuditEvent(events.PortForward, events.EventFields{
-		//	events.PortForwardAddr:    dstAddr,
-		//	events.PortForwardSuccess: true,
-		//	events.EventLogin:         ctx.Identity.Login,
-		//	events.EventUser:          ctx.Identity.TeleportUser,
-		//	events.LocalAddr:          sconn.LocalAddr().String(),
-		//	events.RemoteAddr:         sconn.RemoteAddr().String(),
-		//})
-	}
+	fmt.Printf("--> HERE!\n")
 
-	//// If PAM is enabled check the account and open a session.
-	//var pamContext *pam.PAM
-	//if s.pamConfig != nil && s.pamConfig.Enabled {
-	//	// Note, stdout/stderr is discarded here, otherwise MOTD would be printed to
-	//	// the users screen during port forwarding.
-	//	pamContext, err = pam.Open(&pam.Config{
-	//		ServiceName: s.pamConfig.ServiceName,
-	//		Login:       ctx.Identity.Login,
-	//		Stdin:       ch,
-	//		Stderr:      ioutil.Discard,
-	//		Stdout:      ioutil.Discard,
-	//	})
-	//	if err != nil {
-	//		ctx.Errorf("Unable to open PAM context for direct-tcpip request: %v.", err)
-	//		ch.Stderr().Write([]byte(err.Error()))
-	//		return
-	//	}
-
-	//	ctx.Debugf("Opening PAM context for direct-tcpip request.")
-	//}
-
-	//conn, err := net.Dial("tcp", dstAddr)
-	//if err != nil {
-	//	ctx.Infof("Failed to connect to: %v: %v", dstAddr, err)
-	//	return
-	//}
-	//defer conn.Close()
-
-	//// audit event:
-	//s.EmitAuditEvent(events.PortForward, events.EventFields{
-	//	events.PortForwardAddr:    dstAddr,
-	//	events.PortForwardSuccess: true,
-	//	events.EventLogin:         ctx.Identity.Login,
-	//	events.EventUser:          ctx.Identity.TeleportUser,
-	//	events.LocalAddr:          sconn.LocalAddr().String(),
-	//	events.RemoteAddr:         sconn.RemoteAddr().String(),
-	//})
-	//wg := &sync.WaitGroup{}
-	//wg.Add(1)
-	//go func() {
-	//	defer wg.Done()
-	//	io.Copy(ch, conn)
-	//	ch.Close()
-	//}()
-	//wg.Add(1)
-	//go func() {
-	//	defer wg.Done()
-	//	io.Copy(conn, srv.NewTrackingReader(ctx, ch))
-	//	conn.Close()
-	//}()
-	//wg.Wait()
-
-	//// If PAM is enabled, close the PAM context after port forwarding is complete.
-	//if s.pamConfig != nil && s.pamConfig.Enabled {
-	//	err = pamContext.Close()
-	//	if err != nil {
-	//		ctx.Errorf("Unable to close PAM context for direct-tcpip request: %v.", err)
-	//		return
-	//	}
-	//	ctx.Debugf("Closing PAM context for direct-tcpip request.")
-	//}
-}
-
-func buildForwardExec() (*exec.Cmd, error) {
-	// Find the Teleport executable and it's directory on disk.
-	executable, err := os.Executable()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	executableDir, _ := filepath.Split(executable)
-
-	// Build the "teleport exec" command.
-	return &exec.Cmd{
-		Path: executable,
-		Args: []string{
-			executable,
-			"port-forward",
-		},
-		Dir: executableDir,
-		//ExtraFiles: []*os.File{},
-	}, nil
+	// Emit a port forwarding event.
+	s.EmitAuditEvent(events.PortForward, events.EventFields{
+		events.PortForwardAddr:    ctx.DstAddr,
+		events.PortForwardSuccess: true,
+		events.EventLogin:         ctx.Identity.Login,
+		events.EventUser:          ctx.Identity.TeleportUser,
+		events.LocalAddr:          sconn.LocalAddr().String(),
+		events.RemoteAddr:         sconn.RemoteAddr().String(),
+	})
+	fmt.Printf("--> HERE 2!\n")
 }
 
 // handleSessionRequests handles out of band session requests once the session
@@ -1068,6 +1020,7 @@ func (s *Server) handleSessionRequests(conn net.Conn, sconn *ssh.ServerConn, ide
 	ctx.Connection = conn
 	ctx.IsTestStub = s.isTestStub
 	ctx.AddCloser(ch)
+	ctx.ChannelType = teleport.ChanSession
 	defer ctx.Close()
 
 	// Create a close context used to signal between the server and the
