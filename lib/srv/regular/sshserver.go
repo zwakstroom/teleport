@@ -893,105 +893,95 @@ func (s *Server) HandleNewChan(wconn net.Conn, sconn *ssh.ServerConn, nch ssh.Ne
 }
 
 // handleDirectTCPIPRequest handles port forwarding requests.
-func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn, identityContext srv.IdentityContext, ch ssh.Channel, req *sshutils.DirectTCPIPReq) {
+func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn, identityContext srv.IdentityContext, channel ssh.Channel, req *sshutils.DirectTCPIPReq) {
 	// Create context for this channel. This context will be closed when
 	// forwarding is complete.
 	ctx, err := srv.NewServerContext(s, sconn, identityContext)
 	if err != nil {
-		ctx.Errorf("Unable to create connection context: %v.", err)
-		ch.Stderr().Write([]byte("Unable to create connection context."))
+		log.Errorf("Unable to create connection context: %v.", err)
+		channel.Stderr().Write([]byte("Unable to create connection context."))
 		return
 	}
 	ctx.Connection = wconn
 	ctx.IsTestStub = s.isTestStub
-	ctx.AddCloser(ch)
+	ctx.AddCloser(channel)
 	ctx.ChannelType = teleport.ChanDirectTCPIP
-	defer ctx.Debugf("direct-tcp closed")
-	defer ctx.Close()
-
 	ctx.SrcAddr = net.JoinHostPort(req.Orig, strconv.Itoa(int(req.OrigPort)))
 	ctx.DstAddr = net.JoinHostPort(req.Host, strconv.Itoa(int(req.Port)))
+	defer ctx.Close()
 
 	// Check if the role allows port forwarding for this user.
 	err = s.authHandlers.CheckPortForward(ctx.DstAddr, ctx)
 	if err != nil {
-		ch.Stderr().Write([]byte(err.Error()))
+		channel.Stderr().Write([]byte(err.Error()))
 		return
 	}
 
 	ctx.Debugf("Opening direct-tcpip channel from %v to %v.", ctx.SrcAddr, ctx.DstAddr)
-	fmt.Printf("--> Before fork.\n")
+	defer ctx.Debugf("Closing direct-tcpip channel from %v to %v.", ctx.SrcAddr, ctx.DstAddr)
 
-	// TODO: add "forward" and "dstAddr" here.
 	// Create command to re-exec Teleport which will perform a net.Dial. The
 	// reason it's not done directly is because the PAM stack needs to be called
 	// from another process.
 	cmd, err := srv.ConfigureCommand(ctx)
 	if err != nil {
-		ch.Stderr().Write([]byte(err.Error()))
+		channel.Stderr().Write([]byte(err.Error()))
 	}
 
-	r, err := cmd.StdoutPipe()
+	// Create a pipe for std{in,out} that will be used to transfer data between
+	// parent and child.
+	pr, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
-	w, err := cmd.StdinPipe()
+	pw, err := cmd.StdinPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Start the child process that will be used to make the actual connection
+	// to the target host.
 	err = cmd.Start()
 	if err != nil {
-		ch.Stderr().Write([]byte(err.Error()))
+		channel.Stderr().Write([]byte(err.Error()))
 		return
 	}
 
+	// Start copy routines that copy from channel to stdin pipe and from stdout
+	// pipe to channel.
+	errorCh := make(chan error, 2)
 	go func() {
-		io.Copy(w, ch)
+		defer pw.Close()
+		defer pr.Close()
 
-		ch.Close()
-		w.Close()
-		r.Close()
+		_, err := io.Copy(pw, channel)
+		errorCh <- err
 	}()
 	go func() {
-		io.Copy(ch, r)
+		defer pw.Close()
+		defer pr.Close()
 
-		//ch.Close()
-		//w.Close()
-		//r.Close()
+		_, err := io.Copy(channel, pr)
+		errorCh <- err
 	}()
 
-	//cmd.Stdout = ch
-	//cmd.Stderr = ch.Stderr()
-
-	//inputWriter, err := cmd.StdinPipe()
-	//if err != nil {
-	//	ch.Stderr().Write([]byte(err.Error()))
-	//	return
-	//}
-	//go func() {
-	//	io.Copy(inputWriter, ch)
-	//	inputWriter.Close()
-	//}()
-
-	//// Start copying from std{in,out} to the SSH channel.
-	//go io.Copy(ch, cmd.Stdin)
-	//go io.Copy(cmd.Stdout, srv.NewTrackingReader(ctx, ch))
-	//ch.Close()
-	//conn.Close()
-
-	fmt.Printf("--> Waiting...\n")
-
-	// TODO: Should Wait be in it's own goroutine and then we have a context
-	// that signals when the io.Copy routine is done.
+	// Block until copy is complete and the child process is done executing.
+	for i := 0; i < 2; i++ {
+		select {
+		case err := <-errorCh:
+			if err != nil && err != io.EOF {
+				fmt.Printf("-->Connection problem in \"direct-tcpip\" channel: %v %T.", trace.DebugReport(err), err)
+				log.Warnf("Connection problem in \"direct-tcpip\" channel: %v %T.", trace.DebugReport(err), err)
+			}
+		case <-s.ctx.Done():
+			break
+		}
+	}
 	err = cmd.Wait()
-	fmt.Printf("--> After Wait: %v.\n", err)
 	if err != nil {
-		ch.Stderr().Write([]byte(err.Error()))
+		channel.Stderr().Write([]byte(err.Error()))
 		return
 	}
-
-	fmt.Printf("--> HERE!\n")
 
 	// Emit a port forwarding event.
 	s.EmitAuditEvent(events.PortForward, events.EventFields{
@@ -1002,7 +992,8 @@ func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn,
 		events.LocalAddr:          sconn.LocalAddr().String(),
 		events.RemoteAddr:         sconn.RemoteAddr().String(),
 	})
-	fmt.Printf("--> HERE 2!\n")
+
+	fmt.Printf("--> Done.\n")
 }
 
 // handleSessionRequests handles out of band session requests once the session
