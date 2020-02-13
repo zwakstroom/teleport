@@ -196,6 +196,8 @@ func (t *terminal) Run() error {
 
 // Wait will block until the terminal is complete.
 func (t *terminal) Wait() (*ExecResult, error) {
+	defer killProcessGroup(t.pid)
+
 	err := t.cmd.Wait()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {

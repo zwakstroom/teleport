@@ -192,6 +192,9 @@ func (e *localExec) Wait() *ExecResult {
 		e.Ctx.Errorf("no process")
 	}
 
+	// Once the child process is complete, kill anyone left in the process group.
+	defer killProcessGroup(e.Cmd.Process.Pid)
+
 	// Block until the command is finished executing.
 	err := e.Cmd.Wait()
 	if err != nil {

@@ -208,6 +208,17 @@ func RunCommand() (io.Writer, int, error) {
 	return ioutil.Discard, exitCode(err), trace.Wrap(err)
 }
 
+func killProcessGroup(pid int) {
+	pgid, err := syscall.Getpgid(pid)
+	if err != nil {
+		fmt.Printf("Failed to get process group ID: %v.", err)
+	}
+	err = syscall.Kill(-pgid, syscall.SIGKILL)
+	if err != nil {
+		fmt.Printf("Failed to send SIGKILL to process group: %v.", -pgid, err)
+	}
+}
+
 // RunForward reads in the command to run from the parent process (over a
 // pipe) then port forwards.
 func RunForward() (io.Writer, int, error) {
@@ -517,6 +528,11 @@ func ConfigureCommand(ctx *ServerContext) (*exec.Cmd, error) {
 		ExtraFiles: []*os.File{
 			ctx.cmdr,
 			ctx.contr,
+		},
+		// Set process group ID. This allows all children (like the shell that
+		// Teleport will respawn) to be killed as well.
+		SysProcAttr: &syscall.SysProcAttr{
+			Setpgid: true,
 		},
 	}, nil
 }
