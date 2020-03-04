@@ -59,9 +59,6 @@ teleport:
   storage:
     type: dir
     path: "${TEMP_DIR}"
-labels:
-        role: master
-        type: postgres
 ssh_service:
   enabled: yes
   labels:
