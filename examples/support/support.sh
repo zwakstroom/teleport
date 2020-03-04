@@ -32,19 +32,22 @@ else
 fi
 
 TEMP_DIR=$(mktemp -d -t teleport-XXXXXXXXXX)
-echo -e "Creating temp dir $TEMP_DIR"
+echo -e "Created temp dir $TEMP_DIR"
+echo -e "Entering $TEMP_DIR"
+pushd $TEMP_DIR
 
 finish()
 {
-    echo -e "Deleting temp dir $TEMP_DIR"
-    echo -e "Exiting...\n";
+    echo -e "Leaving $TEMP_DIR"
     popd
+    echo -e "Deleting temp dir $TEMP_DIR"
+    rm -rf $TEMP_DIR
+    echo -e "Exiting...\n";
     exit 0;
 }
 
 trap finish EXIT
 
-pushd $TEMP_DIR
 URL="https://get.gravitational.com/teleport-v${TELEPORT_VERSION}-$ARCH-bin.tar.gz"
 echo -e "Downloading official teleport distribution from $URL"
 curl -L -s $URL | tar xz -C $TEMP_DIR
