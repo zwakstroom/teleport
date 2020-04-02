@@ -1,0 +1,151 @@
+syntax = "proto3";
+package events;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+// Metadata is a common event metadata
+message Metadata {
+    // Index is a monotonicaly incremented index in the event sequence
+    int64 Index = 1 [(gogoproto.jsontag) = "ei"];
+ 
+    // Type is the event type
+    string Type = 2 [(gogoproto.jsontag) = "event"];
+    
+    // ID is a unique event identifier
+    string ID = 3 [(gogoproto.jsontag) = "uid,omitempty"];
+ 
+    // Code is a unique event code
+    string Code = 4 [(gogoproto.jsontag) = "code,omitempty"];
+ 
+	// Time is event time
+    google.protobuf.Timestamp Time = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "time"];
+}
+
+// SesssionMetadata is a common session event metadata
+message SessionMetadata {
+     // Namespace is a namespace of the session event
+    string Namespace = 1 [(gogoproto.jsontag) = "namespace,omitempty"];
+
+    // SessionID is a unique UUID of the session.
+	string SessionID = 2 [(gogoproto.jsontag) = "sid"];
+
+	// Login is OS login
+	string Login = 3 [(gogoproto.jsontag) = "login"];
+
+	// User is teleport user name
+	string User = 4 [(gogoproto.jsontag) = "user"];
+}
+
+// Server is a server information
+message ServerMetadata {
+	// ServerID is the UUID of the server the session occurred on.
+	string ServerID = 1 [(gogoproto.jsontag) = "server_id"];
+
+	// ServerHostname is the hostname of the server the session occurred on.
+	string ServerHostname = 2 [(gogoproto.jsontag) = "server_hostname,omitempty"];
+
+	// ServerLabels are the labels (static and dynamic) of the server the
+	// session occurred on.
+	map <string, string> ServerLabels = 3 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "server_labels,omitempty"];
+}
+
+// Connection contains connection infro
+message ConnectionMetadata {
+    // LocalAddr is a target address on the host
+	string LocalAddr = 1 [(gogoproto.jsontag) = "addr.local,omitempty"];
+        
+	// RemoteAddr is a client (user's) address
+	string RemoteAddr = 2 [(gogoproto.jsontag) = "addr.remote,omitempty"];
+}
+
+// SessionStart is a session start event
+message SessionStart {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event metadata
+    SessionMetadata Session = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // TerminalSize is expressed as 'W:H'
+	string TerminalSize = 5 [(gogoproto.jsontag) = "size,omitempty"];
+}
+
+// SessionPrint event happens every time a write occurs to
+// temirnal I/O during a session
+message SessionPrint {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1  [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ChunkIndex is a monotonicaly incremented index for ordering print events
+    int64 ChunkIndex = 2 [(gogoproto.jsontag) = "ci"];    
+    
+    // Data is data transferred, it is not marshaled to JSON format
+    bytes Data = 3 [(gogoproto.nullable) = true, (gogoproto.jsontag) = "-"];
+    
+	// Bytes says how many bytes have been written into the session
+	// during "print" event
+	int64 Bytes = 4 [(gogoproto.jsontag) = "bytes"];
+    
+	// DelayMilliseconds is the delay in milliseconds from the start of the session
+	int64 DelayMilliseconds = 5 [(gogoproto.jsontag) = "ms"];
+
+	// Offset is the offset in bytes in the session file
+	int64 Offset = 6 [(gogoproto.jsontag) = "offset,omitempty"];
+}
+
+                
+// Resize means that some user resized PTY on the client
+message Resize {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event metadata
+    SessionMetadata Session = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // TerminalSize is expressed as 'W:H'
+	string TerminalSize = 5 [(gogoproto.jsontag) = "size,omitempty"];
+}
+
+
+// SessionEnd is a session end event
+message SessionEnd {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event metadata
+    SessionMetadata Session = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+	// EnhancedRecording is used to indicate if the recording was an
+	// enhanced recording or not.
+	bool EnhancedRecording = 5 [(gogoproto.jsontag) = "enhanced_recording"];
+
+	// Interactive is used to indicate if the session was interactive
+	// (has PTY attached) or not (exec session).
+    bool Interactive = 6 [(gogoproto.jsontag) = "interactive"];
+
+	// Participants is a list of participants in the session.
+	repeated string Participants = 7 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "participants"];
+}

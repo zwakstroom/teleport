@@ -347,7 +347,7 @@ func (l *AuditLog) UploadSessionRecording(r SessionRecording) error {
 		return trace.Wrap(err)
 	}
 	l.WithFields(log.Fields{"duration": time.Now().Sub(start), "session-id": r.SessionID}).Debugf("Session upload completed.")
-	return l.EmitAuditEvent(SessionUpload, EventFields{
+	return l.EmitAuditEvent(SessionUploadE, EventFields{
 		SessionEventID: string(r.SessionID),
 		URL:            url,
 		EventIndex:     SessionUploadIndex,
