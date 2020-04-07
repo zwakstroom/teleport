@@ -135,6 +135,37 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				Offset:            1957,
 			},
 		},
+		{
+			name: "session command event",
+			json: `{"argv":["/usr/bin/lesspipe"],"login":"alice","path":"/usr/bin/dirname","return_code":0,"time":"2020-03-30T15:58:54.65Z","user":"alice@example.com","code":"T4000I","event":"session.command","pid":31638,"server_id":"a7c54b0c-469c-431e-af4d-418cd3ae9694","uid":"4f725f11-e87a-452f-96ec-ef93e9e6a260","cgroup_id":4294971450,"ppid":31637,"program":"dirname","namespace":"default","sid":"5b3555dc-729f-11ea-b66a-507b9dd95841","ei":4}`,
+			event: SessionCommand{
+				Metadata: Metadata{
+					Index: 4,
+					ID:    "4f725f11-e87a-452f-96ec-ef93e9e6a260",
+					Type:  SessionCommandEvent,
+					Time:  time.Date(2020, 03, 30, 15, 58, 54, 650*int(time.Millisecond), time.UTC),
+					Code:  SessionCommandCode,
+				},
+				ServerMetadata: ServerMetadata{
+					ServerID: "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+				},
+				SessionMetadata: SessionMetadata{
+					Namespace: "default",
+					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
+					User:      "alice@example.com",
+					Login:     "alice",
+				},
+				BPFMetadata: BPFMetadata{
+					CgroupID: 4294971450,
+					Program:  "dirname",
+					PID:      31638,
+				},
+				PPID:       31637,
+				ReturnCode: 0,
+				Path:       "/usr/bin/dirname",
+				Argv:       []string{"/usr/bin/lesspipe"},
+			},
+		},
 	}
 	for i, tc := range testCases {
 		comment := check.Commentf("Test case %v: %v", i, tc.name)
