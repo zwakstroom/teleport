@@ -3,6 +3,7 @@ package events;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 option (gogoproto.marshaler_all) = true;
 option (gogoproto.unmarshaler_all) = true;
@@ -35,7 +36,7 @@ message SessionMetadata {
 	string SessionID = 2 [(gogoproto.jsontag) = "sid"];
 
 	// Login is OS login
-	string Login = 3 [(gogoproto.jsontag) = "login"];
+	string Login = 3 [(gogoproto.jsontag) = "login,omitempty"];
 
 	// User is teleport user name
 	string User = 4 [(gogoproto.jsontag) = "user"];
@@ -240,4 +241,81 @@ message SessionNetwork {
 
 	// TCPVersion is the version of TCP (4 or 6).
 	int32 TCPVersion = 8 [(gogoproto.jsontag) = "version"];
+}
+
+// SessionData is emitted to report session data usage.
+message SessionData {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event metadata
+    SessionMetadata Session = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
+    // BytesTransmitted is the amount of bytes transmitted
+	int64 BytesTransmitted = 5 [(gogoproto.jsontag) = "tx"];
+
+    // BytesReceived is the amount of bytes received
+	int64 BytesReceived  = 6 [(gogoproto.jsontag) = "rx"];
+}
+
+
+// SessionLeave is emitted to report that a user left the session
+message SessionLeave {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event metadata
+    SessionMetadata Session = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+}
+
+
+// UserLogin records a successfull or failed user login event
+message UserLogin {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // Method is the event field indicating how the login was performed
+	string Method = 2  [(gogoproto.jsontag) = "method,omitempty"];
+
+    // AuthAttemptSuccess indicates whether auth attempt was successfull
+    bool AuthAttemptSuccess = 3 [(gogoproto.jsontag) = "success"];
+
+    // AuthAttemptErr includes error message for the failed attempt
+    string AuthAttemptErr = 4 [(gogoproto.jsontag) = "error,omitempty"];
+
+	// User is teleport user name
+	string User = 5 [(gogoproto.jsontag) = "user"];
+
+    // IdentityAttributes is a map of user attributes received from identity provider
+	google.protobuf.Struct IdentityAttributes = 6 [(gogoproto.jsontag) = "attributes,omitempty", (gogoproto.casttype) = "Struct"];
+}
+
+// UserUpdate is emitted when the user is created or updated (upsert).
+message UserUpdate {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+	// User is teleport user name
+	string User = 2 [(gogoproto.jsontag) = "user"];
+
+	// Roles is a list of roles for the user.
+	repeated string Roles = 3 [(gogoproto.jsontag) = "roles"];
+    
+    // Connector is the connector used to create the user.
+	string Connector = 4 [(gogoproto.jsontag) = "connector"];    
+
+    // Expires is when the user will expire.
+    google.protobuf.Timestamp Expires = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "expires"];
 }

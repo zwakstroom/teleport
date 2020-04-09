@@ -274,10 +274,11 @@
   revision = "63c2a0d70943e942c829edd2d74dc2e6bb20112c"
 
 [[projects]]
-  digest = "1:983cb7d70588854e2706e32c61698bbf0eab4956fca89e86c1c10d7213679a0e"
+  digest = "1:a35d141bba894725d1aa63523e146ab83c30475d23970ef402165eb96bd5907a"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
+    "jsonpb",
     "proto",
     "protoc-gen-gogo/descriptor",
     "sortkeys",
@@ -1399,6 +1400,7 @@
     "github.com/gizak/termui",
     "github.com/gizak/termui/widgets",
     "github.com/gogo/protobuf/gogoproto",
+    "github.com/gogo/protobuf/jsonpb",
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/gokyle/hotp",

@@ -292,7 +292,7 @@ buildbox-grpc:
 # standard GRPC output
 	echo $$PROTO_INCLUDE
 	cd lib/events && protoc -I=.:$$PROTO_INCLUDE \
-	  --gofast_out=plugins=grpc:.\
+	  --gofast_out=plugins=grpc,Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types:.\
     *.proto
 
 	cd lib/services && protoc -I=.:$$PROTO_INCLUDE \

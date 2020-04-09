@@ -429,7 +429,7 @@ func (a *AuthServer) UpsertUser(user services.User) error {
 	} else {
 		connectorName = user.GetCreatedBy().Connector.ID
 	}
-	a.EmitAuditEvent(events.UserUpdate, events.EventFields{
+	a.EmitAuditEvent(events.UserUpdateE, events.EventFields{
 		events.EventUser:     user.GetName(),
 		events.UserExpires:   user.Expiry(),
 		events.UserRoles:     user.GetRoles(),
