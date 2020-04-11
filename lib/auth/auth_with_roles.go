@@ -890,7 +890,8 @@ func (a *AuthWithRoles) GetUsers(withSecrets bool) ([]services.User, error) {
 		if !a.hasBuiltinRole(string(teleport.RoleAdmin)) {
 			err := trace.AccessDenied("user %q requested access to all users with secrets", a.user.GetName())
 			log.Warning(err)
-			a.authServer.EmitAuditEvent(events.UserLocalLoginFailure, events.EventFields{
+			// !!!FIXEVENTS!!!
+			a.authServer.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodClientCert,
 				events.AuthAttemptSuccess: false,
 				// log the original internal error in audit log
@@ -916,7 +917,8 @@ func (a *AuthWithRoles) GetUser(name string, withSecrets bool) (services.User, e
 		if !a.hasBuiltinRole(string(teleport.RoleAdmin)) {
 			err := trace.AccessDenied("user %q requested access to user %q with secrets", a.user.GetName(), name)
 			log.Warning(err)
-			a.authServer.EmitAuditEvent(events.UserLocalLoginFailure, events.EventFields{
+			// !!!FIXEVENTS!!!
+			a.authServer.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodClientCert,
 				events.AuthAttemptSuccess: false,
 				// log the original internal error in audit log
@@ -1003,7 +1005,8 @@ func (a *AuthWithRoles) GenerateUserCerts(ctx context.Context, req proto.UserCer
 	default:
 		err := trace.AccessDenied("user %q has requested to generate certs for %q.", a.user.GetName(), req.Username)
 		log.Warning(err)
-		a.authServer.EmitAuditEvent(events.UserLocalLoginFailure, events.EventFields{
+		// !!!FIXEVENTS!!!
+		a.authServer.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
 			events.LoginMethod:        events.LoginMethodClientCert,
 			events.AuthAttemptSuccess: false,
 			// log the original internal error in audit log

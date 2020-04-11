@@ -85,14 +85,16 @@ type SessionCreds struct {
 func (s *AuthServer) AuthenticateUser(req AuthenticateUserRequest) error {
 	err := s.authenticateUser(req)
 	if err != nil {
-		s.EmitAuditEvent(events.UserLocalLoginFailure, events.EventFields{
+		// !!!FIXEVENTS!!!
+		s.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
 			events.EventUser:          req.Username,
 			events.LoginMethod:        events.LoginMethodLocal,
 			events.AuthAttemptSuccess: false,
 			events.AuthAttemptErr:     err.Error(),
 		})
 	} else {
-		s.EmitAuditEvent(events.UserLocalLogin, events.EventFields{
+		// !!!FIXEVENTS!!!
+		s.EmitAuditEvent(events.UserLocalLoginE, events.EventFields{
 			events.EventUser:          req.Username,
 			events.LoginMethod:        events.LoginMethodLocal,
 			events.AuthAttemptSuccess: true,
@@ -362,7 +364,8 @@ func (s *AuthServer) emitNoLocalAuthEvent(username string) {
 		fields[events.EventUser] = username
 	}
 
-	s.IAuditLog.EmitAuditEvent(events.AuthAttemptFailure, fields)
+	// !!!FIXEVENTS!!!
+	s.IAuditLog.EmitAuditEvent(events.AuthAttemptFailureE, fields)
 }
 
 const noLocalAuth = "local auth disabled"

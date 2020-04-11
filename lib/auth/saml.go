@@ -287,7 +287,8 @@ func (a *AuthServer) ValidateSAMLResponse(samlResponse string) (*SAMLAuthRespons
 		if re != nil && re.attributeStatements != nil {
 			fields[events.IdentityAttributes] = re.attributeStatements
 		}
-		a.EmitAuditEvent(events.UserSSOLoginFailure, fields)
+		// !!!FIXEVENTS!!!
+		a.EmitAuditEvent(events.UserSSOLoginFailureE, fields)
 		return nil, trace.Wrap(err)
 	}
 	fields := events.EventFields{
@@ -298,7 +299,8 @@ func (a *AuthServer) ValidateSAMLResponse(samlResponse string) (*SAMLAuthRespons
 	if re != nil && re.attributeStatements != nil {
 		fields[events.IdentityAttributes] = re.attributeStatements
 	}
-	a.EmitAuditEvent(events.UserSSOLogin, fields)
+	// !!!FIXEVENTS!!!
+	a.EmitAuditEvent(events.UserSSOLoginE, fields)
 	return &re.auth, nil
 }
 

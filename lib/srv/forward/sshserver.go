@@ -678,7 +678,8 @@ func (s *Server) handleDirectTCPIPRequest(ch ssh.Channel, req *sshutils.DirectTC
 	defer conn.Close()
 
 	// Emit a port forwarding audit event.
-	s.EmitAuditEvent(events.PortForward, events.EventFields{
+	// !!!FIXEVENTS!!!
+	s.EmitAuditEvent(events.PortForwardE, events.EventFields{
 		events.PortForwardAddr:    ctx.DstAddr,
 		events.PortForwardSuccess: true,
 		events.EventLogin:         s.identityContext.Login,

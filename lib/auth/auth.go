@@ -1387,7 +1387,8 @@ func (a *AuthServer) CreateAccessRequest(ctx context.Context, req services.Acces
 	if err := a.DynamicAccess.CreateAccessRequest(ctx, req); err != nil {
 		return trace.Wrap(err)
 	}
-	err = a.EmitAuditEvent(events.AccessRequestCreated, events.EventFields{
+	// !!!FIXEVENTS!!!
+	err = a.EmitAuditEvent(events.AccessRequestCreatedE, events.EventFields{
 		events.AccessRequestID:    req.GetName(),
 		events.EventUser:          req.GetUser(),
 		events.UserRoles:          req.GetRoles(),
@@ -1404,7 +1405,8 @@ func (a *AuthServer) SetAccessRequestState(ctx context.Context, reqID string, st
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	err = a.EmitAuditEvent(events.AccessRequestUpdated, events.EventFields{
+	// !!!FIXEVENTS!!!
+	err = a.EmitAuditEvent(events.AccessRequestUpdatedE, events.EventFields{
 		events.AccessRequestID:       reqID,
 		events.AccessRequestState:    state.String(),
 		events.AccessRequestUpdateBy: updateBy,

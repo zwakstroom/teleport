@@ -394,28 +394,29 @@ func emitExecAuditEvent(ctx *ServerContext, cmd string, execErr error) {
 	}
 
 	// Update appropriate fields based off if the request was SCP or not.
+	// !!!FIXEVENTS!!!
 	if isSCP {
 		fields[events.SCPPath] = path
 		fields[events.SCPAction] = action
 		switch action {
 		case events.SCPActionUpload:
 			if execErr != nil {
-				event = events.SCPUploadFailure
+				event = events.SCPUploadFailureE
 			} else {
-				event = events.SCPUpload
+				event = events.SCPUploadE
 			}
 		case events.SCPActionDownload:
 			if execErr != nil {
-				event = events.SCPDownloadFailure
+				event = events.SCPDownloadFailureE
 			} else {
-				event = events.SCPDownload
+				event = events.SCPDownloadE
 			}
 		}
 	} else {
 		if execErr != nil {
-			event = events.ExecFailure
+			event = events.ExecFailureE
 		} else {
-			event = events.Exec
+			event = events.ExecE
 		}
 	}
 

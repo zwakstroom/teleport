@@ -26,7 +26,7 @@ type Event struct {
 
 var (
 	// UserLocalLoginE is emitted when a local user successfully logs in.
-	UserLocalLoginMeta = Event{
+	UserLocalLoginE = Event{
 		Name: UserLoginEvent,
 		Code: UserLocalLoginCode,
 	}

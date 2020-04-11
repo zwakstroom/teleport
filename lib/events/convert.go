@@ -119,3 +119,13 @@ func (s *Struct) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+
+// GetID returns event ID
+func (m *Metadata) GetID() string {
+	return m.ID
+}
+
+// SetID sets event ID
+func (m *Metadata) SetID(id string) {
+	m.ID = id
+}

@@ -493,7 +493,8 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 
 			// Report the updated window size to the event log (this is so the sessions
 			// can be replayed correctly).
-			recorder.GetAuditLog().EmitAuditEvent(events.TerminalResize, resizeEvent)
+			// !!!FIXEVENTS!!!
+			recorder.GetAuditLog().EmitAuditEvent(events.TerminalResizeE, resizeEvent)
 		}
 	}
 
@@ -512,7 +513,8 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 			W: 100,
 			H: 100,
 		}
-		recorder.GetAuditLog().EmitAuditEvent(events.SessionStart, events.EventFields{
+		// !!!FIXEVENTS!!!
+		recorder.GetAuditLog().EmitAuditEvent(events.SessionStartE, events.EventFields{
 			events.EventProtocol:   events.EventProtocolKube,
 			events.EventNamespace:  f.Namespace,
 			events.SessionEventID:  string(sessionID),
@@ -557,7 +559,8 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 
 	if request.tty {
 		// send an event indicating that this session has ended
-		recorder.GetAuditLog().EmitAuditEvent(events.SessionEnd, events.EventFields{
+		// !!!FIXEVENTS!!!
+		recorder.GetAuditLog().EmitAuditEvent(events.SessionEndE, events.EventFields{
 			events.EventProtocol:  events.EventProtocolKube,
 			events.SessionEventID: sessionID,
 			events.EventUser:      ctx.User.GetName(),
@@ -566,6 +569,7 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 	} else {
 		f.Debugf("No tty, sending exec event.")
 		// send an exec event
+		// !!!FIXEVENTS!!!
 		fields := events.EventFields{
 			events.EventProtocol:    events.EventProtocolKube,
 			events.ExecEventCommand: strings.Join(request.cmd, " "),
@@ -580,9 +584,9 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 			if exitErr, ok := err.(utilexec.ExitError); ok && exitErr.Exited() {
 				fields[events.ExecEventCode] = fmt.Sprintf("%d", exitErr.ExitStatus())
 			}
-			f.AuditLog.EmitAuditEvent(events.ExecFailure, fields)
+			f.AuditLog.EmitAuditEvent(events.ExecFailureE, fields)
 		} else {
-			f.AuditLog.EmitAuditEvent(events.Exec, fields)
+			f.AuditLog.EmitAuditEvent(events.ExecE, fields)
 		}
 	}
 
@@ -612,9 +616,10 @@ func (f *Forwarder) portForward(ctx *authContext, w http.ResponseWriter, req *ht
 	}
 
 	onPortForward := func(addr string, success bool) {
-		event := events.PortForward
+		// !!!FIXEVENTS!!!
+		event := events.PortForwardE
 		if !success {
-			event = events.PortForwardFailure
+			event = events.PortForwardFailureE
 		}
 		f.AuditLog.EmitAuditEvent(event, events.EventFields{
 			events.EventProtocol:      events.EventProtocolKube,

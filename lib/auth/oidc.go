@@ -102,7 +102,8 @@ func (s *AuthServer) createOIDCClient(conn services.OIDCConnector) (*oidc.Client
 				"unknown problem with connector %v, most likely URL %q is not valid or not accessible, check configuration and try to re-create the connector",
 				conn.GetName(), conn.GetIssuerURL())
 		}
-		s.EmitAuditEvent(events.UserSSOLoginFailure, events.EventFields{
+		// !!!FIXEVENTS!!!
+		s.EmitAuditEvent(events.UserSSOLoginFailureE, events.EventFields{
 			events.LoginMethod:        events.LoginMethodOIDC,
 			events.AuthAttemptSuccess: false,
 			events.AuthAttemptErr:     trace.Unwrap(ctx.Err()).Error(),
@@ -205,7 +206,8 @@ func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, 
 		if re != nil && re.claims != nil {
 			fields[events.IdentityAttributes] = re.claims
 		}
-		a.EmitAuditEvent(events.UserSSOLoginFailure, fields)
+		// !!!FIXEVENTS!!!
+		a.EmitAuditEvent(events.UserSSOLoginFailureE, fields)
 		return nil, trace.Wrap(err)
 	}
 	fields := events.EventFields{
@@ -216,7 +218,8 @@ func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, 
 	if re.claims != nil {
 		fields[events.IdentityAttributes] = re.claims
 	}
-	a.EmitAuditEvent(events.UserSSOLogin, fields)
+	// !!!FIXEVENTS!!!
+	a.EmitAuditEvent(events.UserSSOLoginE, fields)
 	return &re.auth, nil
 }
 
@@ -634,7 +637,8 @@ collect:
 
 			// Print warning to Teleport logs as well as the Audit Log.
 			log.Warnf(warningMessage)
-			g.auditLog.EmitAuditEvent(events.UserSSOLoginFailure, events.EventFields{
+			// !!!FIXEVENTS!!!
+			g.auditLog.EmitAuditEvent(events.UserSSOLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodOIDC,
 				events.AuthAttemptMessage: warningMessage,
 			})

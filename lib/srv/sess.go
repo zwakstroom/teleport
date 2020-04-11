@@ -142,7 +142,8 @@ func (s *SessionRegistry) emitSessionJoinEvent(ctx *ServerContext) {
 	}
 
 	// Emit session join event to Audit Log.
-	ctx.session.recorder.GetAuditLog().EmitAuditEvent(events.SessionJoin, sessionJoinEvent)
+	// !!!FIXEVENTS!!!
+	ctx.session.recorder.GetAuditLog().EmitAuditEvent(events.SessionJoinE, sessionJoinEvent)
 
 	// Notify all members of the party that a new member has joined over the
 	// "x-teleport-event" channel.
@@ -240,7 +241,8 @@ func (s *SessionRegistry) emitSessionLeaveEvent(party *party) {
 	}
 
 	// Emit session leave event to Audit Log.
-	party.s.recorder.GetAuditLog().EmitAuditEvent(events.SessionLeave, sessionLeaveEvent)
+	// !!!FIXEVENTS!!!
+	party.s.recorder.GetAuditLog().EmitAuditEvent(events.SessionLeaveE, sessionLeaveEvent)
 
 	// Notify all members of the party that a new member has left over the
 	// "x-teleport-event" channel.
@@ -303,7 +305,8 @@ func (s *SessionRegistry) leaveSession(party *party) error {
 			events.SessionEnhancedRecording: sess.hasEnhancedRecording,
 			events.SessionParticipants:      sess.exportParticipants(),
 		}
-		sess.recorder.GetAuditLog().EmitAuditEvent(events.SessionEnd, eventFields)
+		// !!!FIXEVENTS!!!
+		sess.recorder.GetAuditLog().EmitAuditEvent(events.SessionEndE, eventFields)
 
 		// close recorder to free up associated resources
 		// and flush data
@@ -369,7 +372,8 @@ func (s *SessionRegistry) NotifyWinChange(params rsession.TerminalParams, ctx *S
 
 	// Report the updated window size to the event log (this is so the sessions
 	// can be replayed correctly).
-	ctx.session.recorder.GetAuditLog().EmitAuditEvent(events.TerminalResize, resizeEvent)
+	// !!!FIXEVENTS!!!
+	ctx.session.recorder.GetAuditLog().EmitAuditEvent(events.TerminalResizeE, resizeEvent)
 
 	// Update the size of the server side PTY.
 	err := ctx.session.term.SetWinSize(params)
@@ -691,7 +695,8 @@ func (s *session) startInteractive(ch ssh.Channel, ctx *ServerContext) error {
 	if !ctx.srv.UseTunnel() {
 		eventFields[events.LocalAddr] = ctx.Conn.LocalAddr().String()
 	}
-	s.recorder.GetAuditLog().EmitAuditEvent(events.SessionStart, eventFields)
+	// !!!FIXEVENTS!!!
+	s.recorder.GetAuditLog().EmitAuditEvent(events.SessionStartE, eventFields)
 
 	// Start a heartbeat that marks this session as active with current members
 	// of party in the backend.
@@ -798,7 +803,8 @@ func (s *session) startExec(channel ssh.Channel, ctx *ServerContext) error {
 	if !ctx.srv.UseTunnel() {
 		eventFields[events.LocalAddr] = ctx.Conn.LocalAddr().String()
 	}
-	s.recorder.GetAuditLog().EmitAuditEvent(events.SessionStart, eventFields)
+	// !!!FIXEVENTS!!!
+	s.recorder.GetAuditLog().EmitAuditEvent(events.SessionStartE, eventFields)
 
 	// Start execution. If the program failed to start, send that result back.
 	// Note this is a partial start. Teleport will have re-exec'ed itself and
@@ -870,7 +876,8 @@ func (s *session) startExec(channel ssh.Channel, ctx *ServerContext) error {
 				ctx.Identity.TeleportUser,
 			},
 		}
-		s.recorder.GetAuditLog().EmitAuditEvent(events.SessionEnd, eventFields)
+		// !!!FIXEVENTS!!!
+		s.recorder.GetAuditLog().EmitAuditEvent(events.SessionEndE, eventFields)
 
 		// Close recorder to free up associated resources and flush data.
 		s.recorder.Close()

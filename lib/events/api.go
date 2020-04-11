@@ -286,6 +286,48 @@ const (
 	V3 = 3
 )
 
+// AuditEvent represents audit event
+type AuditEvent interface {
+	// GetID returns unique event ID
+	GetID() string
+	// SetID sets unique event ID
+	SetID(id string)
+
+	// GetCode returns event short diagnostic code
+	GetCode() string
+	// SetCode sets unique event diagnostic code
+	SetCode(id string)
+}
+
+// SetCode is a shortcut that sets code for the audit event
+func SetCode(event AuditEvent, code string) AuditEvent {
+	event.SetCode(code)
+	return event
+}
+
+// Emitter creates and manages audit log streams
+type Emitter interface {
+	// Emit emtits a single audit event
+	Emit(AuditEvent) error
+}
+
+// Streamer creates and manages event streams
+type Streamer interface {
+	// CreateStream creates event stream
+	CreateStream(id string) Stream
+	// ResumeStream resumes the stream that
+	// has not been completed yet
+	ResumeStream(id string) Stream
+}
+
+// Stream is a continuous stream of events
+type Stream interface {
+	// Closer closes the stream
+	io.Closer
+	// Emitter alows stream to emit audit event in the context of the event stream
+	Emitter
+}
+
 // IAuditLog is the primary (and the only external-facing) interface for AuditLogger.
 // If you wish to implement a different kind of logger (not filesystem-based), you
 // have to implement this interface

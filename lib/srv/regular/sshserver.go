@@ -982,7 +982,8 @@ func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn,
 	}
 
 	// Emit a port forwarding event.
-	s.EmitAuditEvent(events.PortForward, events.EventFields{
+	// !!!FIXEVENTS!!!
+	s.EmitAuditEvent(events.PortForwardE, events.EventFields{
 		events.PortForwardAddr:    ctx.DstAddr,
 		events.PortForwardSuccess: true,
 		events.EventLogin:         ctx.Identity.Login,
