@@ -151,7 +151,7 @@ func (w *Monitor) Start() {
 				events.Reason:          fmt.Sprintf("client certificate expired at %v", w.Clock.Now().UTC()),
 			}
 			// !!!FIXEVENTS!!!
-			w.Audit.EmitAuditEvent(events.ClientDisconnectE, event)
+			w.Audit.EmitAuditEventLegacy(events.ClientDisconnectE, event)
 			w.Entry.Debugf("Disconnecting client: %v", event[events.Reason])
 			w.Conn.Close()
 			return
@@ -174,7 +174,7 @@ func (w *Monitor) Start() {
 				}
 				w.Entry.Debugf("Disconnecting client: %v", event[events.Reason])
 				// !!!FIXEVENTS!!!
-				w.Audit.EmitAuditEvent(events.ClientDisconnectE, event)
+				w.Audit.EmitAuditEventLegacy(events.ClientDisconnectE, event)
 				w.Conn.Close()
 				return
 			}

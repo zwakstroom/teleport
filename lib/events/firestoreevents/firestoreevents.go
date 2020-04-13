@@ -305,7 +305,7 @@ func New(cfg EventsConfig) (*Log, error) {
 }
 
 // EmitAuditEvent emits audit event
-func (l *Log) EmitAuditEvent(ev events.Event, fields events.EventFields) error {
+func (l *Log) EmitAuditEventLegacy(ev events.Event, fields events.EventFields) error {
 	sessionID := fields.GetString(events.SessionEventID)
 	eventIndex := fields.GetInt(events.EventIndex)
 	// no session id - global event gets a random uuid to get a good partition

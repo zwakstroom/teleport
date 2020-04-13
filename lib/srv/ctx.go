@@ -558,7 +558,7 @@ func (c *ServerContext) reportStats(conn utils.Stater) {
 		eventFields[events.SessionEventID] = c.session.id
 	}
 	// !!!FIXEVENTS!!!
-	c.GetServer().GetAuditLog().EmitAuditEvent(events.SessionDataE, eventFields)
+	c.GetServer().GetAuditLog().EmitAuditEventLegacy(events.SessionDataE, eventFields)
 
 	// Emit TX and RX bytes to their respective Prometheus counters.
 	serverTX.Add(float64(txBytes))

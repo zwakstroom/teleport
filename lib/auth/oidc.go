@@ -103,7 +103,7 @@ func (s *AuthServer) createOIDCClient(conn services.OIDCConnector) (*oidc.Client
 				conn.GetName(), conn.GetIssuerURL())
 		}
 		// !!!FIXEVENTS!!!
-		s.EmitAuditEvent(events.UserSSOLoginFailureE, events.EventFields{
+		s.EmitAuditEventLegacy(events.UserSSOLoginFailureE, events.EventFields{
 			events.LoginMethod:        events.LoginMethodOIDC,
 			events.AuthAttemptSuccess: false,
 			events.AuthAttemptErr:     trace.Unwrap(ctx.Err()).Error(),
@@ -207,7 +207,7 @@ func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, 
 			fields[events.IdentityAttributes] = re.claims
 		}
 		// !!!FIXEVENTS!!!
-		a.EmitAuditEvent(events.UserSSOLoginFailureE, fields)
+		a.EmitAuditEventLegacy(events.UserSSOLoginFailureE, fields)
 		return nil, trace.Wrap(err)
 	}
 	fields := events.EventFields{
@@ -219,7 +219,7 @@ func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, 
 		fields[events.IdentityAttributes] = re.claims
 	}
 	// !!!FIXEVENTS!!!
-	a.EmitAuditEvent(events.UserSSOLoginE, fields)
+	a.EmitAuditEventLegacy(events.UserSSOLoginE, fields)
 	return &re.auth, nil
 }
 
@@ -638,7 +638,7 @@ collect:
 			// Print warning to Teleport logs as well as the Audit Log.
 			log.Warnf(warningMessage)
 			// !!!FIXEVENTS!!!
-			g.auditLog.EmitAuditEvent(events.UserSSOLoginFailureE, events.EventFields{
+			g.auditLog.EmitAuditEventLegacy(events.UserSSOLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodOIDC,
 				events.AuthAttemptMessage: warningMessage,
 			})

@@ -421,7 +421,7 @@ func emitExecAuditEvent(ctx *ServerContext, cmd string, execErr error) {
 	}
 
 	// Emit the event.
-	auditLog.EmitAuditEvent(event, fields)
+	auditLog.EmitAuditEventLegacy(event, fields)
 }
 
 // getDefaultEnvPath returns the default value of PATH environment variable for

@@ -288,7 +288,7 @@ func (a *AuthServer) ValidateSAMLResponse(samlResponse string) (*SAMLAuthRespons
 			fields[events.IdentityAttributes] = re.attributeStatements
 		}
 		// !!!FIXEVENTS!!!
-		a.EmitAuditEvent(events.UserSSOLoginFailureE, fields)
+		a.EmitAuditEventLegacy(events.UserSSOLoginFailureE, fields)
 		return nil, trace.Wrap(err)
 	}
 	fields := events.EventFields{
@@ -300,7 +300,7 @@ func (a *AuthServer) ValidateSAMLResponse(samlResponse string) (*SAMLAuthRespons
 		fields[events.IdentityAttributes] = re.attributeStatements
 	}
 	// !!!FIXEVENTS!!!
-	a.EmitAuditEvent(events.UserSSOLoginE, fields)
+	a.EmitAuditEventLegacy(events.UserSSOLoginE, fields)
 	return &re.auth, nil
 }
 

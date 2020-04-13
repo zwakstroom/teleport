@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "github.com/gravitational/teleport/lib/services/types.proto";
+import "github.com/gravitational/teleport/lib/events/events.proto";
 
 option (gogoproto.marshaler_all) = true;
 option (gogoproto.unmarshaler_all) = true;
@@ -189,4 +190,7 @@ service AuthService {
     // to mimic the behavior of the proxy's Ping method, and may be used by
     // clients for verification or configuration on startup.
     rpc Ping(PingRequest) returns (PingResponse);
+
+    // EmitAuditEvent emtis audit event
+    rpc EmitAuditEvent(events.AuditEventRequest);
 }

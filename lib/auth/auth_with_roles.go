@@ -891,7 +891,7 @@ func (a *AuthWithRoles) GetUsers(withSecrets bool) ([]services.User, error) {
 			err := trace.AccessDenied("user %q requested access to all users with secrets", a.user.GetName())
 			log.Warning(err)
 			// !!!FIXEVENTS!!!
-			a.authServer.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
+			a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodClientCert,
 				events.AuthAttemptSuccess: false,
 				// log the original internal error in audit log
@@ -918,7 +918,7 @@ func (a *AuthWithRoles) GetUser(name string, withSecrets bool) (services.User, e
 			err := trace.AccessDenied("user %q requested access to user %q with secrets", a.user.GetName(), name)
 			log.Warning(err)
 			// !!!FIXEVENTS!!!
-			a.authServer.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
+			a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodClientCert,
 				events.AuthAttemptSuccess: false,
 				// log the original internal error in audit log
@@ -1006,7 +1006,7 @@ func (a *AuthWithRoles) GenerateUserCerts(ctx context.Context, req proto.UserCer
 		err := trace.AccessDenied("user %q has requested to generate certs for %q.", a.user.GetName(), req.Username)
 		log.Warning(err)
 		// !!!FIXEVENTS!!!
-		a.authServer.EmitAuditEvent(events.UserLocalLoginFailureE, events.EventFields{
+		a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
 			events.LoginMethod:        events.LoginMethodClientCert,
 			events.AuthAttemptSuccess: false,
 			// log the original internal error in audit log
@@ -1320,14 +1320,14 @@ func (a *AuthWithRoles) ValidateGithubAuthCallback(q url.Values) (*GithubAuthRes
 	return a.authServer.ValidateGithubAuthCallback(q)
 }
 
-func (a *AuthWithRoles) EmitAuditEvent(event events.Event, fields events.EventFields) error {
+func (a *AuthWithRoles) EmitAuditEventLegacy(event events.Event, fields events.EventFields) error {
 	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbCreate); err != nil {
 		return trace.Wrap(err)
 	}
 	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbUpdate); err != nil {
 		return trace.Wrap(err)
 	}
-	return a.alog.EmitAuditEvent(event, fields)
+	return a.alog.EmitAuditEventLegacy(event, fields)
 }
 
 func (a *AuthWithRoles) PostSessionSlice(slice events.SessionSlice) error {

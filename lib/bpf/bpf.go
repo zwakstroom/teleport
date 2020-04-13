@@ -303,7 +303,7 @@ func (s *Service) emitCommandEvent(eventBytes []byte) {
 			events.ReturnCode: event.ReturnCode,
 		}
 		// !!!FIXEVENTS!!!
-		ctx.AuditLog.EmitAuditEvent(events.SessionCommandE, eventFields)
+		ctx.AuditLog.EmitAuditEventLegacy(events.SessionCommandE, eventFields)
 
 		// Now that the event has been processed, remove from cache.
 		s.argsCache.Remove(strconv.FormatUint(event.PID, 10))
@@ -348,7 +348,7 @@ func (s *Service) emitDiskEvent(eventBytes []byte) {
 		events.ReturnCode: event.ReturnCode,
 	}
 	// !!!FIXEVENTS!!!
-	ctx.AuditLog.EmitAuditEvent(events.SessionDiskE, eventFields)
+	ctx.AuditLog.EmitAuditEventLegacy(events.SessionDiskE, eventFields)
 }
 
 // emit4NetworkEvent will parse and emit IPv4 events to the Audit Log.
@@ -400,7 +400,7 @@ func (s *Service) emit4NetworkEvent(eventBytes []byte) {
 		events.TCPVersion: 4,
 	}
 	// !!!FIXEVENTS!!!
-	ctx.AuditLog.EmitAuditEvent(events.SessionNetworkE, eventFields)
+	ctx.AuditLog.EmitAuditEventLegacy(events.SessionNetworkE, eventFields)
 }
 
 // emit6NetworkEvent will parse and emit IPv6 events to the Audit Log.
@@ -458,7 +458,7 @@ func (s *Service) emit6NetworkEvent(eventBytes []byte) {
 		events.TCPVersion: 6,
 	}
 	// !!!FIXEVENTS!!!
-	ctx.AuditLog.EmitAuditEvent(events.SessionNetworkE, eventFields)
+	ctx.AuditLog.EmitAuditEventLegacy(events.SessionNetworkE, eventFields)
 }
 
 func (s *Service) getWatch(cgoupID uint64) (ctx *SessionContext, ok bool) {

@@ -1388,7 +1388,7 @@ func (a *AuthServer) CreateAccessRequest(ctx context.Context, req services.Acces
 		return trace.Wrap(err)
 	}
 	// !!!FIXEVENTS!!!
-	err = a.EmitAuditEvent(events.AccessRequestCreatedE, events.EventFields{
+	err = a.EmitAuditEventLegacy(events.AccessRequestCreatedE, events.EventFields{
 		events.AccessRequestID:    req.GetName(),
 		events.EventUser:          req.GetUser(),
 		events.UserRoles:          req.GetRoles(),
@@ -1406,7 +1406,7 @@ func (a *AuthServer) SetAccessRequestState(ctx context.Context, reqID string, st
 		return trace.Wrap(err)
 	}
 	// !!!FIXEVENTS!!!
-	err = a.EmitAuditEvent(events.AccessRequestUpdatedE, events.EventFields{
+	err = a.EmitAuditEventLegacy(events.AccessRequestUpdatedE, events.EventFields{
 		events.AccessRequestID:       reqID,
 		events.AccessRequestState:    state.String(),
 		events.AccessRequestUpdateBy: updateBy,

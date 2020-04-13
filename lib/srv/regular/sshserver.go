@@ -783,7 +783,7 @@ func (s *Server) EmitAuditEvent(event events.Event, fields events.EventFields) {
 	if alog != nil {
 		// record the event time with ms precision
 		fields[events.EventTime] = s.clock.Now().In(time.UTC).Round(time.Millisecond)
-		if err := alog.EmitAuditEvent(event, fields); err != nil {
+		if err := alog.EmitAuditEventLegacy(event, fields); err != nil {
 			log.Error(trace.DebugReport(err))
 		}
 	} else {

@@ -1952,9 +1952,9 @@ func (s *APIServer) emitAuditEvent(auth ClientI, w http.ResponseWriter, r *http.
 	// For backwards compatibility, check if the full event struct has
 	// been sent in the request or just the event type.
 	if req.Event.Name != "" {
-		err = auth.EmitAuditEvent(req.Event, req.Fields)
+		err = auth.EmitAuditEventLegacy(req.Event, req.Fields)
 	} else {
-		err = auth.EmitAuditEvent(events.Event{Name: req.Type}, req.Fields)
+		err = auth.EmitAuditEventLegacy(events.Event{Name: req.Type}, req.Fields)
 	}
 	if err != nil {
 		return nil, trace.Wrap(err)

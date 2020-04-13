@@ -93,7 +93,7 @@ func (a *AuthServer) ValidateGithubAuthCallback(q url.Values) (*GithubAuthRespon
 			fields[events.IdentityAttributes] = re.claims
 		}
 		// !!!FIXEVENTS!!!
-		a.EmitAuditEvent(events.UserSSOLoginFailureE, fields)
+		a.EmitAuditEventLegacy(events.UserSSOLoginFailureE, fields)
 		return nil, trace.Wrap(err)
 	}
 	fields := events.EventFields{
@@ -105,7 +105,7 @@ func (a *AuthServer) ValidateGithubAuthCallback(q url.Values) (*GithubAuthRespon
 		fields[events.IdentityAttributes] = re.claims
 	}
 	// !!!FIXEVENTS!!!
-	a.EmitAuditEvent(events.UserSSOLoginE, fields)
+	a.EmitAuditEventLegacy(events.UserSSOLoginE, fields)
 	return &re.auth, nil
 }
 
@@ -537,7 +537,7 @@ func (c *githubAPIClient) getTeams() ([]teamResponse, error) {
 			// Print warning to Teleport logs as well as the Audit Log.
 			log.Warnf(warningMessage)
 			// !!!FIXEVENTS!!!
-			c.authServer.EmitAuditEvent(events.UserSSOLoginFailureE, events.EventFields{
+			c.authServer.EmitAuditEventLegacy(events.UserSSOLoginFailureE, events.EventFields{
 				events.LoginMethod:        events.LoginMethodGithub,
 				events.AuthAttemptMessage: warningMessage,
 			})

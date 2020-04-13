@@ -319,3 +319,21 @@ message UserUpdate {
     // Expires is when the user will expire.
     google.protobuf.Timestamp Expires = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "expires"];
 }
+
+// AuditEventRequest is one of audit events submitted to the auth service
+message AuditEventRequest {
+    // Event is one of the audit events
+    oneof Event {
+        events.UserLogin = 1;
+        events.UserUpdate = 2
+        events.SessionStart = 3;
+        events.SessionPrint = 4;
+        events.Resize = 5;
+        events.SessionEnd = 6; 
+        events.SessionCommand = 7;
+        events.SessionDisk = 8;
+        events.SessionNetwork = 9;
+        events.SessionData = 10;
+        events.SessionLeave = 11;
+    }
+}

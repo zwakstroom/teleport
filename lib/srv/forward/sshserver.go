@@ -326,7 +326,7 @@ func (s *Server) Component() string {
 func (s *Server) EmitAuditEvent(event events.Event, fields events.EventFields) {
 	auditLog := s.GetAuditLog()
 	if auditLog != nil {
-		if err := auditLog.EmitAuditEvent(event, fields); err != nil {
+		if err := auditLog.EmitAuditEventLegacy(event, fields); err != nil {
 			s.log.Error(err)
 		}
 	} else {

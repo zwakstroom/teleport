@@ -110,7 +110,7 @@ func (h *AuthHandlers) CheckPortForward(addr string, ctx *ServerContext) error {
 
 		// emit port forward failure event
 		// !!!FIXEVENTS!!!
-		h.AuditLog.EmitAuditEvent(events.PortForwardFailureE, events.EventFields{
+		h.AuditLog.EmitAuditEventLegacy(events.PortForwardFailureE, events.EventFields{
 			events.PortForwardAddr:    addr,
 			events.PortForwardSuccess: false,
 			events.PortForwardErr:     systemErrorMessage,
@@ -172,7 +172,7 @@ func (h *AuthHandlers) UserKeyAuth(conn ssh.ConnMetadata, key ssh.PublicKey) (*s
 		}
 		h.Warnf("failed login attempt %#v", fields)
 		// !!!FIXEVENTS!!!
-		h.AuditLog.EmitAuditEvent(events.AuthAttemptFailureE, fields)
+		h.AuditLog.EmitAuditEventLegacy(events.AuthAttemptFailureE, fields)
 	}
 
 	// Check that the user certificate uses supported public key algorithms, was

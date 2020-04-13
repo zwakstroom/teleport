@@ -429,7 +429,7 @@ func (a *AuthServer) UpsertUser(user services.User) error {
 	} else {
 		connectorName = user.GetCreatedBy().Connector.ID
 	}
-	a.EmitAuditEvent(events.UserUpdateE, events.EventFields{
+	a.EmitAuditEventLegacy(events.UserUpdateE, events.EventFields{
 		events.EventUser:     user.GetName(),
 		events.UserExpires:   user.Expiry(),
 		events.UserRoles:     user.GetRoles(),
@@ -460,7 +460,7 @@ func (a *AuthServer) DeleteUser(user string) error {
 
 	// If the user was successfully deleted, emit an event.
 	// !!!FIXEVENTS!!!
-	a.EmitAuditEvent(events.UserDeleteE, events.EventFields{
+	a.EmitAuditEventLegacy(events.UserDeleteE, events.EventFields{
 		events.EventUser: user,
 	})
 

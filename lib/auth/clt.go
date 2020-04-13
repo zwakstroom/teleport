@@ -2043,7 +2043,7 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 }
 
 // EmitAuditEvent sends an auditable event to the auth server (part of evets.IAuditLog interface)
-func (c *Client) EmitAuditEvent(event events.Event, fields events.EventFields) error {
+func (c *Client) EmitAuditEventLegacy(event events.Event, fields events.EventFields) error {
 	_, err := c.PostJSON(c.Endpoint("events"), &auditEventReq{
 		Event:  event,
 		Fields: fields,

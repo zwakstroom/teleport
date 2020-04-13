@@ -308,7 +308,7 @@ func SetCode(event AuditEvent, code string) AuditEvent {
 // Emitter creates and manages audit log streams
 type Emitter interface {
 	// Emit emtits a single audit event
-	Emit(AuditEvent) error
+	EmitAuditEvent(AuditEvent) error
 }
 
 // Streamer creates and manages event streams
@@ -335,8 +335,8 @@ type IAuditLog interface {
 	// Closer releases connection and resources associated with log if any
 	io.Closer
 
-	// EmitAuditEvent emits audit event
-	EmitAuditEvent(Event, EventFields) error
+	// EmitAuditEventLegacy emits audit event
+	EmitAuditEventLegacy(Event, EventFields) error
 
 	// DELETE IN: 2.7.0
 	// This method is no longer necessary as nodes and proxies >= 2.7.0
