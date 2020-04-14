@@ -909,7 +909,7 @@ func (l *AuditLog) fetchSessionEvents(fileName string, afterN int) ([]EventField
 	return retval, nil
 }
 
-// EmitAuditEvent adds a new event to the log. If emitting fails, a Prometheus
+// EmitAuditEventLegacy adds a new event to the log. If emitting fails, a Prometheus
 // counter is incremented.
 func (l *AuditLog) EmitAuditEventLegacy(event Event, fields EventFields) error {
 	// If an external logger has been set, use it as the emitter, otherwise

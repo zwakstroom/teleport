@@ -49,7 +49,7 @@ type APIConfig struct {
 	AuthServer     *AuthServer
 	SessionService session.Service
 	AuditLog       events.IAuditLog
-	Emitter        events.StreamEmitter
+	Emitter        events.Emitter
 	Authorizer     Authorizer
 }
 

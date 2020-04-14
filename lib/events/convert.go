@@ -1,22 +1,25 @@
-// Copyright 2017 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+Copyright 2020 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 package events
 
 import (
 	"bytes"
 	"encoding/json"
+	"time"
 
 	"github.com/gravitational/teleport/lib/utils"
 
@@ -120,6 +123,16 @@ func (s *Struct) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// GetType returns event type
+func (m *Metadata) GetType() string {
+	return m.Type
+}
+
+// SetType sets unique type
+func (m *Metadata) SetType(etype string) {
+	m.Type = etype
+}
+
 // GetID returns event ID
 func (m *Metadata) GetID() string {
 	return m.ID
@@ -140,6 +153,26 @@ func (m *Metadata) SetID(id string) {
 	m.ID = id
 }
 
+// GetTime returns event time
+func (m *Metadata) GetTime() time.Time {
+	return m.Time
+}
+
+// SetTime sets event time
+func (m *Metadata) SetTime(tm time.Time) {
+	m.Time = tm
+}
+
+// SetIndex sets event index
+func (m *Metadata) SetIndex(idx int64) {
+	m.Index = idx
+}
+
+// GetIndex gets event index
+func (m *Metadata) GetIndex() int64 {
+	return m.Index
+}
+
 // GetServerID returns event server ID
 func (m *ServerMetadata) GetServerID() string {
 	return m.ServerID
@@ -158,4 +191,9 @@ func (m *ServerMetadata) GetServerNamespace() string {
 // SetServerNamespace sets server namespace
 func (m *ServerMetadata) SetServerNamespace(ns string) {
 	m.ServerNamespace = ns
+}
+
+// GetSessionID returns event session ID
+func (m *SessionMetadata) GetSessionID() string {
+	return m.SessionID
 }

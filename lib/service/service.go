@@ -915,6 +915,7 @@ func (process *TeleportProcess) initAuthService() error {
 	}
 	process.backend = b
 
+	var emitter events.Emitter
 	// create the audit log, which will be consuming (and recording) all events
 	// and recording all sessions.
 	if cfg.Auth.NoAudit {
@@ -951,6 +952,15 @@ func (process *TeleportProcess) initAuthService() error {
 				return trace.Wrap(err)
 			}
 		}
+
+		externalEmitter, ok := externalLog.(events.Emitter)
+		if !ok {
+			// FIXEVENTS: this should be a static check,
+			// not a runtime check
+			return trace.BadParameter("expected emitter, but %T does not emit", externalLog)
+		}
+
+		emitter = externalEmitter
 
 		auditServiceConfig := events.AuditLogConfig{
 			Context:        process.ExitContext(),
@@ -1019,11 +1029,18 @@ func (process *TeleportProcess) initAuthService() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
+
+	checkingEmitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
+		Inner: emitter,
+		Clock: process.Clock,
+	})
+
 	apiConf := &auth.APIConfig{
 		AuthServer:     authServer,
 		SessionService: sessionService,
 		Authorizer:     authorizer,
 		AuditLog:       process.auditLog,
+		Emitter:        checkingEmitter,
 	}
 
 	var authCache auth.AuthCache
@@ -1492,6 +1509,7 @@ func (process *TeleportProcess) initSSH() error {
 			regular.SetLimiter(limiter),
 			regular.SetShell(cfg.SSH.Shell),
 			regular.SetAuditLog(conn.Client),
+			regular.SetEmitter(conn.Client),
 			regular.SetSessionServer(conn.Client),
 			regular.SetLabels(cfg.SSH.Labels, cfg.SSH.CmdLabels),
 			regular.SetNamespace(namespace),

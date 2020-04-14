@@ -105,6 +105,8 @@ type Server struct {
 	// alog points to the AuditLog this server uses to report
 	// auditable events
 	alog events.IAuditLog
+	// emitter points to the auth service and emits audit events
+	emitter events.Emitter
 
 	// clock is a system clock
 	clock clockwork.Clock
@@ -362,6 +364,14 @@ func SetAuditLog(alog events.IAuditLog) ServerOption {
 	}
 }
 
+// SetEmitter assigns an audit event emitter for this server
+func SetEmitter(emitter events.Emitter) ServerOption {
+	return func(s *Server) error {
+		s.emitter = emitter
+		return nil
+	}
+}
+
 // SetUUID sets server unique ID
 func SetUUID(uuid string) ServerOption {
 	return func(s *Server) error {
@@ -478,6 +488,10 @@ func New(addr utils.NetAddr,
 	// TODO(klizhentas): replace function arguments with struct
 	if s.alog == nil {
 		return nil, trace.BadParameter("setup valid AuditLog parameter using SetAuditLog")
+	}
+
+	if s.emitter == nil {
+		return nil, trace.BadParameter("setup valid Emitter parameter using SetEmitter")
 	}
 
 	if s.namespace == "" {

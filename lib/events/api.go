@@ -296,7 +296,23 @@ type AuditEvent interface {
 	// GetCode returns event short diagnostic code
 	GetCode() string
 	// SetCode sets unique event diagnostic code
-	SetCode(id string)
+	SetCode(string)
+
+	// GetType returns event type
+	GetType() string
+	// SetCode sets unique type
+	SetType(string)
+
+	// GetTime returns event time
+	GetTime() time.Time
+	// SetTime sets event time
+	SetTime(time.Time)
+
+	// GetIndex gets event index - a non-uniquemonotonicaly incremented number
+	// in the event sequence
+	GetIndex() int64
+	// SetIndex sets event index
+	SetIndex(idx int64)
 }
 
 // ServerMetadataGetter represents interface
@@ -307,6 +323,13 @@ type ServerMetadataGetter interface {
 
 	// GetServerNamespace returns event server namespace
 	GetServerNamespace() string
+}
+
+// SessionMetadataGetter represents interface
+// that provides information about events' session metadata
+type SessionMetadataGetter interface {
+	// GetSessionID returns event session ID
+	GetSessionID() string
 }
 
 // SetCode is a shortcut that sets code for the audit event

@@ -2042,7 +2042,24 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 	return &response, nil
 }
 
-// EmitAuditEvent sends an auditable event to the auth server (part of evets.IAuditLog interface)
+// EmitAuditEvent sends an auditable event to the auth server
+func (c *Client) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
+	grpcEvent, err := auditEventToGRPC(event)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	_, err = clt.EmitAuditEvent(ctx, grpcEvent)
+	if err != nil {
+		return trail.FromGRPC(err)
+	}
+	return nil
+}
+
+// EmitAuditEventLegacy sends an auditable event to the auth server (part of evets.IAuditLog interface)
 func (c *Client) EmitAuditEventLegacy(event events.Event, fields events.EventFields) error {
 	_, err := c.PostJSON(c.Endpoint("events"), &auditEventReq{
 		Event:  event,

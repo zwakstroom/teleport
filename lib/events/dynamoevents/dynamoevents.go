@@ -225,34 +225,28 @@ const (
 )
 
 // EmitAuditEvent emits audit event
-func (l *Log) EmitAuditEvent(ctx context.Context, e events.AuditEvent) error {
-	outJSON, err := utils.FastMarshal(tc.event)
-	c.Assert(err, check.IsNil, comment)
-	sessionID := fields.GetString(events.SessionEventID)
-	eventIndex := fields.GetInt(events.EventIndex)
-	// no session id - global event gets a random uuid to get a good partition
-	// key distribution
-	if sessionID == "" {
-		sessionID = uuid.New()
-	}
-	err := events.UpdateEventFields(ev, fields, l.Clock, l.UIDGenerator)
-	if err != nil {
-		log.Error(trace.DebugReport(err))
-	}
-	created := fields.GetTime(events.EventTime)
-	if created.IsZero() {
-		created = l.Clock.Now().UTC()
-	}
-	data, err := json.Marshal(fields)
+func (l *Log) EmitAuditEvent(ctx context.Context, in events.AuditEvent) error {
+	data, err := utils.FastMarshal(in)
 	if err != nil {
 		return trace.Wrap(err)
 	}
+
+	var sessionID string
+	getter, ok := in.(events.SessionMetadataGetter)
+	if ok {
+		sessionID = getter.GetSessionID()
+	} else {
+		// no session id - global event gets a random uuid to get a good partition
+		// key distribution
+		sessionID = uuid.New()
+	}
+
 	e := event{
 		SessionID:      sessionID,
-		EventIndex:     int64(eventIndex),
-		EventType:      fields.GetString(events.EventType),
+		EventIndex:     in.GetIndex(),
+		EventType:      in.GetType(),
 		EventNamespace: defaults.Namespace,
-		CreatedAt:      created.Unix(),
+		CreatedAt:      in.GetTime().Unix(),
 		Fields:         string(data),
 	}
 	l.setExpiry(&e)
