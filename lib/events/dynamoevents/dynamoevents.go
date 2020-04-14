@@ -225,6 +225,54 @@ const (
 )
 
 // EmitAuditEvent emits audit event
+func (l *Log) EmitAuditEvent(ctx context.Context, e events.AuditEvent) error {
+	outJSON, err := utils.FastMarshal(tc.event)
+	c.Assert(err, check.IsNil, comment)
+	sessionID := fields.GetString(events.SessionEventID)
+	eventIndex := fields.GetInt(events.EventIndex)
+	// no session id - global event gets a random uuid to get a good partition
+	// key distribution
+	if sessionID == "" {
+		sessionID = uuid.New()
+	}
+	err := events.UpdateEventFields(ev, fields, l.Clock, l.UIDGenerator)
+	if err != nil {
+		log.Error(trace.DebugReport(err))
+	}
+	created := fields.GetTime(events.EventTime)
+	if created.IsZero() {
+		created = l.Clock.Now().UTC()
+	}
+	data, err := json.Marshal(fields)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	e := event{
+		SessionID:      sessionID,
+		EventIndex:     int64(eventIndex),
+		EventType:      fields.GetString(events.EventType),
+		EventNamespace: defaults.Namespace,
+		CreatedAt:      created.Unix(),
+		Fields:         string(data),
+	}
+	l.setExpiry(&e)
+	av, err := dynamodbattribute.MarshalMap(e)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	input := dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(l.Tablename),
+	}
+	_, err = l.svc.PutItem(&input)
+	err = convertError(err)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+// EmitAuditEventLegacy emits legacy audit event
 func (l *Log) EmitAuditEventLegacy(ev events.Event, fields events.EventFields) error {
 	sessionID := fields.GetString(events.SessionEventID)
 	eventIndex := fields.GetInt(events.EventIndex)

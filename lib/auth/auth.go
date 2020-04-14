@@ -621,7 +621,7 @@ func (s *AuthServer) WithUserLock(username string, authenticateFn func() error) 
 
 // PreAuthenticatedSignIn is for 2-way authentication methods like U2F where the password is
 // already checked before issuing the second factor challenge
-func (s *AuthServer) PreAuthenticatedSignIn(user string, identity *tlsca.Identity) (services.WebSession, error) {
+func (s *AuthServer) PreAuthenticatedSignIn(user string, identity tlsca.Identity) (services.WebSession, error) {
 	roles, traits, err := services.ExtractFromIdentity(s, identity)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -713,7 +713,7 @@ func (s *AuthServer) CheckU2FSignResponse(user string, response *u2f.SignRespons
 
 // ExtendWebSession creates a new web session for a user based on a valid previous sessionID,
 // method is used to renew the web session for a user
-func (s *AuthServer) ExtendWebSession(user string, prevSessionID string, identity *tlsca.Identity) (services.WebSession, error) {
+func (s *AuthServer) ExtendWebSession(user string, prevSessionID string, identity tlsca.Identity) (services.WebSession, error) {
 	prevSession, err := s.GetWebSession(user, prevSessionID)
 	if err != nil {
 		return nil, trace.Wrap(err)

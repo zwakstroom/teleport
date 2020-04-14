@@ -27,7 +27,6 @@ import (
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/session"
-	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/wrappers"
 
@@ -41,29 +40,29 @@ import (
 // methods that focuses on authorizing every request
 type AuthWithRoles struct {
 	authServer *AuthServer
-	checker    services.AccessChecker
-	user       services.User
 	sessions   session.Service
 	alog       events.IAuditLog
-	identity   tlsca.Identity
+	emitter    events.StreamEmitter
+	// context holds authorization context
+	context AuthContext
 }
 
 func (a *AuthWithRoles) actionWithContext(ctx *services.Context, namespace string, resource string, action string) error {
-	return a.checker.CheckAccessToRule(ctx, namespace, resource, action, false)
+	return a.context.Checker.CheckAccessToRule(ctx, namespace, resource, action, false)
 }
 
 func (a *AuthWithRoles) action(namespace string, resource string, action string) error {
-	return a.checker.CheckAccessToRule(&services.Context{User: a.user}, namespace, resource, action, false)
+	return a.context.Checker.CheckAccessToRule(&services.Context{User: a.context.User}, namespace, resource, action, false)
 }
 
 // currentUserAction is a special checker that allows certain actions for users
 // even if they are not admins, e.g. update their own passwords,
 // or generate certificates, otherwise it will require admin privileges
 func (a *AuthWithRoles) currentUserAction(username string) error {
-	if a.hasLocalUserRole(a.checker) && username == a.user.GetName() {
+	if a.hasLocalUserRole(a.context.Checker) && username == a.context.User.GetName() {
 		return nil
 	}
-	return a.checker.CheckAccessToRule(&services.Context{User: a.user},
+	return a.context.Checker.CheckAccessToRule(&services.Context{User: a.context.User},
 		defaults.Namespace, services.KindUser, services.VerbCreate, false)
 }
 
@@ -72,8 +71,8 @@ func (a *AuthWithRoles) currentUserAction(username string) error {
 // If not, it checks if the requester has the meta KindAuthConnector access
 // (which grants access to all connectors).
 func (a *AuthWithRoles) authConnectorAction(namespace string, resource string, verb string) error {
-	if err := a.checker.CheckAccessToRule(&services.Context{User: a.user}, namespace, resource, verb, false); err != nil {
-		if err := a.checker.CheckAccessToRule(&services.Context{User: a.user}, namespace, services.KindAuthConnector, verb, false); err != nil {
+	if err := a.context.Checker.CheckAccessToRule(&services.Context{User: a.context.User}, namespace, resource, verb, false); err != nil {
+		if err := a.context.Checker.CheckAccessToRule(&services.Context{User: a.context.User}, namespace, services.KindAuthConnector, verb, false); err != nil {
 			return trace.Wrap(err)
 		}
 	}
@@ -83,7 +82,7 @@ func (a *AuthWithRoles) authConnectorAction(namespace string, resource string, v
 // hasBuiltinRole checks the type of the role set returned and the name.
 // Returns true if role set is builtin and the name matches.
 func (a *AuthWithRoles) hasBuiltinRole(name string) bool {
-	return hasBuiltinRole(a.checker, name)
+	return hasBuiltinRole(a.context.Checker, name)
 }
 
 // hasBuiltinRole checks the type of the role set returned and the name.
@@ -102,10 +101,10 @@ func hasBuiltinRole(checker services.AccessChecker, name string) bool {
 // hasRemoteBuiltinRole checks the type of the role set returned and the name.
 // Returns true if role set is remote builtin and the name matches.
 func (a *AuthWithRoles) hasRemoteBuiltinRole(name string) bool {
-	if _, ok := a.checker.(RemoteBuiltinRoleSet); !ok {
+	if _, ok := a.context.Checker.(RemoteBuiltinRoleSet); !ok {
 		return false
 	}
-	if !a.checker.HasRole(name) {
+	if !a.context.Checker.HasRole(name) {
 		return false
 	}
 
@@ -204,7 +203,7 @@ func (a *AuthWithRoles) RotateExternalCertAuthority(ca services.CertAuthority) e
 	if ca == nil {
 		return trace.BadParameter("missing certificate authority")
 	}
-	ctx := &services.Context{User: a.user, Resource: ca}
+	ctx := &services.Context{User: a.context.User, Resource: ca}
 	if err := a.actionWithContext(ctx, defaults.Namespace, services.KindCertAuthority, services.VerbRotate); err != nil {
 		return trace.Wrap(err)
 	}
@@ -216,7 +215,7 @@ func (a *AuthWithRoles) UpsertCertAuthority(ca services.CertAuthority) error {
 	if ca == nil {
 		return trace.BadParameter("missing certificate authority")
 	}
-	ctx := &services.Context{User: a.user, Resource: ca}
+	ctx := &services.Context{User: a.context.User, Resource: ca}
 	if err := a.actionWithContext(ctx, defaults.Namespace, services.KindCertAuthority, services.VerbCreate); err != nil {
 		return trace.Wrap(err)
 	}
@@ -331,10 +330,10 @@ func (a *AuthWithRoles) GenerateServerKeys(req GenerateServerKeysRequest) (*Pack
 		return nil, trace.Wrap(err)
 	}
 	// username is hostID + cluster name, so make sure server requests new keys for itself
-	if a.user.GetName() != HostFQDN(req.HostID, clusterName) {
-		return nil, trace.AccessDenied("username mismatch %q and %q", a.user.GetName(), HostFQDN(req.HostID, clusterName))
+	if a.context.User.GetName() != HostFQDN(req.HostID, clusterName) {
+		return nil, trace.AccessDenied("username mismatch %q and %q", a.context.User.GetName(), HostFQDN(req.HostID, clusterName))
 	}
-	existingRoles, err := teleport.NewRoles(a.user.GetRoles())
+	existingRoles, err := teleport.NewRoles(a.context.User.GetRoles())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -374,7 +373,7 @@ func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepA
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	serverName, err := ExtractHostID(a.user.GetName(), clusterName)
+	serverName, err := ExtractHostID(a.context.User.GetName(), clusterName)
 	if err != nil {
 		return trace.AccessDenied("[10] access denied")
 	}
@@ -489,7 +488,7 @@ func (a *AuthWithRoles) filterNodes(nodes []services.Server) ([]services.Server,
 		return nodes, nil
 	}
 
-	roleset, err := services.FetchRoles(a.user.GetRoles(), a.authServer, a.user.GetTraits())
+	roleset, err := services.FetchRoles(a.context.User.GetRoles(), a.authServer, a.context.User.GetTraits())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -556,7 +555,7 @@ func (a *AuthWithRoles) GetNodes(namespace string, opts ...services.MarshalOptio
 	elapsedFilter := time.Since(startFilter)
 
 	log.WithFields(logrus.Fields{
-		"user":           a.user.GetName(),
+		"user":           a.context.User.GetName(),
 		"elapsed_fetch":  elapsedFetch,
 		"elapsed_filter": elapsedFilter,
 	}).Debugf(
@@ -745,7 +744,7 @@ func (a *AuthWithRoles) PreAuthenticatedSignIn(user string) (services.WebSession
 	if err := a.currentUserAction(user); err != nil {
 		return nil, trace.Wrap(err)
 	}
-	return a.authServer.PreAuthenticatedSignIn(user, &a.identity)
+	return a.authServer.PreAuthenticatedSignIn(user, a.context.Identity.GetIdentity())
 }
 
 func (a *AuthWithRoles) GetU2FSignRequest(user string, password []byte) (*u2f.SignRequest, error) {
@@ -765,7 +764,7 @@ func (a *AuthWithRoles) ExtendWebSession(user, prevSessionID string) (services.W
 	if err := a.currentUserAction(user); err != nil {
 		return nil, trace.Wrap(err)
 	}
-	return a.authServer.ExtendWebSession(user, prevSessionID, &a.identity)
+	return a.authServer.ExtendWebSession(user, prevSessionID, a.context.Identity.GetIdentity())
 }
 
 func (a *AuthWithRoles) GetWebSessionInfo(user string, sid string) (services.WebSession, error) {
@@ -803,8 +802,8 @@ func (a *AuthWithRoles) CreateAccessRequest(ctx context.Context, req services.Ac
 		}
 	}
 	// Ensure that an access request cannot outlive the identity that creates it.
-	if req.GetAccessExpiry().Before(a.authServer.GetClock().Now()) || req.GetAccessExpiry().After(a.identity.Expires) {
-		req.SetAccessExpiry(a.identity.Expires)
+	if req.GetAccessExpiry().Before(a.authServer.GetClock().Now()) || req.GetAccessExpiry().After(a.context.Identity.GetIdentity().Expires) {
+		req.SetAccessExpiry(a.context.Identity.GetIdentity().Expires)
 	}
 	return a.authServer.CreateAccessRequest(ctx, req)
 }
@@ -813,7 +812,7 @@ func (a *AuthWithRoles) SetAccessRequestState(ctx context.Context, reqID string,
 	if err := a.action(defaults.Namespace, services.KindAccessRequest, services.VerbUpdate); err != nil {
 		return trace.Wrap(err)
 	}
-	updateCtx := withUpdateBy(ctx, a.user.GetName())
+	updateCtx := withUpdateBy(ctx, a.context.User.GetName())
 	return a.authServer.SetAccessRequestState(updateCtx, reqID, state)
 }
 
@@ -888,7 +887,7 @@ func (a *AuthWithRoles) GetUsers(withSecrets bool) ([]services.User, error) {
 		// TODO(fspmarshall): replace admin requirement with VerbReadWithSecrets once we've
 		// migrated to that model.
 		if !a.hasBuiltinRole(string(teleport.RoleAdmin)) {
-			err := trace.AccessDenied("user %q requested access to all users with secrets", a.user.GetName())
+			err := trace.AccessDenied("user %q requested access to all users with secrets", a.context.User.GetName())
 			log.Warning(err)
 			// !!!FIXEVENTS!!!
 			a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
@@ -915,7 +914,7 @@ func (a *AuthWithRoles) GetUser(name string, withSecrets bool) (services.User, e
 		// TODO(fspmarshall): replace admin requirement with VerbReadWithSecrets once we've
 		// migrated to that model.
 		if !a.hasBuiltinRole(string(teleport.RoleAdmin)) {
-			err := trace.AccessDenied("user %q requested access to user %q with secrets", a.user.GetName(), name)
+			err := trace.AccessDenied("user %q requested access to user %q with secrets", a.context.User.GetName(), name)
 			log.Warning(err)
 			// !!!FIXEVENTS!!!
 			a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
@@ -984,26 +983,26 @@ func (a *AuthWithRoles) GenerateUserCerts(ctx context.Context, req proto.UserCer
 		}
 		roles = user.GetRoles()
 		traits = user.GetTraits()
-	case req.Username == a.user.GetName():
+	case req.Username == a.context.User.GetName():
 		// user is requesting TTL for themselves,
 		// limit the TTL to the duration of the session, to prevent
 		// users renewing their certificates forever
-		if a.identity.Expires.IsZero() {
-			log.Warningf("Encountered identity with no expiry: %v and denied request. Must be internal logic error.", a.identity)
+		if a.context.Identity.GetIdentity().Expires.IsZero() {
+			log.Warningf("Encountered identity with no expiry: %v and denied request. Must be internal logic error.", a.context.Identity.GetIdentity())
 			return nil, trace.AccessDenied("access denied")
 		}
-		req.Expires = a.identity.Expires
+		req.Expires = a.context.Identity.GetIdentity().Expires
 		if req.Expires.Before(a.authServer.GetClock().Now()) {
 			return nil, trace.AccessDenied("access denied: client credentials have expired, please relogin.")
 		}
 		// If the user is generating a certificate, the roles and traits come from
 		// the logged in identity.
-		roles, traits, err = services.ExtractFromIdentity(a.authServer, &a.identity)
+		roles, traits, err = services.ExtractFromIdentity(a.authServer, a.context.Identity.GetIdentity())
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
 	default:
-		err := trace.AccessDenied("user %q has requested to generate certs for %q.", a.user.GetName(), req.Username)
+		err := trace.AccessDenied("user %q has requested to generate certs for %q.", a.context.User.GetName(), req.Username)
 		log.Warning(err)
 		// !!!FIXEVENTS!!!
 		a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
@@ -1136,7 +1135,7 @@ func (a *AuthWithRoles) UpsertUser(u services.User) error {
 	createdBy := u.GetCreatedBy()
 	if createdBy.IsEmpty() {
 		u.SetCreatedBy(services.CreatedBy{
-			User: services.UserRef{Name: a.user.GetName()},
+			User: services.UserRef{Name: a.context.User.GetName()},
 		})
 	}
 	return a.authServer.UpsertUser(u)
@@ -1320,6 +1319,31 @@ func (a *AuthWithRoles) ValidateGithubAuthCallback(q url.Values) (*GithubAuthRes
 	return a.authServer.ValidateGithubAuthCallback(q)
 }
 
+// EmitAuditEvent emits a single audit event
+func (a *AuthWithRoles) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
+	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbCreate); err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbUpdate); err != nil {
+		return trace.Wrap(err)
+	}
+	role, ok := a.context.Identity.(BuiltinRole)
+	if !ok || !role.IsServer() {
+		return trace.AccessDenied("this request can be only executed by proxy, node or auth")
+	}
+	err := events.ValidateServerMetadata(event, role.GetServerID())
+	if err != nil {
+		// TODO: this should be a proper audit event
+		// notifying about access violation
+		log.Warningf("Rejecting audit event %v from %v: %v. A node is attempting to "+
+			"submit events for an identity other than the one on its x509 certificate.",
+			event.GetID(), role.GetServerID(), err)
+		// this message is sparse on purpose to avoid conveying extra data to potenital attacker
+		return trace.AccessDenied("failed to validate event metadata")
+	}
+	return a.emitter.EmitAuditEvent(ctx, event)
+}
+
 func (a *AuthWithRoles) EmitAuditEventLegacy(event events.Event, fields events.EventFields) error {
 	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbCreate); err != nil {
 		return trace.Wrap(err)
@@ -1454,8 +1478,8 @@ func (a *AuthWithRoles) UpsertRole(role services.Role) error {
 func (a *AuthWithRoles) GetRole(name string) (services.Role, error) {
 	if err := a.action(defaults.Namespace, services.KindRole, services.VerbRead); err != nil {
 		// allow user to read roles assigned to them
-		log.Infof("%v %v %v", a.user, a.user.GetRoles(), name)
-		if !utils.SliceContainsStr(a.user.GetRoles(), name) {
+		log.Infof("%v %v %v", a.context.User, a.context.User.GetRoles(), name)
+		if !utils.SliceContainsStr(a.context.User.GetRoles(), name) {
 			return nil, trace.Wrap(err)
 		}
 	}
@@ -1770,8 +1794,7 @@ func NewAdminAuthServer(authServer *AuthServer, sessions session.Service, alog e
 	}
 	return &AuthWithRoles{
 		authServer: authServer,
-		checker:    ctx.Checker,
-		user:       ctx.User,
+		context:    *ctx,
 		alog:       alog,
 		sessions:   sessions,
 	}, nil
@@ -1781,10 +1804,8 @@ func NewAdminAuthServer(authServer *AuthServer, sessions session.Service, alog e
 func NewAuthWithRoles(ctx AuthContext, authServer *AuthServer, sessions session.Service, alog events.IAuditLog) *AuthWithRoles {
 	return &AuthWithRoles{
 		authServer: authServer,
-		checker:    ctx.Checker,
 		sessions:   sessions,
-		user:       ctx.User,
-		identity:   ctx.Identity,
+		context:    ctx,
 		alog:       alog,
 	}
 }

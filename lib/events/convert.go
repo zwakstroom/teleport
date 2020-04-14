@@ -125,7 +125,37 @@ func (m *Metadata) GetID() string {
 	return m.ID
 }
 
+// GetCode returns event code
+func (m *Metadata) GetCode() string {
+	return m.Code
+}
+
+// SetCode sets event code
+func (m *Metadata) SetCode(code string) {
+	m.Code = code
+}
+
 // SetID sets event ID
 func (m *Metadata) SetID(id string) {
 	m.ID = id
+}
+
+// GetServerID returns event server ID
+func (m *ServerMetadata) GetServerID() string {
+	return m.ServerID
+}
+
+// SetServerID sets event server ID
+func (m *ServerMetadata) SetServerID(id string) {
+	m.ServerID = id
+}
+
+// GetServerNamespace returns event server ID
+func (m *ServerMetadata) GetServerNamespace() string {
+	return m.ServerNamespace
+}
+
+// SetServerNamespace sets server namespace
+func (m *ServerMetadata) SetServerNamespace(ns string) {
+	m.ServerNamespace = ns
 }

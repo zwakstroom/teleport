@@ -192,5 +192,5 @@ service AuthService {
     rpc Ping(PingRequest) returns (PingResponse);
 
     // EmitAuditEvent emtis audit event
-    rpc EmitAuditEvent(events.AuditEventRequest);
+    rpc EmitAuditEvent(events.AuditEventRequest) returns (google.protobuf.Empty);
 }

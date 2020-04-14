@@ -382,8 +382,8 @@ func (f *Forwarder) setupContext(ctx auth.AuthContext, req *http.Request, isRemo
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	if ctx.Identity.RouteToCluster != "" {
-		targetCluster, err = f.Tunnel.GetSite(ctx.Identity.RouteToCluster)
+	if ctx.Identity.GetIdentity().RouteToCluster != "" {
+		targetCluster, err = f.Tunnel.GetSite(ctx.Identity.GetIdentity().RouteToCluster)
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}

@@ -49,6 +49,7 @@ type APIConfig struct {
 	AuthServer     *AuthServer
 	SessionService session.Service
 	AuditLog       events.IAuditLog
+	Emitter        events.StreamEmitter
 	Authorizer     Authorizer
 }
 
@@ -264,9 +265,7 @@ func (s *APIServer) withAuth(handler HandlerWithAuthFunc) httprouter.Handle {
 		}
 		auth := &AuthWithRoles{
 			authServer: s.AuthServer,
-			user:       authContext.User,
-			checker:    authContext.Checker,
-			identity:   authContext.Identity,
+			context:    *authContext,
 			sessions:   s.SessionService,
 			alog:       s.AuthServer.IAuditLog,
 		}

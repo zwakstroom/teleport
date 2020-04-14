@@ -57,6 +57,22 @@ func UpdateEventFields(event Event, fields EventFields, clock clockwork.Clock, u
 	return nil
 }
 
+// ValidateServerMetadata checks that event server ID of the event
+// if present, matches the passed server ID and namespace has proper syntax
+func ValidateServerMetadata(event AuditEvent, serverID string) error {
+	getter, ok := event.(ServerMetadataGetter)
+	if !ok {
+		return nil
+	}
+	if getter.GetServerID() != serverID {
+		return trace.BadParameter("server %q can't emit event with server ID %q", serverID, getter.GetServerID())
+	}
+	if !services.IsValidNamespace(getter.GetServerNamespace()) {
+		return trace.BadParameter("invalid namespace %q", getter.GetServerNamespace())
+	}
+	return nil
+}
+
 // ValidateEvent checks the the fields within an event match the passed in
 // expected values.
 func ValidateEvent(f EventFields, serverID string) error {

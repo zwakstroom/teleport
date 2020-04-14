@@ -59,10 +59,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 						"date":   "Mon Mar 30 08:58:54 PDT 2020",
 						"group":  "gravitational/devc",
 					},
-					ServerHostname: "planet",
+					ServerHostname:  "planet",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
 					User:      "bob@example.com",
 					Login:     "bob",
@@ -86,10 +86,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Time:  time.Date(2020, 03, 30, 15, 58, 54, 564*int(time.Millisecond), time.UTC),
 				},
 				ServerMetadata: ServerMetadata{
-					ServerID: "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+					ServerID:        "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
 					User:      "bob@example.com",
 					Login:     "bob",
@@ -109,10 +109,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Time:  time.Date(2020, 03, 30, 15, 58, 54, 564*int(time.Millisecond), time.UTC),
 				},
 				ServerMetadata: ServerMetadata{
-					ServerID: "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+					ServerID:        "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
 					User:      "bob@example.com",
 					Login:     "bob",
@@ -147,10 +147,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Code:  SessionCommandCode,
 				},
 				ServerMetadata: ServerMetadata{
-					ServerID: "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+					ServerID:        "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
 					User:      "alice@example.com",
 					Login:     "alice",
@@ -178,10 +178,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Code:  SessionNetworkCode,
 				},
 				ServerMetadata: ServerMetadata{
-					ServerID: "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerID:        "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "e9a4bd34-78ff-11ea-b062-507b9dd95841",
 					User:      "alice@example.com",
 					Login:     "alice",
@@ -209,10 +209,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Code:  SessionDiskCode,
 				},
 				ServerMetadata: ServerMetadata{
-					ServerID: "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerID:        "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "ddddce15-7909-11ea-b062-507b9dd95841",
 					User:      "bob@example.com",
 					Login:     "bob",
@@ -302,10 +302,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Code:  SessionLeaveCode,
 				},
 				ServerMetadata: ServerMetadata{
-					ServerID: "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerID:        "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerNamespace: "default",
 				},
 				SessionMetadata: SessionMetadata{
-					Namespace: "default",
 					SessionID: "ddddce15-7909-11ea-b062-507b9dd95841",
 					User:      "alice@example.com",
 				},

@@ -29,30 +29,30 @@ message Metadata {
 
 // SesssionMetadata is a common session event metadata
 message SessionMetadata {
-     // Namespace is a namespace of the session event
-    string Namespace = 1 [(gogoproto.jsontag) = "namespace,omitempty"];
-
     // SessionID is a unique UUID of the session.
-	string SessionID = 2 [(gogoproto.jsontag) = "sid"];
+	string SessionID = 1 [(gogoproto.jsontag) = "sid"];
 
 	// Login is OS login
-	string Login = 3 [(gogoproto.jsontag) = "login,omitempty"];
+	string Login = 2 [(gogoproto.jsontag) = "login,omitempty"];
 
 	// User is teleport user name
-	string User = 4 [(gogoproto.jsontag) = "user"];
+	string User = 3 [(gogoproto.jsontag) = "user"];
 }
 
 // Server is a server information
 message ServerMetadata {
+    // ServerNamespace is a namespace of the server event
+    string ServerNamespace = 1 [(gogoproto.jsontag) = "namespace,omitempty"];
+
 	// ServerID is the UUID of the server the session occurred on.
-	string ServerID = 1 [(gogoproto.jsontag) = "server_id"];
+	string ServerID = 2 [(gogoproto.jsontag) = "server_id"];
 
 	// ServerHostname is the hostname of the server the session occurred on.
-	string ServerHostname = 2 [(gogoproto.jsontag) = "server_hostname,omitempty"];
+	string ServerHostname = 3 [(gogoproto.jsontag) = "server_hostname,omitempty"];
 
 	// ServerLabels are the labels (static and dynamic) of the server the
 	// session occurred on.
-	map <string, string> ServerLabels = 3 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "server_labels,omitempty"];
+	map <string, string> ServerLabels = 4 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "server_labels,omitempty"];
 }
 
 // Connection contains connection infro
@@ -324,16 +324,16 @@ message UserUpdate {
 message AuditEventRequest {
     // Event is one of the audit events
     oneof Event {
-        events.UserLogin = 1;
-        events.UserUpdate = 2
-        events.SessionStart = 3;
-        events.SessionPrint = 4;
-        events.Resize = 5;
-        events.SessionEnd = 6; 
-        events.SessionCommand = 7;
-        events.SessionDisk = 8;
-        events.SessionNetwork = 9;
-        events.SessionData = 10;
-        events.SessionLeave = 11;
+        events.UserLogin UserLogin = 1;
+        events.UserUpdate UserUpdate = 2;
+        events.SessionStart SessionStart = 3;
+        events.SessionPrint SessionPrint = 4;
+        events.Resize Resize = 5;
+        events.SessionEnd SessionEnd = 6; 
+        events.SessionCommand SessionCommand = 7;
+        events.SessionDisk SessionDisk = 8;
+        events.SessionNetwork SessionNetwork = 9;
+        events.SessionData SessionData = 10;
+        events.SessionLeave SessionLeave = 11;
     }
 }

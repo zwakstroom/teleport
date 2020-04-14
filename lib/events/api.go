@@ -299,6 +299,16 @@ type AuditEvent interface {
 	SetCode(id string)
 }
 
+// ServerMetadataGetter represents interface
+// that provides information about it's server id
+type ServerMetadataGetter interface {
+	// GetServerID returns event server ID
+	GetServerID() string
+
+	// GetServerNamespace returns event server namespace
+	GetServerNamespace() string
+}
+
 // SetCode is a shortcut that sets code for the audit event
 func SetCode(event AuditEvent, code string) AuditEvent {
 	event.SetCode(code)
@@ -308,16 +318,16 @@ func SetCode(event AuditEvent, code string) AuditEvent {
 // Emitter creates and manages audit log streams
 type Emitter interface {
 	// Emit emtits a single audit event
-	EmitAuditEvent(AuditEvent) error
+	EmitAuditEvent(context.Context, AuditEvent) error
 }
 
 // Streamer creates and manages event streams
 type Streamer interface {
 	// CreateStream creates event stream
-	CreateStream(id string) Stream
+	CreateStream(context.Context) Stream
 	// ResumeStream resumes the stream that
 	// has not been completed yet
-	ResumeStream(id string) Stream
+	ResumeStream(ctx context.Context, streamID string) Stream
 }
 
 // Stream is a continuous stream of events
@@ -326,6 +336,13 @@ type Stream interface {
 	io.Closer
 	// Emitter alows stream to emit audit event in the context of the event stream
 	Emitter
+}
+
+// StreamEmitter supports submitting single events and streaming
+// session events
+type StreamEmitter interface {
+	Emitter
+	Streamer
 }
 
 // IAuditLog is the primary (and the only external-facing) interface for AuditLogger.
