@@ -951,16 +951,17 @@ func (process *TeleportProcess) initAuthService() error {
 			if !trace.IsNotFound(err) {
 				return trace.Wrap(err)
 			}
-		}
+		} else {
+			// FIXEVENTS: gotta be local emitter here instead at all times
+			externalEmitter, ok := externalLog.(events.Emitter)
+			if !ok {
+				// FIXEVENTS: this should be a static check,
+				// not a runtime check
+				return trace.BadParameter("expected emitter, but %T does not emit", externalLog)
+			}
 
-		externalEmitter, ok := externalLog.(events.Emitter)
-		if !ok {
-			// FIXEVENTS: this should be a static check,
-			// not a runtime check
-			return trace.BadParameter("expected emitter, but %T does not emit", externalLog)
+			emitter = externalEmitter
 		}
-
-		emitter = externalEmitter
 
 		auditServiceConfig := events.AuditLogConfig{
 			Context:        process.ExitContext(),
@@ -978,6 +979,14 @@ func (process *TeleportProcess) initAuthService() error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
+	}
+
+	checkingEmitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
+		Inner: events.NewMultiEmitter(events.NewLoggingEmitter(), emitter),
+		Clock: process.Clock,
+	})
+	if err != nil {
+		return trace.Wrap(err)
 	}
 
 	// first, create the AuthServer
@@ -1005,6 +1014,7 @@ func (process *TeleportProcess) initAuthService() error {
 		AuthPreference:       cfg.Auth.Preference,
 		OIDCConnectors:       cfg.OIDCConnectors,
 		AuditLog:             process.auditLog,
+		Emitter:              checkingEmitter,
 		CipherSuites:         cfg.CipherSuites,
 	})
 	if err != nil {
@@ -1029,11 +1039,6 @@ func (process *TeleportProcess) initAuthService() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
-
-	checkingEmitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
-		Inner: emitter,
-		Clock: process.Clock,
-	})
 
 	apiConf := &auth.APIConfig{
 		AuthServer:     authServer,
@@ -1499,6 +1504,14 @@ func (process *TeleportProcess) initSSH() error {
 			cfg.SSH.Addr = *defaults.SSHServerListenAddr()
 		}
 
+		emitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
+			Inner: conn.Client,
+			Clock: process.Clock,
+		})
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
 		s, err = regular.New(cfg.SSH.Addr,
 			cfg.Hostname,
 			[]ssh.Signer{conn.ServerIdentity.KeySigner},
@@ -1509,7 +1522,7 @@ func (process *TeleportProcess) initSSH() error {
 			regular.SetLimiter(limiter),
 			regular.SetShell(cfg.SSH.Shell),
 			regular.SetAuditLog(conn.Client),
-			regular.SetEmitter(conn.Client),
+			regular.SetEmitter(emitter),
 			regular.SetSessionServer(conn.Client),
 			regular.SetLabels(cfg.SSH.Labels, cfg.SSH.CmdLabels),
 			regular.SetNamespace(namespace),
@@ -2162,6 +2175,14 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		log.Infof("Web UI is disabled.")
 	}
 
+	emitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
+		Inner: conn.Client,
+		Clock: process.Clock,
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	// Register SSH proxy server - SSH jumphost proxy server
 	listener, err := process.importOrCreateListener(teleport.Component(teleport.ComponentProxy, "ssh"), cfg.Proxy.SSHAddr.Addr)
 	if err != nil {
@@ -2178,6 +2199,7 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		regular.SetProxyMode(tsrv),
 		regular.SetSessionServer(conn.Client),
 		regular.SetAuditLog(conn.Client),
+		regular.SetEmitter(emitter),
 		regular.SetCiphers(cfg.Ciphers),
 		regular.SetKEXAlgorithms(cfg.KEXAlgorithms),
 		regular.SetMACAlgorithms(cfg.MACAlgorithms),

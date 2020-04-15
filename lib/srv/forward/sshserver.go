@@ -124,6 +124,7 @@ type Server struct {
 
 	authClient      auth.ClientI
 	auditLog        events.IAuditLog
+	emitter         events.Emitter
 	authService     auth.AccessPoint
 	sessionRegistry *srv.SessionRegistry
 	sessionServer   session.Service
@@ -181,6 +182,9 @@ type ServerConfig struct {
 	// HostUUID is the UUID of the underlying proxy that the forwarding server
 	// is running in.
 	HostUUID string
+
+	// Emitter is audit events emitter
+	Emitter events.Emitter
 }
 
 // CheckDefaults makes sure all required parameters are passed in.
@@ -205,6 +209,9 @@ func (s *ServerConfig) CheckDefaults() error {
 	}
 	if s.HostCertificate == nil {
 		return trace.BadParameter("host certificate required to act on behalf of remote host")
+	}
+	if s.Emitter == nil {
+		return trace.BadParameter("missing parameter Emitter")
 	}
 	if s.Clock == nil {
 		s.Clock = clockwork.NewRealClock()
@@ -252,6 +259,7 @@ func New(c ServerConfig) (*Server, error) {
 		dataDir:         c.DataDir,
 		clock:           c.Clock,
 		hostUUID:        c.HostUUID,
+		emitter:         c.Emitter,
 	}
 
 	// Set the ciphers, KEX, and MACs that the in-memory server will send to the
@@ -322,16 +330,10 @@ func (s *Server) Component() string {
 	return teleport.ComponentForwardingNode
 }
 
-// EmitAuditEvent sends an event to the Audit Log.
-func (s *Server) EmitAuditEvent(event events.Event, fields events.EventFields) {
-	auditLog := s.GetAuditLog()
-	if auditLog != nil {
-		if err := auditLog.EmitAuditEventLegacy(event, fields); err != nil {
-			s.log.Error(err)
-		}
-	} else {
-		s.log.Warn("SSH server has no audit log")
-	}
+// EmitAuditEvent logs a given event to the audit log attached to the
+// server that owns these sessions
+func (s *Server) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
+	return s.emitter.EmitAuditEvent(ctx, event)
 }
 
 // PermitUserEnvironment is always false because it's up the the remote host

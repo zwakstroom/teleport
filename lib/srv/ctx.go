@@ -70,6 +70,9 @@ func init() {
 
 // Server is regular or forwarding SSH server.
 type Server interface {
+	// Emitter allows server to emit audit events
+	events.Emitter
+
 	// ID is the unique ID of the server.
 	ID() string
 
@@ -89,9 +92,6 @@ type Server interface {
 	// PermitUserEnvironment returns if reading environment variables upon
 	// startup is allowed.
 	PermitUserEnvironment() bool
-
-	// EmitAuditEvent emits an Audit Event to the Auth Server.
-	EmitAuditEvent(events.Event, events.EventFields)
 
 	// GetAuditLog returns the Audit Log for this cluster.
 	GetAuditLog() events.IAuditLog

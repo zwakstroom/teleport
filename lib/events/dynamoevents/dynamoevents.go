@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Gravitational, Inc.
+Copyright 2018-2020 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package dynamoevents
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"sort"
 	"time"
@@ -227,6 +228,7 @@ const (
 // EmitAuditEvent emits audit event
 func (l *Log) EmitAuditEvent(ctx context.Context, in events.AuditEvent) error {
 	data, err := utils.FastMarshal(in)
+	fmt.Printf("EmitAuditEvent(%v) -> %v\n\n", string(data), err)
 	if err != nil {
 		return trace.Wrap(err)
 	}

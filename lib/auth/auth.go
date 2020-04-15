@@ -89,6 +89,9 @@ func NewAuthServer(cfg *InitConfig, opts ...AuthServerOption) (*AuthServer, erro
 	if cfg.AuditLog == nil {
 		cfg.AuditLog = events.NewDiscardAuditLog()
 	}
+	if cfg.Emitter == nil {
+		cfg.Emitter = events.NewDiscardEmitter()
+	}
 
 	limiter, err := limiter.NewConnectionsLimiter(limiter.LimiterConfig{
 		MaxConnections: defaults.LimiterMaxConcurrentSignatures,
@@ -108,6 +111,7 @@ func NewAuthServer(cfg *InitConfig, opts ...AuthServerOption) (*AuthServer, erro
 		githubClients:   make(map[string]*githubClient),
 		cancelFunc:      cancelFunc,
 		closeCtx:        closeCtx,
+		emitter:         cfg.Emitter,
 		AuthServices: AuthServices{
 			Trust:                cfg.Trust,
 			Presence:             cfg.Presence,
@@ -213,6 +217,9 @@ type AuthServer struct {
 	cache AuthCache
 
 	limiter *limiter.ConnectionsLimiter
+
+	// emitter is events emitter
+	emitter events.Emitter
 }
 
 // SetCache sets cache used by auth server

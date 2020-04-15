@@ -429,13 +429,16 @@ func (a *AuthServer) UpsertUser(user services.User) error {
 	} else {
 		connectorName = user.GetCreatedBy().Connector.ID
 	}
-	a.EmitAuditEventLegacy(events.UserUpdateE, events.EventFields{
-		events.EventUser:     user.GetName(),
-		events.UserExpires:   user.Expiry(),
-		events.UserRoles:     user.GetRoles(),
-		events.UserConnector: connectorName,
+	a.emitter.EmitAuditEvent(a.closeCtx, &events.UserUpdate{
+		Metadata: events.Metadata{
+			Type: events.UserUpdatedEvent,
+			Code: events.UserUpdateCode,
+		},
+		User:      user.GetName(),
+		Expires:   user.Expiry(),
+		Roles:     user.GetRoles(),
+		Connector: connectorName,
 	})
-
 	return nil
 }
 

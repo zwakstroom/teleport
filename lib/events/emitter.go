@@ -20,10 +20,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
 	"github.com/jonboulle/clockwork"
+	log "github.com/sirupsen/logrus"
 )
 
 // CheckingEmitterConfig provides parameters for emitter
@@ -70,11 +72,13 @@ func (w *CheckingEmitterConfig) CheckAndSetDefaults() error {
 // EmitAuditEvent emits audit event
 func (r *CheckingEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
 	if err := CheckAndSetEventFields(event, r.Clock, r.UIDGenerator); err != nil {
+		log.WithError(err).Errorf("Failed to emit audit event.")
 		auditFailedEmit.Inc()
 		return trace.Wrap(err)
 	}
 	if err := r.Inner.EmitAuditEvent(ctx, event); err != nil {
 		auditFailedEmit.Inc()
+		log.WithError(err).Errorf("Failed to emit audit event.")
 		return trace.Wrap(err)
 	}
 	return nil
@@ -99,4 +103,72 @@ func CheckAndSetEventFields(event AuditEvent, clock clockwork.Clock, uid utils.U
 		event.SetTime(clock.Now().UTC().Round(time.Millisecond))
 	}
 	return nil
+}
+
+// NewDiscardEmitter returns a no-op discard emitter
+func NewDiscardEmitter() *DiscardEmitter {
+	return &DiscardEmitter{}
+}
+
+// DiscardEmitter discards all events
+type DiscardEmitter struct {
+}
+
+// EmitAuditEvent discards audit event
+func (*DiscardEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	log.Debugf("Dicarding event: %v", event)
+	return nil
+}
+
+// NewLoggingEmitter returns an emitter that logs all events to the console
+// with the info level
+func NewLoggingEmitter() *LoggingEmitter {
+	return &LoggingEmitter{}
+}
+
+// LoggingEmitter logs all events with info level
+type LoggingEmitter struct {
+}
+
+// EmitAuditEvent logs audit event
+func (*LoggingEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	data, err := utils.FastMarshal(event)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	var fields log.Fields
+	err = utils.FastUnmarshal(data, &fields)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	fields[trace.Component] = teleport.Component(teleport.ComponentAuditLog)
+
+	log.WithFields(fields).Infof(event.GetCode())
+	return nil
+}
+
+// NewMultiEmitter returns emitter that writes
+// events to all emitters
+func NewMultiEmitter(emitters ...Emitter) *MultiEmitter {
+	return &MultiEmitter{
+		emitters: emitters,
+	}
+}
+
+// MultiEmitter writes audit events to multiple emitters
+type MultiEmitter struct {
+	emitters []Emitter
+}
+
+// EmitAuditEvent emits audit event to all emitters
+func (m *MultiEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	var errors []error
+	for i := range m.emitters {
+		err := m.emitters[i].EmitAuditEvent(ctx, event)
+		if err != nil {
+			errors = append(errors, err)
+		}
+	}
+	return trace.NewAggregate(errors...)
 }

@@ -566,6 +566,7 @@ func (s *remoteSite) dialWithAgent(params DialParams) (net.Conn, error) {
 		UseTunnel:       targetConn.UseTunnel(),
 		FIPS:            s.srv.FIPS,
 		HostUUID:        s.srv.ID,
+		Emitter:         s.emitter,
 	}
 	remoteServer, err := forward.New(serverConfig)
 	if err != nil {

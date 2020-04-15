@@ -790,19 +790,9 @@ func (s *Server) serveAgent(ctx *srv.ServerContext) error {
 }
 
 // EmitAuditEvent logs a given event to the audit log attached to the
-// server who owns these sessions
-func (s *Server) EmitAuditEvent(event events.Event, fields events.EventFields) {
-	log.Debugf("server.EmitAuditEvent(%v)", event.Name)
-	alog := s.alog
-	if alog != nil {
-		// record the event time with ms precision
-		fields[events.EventTime] = s.clock.Now().In(time.UTC).Round(time.Millisecond)
-		if err := alog.EmitAuditEventLegacy(event, fields); err != nil {
-			log.Error(trace.DebugReport(err))
-		}
-	} else {
-		log.Warn("SSH server has no audit log")
-	}
+// server that owns these sessions
+func (s *Server) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
+	return s.emitter.EmitAuditEvent(ctx, event)
 }
 
 // HandleRequest processes global out-of-band requests. Global out-of-band

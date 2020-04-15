@@ -102,12 +102,15 @@ func (s *AuthServer) createOIDCClient(conn services.OIDCConnector) (*oidc.Client
 				"unknown problem with connector %v, most likely URL %q is not valid or not accessible, check configuration and try to re-create the connector",
 				conn.GetName(), conn.GetIssuerURL())
 		}
-		// !!!FIXEVENTS!!!
-		s.EmitAuditEventLegacy(events.UserSSOLoginFailureE, events.EventFields{
-			events.LoginMethod:        events.LoginMethodOIDC,
-			events.AuthAttemptSuccess: false,
-			events.AuthAttemptErr:     trace.Unwrap(ctx.Err()).Error(),
-			events.AuthAttemptMessage: err.Error(),
+		s.emitter.EmitAuditEvent(ctx, &events.UserLogin{
+			Metadata: events.Metadata{
+				Type: events.UserLoginEvent,
+				Code: events.UserSSOLoginFailureCode,
+			},
+			Method:             events.LoginMethodOIDC,
+			AuthAttemptSuccess: false,
+			AuthAttemptErr:     trace.Unwrap(ctx.Err()).Error(),
+			AuthAttemptMessage: err.Error(),
 		})
 		// return user-friendly error hiding the actual error in the event
 		// logs for security purposes
@@ -196,30 +199,40 @@ func (s *AuthServer) CreateOIDCAuthRequest(req services.OIDCAuthRequest) (*servi
 // will respond with OIDCAuthResponse, otherwise it will return error
 func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, error) {
 	re, err := a.validateOIDCAuthCallback(q)
+	event := &events.UserLogin{
+		Metadata: events.Metadata{
+			Type: events.UserLoginEvent,
+		},
+		Method: events.LoginMethodOIDC,
+	}
 	if err != nil {
-		fields := events.EventFields{
-			events.LoginMethod:        events.LoginMethodOIDC,
-			events.AuthAttemptSuccess: false,
-			// log the original internal error in audit log
-			events.AuthAttemptErr: trace.Unwrap(err).Error(),
-		}
+		event.Code = events.UserSSOLoginFailureCode
+		event.AuthAttemptSuccess = false
+		event.AuthAttemptErr = trace.Unwrap(err).Error()
+		event.AuthAttemptMessage = err.Error()
 		if re != nil && re.claims != nil {
-			fields[events.IdentityAttributes] = re.claims
+			attributes, err := events.EncodeMap(re.claims)
+			if err != nil {
+				log.WithError(err).Debugf("Failed to encode identity attributes.")
+			} else {
+				event.IdentityAttributes = attributes
+			}
 		}
-		// !!!FIXEVENTS!!!
-		a.EmitAuditEventLegacy(events.UserSSOLoginFailureE, fields)
+		a.emitter.EmitAuditEvent(a.closeCtx, event)
 		return nil, trace.Wrap(err)
 	}
-	fields := events.EventFields{
-		events.EventUser:          re.auth.Username,
-		events.AuthAttemptSuccess: true,
-		events.LoginMethod:        events.LoginMethodOIDC,
-	}
+	event.Code = events.UserSSOLoginCode
+	event.User = re.auth.Username
+	event.AuthAttemptSuccess = true
 	if re.claims != nil {
-		fields[events.IdentityAttributes] = re.claims
+		attributes, err := events.EncodeMap(re.claims)
+		if err != nil {
+			log.WithError(err).Debugf("Failed to encode identity attributes.")
+		} else {
+			event.IdentityAttributes = attributes
+		}
 	}
-	// !!!FIXEVENTS!!!
-	a.EmitAuditEventLegacy(events.UserSSOLoginE, fields)
+	a.emitter.EmitAuditEvent(a.closeCtx, event)
 	return &re.auth, nil
 }
 

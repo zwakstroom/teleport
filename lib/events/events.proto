@@ -148,7 +148,7 @@ message SessionEnd {
     bool Interactive = 6 [(gogoproto.jsontag) = "interactive"];
 
 	// Participants is a list of participants in the session.
-	repeated string Participants = 7 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "participants"];
+	repeated string Participants = 7 [(gogoproto.jsontag) = "participants"];
 }
 
 // BPFMetadata is a common BPF process metadata
@@ -295,11 +295,14 @@ message UserLogin {
     // AuthAttemptErr includes error message for the failed attempt
     string AuthAttemptErr = 4 [(gogoproto.jsontag) = "error,omitempty"];
 
+    // AuthAttemptMessage is a user-friendly message for successfull or unsuccessfull auth attempt
+    string AuthAttemptMessage = 5 [(gogoproto.jsontag) = "message,omitempty"];
+
 	// User is teleport user name
-	string User = 5 [(gogoproto.jsontag) = "user"];
+	string User = 6 [(gogoproto.jsontag) = "user"];
 
     // IdentityAttributes is a map of user attributes received from identity provider
-	google.protobuf.Struct IdentityAttributes = 6 [(gogoproto.jsontag) = "attributes,omitempty", (gogoproto.casttype) = "Struct"];
+	google.protobuf.Struct IdentityAttributes = 7 [(gogoproto.jsontag) = "attributes,omitempty", (gogoproto.casttype) = "Struct"];
 }
 
 // UserUpdate is emitted when the user is created or updated (upsert).
