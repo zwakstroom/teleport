@@ -284,6 +284,7 @@ func New(c ServerConfig) (*Server, error) {
 		AuditLog:    c.AuthClient,
 		AccessPoint: c.AuthClient,
 		FIPS:        c.FIPS,
+		Emitter:     c.Emitter,
 	}
 
 	// Common term handlers.
@@ -296,6 +297,11 @@ func New(c ServerConfig) (*Server, error) {
 	s.closeContext, s.closeCancel = context.WithCancel(context.Background())
 
 	return s, nil
+}
+
+// Context returns server shutdown context
+func (s *Server) Context() context.Context {
+	return s.closeContext
 }
 
 // GetDataDir returns server local storage
@@ -679,15 +685,23 @@ func (s *Server) handleDirectTCPIPRequest(ch ssh.Channel, req *sshutils.DirectTC
 	}
 	defer conn.Close()
 
-	// Emit a port forwarding audit event.
-	// !!!FIXEVENTS!!!
-	s.EmitAuditEvent(events.PortForwardE, events.EventFields{
-		events.PortForwardAddr:    ctx.DstAddr,
-		events.PortForwardSuccess: true,
-		events.EventLogin:         s.identityContext.Login,
-		events.EventUser:          s.identityContext.TeleportUser,
-		events.LocalAddr:          s.sconn.LocalAddr().String(),
-		events.RemoteAddr:         s.sconn.RemoteAddr().String(),
+	s.EmitAuditEvent(s.closeContext, &events.PortForward{
+		Metadata: events.Metadata{
+			Type: events.PortForwardEvent,
+			Code: events.PortForwardCode,
+		},
+		UserMetadata: events.UserMetadata{
+			Login: s.identityContext.Login,
+			User:  s.identityContext.TeleportUser,
+		},
+		ConnectionMetadata: events.ConnectionMetadata{
+			LocalAddr:  s.sconn.LocalAddr().String(),
+			RemoteAddr: s.sconn.RemoteAddr().String(),
+		},
+		Addr: ctx.DstAddr,
+		Status: events.Status{
+			Success: true,
+		},
 	})
 
 	wg := &sync.WaitGroup{}

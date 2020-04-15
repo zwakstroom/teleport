@@ -49,7 +49,7 @@ func (m *Metadata) Reset()         { *m = Metadata{} }
 func (m *Metadata) String() string { return proto.CompactTextString(m) }
 func (*Metadata) ProtoMessage()    {}
 func (*Metadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{0}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{0}
 }
 func (m *Metadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -81,11 +81,7 @@ var xxx_messageInfo_Metadata proto.InternalMessageInfo
 // SesssionMetadata is a common session event metadata
 type SessionMetadata struct {
 	// SessionID is a unique UUID of the session.
-	SessionID string `protobuf:"bytes,1,opt,name=SessionID,proto3" json:"sid"`
-	// Login is OS login
-	Login string `protobuf:"bytes,2,opt,name=Login,proto3" json:"login,omitempty"`
-	// User is teleport user name
-	User                 string   `protobuf:"bytes,3,opt,name=User,proto3" json:"user"`
+	SessionID            string   `protobuf:"bytes,1,opt,name=SessionID,proto3" json:"sid"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -95,7 +91,7 @@ func (m *SessionMetadata) Reset()         { *m = SessionMetadata{} }
 func (m *SessionMetadata) String() string { return proto.CompactTextString(m) }
 func (*SessionMetadata) ProtoMessage()    {}
 func (*SessionMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{1}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{1}
 }
 func (m *SessionMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -124,6 +120,50 @@ func (m *SessionMetadata) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_SessionMetadata proto.InternalMessageInfo
 
+// UserMetadata is a common user event metadata
+type UserMetadata struct {
+	// User is teleport user name
+	User string `protobuf:"bytes,1,opt,name=User,proto3" json:"user"`
+	// Login is OS login
+	Login                string   `protobuf:"bytes,2,opt,name=Login,proto3" json:"login,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UserMetadata) Reset()         { *m = UserMetadata{} }
+func (m *UserMetadata) String() string { return proto.CompactTextString(m) }
+func (*UserMetadata) ProtoMessage()    {}
+func (*UserMetadata) Descriptor() ([]byte, []int) {
+	return fileDescriptor_events_6bc6f8354f26a916, []int{2}
+}
+func (m *UserMetadata) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UserMetadata) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UserMetadata.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *UserMetadata) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserMetadata.Merge(dst, src)
+}
+func (m *UserMetadata) XXX_Size() int {
+	return m.Size()
+}
+func (m *UserMetadata) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserMetadata.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UserMetadata proto.InternalMessageInfo
+
 // Server is a server information
 type ServerMetadata struct {
 	// ServerNamespace is a namespace of the server event
@@ -144,7 +184,7 @@ func (m *ServerMetadata) Reset()         { *m = ServerMetadata{} }
 func (m *ServerMetadata) String() string { return proto.CompactTextString(m) }
 func (*ServerMetadata) ProtoMessage()    {}
 func (*ServerMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{2}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{3}
 }
 func (m *ServerMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -188,7 +228,7 @@ func (m *ConnectionMetadata) Reset()         { *m = ConnectionMetadata{} }
 func (m *ConnectionMetadata) String() string { return proto.CompactTextString(m) }
 func (*ConnectionMetadata) ProtoMessage()    {}
 func (*ConnectionMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{3}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{4}
 }
 func (m *ConnectionMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -221,14 +261,16 @@ var xxx_messageInfo_ConnectionMetadata proto.InternalMessageInfo
 type SessionStart struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,3,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
 	// ConnectionMetadata holds information about the connection
-	ConnectionMetadata `protobuf:"bytes,4,opt,name=Connection,embedded=Connection" json:""`
+	ConnectionMetadata `protobuf:"bytes,5,opt,name=Connection,embedded=Connection" json:""`
 	// TerminalSize is expressed as 'W:H'
-	TerminalSize         string   `protobuf:"bytes,5,opt,name=TerminalSize,proto3" json:"size,omitempty"`
+	TerminalSize         string   `protobuf:"bytes,6,opt,name=TerminalSize,proto3" json:"size,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -238,7 +280,7 @@ func (m *SessionStart) Reset()         { *m = SessionStart{} }
 func (m *SessionStart) String() string { return proto.CompactTextString(m) }
 func (*SessionStart) ProtoMessage()    {}
 func (*SessionStart) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{4}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{5}
 }
 func (m *SessionStart) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -292,7 +334,7 @@ func (m *SessionPrint) Reset()         { *m = SessionPrint{} }
 func (m *SessionPrint) String() string { return proto.CompactTextString(m) }
 func (*SessionPrint) ProtoMessage()    {}
 func (*SessionPrint) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{5}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{6}
 }
 func (m *SessionPrint) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -325,14 +367,16 @@ var xxx_messageInfo_SessionPrint proto.InternalMessageInfo
 type Resize struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ConnectionMetadata holds information about the connection
-	ConnectionMetadata `protobuf:"bytes,3,opt,name=Connection,embedded=Connection" json:""`
+	ConnectionMetadata `protobuf:"bytes,4,opt,name=Connection,embedded=Connection" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,5,opt,name=Server,embedded=Server" json:""`
 	// TerminalSize is expressed as 'W:H'
-	TerminalSize         string   `protobuf:"bytes,5,opt,name=TerminalSize,proto3" json:"size,omitempty"`
+	TerminalSize         string   `protobuf:"bytes,6,opt,name=TerminalSize,proto3" json:"size,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -342,7 +386,7 @@ func (m *Resize) Reset()         { *m = Resize{} }
 func (m *Resize) String() string { return proto.CompactTextString(m) }
 func (*Resize) ProtoMessage()    {}
 func (*Resize) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{6}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{7}
 }
 func (m *Resize) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -375,20 +419,22 @@ var xxx_messageInfo_Resize proto.InternalMessageInfo
 type SessionEnd struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ConnectionMetadata holds information about the connection
-	ConnectionMetadata `protobuf:"bytes,3,opt,name=Connection,embedded=Connection" json:""`
+	ConnectionMetadata `protobuf:"bytes,4,opt,name=Connection,embedded=Connection" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,5,opt,name=Server,embedded=Server" json:""`
 	// EnhancedRecording is used to indicate if the recording was an
 	// enhanced recording or not.
-	EnhancedRecording bool `protobuf:"varint,5,opt,name=EnhancedRecording,proto3" json:"enhanced_recording"`
+	EnhancedRecording bool `protobuf:"varint,6,opt,name=EnhancedRecording,proto3" json:"enhanced_recording"`
 	// Interactive is used to indicate if the session was interactive
 	// (has PTY attached) or not (exec session).
-	Interactive bool `protobuf:"varint,6,opt,name=Interactive,proto3" json:"interactive"`
+	Interactive bool `protobuf:"varint,7,opt,name=Interactive,proto3" json:"interactive"`
 	// Participants is a list of participants in the session.
-	Participants         []string `protobuf:"bytes,7,rep,name=Participants" json:"participants"`
+	Participants         []string `protobuf:"bytes,8,rep,name=Participants" json:"participants"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -398,7 +444,7 @@ func (m *SessionEnd) Reset()         { *m = SessionEnd{} }
 func (m *SessionEnd) String() string { return proto.CompactTextString(m) }
 func (*SessionEnd) ProtoMessage()    {}
 func (*SessionEnd) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{7}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{8}
 }
 func (m *SessionEnd) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -444,7 +490,7 @@ func (m *BPFMetadata) Reset()         { *m = BPFMetadata{} }
 func (m *BPFMetadata) String() string { return proto.CompactTextString(m) }
 func (*BPFMetadata) ProtoMessage()    {}
 func (*BPFMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{8}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{9}
 }
 func (m *BPFMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -473,25 +519,73 @@ func (m *BPFMetadata) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_BPFMetadata proto.InternalMessageInfo
 
+// Status contains common command or operation status fields
+type Status struct {
+	// Success indicates the success or failure of the operation
+	Success bool `protobuf:"varint,1,opt,name=Success,proto3" json:"success"`
+	// Error includes system error message for the failed attempt
+	Error string `protobuf:"bytes,2,opt,name=Error,proto3" json:"error,omitempty"`
+	// UserMessage is a user-friendly message for successfull or unsuccessfull auth attempt
+	UserMessage          string   `protobuf:"bytes,3,opt,name=UserMessage,proto3" json:"message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Status) Reset()         { *m = Status{} }
+func (m *Status) String() string { return proto.CompactTextString(m) }
+func (*Status) ProtoMessage()    {}
+func (*Status) Descriptor() ([]byte, []int) {
+	return fileDescriptor_events_6bc6f8354f26a916, []int{10}
+}
+func (m *Status) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Status) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Status.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *Status) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Status.Merge(dst, src)
+}
+func (m *Status) XXX_Size() int {
+	return m.Size()
+}
+func (m *Status) XXX_DiscardUnknown() {
+	xxx_messageInfo_Status.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Status proto.InternalMessageInfo
+
 // SessionCommand is a session command event
 type SessionCommand struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,3,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
 	// BPFMetadata is a common BPF subsystem metadata
-	BPFMetadata `protobuf:"bytes,4,opt,name=BPF,embedded=BPF" json:""`
+	BPFMetadata `protobuf:"bytes,5,opt,name=BPF,embedded=BPF" json:""`
 	// PPID is the PID of the parent process.
-	PPID int32 `protobuf:"varint,5,opt,name=PPID,proto3" json:"ppid"`
+	PPID int32 `protobuf:"varint,6,opt,name=PPID,proto3" json:"ppid"`
 	// Path is the full path to the executable.
-	Path string `protobuf:"bytes,6,opt,name=Path,proto3" json:"path"`
+	Path string `protobuf:"bytes,7,opt,name=Path,proto3" json:"path"`
 	// Argv is the list of arguments to the program. Note, the first element does
 	// not contain the name of the process.
-	Argv []string `protobuf:"bytes,7,rep,name=Argv" json:"argv"`
+	Argv []string `protobuf:"bytes,8,rep,name=Argv" json:"argv"`
 	// ReturnCode is the return code of execve.
-	ReturnCode           int32    `protobuf:"varint,8,opt,name=ReturnCode,proto3" json:"return_code"`
+	ReturnCode           int32    `protobuf:"varint,9,opt,name=ReturnCode,proto3" json:"return_code"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -501,7 +595,7 @@ func (m *SessionCommand) Reset()         { *m = SessionCommand{} }
 func (m *SessionCommand) String() string { return proto.CompactTextString(m) }
 func (*SessionCommand) ProtoMessage()    {}
 func (*SessionCommand) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{9}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{11}
 }
 func (m *SessionCommand) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -534,18 +628,20 @@ var xxx_messageInfo_SessionCommand proto.InternalMessageInfo
 type SessionDisk struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,3,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
 	// BPFMetadata is a common BPF subsystem metadata
-	BPFMetadata `protobuf:"bytes,4,opt,name=BPF,embedded=BPF" json:""`
+	BPFMetadata `protobuf:"bytes,5,opt,name=BPF,embedded=BPF" json:""`
 	// Path is the full path to the executable.
-	Path string `protobuf:"bytes,5,opt,name=Path,proto3" json:"path"`
+	Path string `protobuf:"bytes,6,opt,name=Path,proto3" json:"path"`
 	// Flags are the flags passed to open.
-	Flags int32 `protobuf:"varint,6,opt,name=Flags,proto3" json:"flags"`
+	Flags int32 `protobuf:"varint,7,opt,name=Flags,proto3" json:"flags"`
 	// ReturnCode is the return code of disk open
-	ReturnCode           int32    `protobuf:"varint,7,opt,name=ReturnCode,proto3" json:"return_code"`
+	ReturnCode           int32    `protobuf:"varint,8,opt,name=ReturnCode,proto3" json:"return_code"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -555,7 +651,7 @@ func (m *SessionDisk) Reset()         { *m = SessionDisk{} }
 func (m *SessionDisk) String() string { return proto.CompactTextString(m) }
 func (*SessionDisk) ProtoMessage()    {}
 func (*SessionDisk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{10}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{12}
 }
 func (m *SessionDisk) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -588,20 +684,22 @@ var xxx_messageInfo_SessionDisk proto.InternalMessageInfo
 type SessionNetwork struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,3,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
 	// BPFMetadata is a common BPF subsystem metadata
-	BPFMetadata `protobuf:"bytes,4,opt,name=BPF,embedded=BPF" json:""`
+	BPFMetadata `protobuf:"bytes,5,opt,name=BPF,embedded=BPF" json:""`
 	// SrcAddr is the source IP address of the connection.
-	SrcAddr string `protobuf:"bytes,5,opt,name=SrcAddr,proto3" json:"src_addr"`
+	SrcAddr string `protobuf:"bytes,6,opt,name=SrcAddr,proto3" json:"src_addr"`
 	// DstAddr is the destination IP address of the connection.
-	DstAddr string `protobuf:"bytes,6,opt,name=DstAddr,proto3" json:"dst_addr"`
+	DstAddr string `protobuf:"bytes,7,opt,name=DstAddr,proto3" json:"dst_addr"`
 	// DstPort is the destination port of the connection.
-	DstPort int32 `protobuf:"varint,7,opt,name=DstPort,proto3" json:"dst_port"`
+	DstPort int32 `protobuf:"varint,8,opt,name=DstPort,proto3" json:"dst_port"`
 	// TCPVersion is the version of TCP (4 or 6).
-	TCPVersion           int32    `protobuf:"varint,8,opt,name=TCPVersion,proto3" json:"version"`
+	TCPVersion           int32    `protobuf:"varint,9,opt,name=TCPVersion,proto3" json:"version"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -611,7 +709,7 @@ func (m *SessionNetwork) Reset()         { *m = SessionNetwork{} }
 func (m *SessionNetwork) String() string { return proto.CompactTextString(m) }
 func (*SessionNetwork) ProtoMessage()    {}
 func (*SessionNetwork) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{11}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{13}
 }
 func (m *SessionNetwork) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -644,16 +742,18 @@ var xxx_messageInfo_SessionNetwork proto.InternalMessageInfo
 type SessionData struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,3,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
 	// ConnectionMetadata holds information about the connection
-	ConnectionMetadata `protobuf:"bytes,4,opt,name=Connection,embedded=Connection" json:""`
+	ConnectionMetadata `protobuf:"bytes,5,opt,name=Connection,embedded=Connection" json:""`
 	// BytesTransmitted is the amount of bytes transmitted
-	BytesTransmitted int64 `protobuf:"varint,5,opt,name=BytesTransmitted,proto3" json:"tx"`
+	BytesTransmitted int64 `protobuf:"varint,6,opt,name=BytesTransmitted,proto3" json:"tx"`
 	// BytesReceived is the amount of bytes received
-	BytesReceived        int64    `protobuf:"varint,6,opt,name=BytesReceived,proto3" json:"rx"`
+	BytesReceived        int64    `protobuf:"varint,7,opt,name=BytesReceived,proto3" json:"rx"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -663,7 +763,7 @@ func (m *SessionData) Reset()         { *m = SessionData{} }
 func (m *SessionData) String() string { return proto.CompactTextString(m) }
 func (*SessionData) ProtoMessage()    {}
 func (*SessionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{12}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{14}
 }
 func (m *SessionData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -696,12 +796,14 @@ var xxx_messageInfo_SessionData proto.InternalMessageInfo
 type SessionLeave struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// SessionMetadata is a common event metadata
-	SessionMetadata `protobuf:"bytes,2,opt,name=Session,embedded=Session" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
 	// ServerMetadata is a common server metadata
-	ServerMetadata `protobuf:"bytes,3,opt,name=Server,embedded=Server" json:""`
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
 	// ConnectionMetadata holds information about the connection
-	ConnectionMetadata   `protobuf:"bytes,4,opt,name=Connection,embedded=Connection" json:""`
+	ConnectionMetadata   `protobuf:"bytes,5,opt,name=Connection,embedded=Connection" json:""`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -711,7 +813,7 @@ func (m *SessionLeave) Reset()         { *m = SessionLeave{} }
 func (m *SessionLeave) String() string { return proto.CompactTextString(m) }
 func (*SessionLeave) ProtoMessage()    {}
 func (*SessionLeave) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{13}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{15}
 }
 func (m *SessionLeave) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -744,18 +846,14 @@ var xxx_messageInfo_SessionLeave proto.InternalMessageInfo
 type UserLogin struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// Status contains common command or operation status fields
+	Status `protobuf:"bytes,3,opt,name=Status,embedded=Status" json:""`
 	// Method is the event field indicating how the login was performed
-	Method string `protobuf:"bytes,2,opt,name=Method,proto3" json:"method,omitempty"`
-	// AuthAttemptSuccess indicates whether auth attempt was successfull
-	AuthAttemptSuccess bool `protobuf:"varint,3,opt,name=AuthAttemptSuccess,proto3" json:"success"`
-	// AuthAttemptErr includes error message for the failed attempt
-	AuthAttemptErr string `protobuf:"bytes,4,opt,name=AuthAttemptErr,proto3" json:"error,omitempty"`
-	// AuthAttemptMessage is a user-friendly message for successfull or unsuccessfull auth attempt
-	AuthAttemptMessage string `protobuf:"bytes,5,opt,name=AuthAttemptMessage,proto3" json:"message,omitempty"`
-	// User is teleport user name
-	User string `protobuf:"bytes,6,opt,name=User,proto3" json:"user"`
+	Method string `protobuf:"bytes,4,opt,name=Method,proto3" json:"method,omitempty"`
 	// IdentityAttributes is a map of user attributes received from identity provider
-	IdentityAttributes   *Struct  `protobuf:"bytes,7,opt,name=IdentityAttributes,casttype=Struct" json:"attributes,omitempty"`
+	IdentityAttributes   *Struct  `protobuf:"bytes,5,opt,name=IdentityAttributes,casttype=Struct" json:"attributes,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -765,7 +863,7 @@ func (m *UserLogin) Reset()         { *m = UserLogin{} }
 func (m *UserLogin) String() string { return proto.CompactTextString(m) }
 func (*UserLogin) ProtoMessage()    {}
 func (*UserLogin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{14}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{16}
 }
 func (m *UserLogin) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -798,8 +896,8 @@ var xxx_messageInfo_UserLogin proto.InternalMessageInfo
 type UserUpdate struct {
 	// Metadata is a common event metadata
 	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
-	// User is teleport user name
-	User string `protobuf:"bytes,2,opt,name=User,proto3" json:"user"`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
 	// Roles is a list of roles for the user.
 	Roles []string `protobuf:"bytes,3,rep,name=Roles" json:"roles"`
 	// Connector is the connector used to create the user.
@@ -815,7 +913,7 @@ func (m *UserUpdate) Reset()         { *m = UserUpdate{} }
 func (m *UserUpdate) String() string { return proto.CompactTextString(m) }
 func (*UserUpdate) ProtoMessage()    {}
 func (*UserUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{15}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{17}
 }
 func (m *UserUpdate) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -844,6 +942,156 @@ func (m *UserUpdate) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_UserUpdate proto.InternalMessageInfo
 
+// PortForward is emitted when a user requests port forwarding.
+type PortForward struct {
+	// Metadata is a common event metadata
+	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// ConnectionMetadata holds information about the connection
+	ConnectionMetadata `protobuf:"bytes,3,opt,name=Connection,embedded=Connection" json:""`
+	// Status contains operation success or failure status
+	Status `protobuf:"bytes,4,opt,name=Status,embedded=Status" json:""`
+	// Addr is a target port forwarding address
+	Addr                 string   `protobuf:"bytes,5,opt,name=Addr,proto3" json:"addr"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *PortForward) Reset()         { *m = PortForward{} }
+func (m *PortForward) String() string { return proto.CompactTextString(m) }
+func (*PortForward) ProtoMessage()    {}
+func (*PortForward) Descriptor() ([]byte, []int) {
+	return fileDescriptor_events_6bc6f8354f26a916, []int{18}
+}
+func (m *PortForward) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *PortForward) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PortForward.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *PortForward) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PortForward.Merge(dst, src)
+}
+func (m *PortForward) XXX_Size() int {
+	return m.Size()
+}
+func (m *PortForward) XXX_DiscardUnknown() {
+	xxx_messageInfo_PortForward.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PortForward proto.InternalMessageInfo
+
+// Subsystem is emitted when a user requests a new subsystem.
+type Subsystem struct {
+	// Metadata is a common event metadata
+	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// ConnectionMetadata holds information about the connection
+	ConnectionMetadata `protobuf:"bytes,3,opt,name=Connection,embedded=Connection" json:""`
+	// Name is a subsystem name
+	Name string `protobuf:"bytes,4,opt,name=Name,proto3" json:"name"`
+	// Error contains error in case of unsucessfull attempt
+	Error                string   `protobuf:"bytes,5,opt,name=Error,proto3" json:"exitError"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Subsystem) Reset()         { *m = Subsystem{} }
+func (m *Subsystem) String() string { return proto.CompactTextString(m) }
+func (*Subsystem) ProtoMessage()    {}
+func (*Subsystem) Descriptor() ([]byte, []int) {
+	return fileDescriptor_events_6bc6f8354f26a916, []int{19}
+}
+func (m *Subsystem) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Subsystem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Subsystem.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *Subsystem) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Subsystem.Merge(dst, src)
+}
+func (m *Subsystem) XXX_Size() int {
+	return m.Size()
+}
+func (m *Subsystem) XXX_DiscardUnknown() {
+	xxx_messageInfo_Subsystem.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Subsystem proto.InternalMessageInfo
+
+// ClientDisconnect is emitted when client is disconnected
+// by the server due to inactivity or any other reason
+type ClientDisconnect struct {
+	// Metadata is a common event metadata
+	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// ConnectionMetadata holds information about the connection
+	ConnectionMetadata `protobuf:"bytes,3,opt,name=Connection,embedded=Connection" json:""`
+	// Reason is a field that specifies reason for event, e.g. in disconnect
+	// event it explains why server disconnected the client
+	Reason               string   `protobuf:"bytes,4,opt,name=Reason,proto3" json:"reason"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ClientDisconnect) Reset()         { *m = ClientDisconnect{} }
+func (m *ClientDisconnect) String() string { return proto.CompactTextString(m) }
+func (*ClientDisconnect) ProtoMessage()    {}
+func (*ClientDisconnect) Descriptor() ([]byte, []int) {
+	return fileDescriptor_events_6bc6f8354f26a916, []int{20}
+}
+func (m *ClientDisconnect) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ClientDisconnect) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ClientDisconnect.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *ClientDisconnect) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ClientDisconnect.Merge(dst, src)
+}
+func (m *ClientDisconnect) XXX_Size() int {
+	return m.Size()
+}
+func (m *ClientDisconnect) XXX_DiscardUnknown() {
+	xxx_messageInfo_ClientDisconnect.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ClientDisconnect proto.InternalMessageInfo
+
 // AuditEventRequest is one of audit events submitted to the auth service
 type AuditEventRequest struct {
 	// Event is one of the audit events
@@ -860,6 +1108,9 @@ type AuditEventRequest struct {
 	//	*AuditEventRequest_SessionNetwork
 	//	*AuditEventRequest_SessionData
 	//	*AuditEventRequest_SessionLeave
+	//	*AuditEventRequest_PortForward
+	//	*AuditEventRequest_Subsystem
+	//	*AuditEventRequest_ClientDisconnect
 	Event                isAuditEventRequest_Event `protobuf_oneof:"Event"`
 	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
 	XXX_unrecognized     []byte                    `json:"-"`
@@ -870,7 +1121,7 @@ func (m *AuditEventRequest) Reset()         { *m = AuditEventRequest{} }
 func (m *AuditEventRequest) String() string { return proto.CompactTextString(m) }
 func (*AuditEventRequest) ProtoMessage()    {}
 func (*AuditEventRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_e4b93bfdc636b99b, []int{16}
+	return fileDescriptor_events_6bc6f8354f26a916, []int{21}
 }
 func (m *AuditEventRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -938,18 +1189,30 @@ type AuditEventRequest_SessionData struct {
 type AuditEventRequest_SessionLeave struct {
 	SessionLeave *SessionLeave `protobuf:"bytes,11,opt,name=SessionLeave,oneof"`
 }
+type AuditEventRequest_PortForward struct {
+	PortForward *PortForward `protobuf:"bytes,12,opt,name=PortForward,oneof"`
+}
+type AuditEventRequest_Subsystem struct {
+	Subsystem *Subsystem `protobuf:"bytes,13,opt,name=Subsystem,oneof"`
+}
+type AuditEventRequest_ClientDisconnect struct {
+	ClientDisconnect *ClientDisconnect `protobuf:"bytes,14,opt,name=ClientDisconnect,oneof"`
+}
 
-func (*AuditEventRequest_UserLogin) isAuditEventRequest_Event()      {}
-func (*AuditEventRequest_UserUpdate) isAuditEventRequest_Event()     {}
-func (*AuditEventRequest_SessionStart) isAuditEventRequest_Event()   {}
-func (*AuditEventRequest_SessionPrint) isAuditEventRequest_Event()   {}
-func (*AuditEventRequest_Resize) isAuditEventRequest_Event()         {}
-func (*AuditEventRequest_SessionEnd) isAuditEventRequest_Event()     {}
-func (*AuditEventRequest_SessionCommand) isAuditEventRequest_Event() {}
-func (*AuditEventRequest_SessionDisk) isAuditEventRequest_Event()    {}
-func (*AuditEventRequest_SessionNetwork) isAuditEventRequest_Event() {}
-func (*AuditEventRequest_SessionData) isAuditEventRequest_Event()    {}
-func (*AuditEventRequest_SessionLeave) isAuditEventRequest_Event()   {}
+func (*AuditEventRequest_UserLogin) isAuditEventRequest_Event()        {}
+func (*AuditEventRequest_UserUpdate) isAuditEventRequest_Event()       {}
+func (*AuditEventRequest_SessionStart) isAuditEventRequest_Event()     {}
+func (*AuditEventRequest_SessionPrint) isAuditEventRequest_Event()     {}
+func (*AuditEventRequest_Resize) isAuditEventRequest_Event()           {}
+func (*AuditEventRequest_SessionEnd) isAuditEventRequest_Event()       {}
+func (*AuditEventRequest_SessionCommand) isAuditEventRequest_Event()   {}
+func (*AuditEventRequest_SessionDisk) isAuditEventRequest_Event()      {}
+func (*AuditEventRequest_SessionNetwork) isAuditEventRequest_Event()   {}
+func (*AuditEventRequest_SessionData) isAuditEventRequest_Event()      {}
+func (*AuditEventRequest_SessionLeave) isAuditEventRequest_Event()     {}
+func (*AuditEventRequest_PortForward) isAuditEventRequest_Event()      {}
+func (*AuditEventRequest_Subsystem) isAuditEventRequest_Event()        {}
+func (*AuditEventRequest_ClientDisconnect) isAuditEventRequest_Event() {}
 
 func (m *AuditEventRequest) GetEvent() isAuditEventRequest_Event {
 	if m != nil {
@@ -1035,6 +1298,27 @@ func (m *AuditEventRequest) GetSessionLeave() *SessionLeave {
 	return nil
 }
 
+func (m *AuditEventRequest) GetPortForward() *PortForward {
+	if x, ok := m.GetEvent().(*AuditEventRequest_PortForward); ok {
+		return x.PortForward
+	}
+	return nil
+}
+
+func (m *AuditEventRequest) GetSubsystem() *Subsystem {
+	if x, ok := m.GetEvent().(*AuditEventRequest_Subsystem); ok {
+		return x.Subsystem
+	}
+	return nil
+}
+
+func (m *AuditEventRequest) GetClientDisconnect() *ClientDisconnect {
+	if x, ok := m.GetEvent().(*AuditEventRequest_ClientDisconnect); ok {
+		return x.ClientDisconnect
+	}
+	return nil
+}
+
 // XXX_OneofFuncs is for the internal use of the proto package.
 func (*AuditEventRequest) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
 	return _AuditEventRequest_OneofMarshaler, _AuditEventRequest_OneofUnmarshaler, _AuditEventRequest_OneofSizer, []interface{}{
@@ -1049,6 +1333,9 @@ func (*AuditEventRequest) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buf
 		(*AuditEventRequest_SessionNetwork)(nil),
 		(*AuditEventRequest_SessionData)(nil),
 		(*AuditEventRequest_SessionLeave)(nil),
+		(*AuditEventRequest_PortForward)(nil),
+		(*AuditEventRequest_Subsystem)(nil),
+		(*AuditEventRequest_ClientDisconnect)(nil),
 	}
 }
 
@@ -1109,6 +1396,21 @@ func _AuditEventRequest_OneofMarshaler(msg proto.Message, b *proto.Buffer) error
 	case *AuditEventRequest_SessionLeave:
 		_ = b.EncodeVarint(11<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionLeave); err != nil {
+			return err
+		}
+	case *AuditEventRequest_PortForward:
+		_ = b.EncodeVarint(12<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.PortForward); err != nil {
+			return err
+		}
+	case *AuditEventRequest_Subsystem:
+		_ = b.EncodeVarint(13<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Subsystem); err != nil {
+			return err
+		}
+	case *AuditEventRequest_ClientDisconnect:
+		_ = b.EncodeVarint(14<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.ClientDisconnect); err != nil {
 			return err
 		}
 	case nil:
@@ -1209,6 +1511,30 @@ func _AuditEventRequest_OneofUnmarshaler(msg proto.Message, tag, wire int, b *pr
 		err := b.DecodeMessage(msg)
 		m.Event = &AuditEventRequest_SessionLeave{msg}
 		return true, err
+	case 12: // Event.PortForward
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(PortForward)
+		err := b.DecodeMessage(msg)
+		m.Event = &AuditEventRequest_PortForward{msg}
+		return true, err
+	case 13: // Event.Subsystem
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(Subsystem)
+		err := b.DecodeMessage(msg)
+		m.Event = &AuditEventRequest_Subsystem{msg}
+		return true, err
+	case 14: // Event.ClientDisconnect
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(ClientDisconnect)
+		err := b.DecodeMessage(msg)
+		m.Event = &AuditEventRequest_ClientDisconnect{msg}
+		return true, err
 	default:
 		return false, nil
 	}
@@ -1273,6 +1599,21 @@ func _AuditEventRequest_OneofSizer(msg proto.Message) (n int) {
 		n += 1 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
+	case *AuditEventRequest_PortForward:
+		s := proto.Size(x.PortForward)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *AuditEventRequest_Subsystem:
+		s := proto.Size(x.Subsystem)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *AuditEventRequest_ClientDisconnect:
+		s := proto.Size(x.ClientDisconnect)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
 	case nil:
 	default:
 		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
@@ -1283,6 +1624,7 @@ func _AuditEventRequest_OneofSizer(msg proto.Message) (n int) {
 func init() {
 	proto.RegisterType((*Metadata)(nil), "events.Metadata")
 	proto.RegisterType((*SessionMetadata)(nil), "events.SessionMetadata")
+	proto.RegisterType((*UserMetadata)(nil), "events.UserMetadata")
 	proto.RegisterType((*ServerMetadata)(nil), "events.ServerMetadata")
 	proto.RegisterMapType((map[string]string)(nil), "events.ServerMetadata.ServerLabelsEntry")
 	proto.RegisterType((*ConnectionMetadata)(nil), "events.ConnectionMetadata")
@@ -1291,6 +1633,7 @@ func init() {
 	proto.RegisterType((*Resize)(nil), "events.Resize")
 	proto.RegisterType((*SessionEnd)(nil), "events.SessionEnd")
 	proto.RegisterType((*BPFMetadata)(nil), "events.BPFMetadata")
+	proto.RegisterType((*Status)(nil), "events.Status")
 	proto.RegisterType((*SessionCommand)(nil), "events.SessionCommand")
 	proto.RegisterType((*SessionDisk)(nil), "events.SessionDisk")
 	proto.RegisterType((*SessionNetwork)(nil), "events.SessionNetwork")
@@ -1298,6 +1641,9 @@ func init() {
 	proto.RegisterType((*SessionLeave)(nil), "events.SessionLeave")
 	proto.RegisterType((*UserLogin)(nil), "events.UserLogin")
 	proto.RegisterType((*UserUpdate)(nil), "events.UserUpdate")
+	proto.RegisterType((*PortForward)(nil), "events.PortForward")
+	proto.RegisterType((*Subsystem)(nil), "events.Subsystem")
+	proto.RegisterType((*ClientDisconnect)(nil), "events.ClientDisconnect")
 	proto.RegisterType((*AuditEventRequest)(nil), "events.AuditEventRequest")
 }
 func (m *Metadata) Marshal() (dAtA []byte, err error) {
@@ -1373,17 +1719,38 @@ func (m *SessionMetadata) MarshalTo(dAtA []byte) (int, error) {
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.SessionID)))
 		i += copy(dAtA[i:], m.SessionID)
 	}
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
+func (m *UserMetadata) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UserMetadata) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.User) > 0 {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.User)))
+		i += copy(dAtA[i:], m.User)
+	}
 	if len(m.Login) > 0 {
 		dAtA[i] = 0x12
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Login)))
 		i += copy(dAtA[i:], m.Login)
-	}
-	if len(m.User) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.User)))
-		i += copy(dAtA[i:], m.User)
 	}
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
@@ -1505,30 +1872,38 @@ func (m *SessionStart) MarshalTo(dAtA []byte) (int, error) {
 	i += n2
 	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n3, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n3, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n3
 	dAtA[i] = 0x1a
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n4, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n4, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n4
 	dAtA[i] = 0x22
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n5, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n5, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n5
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n6, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n6
 	if len(m.TerminalSize) > 0 {
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x32
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.TerminalSize)))
 		i += copy(dAtA[i:], m.TerminalSize)
@@ -1557,11 +1932,11 @@ func (m *SessionPrint) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n6, err := m.Metadata.MarshalTo(dAtA[i:])
+	n7, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n6
+	i += n7
 	if m.ChunkIndex != 0 {
 		dAtA[i] = 0x10
 		i++
@@ -1612,37 +1987,45 @@ func (m *Resize) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n7, err := m.Metadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n7
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n8, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	n8, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n8
-	dAtA[i] = 0x1a
+	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n9, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n9, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n9
-	dAtA[i] = 0x22
+	dAtA[i] = 0x1a
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n10, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n10, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n10
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n11, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n11
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n12, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n12
 	if len(m.TerminalSize) > 0 {
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x32
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.TerminalSize)))
 		i += copy(dAtA[i:], m.TerminalSize)
@@ -1671,37 +2054,45 @@ func (m *SessionEnd) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n11, err := m.Metadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n11
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n12, err := m.SessionMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n12
-	dAtA[i] = 0x1a
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n13, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	n13, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n13
-	dAtA[i] = 0x22
+	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n14, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n14, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n14
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n15, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n15
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n16, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n16
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n17, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n17
 	if m.EnhancedRecording {
-		dAtA[i] = 0x28
+		dAtA[i] = 0x30
 		i++
 		if m.EnhancedRecording {
 			dAtA[i] = 1
@@ -1711,7 +2102,7 @@ func (m *SessionEnd) MarshalTo(dAtA []byte) (int, error) {
 		i++
 	}
 	if m.Interactive {
-		dAtA[i] = 0x30
+		dAtA[i] = 0x38
 		i++
 		if m.Interactive {
 			dAtA[i] = 1
@@ -1722,7 +2113,7 @@ func (m *SessionEnd) MarshalTo(dAtA []byte) (int, error) {
 	}
 	if len(m.Participants) > 0 {
 		for _, s := range m.Participants {
-			dAtA[i] = 0x3a
+			dAtA[i] = 0x42
 			i++
 			l = len(s)
 			for l >= 1<<7 {
@@ -1778,6 +2169,49 @@ func (m *BPFMetadata) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *Status) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Status) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if m.Success {
+		dAtA[i] = 0x8
+		i++
+		if m.Success {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i++
+	}
+	if len(m.Error) > 0 {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Error)))
+		i += copy(dAtA[i:], m.Error)
+	}
+	if len(m.UserMessage) > 0 {
+		dAtA[i] = 0x1a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.UserMessage)))
+		i += copy(dAtA[i:], m.UserMessage)
+	}
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
 func (m *SessionCommand) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1796,49 +2230,57 @@ func (m *SessionCommand) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n15, err := m.Metadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n15
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n16, err := m.SessionMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n16
-	dAtA[i] = 0x1a
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n17, err := m.ServerMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n17
-	dAtA[i] = 0x22
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
-	n18, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	n18, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
 	i += n18
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n19, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n19
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n20, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n20
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n21, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n21
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
+	n22, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n22
 	if m.PPID != 0 {
-		dAtA[i] = 0x28
+		dAtA[i] = 0x30
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.PPID))
 	}
 	if len(m.Path) > 0 {
-		dAtA[i] = 0x32
+		dAtA[i] = 0x3a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Path)))
 		i += copy(dAtA[i:], m.Path)
 	}
 	if len(m.Argv) > 0 {
 		for _, s := range m.Argv {
-			dAtA[i] = 0x3a
+			dAtA[i] = 0x42
 			i++
 			l = len(s)
 			for l >= 1<<7 {
@@ -1852,7 +2294,7 @@ func (m *SessionCommand) MarshalTo(dAtA []byte) (int, error) {
 		}
 	}
 	if m.ReturnCode != 0 {
-		dAtA[i] = 0x40
+		dAtA[i] = 0x48
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.ReturnCode))
 	}
@@ -1880,48 +2322,56 @@ func (m *SessionDisk) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n19, err := m.Metadata.MarshalTo(dAtA[i:])
+	n23, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n19
+	i += n23
 	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n20, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n24, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n20
+	i += n24
 	dAtA[i] = 0x1a
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n21, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n25, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n21
+	i += n25
 	dAtA[i] = 0x22
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
-	n22, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n26, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n22
+	i += n26
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
+	n27, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n27
 	if len(m.Path) > 0 {
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x32
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Path)))
 		i += copy(dAtA[i:], m.Path)
 	}
 	if m.Flags != 0 {
-		dAtA[i] = 0x30
+		dAtA[i] = 0x38
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.Flags))
 	}
 	if m.ReturnCode != 0 {
-		dAtA[i] = 0x38
+		dAtA[i] = 0x40
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.ReturnCode))
 	}
@@ -1949,54 +2399,62 @@ func (m *SessionNetwork) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n23, err := m.Metadata.MarshalTo(dAtA[i:])
+	n28, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n23
+	i += n28
 	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n24, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n29, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n24
+	i += n29
 	dAtA[i] = 0x1a
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n25, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n30, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n25
+	i += n30
 	dAtA[i] = 0x22
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
-	n26, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n31, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n26
+	i += n31
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
+	n32, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n32
 	if len(m.SrcAddr) > 0 {
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x32
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.SrcAddr)))
 		i += copy(dAtA[i:], m.SrcAddr)
 	}
 	if len(m.DstAddr) > 0 {
-		dAtA[i] = 0x32
+		dAtA[i] = 0x3a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.DstAddr)))
 		i += copy(dAtA[i:], m.DstAddr)
 	}
 	if m.DstPort != 0 {
-		dAtA[i] = 0x38
+		dAtA[i] = 0x40
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.DstPort))
 	}
 	if m.TCPVersion != 0 {
-		dAtA[i] = 0x40
+		dAtA[i] = 0x48
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.TCPVersion))
 	}
@@ -2024,42 +2482,50 @@ func (m *SessionData) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n27, err := m.Metadata.MarshalTo(dAtA[i:])
+	n33, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n27
+	i += n33
 	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n28, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n34, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n28
+	i += n34
 	dAtA[i] = 0x1a
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n29, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n35, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n29
+	i += n35
 	dAtA[i] = 0x22
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n30, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n36, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n30
+	i += n36
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n37, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n37
 	if m.BytesTransmitted != 0 {
-		dAtA[i] = 0x28
+		dAtA[i] = 0x30
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.BytesTransmitted))
 	}
 	if m.BytesReceived != 0 {
-		dAtA[i] = 0x30
+		dAtA[i] = 0x38
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.BytesReceived))
 	}
@@ -2087,35 +2553,43 @@ func (m *SessionLeave) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n31, err := m.Metadata.MarshalTo(dAtA[i:])
+	n38, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n31
+	i += n38
 	dAtA[i] = 0x12
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n32, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n39, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n32
+	i += n39
 	dAtA[i] = 0x1a
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n33, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n40, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n33
+	i += n40
 	dAtA[i] = 0x22
 	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n34, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n41, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n34
+	i += n41
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n42, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n42
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
 	}
@@ -2140,54 +2614,42 @@ func (m *UserLogin) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n35, err := m.Metadata.MarshalTo(dAtA[i:])
+	n43, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n35
+	i += n43
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n44, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n44
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Status.Size()))
+	n45, err := m.Status.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n45
 	if len(m.Method) > 0 {
-		dAtA[i] = 0x12
+		dAtA[i] = 0x22
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Method)))
 		i += copy(dAtA[i:], m.Method)
 	}
-	if m.AuthAttemptSuccess {
-		dAtA[i] = 0x18
-		i++
-		if m.AuthAttemptSuccess {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i++
-	}
-	if len(m.AuthAttemptErr) > 0 {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.AuthAttemptErr)))
-		i += copy(dAtA[i:], m.AuthAttemptErr)
-	}
-	if len(m.AuthAttemptMessage) > 0 {
+	if m.IdentityAttributes != nil {
 		dAtA[i] = 0x2a
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.AuthAttemptMessage)))
-		i += copy(dAtA[i:], m.AuthAttemptMessage)
-	}
-	if len(m.User) > 0 {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.User)))
-		i += copy(dAtA[i:], m.User)
-	}
-	if m.IdentityAttributes != nil {
-		dAtA[i] = 0x3a
-		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.IdentityAttributes.Size()))
-		n36, err := m.IdentityAttributes.MarshalTo(dAtA[i:])
+		n46, err := m.IdentityAttributes.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n36
+		i += n46
 	}
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
@@ -2213,17 +2675,19 @@ func (m *UserUpdate) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n37, err := m.Metadata.MarshalTo(dAtA[i:])
+	n47, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n37
-	if len(m.User) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.User)))
-		i += copy(dAtA[i:], m.User)
+	i += n47
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n48, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
 	}
+	i += n48
 	if len(m.Roles) > 0 {
 		for _, s := range m.Roles {
 			dAtA[i] = 0x1a
@@ -2248,11 +2712,178 @@ func (m *UserUpdate) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0x2a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.Expires)))
-	n38, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.Expires, dAtA[i:])
+	n49, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.Expires, dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n38
+	i += n49
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
+func (m *PortForward) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PortForward) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
+	n50, err := m.Metadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n50
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n51, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n51
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n52, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n52
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Status.Size()))
+	n53, err := m.Status.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n53
+	if len(m.Addr) > 0 {
+		dAtA[i] = 0x2a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Addr)))
+		i += copy(dAtA[i:], m.Addr)
+	}
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
+func (m *Subsystem) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Subsystem) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
+	n54, err := m.Metadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n54
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n55, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n55
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n56, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n56
+	if len(m.Name) > 0 {
+		dAtA[i] = 0x22
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Name)))
+		i += copy(dAtA[i:], m.Name)
+	}
+	if len(m.Error) > 0 {
+		dAtA[i] = 0x2a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Error)))
+		i += copy(dAtA[i:], m.Error)
+	}
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
+func (m *ClientDisconnect) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ClientDisconnect) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
+	n57, err := m.Metadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n57
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n58, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n58
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n59, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n59
+	if len(m.Reason) > 0 {
+		dAtA[i] = 0x22
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reason)))
+		i += copy(dAtA[i:], m.Reason)
+	}
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
 	}
@@ -2275,11 +2906,11 @@ func (m *AuditEventRequest) MarshalTo(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if m.Event != nil {
-		nn39, err := m.Event.MarshalTo(dAtA[i:])
+		nn60, err := m.Event.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += nn39
+		i += nn60
 	}
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
@@ -2293,11 +2924,11 @@ func (m *AuditEventRequest_UserLogin) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0xa
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.UserLogin.Size()))
-		n40, err := m.UserLogin.MarshalTo(dAtA[i:])
+		n61, err := m.UserLogin.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n40
+		i += n61
 	}
 	return i, nil
 }
@@ -2307,11 +2938,11 @@ func (m *AuditEventRequest_UserUpdate) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.UserUpdate.Size()))
-		n41, err := m.UserUpdate.MarshalTo(dAtA[i:])
+		n62, err := m.UserUpdate.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n41
+		i += n62
 	}
 	return i, nil
 }
@@ -2321,11 +2952,11 @@ func (m *AuditEventRequest_SessionStart) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x1a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionStart.Size()))
-		n42, err := m.SessionStart.MarshalTo(dAtA[i:])
+		n63, err := m.SessionStart.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n42
+		i += n63
 	}
 	return i, nil
 }
@@ -2335,11 +2966,11 @@ func (m *AuditEventRequest_SessionPrint) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x22
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionPrint.Size()))
-		n43, err := m.SessionPrint.MarshalTo(dAtA[i:])
+		n64, err := m.SessionPrint.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n43
+		i += n64
 	}
 	return i, nil
 }
@@ -2349,11 +2980,11 @@ func (m *AuditEventRequest_Resize) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x2a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.Resize.Size()))
-		n44, err := m.Resize.MarshalTo(dAtA[i:])
+		n65, err := m.Resize.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n44
+		i += n65
 	}
 	return i, nil
 }
@@ -2363,11 +2994,11 @@ func (m *AuditEventRequest_SessionEnd) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x32
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionEnd.Size()))
-		n45, err := m.SessionEnd.MarshalTo(dAtA[i:])
+		n66, err := m.SessionEnd.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n45
+		i += n66
 	}
 	return i, nil
 }
@@ -2377,11 +3008,11 @@ func (m *AuditEventRequest_SessionCommand) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x3a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionCommand.Size()))
-		n46, err := m.SessionCommand.MarshalTo(dAtA[i:])
+		n67, err := m.SessionCommand.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n46
+		i += n67
 	}
 	return i, nil
 }
@@ -2391,11 +3022,11 @@ func (m *AuditEventRequest_SessionDisk) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x42
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionDisk.Size()))
-		n47, err := m.SessionDisk.MarshalTo(dAtA[i:])
+		n68, err := m.SessionDisk.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n47
+		i += n68
 	}
 	return i, nil
 }
@@ -2405,11 +3036,11 @@ func (m *AuditEventRequest_SessionNetwork) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x4a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionNetwork.Size()))
-		n48, err := m.SessionNetwork.MarshalTo(dAtA[i:])
+		n69, err := m.SessionNetwork.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n48
+		i += n69
 	}
 	return i, nil
 }
@@ -2419,11 +3050,11 @@ func (m *AuditEventRequest_SessionData) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x52
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionData.Size()))
-		n49, err := m.SessionData.MarshalTo(dAtA[i:])
+		n70, err := m.SessionData.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n49
+		i += n70
 	}
 	return i, nil
 }
@@ -2433,11 +3064,53 @@ func (m *AuditEventRequest_SessionLeave) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x5a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionLeave.Size()))
-		n50, err := m.SessionLeave.MarshalTo(dAtA[i:])
+		n71, err := m.SessionLeave.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n50
+		i += n71
+	}
+	return i, nil
+}
+func (m *AuditEventRequest_PortForward) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.PortForward != nil {
+		dAtA[i] = 0x62
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.PortForward.Size()))
+		n72, err := m.PortForward.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n72
+	}
+	return i, nil
+}
+func (m *AuditEventRequest_Subsystem) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.Subsystem != nil {
+		dAtA[i] = 0x6a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.Subsystem.Size()))
+		n73, err := m.Subsystem.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n73
+	}
+	return i, nil
+}
+func (m *AuditEventRequest_ClientDisconnect) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.ClientDisconnect != nil {
+		dAtA[i] = 0x72
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.ClientDisconnect.Size()))
+		n74, err := m.ClientDisconnect.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n74
 	}
 	return i, nil
 }
@@ -2483,11 +3156,20 @@ func (m *SessionMetadata) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.Login)
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *UserMetadata) Size() (n int) {
+	var l int
+	_ = l
+	l = len(m.User)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.User)
+	l = len(m.Login)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
@@ -2548,6 +3230,8 @@ func (m *SessionStart) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.ServerMetadata.Size()
@@ -2596,6 +3280,8 @@ func (m *Resize) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.ConnectionMetadata.Size()
@@ -2616,6 +3302,8 @@ func (m *SessionEnd) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
@@ -2660,10 +3348,32 @@ func (m *BPFMetadata) Size() (n int) {
 	return n
 }
 
+func (m *Status) Size() (n int) {
+	var l int
+	_ = l
+	if m.Success {
+		n += 2
+	}
+	l = len(m.Error)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.UserMessage)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
 func (m *SessionCommand) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
@@ -2698,6 +3408,8 @@ func (m *SessionDisk) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.ServerMetadata.Size()
@@ -2724,6 +3436,8 @@ func (m *SessionNetwork) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
@@ -2756,6 +3470,8 @@ func (m *SessionData) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.ServerMetadata.Size()
@@ -2779,6 +3495,8 @@ func (m *SessionLeave) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	l = m.SessionMetadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	l = m.ServerMetadata.Size()
@@ -2796,22 +3514,11 @@ func (m *UserLogin) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.Status.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	l = len(m.Method)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	if m.AuthAttemptSuccess {
-		n += 2
-	}
-	l = len(m.AuthAttemptErr)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	l = len(m.AuthAttemptMessage)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	l = len(m.User)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
@@ -2830,10 +3537,8 @@ func (m *UserUpdate) Size() (n int) {
 	_ = l
 	l = m.Metadata.Size()
 	n += 1 + l + sovEvents(uint64(l))
-	l = len(m.User)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	if len(m.Roles) > 0 {
 		for _, s := range m.Roles {
 			l = len(s)
@@ -2846,6 +3551,69 @@ func (m *UserUpdate) Size() (n int) {
 	}
 	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.Expires)
 	n += 1 + l + sovEvents(uint64(l))
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *PortForward) Size() (n int) {
+	var l int
+	_ = l
+	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.ConnectionMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.Status.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = len(m.Addr)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Subsystem) Size() (n int) {
+	var l int
+	_ = l
+	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.ConnectionMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = len(m.Name)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Error)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *ClientDisconnect) Size() (n int) {
+	var l int
+	_ = l
+	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.ConnectionMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = len(m.Reason)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -2959,6 +3727,33 @@ func (m *AuditEventRequest_SessionLeave) Size() (n int) {
 	_ = l
 	if m.SessionLeave != nil {
 		l = m.SessionLeave.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+func (m *AuditEventRequest_PortForward) Size() (n int) {
+	var l int
+	_ = l
+	if m.PortForward != nil {
+		l = m.PortForward.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+func (m *AuditEventRequest_Subsystem) Size() (n int) {
+	var l int
+	_ = l
+	if m.Subsystem != nil {
+		l = m.Subsystem.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+func (m *AuditEventRequest_ClientDisconnect) Size() (n int) {
+	var l int
+	_ = l
+	if m.ClientDisconnect != nil {
+		l = m.ClientDisconnect.Size()
 		n += 1 + l + sovEvents(uint64(l))
 	}
 	return n
@@ -3222,6 +4017,86 @@ func (m *SessionMetadata) Unmarshal(dAtA []byte) error {
 			}
 			m.SessionID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UserMetadata) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UserMetadata: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UserMetadata: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.User = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Login", wireType)
@@ -3250,35 +4125,6 @@ func (m *SessionMetadata) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Login = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.User = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -3728,6 +4574,36 @@ func (m *SessionStart) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -3756,7 +4632,7 @@ func (m *SessionStart) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -3786,7 +4662,7 @@ func (m *SessionStart) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
 			}
@@ -3816,7 +4692,7 @@ func (m *SessionStart) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TerminalSize", wireType)
 			}
@@ -4116,6 +4992,36 @@ func (m *Resize) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -4144,7 +5050,7 @@ func (m *Resize) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
 			}
@@ -4174,7 +5080,7 @@ func (m *Resize) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -4204,7 +5110,7 @@ func (m *Resize) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TerminalSize", wireType)
 			}
@@ -4316,6 +5222,36 @@ func (m *SessionEnd) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -4344,7 +5280,7 @@ func (m *SessionEnd) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
 			}
@@ -4374,7 +5310,7 @@ func (m *SessionEnd) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -4404,7 +5340,7 @@ func (m *SessionEnd) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EnhancedRecording", wireType)
 			}
@@ -4424,7 +5360,7 @@ func (m *SessionEnd) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.EnhancedRecording = bool(v != 0)
-		case 6:
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Interactive", wireType)
 			}
@@ -4444,7 +5380,7 @@ func (m *SessionEnd) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.Interactive = bool(v != 0)
-		case 7:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Participants", wireType)
 			}
@@ -4613,6 +5549,135 @@ func (m *BPFMetadata) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *Status) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Status: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Status: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Success", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Success = bool(v != 0)
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Error", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Error = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMessage", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UserMessage = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4674,6 +5739,36 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -4702,7 +5797,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -4732,7 +5827,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BPFMetadata", wireType)
 			}
@@ -4762,7 +5857,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PPID", wireType)
 			}
@@ -4781,7 +5876,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 6:
+		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Path", wireType)
 			}
@@ -4810,7 +5905,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 			}
 			m.Path = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 7:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Argv", wireType)
 			}
@@ -4839,7 +5934,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 			}
 			m.Argv = append(m.Argv, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
-		case 8:
+		case 9:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ReturnCode", wireType)
 			}
@@ -4941,6 +6036,36 @@ func (m *SessionDisk) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -4969,7 +6094,7 @@ func (m *SessionDisk) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -4999,7 +6124,7 @@ func (m *SessionDisk) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BPFMetadata", wireType)
 			}
@@ -5029,7 +6154,7 @@ func (m *SessionDisk) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Path", wireType)
 			}
@@ -5058,7 +6183,7 @@ func (m *SessionDisk) Unmarshal(dAtA []byte) error {
 			}
 			m.Path = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 6:
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Flags", wireType)
 			}
@@ -5077,7 +6202,7 @@ func (m *SessionDisk) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 7:
+		case 8:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ReturnCode", wireType)
 			}
@@ -5179,6 +6304,36 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -5207,7 +6362,7 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -5237,7 +6392,7 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BPFMetadata", wireType)
 			}
@@ -5267,7 +6422,7 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SrcAddr", wireType)
 			}
@@ -5296,7 +6451,7 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 			}
 			m.SrcAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 6:
+		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field DstAddr", wireType)
 			}
@@ -5325,7 +6480,7 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 			}
 			m.DstAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 7:
+		case 8:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field DstPort", wireType)
 			}
@@ -5344,7 +6499,7 @@ func (m *SessionNetwork) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 8:
+		case 9:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TCPVersion", wireType)
 			}
@@ -5446,6 +6601,36 @@ func (m *SessionData) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -5474,7 +6659,7 @@ func (m *SessionData) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -5504,7 +6689,7 @@ func (m *SessionData) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
 			}
@@ -5534,7 +6719,7 @@ func (m *SessionData) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BytesTransmitted", wireType)
 			}
@@ -5553,7 +6738,7 @@ func (m *SessionData) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 6:
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BytesReceived", wireType)
 			}
@@ -5655,6 +6840,36 @@ func (m *SessionLeave) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
 			}
 			var msglen int
@@ -5683,7 +6898,7 @@ func (m *SessionLeave) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
 			}
@@ -5713,7 +6928,7 @@ func (m *SessionLeave) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
 			}
@@ -5826,6 +7041,66 @@ func (m *UserLogin) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Status.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Method", wireType)
 			}
 			var stringLen uint64
@@ -5853,114 +7128,7 @@ func (m *UserLogin) Unmarshal(dAtA []byte) error {
 			}
 			m.Method = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AuthAttemptSuccess", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.AuthAttemptSuccess = bool(v != 0)
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AuthAttemptErr", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AuthAttemptErr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AuthAttemptMessage", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AuthAttemptMessage = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.User = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field IdentityAttributes", wireType)
 			}
@@ -6076,9 +7244,9 @@ func (m *UserUpdate) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -6088,20 +7256,21 @@ func (m *UserUpdate) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
+				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthEvents
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.User = string(dAtA[iNdEx:postIndex])
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -6190,6 +7359,575 @@ func (m *UserUpdate) Unmarshal(dAtA []byte) error {
 			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.Expires, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *PortForward) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PortForward: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PortForward: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ConnectionMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Status.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Subsystem) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Subsystem: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Subsystem: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ConnectionMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Error", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Error = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ClientDisconnect) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ClientDisconnect: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ClientDisconnect: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ConnectionMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reason", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reason = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -6594,6 +8332,102 @@ func (m *AuditEventRequest) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &AuditEventRequest_SessionLeave{v}
 			iNdEx = postIndex
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PortForward", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &PortForward{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Event = &AuditEventRequest_PortForward{v}
+			iNdEx = postIndex
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Subsystem", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &Subsystem{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Event = &AuditEventRequest_Subsystem{v}
+			iNdEx = postIndex
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClientDisconnect", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &ClientDisconnect{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Event = &AuditEventRequest_ClientDisconnect{v}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipEvents(dAtA[iNdEx:])
@@ -6721,114 +8555,126 @@ var (
 	ErrIntOverflowEvents   = fmt.Errorf("proto: integer overflow")
 )
 
-func init() { proto.RegisterFile("events.proto", fileDescriptor_events_e4b93bfdc636b99b) }
+func init() { proto.RegisterFile("events.proto", fileDescriptor_events_6bc6f8354f26a916) }
 
-var fileDescriptor_events_e4b93bfdc636b99b = []byte{
-	// 1693 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x58, 0xcd, 0x6f, 0x1b, 0xc7,
-	0x15, 0xe7, 0xf7, 0xc7, 0x90, 0xb6, 0xa5, 0xb1, 0x62, 0xd3, 0x86, 0xa3, 0x55, 0x09, 0xc4, 0x50,
-	0x10, 0x57, 0x46, 0x14, 0x23, 0x69, 0x93, 0x02, 0xb1, 0x56, 0xa4, 0x41, 0x02, 0x76, 0x4a, 0x8c,
-	0x94, 0x5e, 0x8d, 0xd5, 0xee, 0x98, 0x5a, 0x88, 0xbb, 0xcb, 0xce, 0x0c, 0x59, 0xc9, 0xb7, 0x9e,
-	0x7a, 0xe8, 0xa1, 0x05, 0x0a, 0x14, 0xfd, 0x07, 0xfa, 0x7f, 0xb4, 0x87, 0x02, 0x02, 0x7a, 0xc9,
-	0xa1, 0xe7, 0x6d, 0xeb, 0xde, 0x16, 0xe8, 0xad, 0xbd, 0xf4, 0xd2, 0x62, 0xde, 0xcc, 0x72, 0x67,
-	0x57, 0x04, 0x1a, 0x44, 0x87, 0x1c, 0xe2, 0x1b, 0xf9, 0xfb, 0xbd, 0x37, 0x1f, 0xbf, 0xf7, 0x66,
-	0xdf, 0x9b, 0x41, 0x5d, 0xba, 0xa4, 0xa1, 0xe0, 0x7b, 0x73, 0x16, 0x89, 0x08, 0x37, 0xd4, 0xbf,
-	0xfb, 0x5b, 0xd3, 0x68, 0x1a, 0x01, 0xf4, 0x58, 0xfe, 0x52, 0xec, 0x7d, 0x6b, 0x1a, 0x45, 0xd3,
-	0x19, 0x7d, 0x0c, 0xff, 0x4e, 0x16, 0xaf, 0x1e, 0x0b, 0x3f, 0xa0, 0x5c, 0x38, 0xc1, 0x5c, 0x1b,
-	0x3c, 0x28, 0x1a, 0x70, 0xc1, 0x16, 0xae, 0x50, 0x6c, 0xff, 0x2f, 0x65, 0xd4, 0x7a, 0x41, 0x85,
-	0xe3, 0x39, 0xc2, 0xc1, 0x0f, 0x50, 0x7d, 0x1c, 0x7a, 0xf4, 0xbc, 0x57, 0xde, 0x29, 0xef, 0x56,
-	0xed, 0x46, 0x12, 0x5b, 0x15, 0xea, 0x13, 0x05, 0xe2, 0x77, 0x51, 0xed, 0xf8, 0x62, 0x4e, 0x7b,
-	0x95, 0x9d, 0xf2, 0x6e, 0xdb, 0x6e, 0x27, 0xb1, 0x55, 0x87, 0x95, 0x11, 0x80, 0xf1, 0xf7, 0x50,
-	0x65, 0x3c, 0xe8, 0x55, 0x81, 0xdc, 0x4c, 0x62, 0xeb, 0xc6, 0xc2, 0xf7, 0x1e, 0x45, 0x81, 0x2f,
-	0x68, 0x30, 0x17, 0x17, 0xa4, 0x32, 0x1e, 0xe0, 0x87, 0xa8, 0x76, 0x18, 0x79, 0xb4, 0x57, 0x03,
-	0x23, 0x9c, 0xc4, 0xd6, 0x4d, 0x37, 0xf2, 0xa8, 0x61, 0x05, 0x3c, 0x7e, 0x8a, 0x6a, 0xc7, 0x7e,
-	0x40, 0x7b, 0xf5, 0x9d, 0xf2, 0x6e, 0x67, 0xff, 0xfe, 0x9e, 0xda, 0xc1, 0x5e, 0xba, 0x83, 0xbd,
-	0xe3, 0x74, 0x8b, 0xf6, 0xc6, 0x65, 0x6c, 0x95, 0x92, 0xd8, 0xaa, 0xc9, 0x5d, 0xff, 0xfa, 0xaf,
-	0x56, 0x99, 0x80, 0x67, 0xff, 0xe7, 0x65, 0x74, 0xeb, 0x88, 0x72, 0xee, 0x47, 0xe1, 0x6a, 0x77,
-	0xef, 0xa1, 0xb6, 0x86, 0xc6, 0x03, 0xd8, 0x61, 0xdb, 0x6e, 0x26, 0xb1, 0x55, 0xe5, 0xbe, 0x47,
-	0x32, 0x06, 0xbf, 0x8f, 0xea, 0xcf, 0xa3, 0xa9, 0x1f, 0xea, 0x7d, 0xde, 0x4e, 0x62, 0xeb, 0xd6,
-	0x4c, 0x02, 0xc6, 0x32, 0x95, 0x05, 0x7e, 0x80, 0x6a, 0x5f, 0x72, 0xca, 0xf4, 0xa6, 0x5b, 0x72,
-	0x1d, 0x0b, 0x4e, 0x19, 0x01, 0xb4, 0xff, 0xef, 0x0a, 0xba, 0x79, 0x44, 0xd9, 0x92, 0xb2, 0xd5,
-	0x12, 0x0e, 0xe4, 0xaa, 0x24, 0xf2, 0x85, 0x13, 0x50, 0x3e, 0x77, 0x5c, 0xaa, 0x17, 0x72, 0x37,
-	0x89, 0xad, 0xdb, 0x61, 0x0a, 0x1a, 0x33, 0x15, 0xed, 0xf1, 0xfb, 0xa8, 0xa5, 0xa0, 0xf1, 0x40,
-	0xaf, 0xf0, 0x46, 0x12, 0x5b, 0x6d, 0x0e, 0xd8, 0x4b, 0xdf, 0x23, 0x2b, 0x1a, 0x0f, 0xd3, 0xf9,
-	0x47, 0x11, 0x17, 0x72, 0x70, 0xbd, 0xd0, 0x77, 0x93, 0xd8, 0xba, 0xa7, 0x1d, 0x4e, 0x35, 0x65,
-	0x4c, 0x59, 0x70, 0xc2, 0x01, 0xea, 0x2a, 0xe4, 0xb9, 0x73, 0x42, 0x67, 0xbc, 0x57, 0xdb, 0xa9,
-	0xee, 0x76, 0xf6, 0x77, 0xf7, 0x74, 0x92, 0xe6, 0xb7, 0xb8, 0x67, 0x9a, 0x0e, 0x43, 0xc1, 0x2e,
-	0x6c, 0x4b, 0xc7, 0xe8, 0xae, 0x9e, 0x72, 0x06, 0x9c, 0x31, 0x61, 0x6e, 0xf8, 0xfb, 0x9f, 0xa3,
-	0xcd, 0x2b, 0x63, 0xe0, 0x0d, 0x54, 0x3d, 0xa3, 0x17, 0x4a, 0x2c, 0x22, 0x7f, 0xe2, 0x2d, 0x54,
-	0x5f, 0x3a, 0xb3, 0x85, 0x4e, 0x47, 0xa2, 0xfe, 0x7c, 0x5a, 0xf9, 0x41, 0xb9, 0xff, 0x8b, 0x32,
-	0xc2, 0x87, 0x51, 0x18, 0x52, 0x57, 0x98, 0xe1, 0xff, 0x18, 0xb5, 0x9f, 0x47, 0xae, 0x33, 0x3b,
-	0xf0, 0x3c, 0xa6, 0x55, 0xef, 0x25, 0xb1, 0xb5, 0xe5, 0x78, 0x1e, 0xdb, 0x9b, 0x49, 0xc6, 0x58,
-	0x52, 0x66, 0x8a, 0x7f, 0x88, 0x10, 0xa1, 0x41, 0x24, 0x28, 0x38, 0x2a, 0xc9, 0xef, 0x25, 0xb1,
-	0xf5, 0x0e, 0x38, 0x32, 0xa0, 0x0c, 0x4f, 0xc3, 0xb8, 0xff, 0xe7, 0x8a, 0x94, 0x0e, 0x12, 0xeb,
-	0x48, 0x38, 0x4c, 0xe0, 0x4f, 0xb3, 0xc3, 0x06, 0x4b, 0xe8, 0xec, 0x6f, 0xa4, 0x32, 0xa6, 0xb8,
-	0xdd, 0x95, 0x72, 0x7d, 0x15, 0x5b, 0xe5, 0x24, 0xb6, 0x4a, 0x24, 0x3b, 0x9c, 0x9f, 0xa3, 0xa6,
-	0x1e, 0x0b, 0x16, 0xd1, 0xd9, 0xbf, 0x9b, 0x45, 0x20, 0x97, 0xe8, 0x85, 0x11, 0x52, 0x2f, 0xfc,
-	0x23, 0xd4, 0x50, 0xc2, 0x42, 0x1a, 0x74, 0xf6, 0xef, 0xac, 0x8f, 0x60, 0xc1, 0x5d, 0xfb, 0xe0,
-	0x11, 0x42, 0x99, 0xa8, 0x70, 0x82, 0xe5, 0xc9, 0xd4, 0x23, 0x5c, 0x95, 0xbb, 0x30, 0x8a, 0xe1,
-	0x8b, 0x3f, 0x46, 0xdd, 0x63, 0xca, 0x02, 0x3f, 0x74, 0x66, 0x47, 0xfe, 0x6b, 0x75, 0xca, 0xf5,
-	0xd7, 0x80, 0xfb, 0xaf, 0x4d, 0x2d, 0x73, 0x76, 0xfd, 0xdf, 0x66, 0x6a, 0x4e, 0x98, 0x1f, 0x5e,
-	0x4f, 0xcd, 0x87, 0x08, 0x1d, 0x9e, 0x2e, 0xc2, 0x33, 0xf5, 0xbd, 0xab, 0x64, 0xdf, 0x3b, 0xd7,
-	0x27, 0x06, 0x23, 0x3f, 0x7a, 0x03, 0x39, 0xbe, 0x94, 0xac, 0x6b, 0xb7, 0x2f, 0xd5, 0x48, 0xe5,
-	0xef, 0x13, 0x80, 0xb1, 0x85, 0xea, 0xf6, 0x85, 0xa0, 0x1c, 0x04, 0xa9, 0xaa, 0x8f, 0xe2, 0x89,
-	0x04, 0x88, 0xc2, 0xf1, 0x13, 0xb4, 0x39, 0xa0, 0x33, 0xe7, 0xe2, 0x85, 0x3f, 0x9b, 0xf9, 0x9c,
-	0xba, 0x51, 0xe8, 0x71, 0xd8, 0xb1, 0x9e, 0x2e, 0xe0, 0xe4, 0xaa, 0x01, 0x7e, 0x84, 0x1a, 0x3f,
-	0x7e, 0xf5, 0x8a, 0x53, 0xd1, 0x6b, 0x80, 0xe9, 0x56, 0x12, 0x5b, 0x1b, 0x11, 0x20, 0x86, 0x3c,
-	0xda, 0xa6, 0xff, 0xa7, 0x0a, 0x6a, 0x10, 0x2a, 0xb5, 0xfb, 0x76, 0x13, 0x2c, 0x9f, 0x22, 0xd5,
-	0x6b, 0xa4, 0x48, 0x96, 0xaa, 0xb5, 0x6f, 0x90, 0xaa, 0xdf, 0x34, 0xc1, 0xfe, 0x50, 0x45, 0x48,
-	0xef, 0x65, 0x18, 0x7a, 0x6f, 0xb5, 0x94, 0x5a, 0x0e, 0xd0, 0xe6, 0x30, 0x3c, 0x75, 0x42, 0x97,
-	0x7a, 0x84, 0xba, 0x11, 0xf3, 0xfc, 0x70, 0x0a, 0x82, 0xb6, 0xec, 0x3b, 0x49, 0x6c, 0x61, 0xaa,
-	0xc9, 0x97, 0x2c, 0x65, 0xc9, 0x55, 0x07, 0xfc, 0x21, 0xea, 0x8c, 0x43, 0x41, 0x99, 0xe3, 0x0a,
-	0x7f, 0x49, 0x21, 0xa9, 0x5b, 0xf6, 0xad, 0x24, 0xb6, 0x3a, 0x7e, 0x06, 0x13, 0xd3, 0x06, 0x3f,
-	0x41, 0xdd, 0x89, 0xc3, 0x84, 0xef, 0xfa, 0x73, 0x27, 0x14, 0xbc, 0xd7, 0xdc, 0xa9, 0xee, 0xb6,
-	0xed, 0x8d, 0x24, 0xb6, 0xba, 0x73, 0x03, 0x27, 0x39, 0xab, 0xfe, 0x6b, 0xd4, 0xb1, 0x27, 0xcf,
-	0x56, 0x61, 0xb8, 0x87, 0xaa, 0x13, 0x5d, 0xec, 0xeb, 0xaa, 0xd8, 0xcf, 0x7d, 0x8f, 0x48, 0x4c,
-	0xd6, 0xd1, 0xc3, 0x29, 0x8b, 0x16, 0x73, 0x5d, 0x47, 0xab, 0xaa, 0x8e, 0xba, 0x80, 0x41, 0x1d,
-	0x4d, 0x69, 0xfc, 0x1e, 0x6a, 0x4e, 0x58, 0x34, 0x65, 0x4e, 0xa0, 0x0b, 0x68, 0x27, 0x89, 0xad,
-	0xe6, 0x5c, 0x41, 0x24, 0xe5, 0xfa, 0xbf, 0xac, 0xca, 0x7a, 0x0b, 0xe1, 0x3b, 0x8c, 0x82, 0xc0,
-	0xf9, 0xb6, 0x53, 0xe8, 0x7a, 0xdf, 0xfb, 0x8f, 0x50, 0xd5, 0x9e, 0x3c, 0xd3, 0x39, 0x73, 0x3b,
-	0x75, 0x35, 0xc4, 0x2d, 0xf8, 0x49, 0x6b, 0xd9, 0x10, 0x4d, 0xa4, 0xe0, 0x75, 0x10, 0x1c, 0x1a,
-	0xa2, 0xb9, 0x54, 0x1c, 0x50, 0x60, 0x1d, 0x71, 0x0a, 0xe1, 0xd7, 0xed, 0xd2, 0xdc, 0x11, 0xa7,
-	0x04, 0x50, 0xc9, 0x1e, 0xb0, 0xe9, 0x52, 0x07, 0x1a, 0x58, 0x87, 0x4d, 0x97, 0x04, 0x50, 0xfc,
-	0x58, 0x56, 0x61, 0xb1, 0x60, 0x21, 0x34, 0x90, 0x2d, 0x18, 0x1f, 0x12, 0x88, 0x01, 0xfa, 0x52,
-	0xf6, 0x91, 0xc4, 0x30, 0xe9, 0xff, 0xb3, 0x82, 0x3a, 0x5a, 0x89, 0x81, 0xcf, 0xcf, 0xbe, 0x93,
-	0xa1, 0x90, 0x62, 0xd7, 0xd7, 0x8a, 0x6d, 0xa1, 0xfa, 0xb3, 0x99, 0x33, 0xe5, 0x10, 0x8b, 0xba,
-	0xaa, 0x5b, 0xaf, 0x24, 0x40, 0x14, 0x5e, 0xd0, 0xbb, 0xf9, 0xff, 0xf5, 0xfe, 0x7d, 0x96, 0xfd,
-	0x5f, 0x50, 0xf1, 0xb3, 0x88, 0x7d, 0xf7, 0x24, 0x7f, 0x88, 0x9a, 0x47, 0xcc, 0x85, 0x36, 0x51,
-	0xa9, 0xde, 0x4d, 0x62, 0xab, 0xc5, 0x99, 0xfb, 0x52, 0xb6, 0x8a, 0x24, 0x25, 0xa5, 0xdd, 0x80,
-	0x0b, 0xb0, 0x6b, 0x64, 0x76, 0x1e, 0x17, 0xda, 0x4e, 0x93, 0xda, 0x6e, 0x12, 0x31, 0xa1, 0x03,
-	0xb0, 0xb2, 0x9b, 0x47, 0x4c, 0x90, 0x94, 0xc4, 0x1f, 0x20, 0x74, 0x7c, 0x38, 0xf9, 0x09, 0x65,
-	0x20, 0x97, 0x3a, 0x1b, 0xf0, 0x89, 0x5a, 0x2a, 0x88, 0x18, 0x74, 0xff, 0x5f, 0xc6, 0xb9, 0x90,
-	0x42, 0xbf, 0x6d, 0x49, 0xa3, 0x10, 0xef, 0xa3, 0x0d, 0x68, 0xd7, 0x8e, 0x99, 0x13, 0xf2, 0xc0,
-	0x17, 0x82, 0x7a, 0x66, 0x93, 0x26, 0xce, 0xc9, 0x15, 0x1e, 0x3f, 0x42, 0x37, 0x00, 0x23, 0xd4,
-	0xa5, 0xfe, 0x92, 0x7a, 0xba, 0x55, 0x03, 0x07, 0x76, 0x4e, 0xf2, 0x64, 0xff, 0x37, 0x59, 0xf3,
-	0xfa, 0x9c, 0x3a, 0x4b, 0xfa, 0x56, 0x77, 0x99, 0x8c, 0x7f, 0xac, 0xa2, 0xb6, 0xbc, 0x2b, 0xab,
-	0xeb, 0xf4, 0x75, 0x24, 0x79, 0x84, 0x1a, 0x2f, 0xa8, 0x38, 0x8d, 0x3c, 0x7d, 0x43, 0x83, 0x8e,
-	0x39, 0x00, 0xc4, 0xec, 0x98, 0x95, 0x0d, 0xfe, 0x0c, 0xe1, 0x83, 0x85, 0x38, 0x3d, 0x10, 0x80,
-	0x1f, 0x2d, 0x5c, 0x97, 0x72, 0x0e, 0x5a, 0xb4, 0xd4, 0xc9, 0xe1, 0x0a, 0x22, 0x6b, 0xcc, 0xf0,
-	0x67, 0xe8, 0xa6, 0x81, 0x0e, 0x19, 0xd3, 0xef, 0x19, 0xf0, 0x52, 0x40, 0x19, 0x8b, 0x98, 0x79,
-	0x99, 0xce, 0x9b, 0xe2, 0x61, 0x6e, 0xe6, 0x17, 0x94, 0x73, 0x67, 0x9a, 0x76, 0xa8, 0xef, 0x24,
-	0xb1, 0xb5, 0x19, 0x28, 0xc8, 0x18, 0x62, 0x8d, 0xc3, 0xea, 0xe5, 0xa1, 0xb1, 0xee, 0xe5, 0x01,
-	0x9f, 0x21, 0x3c, 0xf6, 0x68, 0x28, 0x7c, 0x71, 0x71, 0x20, 0x04, 0xf3, 0x4f, 0x16, 0xf2, 0x8a,
-	0xd2, 0xd4, 0xa9, 0x52, 0x7c, 0x4d, 0x39, 0x82, 0xf7, 0x20, 0xbb, 0x0f, 0x97, 0xe1, 0x95, 0x79,
-	0xb6, 0x80, 0xff, 0xc4, 0x56, 0x43, 0xd9, 0x90, 0x35, 0xc3, 0xf6, 0xff, 0x5b, 0x46, 0x48, 0xce,
-	0xfa, 0xe5, 0xdc, 0x73, 0xc4, 0xf5, 0xf2, 0x3a, 0xdd, 0x55, 0x65, 0xed, 0xae, 0x2c, 0x54, 0x27,
-	0xd1, 0x8c, 0xca, 0x38, 0x55, 0xd3, 0x07, 0x28, 0x26, 0x01, 0xa2, 0x70, 0xfc, 0x01, 0x6a, 0xeb,
-	0xdc, 0x8a, 0xd2, 0x98, 0xa8, 0x9e, 0x2e, 0x05, 0x49, 0xc6, 0xe3, 0x31, 0x6a, 0x0e, 0xcf, 0xe7,
-	0x3e, 0xa3, 0xfc, 0x6b, 0x3c, 0x33, 0xdd, 0xd6, 0x4f, 0x18, 0x4d, 0xaa, 0x5c, 0xe0, 0xa5, 0x29,
-	0xf5, 0xef, 0xff, 0xaa, 0x8e, 0x36, 0x0f, 0x16, 0x9e, 0x2f, 0x86, 0xf0, 0x1c, 0x46, 0x7f, 0xba,
-	0xa0, 0x5c, 0xe0, 0x0f, 0x8d, 0xd4, 0xd6, 0x4a, 0x6c, 0xa6, 0x4a, 0xac, 0x88, 0x51, 0x89, 0x18,
-	0x07, 0xe0, 0x89, 0xa9, 0xa4, 0x3e, 0xda, 0xd8, 0xf4, 0x51, 0xcc, 0xa8, 0x44, 0xf2, 0x8a, 0xe7,
-	0x1e, 0x19, 0xf4, 0x91, 0xde, 0x2a, 0x7c, 0x12, 0x80, 0x1b, 0x95, 0x48, 0xf1, 0x41, 0x22, 0x77,
-	0xa5, 0xd6, 0x87, 0xb9, 0xe8, 0x0b, 0x9c, 0xe1, 0xab, 0xae, 0xdf, 0xbb, 0xe9, 0xad, 0x53, 0x0b,
-	0x78, 0x33, 0xf5, 0x52, 0xe8, 0xa8, 0x44, 0xd2, 0x5b, 0xe9, 0x13, 0xf3, 0x5e, 0x05, 0x39, 0x6b,
-	0xec, 0x2b, 0x63, 0xe4, 0xbe, 0x8c, 0xfb, 0xd7, 0xd3, 0x62, 0x3b, 0xad, 0x33, 0xf8, 0x4e, 0xc1,
-	0x53, 0xb3, 0xa3, 0x12, 0x29, 0xb6, 0xdf, 0x9f, 0xe4, 0x5a, 0x40, 0xa8, 0x8c, 0x46, 0x35, 0x37,
-	0xa8, 0x51, 0x89, 0xe4, 0x9a, 0xc5, 0xa7, 0xc5, 0x5e, 0xa6, 0xd7, 0x5e, 0x3b, 0xb5, 0x66, 0x8d,
-	0xa9, 0xd3, 0xde, 0xe7, 0x93, 0x5c, 0x95, 0xed, 0xa1, 0xf5, 0x53, 0x3b, 0xc2, 0x31, 0xa7, 0x56,
-	0xf5, 0x38, 0x57, 0x27, 0x7a, 0x9d, 0xb5, 0x11, 0x01, 0xce, 0x88, 0x08, 0xfc, 0xb7, 0x9b, 0xa8,
-	0x0e, 0x29, 0x68, 0x6f, 0x5d, 0xfe, 0x7d, 0xbb, 0x74, 0xf9, 0x66, 0xbb, 0xfc, 0xd5, 0x9b, 0xed,
-	0xf2, 0xdf, 0xde, 0x6c, 0x97, 0x7f, 0xf7, 0x8f, 0xed, 0xd2, 0x49, 0x03, 0x32, 0xfb, 0xa3, 0xff,
-	0x05, 0x00, 0x00, 0xff, 0xff, 0x32, 0x60, 0x38, 0x00, 0x5f, 0x16, 0x00, 0x00,
+var fileDescriptor_events_6bc6f8354f26a916 = []byte{
+	// 1884 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x59, 0xcd, 0x6f, 0x1c, 0x49,
+	0x15, 0x9f, 0xef, 0x8f, 0x9a, 0x49, 0x62, 0x57, 0xbc, 0x9b, 0x49, 0x94, 0x75, 0x9b, 0x46, 0x1b,
+	0x79, 0xb5, 0xc1, 0x51, 0xbc, 0xd6, 0x66, 0x59, 0x21, 0x6d, 0x3c, 0x1e, 0x5b, 0x63, 0x29, 0x09,
+	0xa3, 0x1a, 0x2f, 0x1c, 0xa3, 0xf6, 0x74, 0x65, 0xdc, 0xca, 0x74, 0xf7, 0x50, 0x55, 0x33, 0x6b,
+	0xe7, 0xca, 0x81, 0x0b, 0x07, 0x24, 0x24, 0x04, 0x27, 0x4e, 0xdc, 0xf8, 0x2f, 0xf6, 0x12, 0x89,
+	0x4b, 0x0e, 0x5c, 0x69, 0x20, 0xdc, 0xfa, 0x0c, 0x12, 0x42, 0x42, 0x42, 0xf5, 0xaa, 0x7a, 0xba,
+	0xba, 0xc7, 0x02, 0x76, 0x7d, 0x88, 0x2c, 0xf9, 0xe6, 0xf9, 0xfd, 0xde, 0xab, 0xea, 0xf7, 0x51,
+	0xaf, 0x5e, 0x3d, 0xa3, 0x36, 0x9d, 0xd3, 0x40, 0xf0, 0xad, 0x29, 0x0b, 0x45, 0x88, 0x6b, 0xea,
+	0xd7, 0x9d, 0xb5, 0x71, 0x38, 0x0e, 0x01, 0x7a, 0x20, 0xff, 0x52, 0xec, 0x1d, 0x6b, 0x1c, 0x86,
+	0xe3, 0x09, 0x7d, 0x00, 0xbf, 0x8e, 0x67, 0x2f, 0x1e, 0x08, 0xcf, 0xa7, 0x5c, 0x38, 0xfe, 0x54,
+	0x0b, 0xdc, 0xcd, 0x0b, 0x70, 0xc1, 0x66, 0x23, 0xa1, 0x58, 0xfb, 0x8f, 0x45, 0xd4, 0x78, 0x4a,
+	0x85, 0xe3, 0x3a, 0xc2, 0xc1, 0x77, 0x51, 0xf5, 0x30, 0x70, 0xe9, 0x69, 0xa7, 0xb8, 0x51, 0xdc,
+	0x2c, 0x77, 0x6b, 0x71, 0x64, 0x95, 0xa8, 0x47, 0x14, 0x88, 0x3f, 0x40, 0x95, 0xa3, 0xb3, 0x29,
+	0xed, 0x94, 0x36, 0x8a, 0x9b, 0xcd, 0x6e, 0x33, 0x8e, 0xac, 0x2a, 0x7c, 0x19, 0x01, 0x18, 0x7f,
+	0x07, 0x95, 0x0e, 0x7b, 0x9d, 0x32, 0x90, 0xab, 0x71, 0x64, 0x5d, 0x9b, 0x79, 0xee, 0xfd, 0xd0,
+	0xf7, 0x04, 0xf5, 0xa7, 0xe2, 0x8c, 0x94, 0x0e, 0x7b, 0xf8, 0x1e, 0xaa, 0xec, 0x85, 0x2e, 0xed,
+	0x54, 0x40, 0x08, 0xc7, 0x91, 0x75, 0x7d, 0x14, 0xba, 0xd4, 0x90, 0x02, 0x1e, 0x3f, 0x46, 0x95,
+	0x23, 0xcf, 0xa7, 0x9d, 0xea, 0x46, 0x71, 0xb3, 0xb5, 0x7d, 0x67, 0x4b, 0x59, 0xb0, 0x95, 0x58,
+	0xb0, 0x75, 0x94, 0x98, 0xd8, 0x5d, 0x79, 0x1d, 0x59, 0x85, 0x38, 0xb2, 0x2a, 0xd2, 0xea, 0x5f,
+	0xfc, 0xd9, 0x2a, 0x12, 0xd0, 0xb4, 0x3f, 0x43, 0x37, 0x86, 0x94, 0x73, 0x2f, 0x0c, 0x16, 0xc6,
+	0x7d, 0x88, 0x9a, 0x1a, 0x3a, 0xec, 0x81, 0x81, 0xcd, 0x6e, 0x3d, 0x8e, 0xac, 0x32, 0xf7, 0x5c,
+	0x92, 0x32, 0xf6, 0x8f, 0x51, 0xfb, 0x4b, 0x4e, 0x99, 0xe1, 0x93, 0x8a, 0xfc, 0xad, 0x35, 0x1a,
+	0x72, 0xaf, 0x19, 0xa7, 0x8c, 0x00, 0x8a, 0x3f, 0x42, 0xd5, 0x27, 0xe1, 0xd8, 0x0b, 0xb4, 0x53,
+	0x6e, 0xc6, 0x91, 0x75, 0x63, 0x22, 0x01, 0xc3, 0x26, 0x25, 0x61, 0xff, 0xa3, 0x84, 0xae, 0x0f,
+	0x29, 0x9b, 0x1b, 0x6b, 0xef, 0xca, 0xaf, 0x94, 0xc8, 0x33, 0xc7, 0xa7, 0x7c, 0xea, 0x8c, 0xa8,
+	0xde, 0xe6, 0x56, 0x1c, 0x59, 0x37, 0x83, 0x04, 0x34, 0xd6, 0xca, 0xcb, 0xe3, 0x8f, 0x50, 0x43,
+	0x41, 0x87, 0x3d, 0xfd, 0x0d, 0xd7, 0xe2, 0xc8, 0x6a, 0x72, 0xc0, 0x9e, 0x7b, 0x2e, 0x59, 0xd0,
+	0x78, 0x3f, 0xd9, 0xbf, 0x1f, 0x72, 0x21, 0x17, 0xd7, 0xc1, 0xfa, 0x20, 0x8e, 0xac, 0xdb, 0x5a,
+	0xe1, 0x44, 0x53, 0xc6, 0x96, 0x39, 0x25, 0xec, 0xa3, 0xb6, 0x42, 0x9e, 0x38, 0xc7, 0x74, 0xc2,
+	0x3b, 0x95, 0x8d, 0xf2, 0x66, 0x6b, 0x7b, 0x73, 0x4b, 0xe7, 0x6c, 0xd6, 0xc4, 0x2d, 0x53, 0x74,
+	0x3f, 0x10, 0xec, 0xac, 0x6b, 0xe9, 0x90, 0xdd, 0xd2, 0x5b, 0x4e, 0x80, 0x33, 0x36, 0xcc, 0x2c,
+	0x7f, 0xe7, 0x0b, 0xb4, 0xba, 0xb4, 0x06, 0x5e, 0x41, 0xe5, 0x97, 0xf4, 0x4c, 0x39, 0x8b, 0xc8,
+	0x3f, 0xf1, 0x1a, 0xaa, 0xce, 0x9d, 0xc9, 0x4c, 0x67, 0x27, 0x51, 0x3f, 0x3e, 0x2f, 0x7d, 0x56,
+	0xb4, 0x7f, 0x56, 0x44, 0x78, 0x2f, 0x0c, 0x02, 0x3a, 0x12, 0x66, 0x3a, 0x7c, 0x8a, 0x9a, 0x4f,
+	0xc2, 0x91, 0x33, 0xd9, 0x75, 0xdd, 0x24, 0xb8, 0x9d, 0x38, 0xb2, 0xd6, 0x1c, 0xd7, 0x65, 0x5b,
+	0x13, 0xc9, 0x18, 0x9f, 0x94, 0x8a, 0xe2, 0xef, 0x23, 0x44, 0xa8, 0x1f, 0x0a, 0x0a, 0x8a, 0xca,
+	0xe5, 0xb7, 0xe3, 0xc8, 0x7a, 0x0f, 0x14, 0x19, 0x50, 0x86, 0xa6, 0x21, 0x6c, 0xff, 0xb4, 0x2c,
+	0x5d, 0x07, 0x89, 0x36, 0x14, 0x0e, 0x13, 0xf8, 0xf3, 0xf4, 0xec, 0xc1, 0x27, 0xb4, 0xb6, 0x57,
+	0x12, 0x37, 0x26, 0x78, 0xb7, 0x2d, 0xdd, 0xf5, 0x26, 0xb2, 0x8a, 0x71, 0x64, 0x15, 0x48, 0xc3,
+	0xf8, 0x7e, 0x95, 0x97, 0x25, 0xd0, 0x5b, 0x4b, 0xf4, 0xcc, 0xdc, 0xcd, 0xe9, 0xaa, 0x8c, 0xfd,
+	0x02, 0xd5, 0xf5, 0x37, 0x40, 0xf8, 0x5b, 0xdb, 0xb7, 0xd2, 0xc8, 0x65, 0x0e, 0x4c, 0x4e, 0x3b,
+	0xd1, 0xc2, 0x3f, 0x40, 0x35, 0x15, 0x10, 0x38, 0xc6, 0xad, 0xed, 0xf7, 0xcf, 0x8f, 0x7c, 0x4e,
+	0x5d, 0xeb, 0xe0, 0x3e, 0x42, 0x69, 0x30, 0x16, 0x07, 0x5c, 0xaf, 0xb0, 0x1c, 0xa6, 0xdc, 0x2a,
+	0x86, 0x2e, 0xfe, 0x14, 0xb5, 0x8f, 0x28, 0xf3, 0xbd, 0xc0, 0x99, 0x0c, 0xbd, 0x57, 0xb4, 0x53,
+	0x4b, 0x8b, 0x0a, 0xf7, 0x5e, 0x99, 0x31, 0xc8, 0xc8, 0xd9, 0xbf, 0x2a, 0x2d, 0xa2, 0x30, 0x60,
+	0x5e, 0x70, 0xb1, 0x28, 0xdc, 0x43, 0x68, 0xef, 0x64, 0x16, 0xbc, 0x54, 0x65, 0xb3, 0x94, 0x96,
+	0xcd, 0x91, 0x47, 0x0c, 0x46, 0xd6, 0xce, 0x9e, 0x5c, 0x5f, 0xba, 0xbc, 0xdd, 0x6d, 0xbe, 0x56,
+	0x2b, 0x15, 0xbf, 0x47, 0x00, 0xc6, 0x16, 0xaa, 0x76, 0xcf, 0x04, 0xe5, 0xe0, 0xd2, 0xb2, 0xaa,
+	0xad, 0xc7, 0x12, 0x20, 0x0a, 0xc7, 0x3b, 0x68, 0xb5, 0x47, 0x27, 0xce, 0xd9, 0x53, 0x6f, 0x32,
+	0xf1, 0x38, 0x1d, 0x85, 0x81, 0xcb, 0xc1, 0x7b, 0x7a, 0x3b, 0x9f, 0x93, 0x65, 0x01, 0x7c, 0x1f,
+	0xd5, 0x7e, 0xf8, 0xe2, 0x05, 0xa7, 0x02, 0x9c, 0x53, 0xee, 0xae, 0xc5, 0x91, 0xb5, 0x12, 0x02,
+	0x62, 0xb8, 0x47, 0xcb, 0xd8, 0xff, 0x2e, 0xa1, 0x1a, 0xa1, 0xd2, 0x77, 0x97, 0x33, 0x31, 0xb3,
+	0xa9, 0x55, 0xb9, 0x40, 0x6a, 0xa5, 0x29, 0x5e, 0xfd, 0x16, 0x29, 0xfe, 0x6d, 0x13, 0xf3, 0x9f,
+	0x65, 0x84, 0xb4, 0x2d, 0xfb, 0x81, 0x7b, 0x15, 0x83, 0x8b, 0xc4, 0xa0, 0x87, 0x56, 0xf7, 0x83,
+	0x13, 0x27, 0x18, 0x51, 0x97, 0xd0, 0x51, 0xc8, 0x5c, 0x2f, 0x18, 0x43, 0x20, 0x1a, 0xdd, 0xf7,
+	0xe3, 0xc8, 0xc2, 0x54, 0x93, 0xcf, 0x59, 0xc2, 0x92, 0x65, 0x05, 0xfc, 0x10, 0xb5, 0x0e, 0x03,
+	0x41, 0x99, 0x33, 0x12, 0xde, 0x9c, 0x76, 0xea, 0xa0, 0x7f, 0x23, 0x8e, 0xac, 0x96, 0x97, 0xc2,
+	0xc4, 0x94, 0xc1, 0x3b, 0xa8, 0x3d, 0x70, 0x98, 0xf0, 0x46, 0xde, 0xd4, 0x09, 0x04, 0xef, 0x34,
+	0x36, 0xca, 0x9b, 0xcd, 0xee, 0x4a, 0x1c, 0x59, 0xed, 0xa9, 0x81, 0x93, 0x8c, 0x94, 0xfd, 0x0a,
+	0xb5, 0xba, 0x83, 0x83, 0x45, 0xf8, 0x6e, 0xa3, 0xf2, 0x40, 0x37, 0x29, 0x55, 0xd5, 0xa4, 0x4c,
+	0x3d, 0x97, 0x48, 0x4c, 0xde, 0xf7, 0x7b, 0x63, 0x16, 0xce, 0xa6, 0xfa, 0xbe, 0x2f, 0xab, 0xfb,
+	0x7e, 0x04, 0x18, 0xdc, 0xf7, 0x09, 0x8d, 0x3f, 0x44, 0xf5, 0x01, 0x0b, 0xc7, 0xcc, 0xf1, 0xf5,
+	0x45, 0xdf, 0x8a, 0x23, 0xab, 0x3e, 0x55, 0x10, 0x49, 0x38, 0xfb, 0x97, 0x45, 0x54, 0x1b, 0x0a,
+	0x47, 0xcc, 0xb8, 0xd4, 0x18, 0xce, 0x46, 0x23, 0xca, 0x39, 0xec, 0xdd, 0x50, 0x1a, 0x5c, 0x41,
+	0x24, 0xe1, 0x64, 0xd3, 0xb3, 0xcf, 0x58, 0xc8, 0xcc, 0xa6, 0x87, 0x4a, 0xc0, 0x6c, 0x7a, 0x40,
+	0x02, 0x3f, 0x42, 0x2d, 0x95, 0x74, 0x9c, 0x3b, 0xe3, 0xa4, 0xe1, 0x78, 0x2f, 0x8e, 0xac, 0x55,
+	0x5f, 0x41, 0x86, 0x8a, 0x29, 0x69, 0x7f, 0x5d, 0x96, 0xdd, 0x0a, 0x24, 0xd5, 0x5e, 0xe8, 0xfb,
+	0xce, 0x65, 0x3d, 0x10, 0x17, 0xbb, 0x2d, 0x3f, 0x41, 0xe5, 0xee, 0xe0, 0x40, 0x9f, 0x80, 0x9b,
+	0x89, 0xaa, 0x91, 0x2a, 0x39, 0x3d, 0x29, 0x2d, 0x3b, 0xd6, 0x81, 0x4c, 0x9f, 0x1a, 0xa4, 0x0f,
+	0x74, 0xac, 0x53, 0x99, 0x3f, 0x80, 0x02, 0xeb, 0x88, 0x13, 0x48, 0x66, 0xdd, 0xcf, 0x4e, 0x1d,
+	0x71, 0x42, 0x00, 0x95, 0xec, 0x2e, 0x1b, 0xcf, 0x75, 0xda, 0x02, 0xeb, 0xb0, 0xf1, 0x9c, 0x00,
+	0x8a, 0x1f, 0xc8, 0xde, 0x47, 0xcc, 0x58, 0x00, 0x5d, 0x7c, 0x13, 0xd6, 0x87, 0xe3, 0xc0, 0x00,
+	0x7d, 0x2e, 0x9b, 0x79, 0x62, 0x88, 0xd8, 0xbf, 0x2b, 0xa3, 0x96, 0xf6, 0x44, 0xcf, 0xe3, 0x2f,
+	0xaf, 0x42, 0xf8, 0x0d, 0x42, 0x28, 0x83, 0x54, 0x3b, 0x37, 0x48, 0x16, 0xaa, 0x1e, 0x4c, 0x9c,
+	0x31, 0x87, 0x18, 0x56, 0x55, 0xb7, 0xf0, 0x42, 0x02, 0x44, 0xe1, 0xb9, 0x38, 0x35, 0xfe, 0x77,
+	0x9c, 0xfe, 0x94, 0x9e, 0xb6, 0x67, 0x54, 0x7c, 0x15, 0xb2, 0xab, 0x50, 0xfd, 0xbf, 0xa1, 0xba,
+	0x87, 0xea, 0x43, 0x36, 0x82, 0xc7, 0x80, 0x8a, 0x56, 0x3b, 0x8e, 0xac, 0x06, 0x67, 0xa3, 0xe7,
+	0xf2, 0x41, 0x40, 0x12, 0x52, 0xca, 0xf5, 0xb8, 0x00, 0xb9, 0x7a, 0x2a, 0xe7, 0x72, 0xa1, 0xe5,
+	0x34, 0xa9, 0xe5, 0x06, 0x21, 0x13, 0x3a, 0x70, 0x0b, 0xb9, 0x69, 0xc8, 0x04, 0x49, 0x48, 0xfc,
+	0x31, 0x42, 0x47, 0x7b, 0x83, 0x1f, 0x51, 0x06, 0xee, 0x52, 0x67, 0x11, 0xca, 0xf5, 0x5c, 0x41,
+	0xc4, 0xa0, 0xed, 0xdf, 0x1b, 0xe7, 0x50, 0x06, 0xe8, 0xea, 0xe1, 0x71, 0x81, 0xce, 0x64, 0x1b,
+	0xad, 0x40, 0x53, 0x7e, 0xc4, 0x9c, 0x80, 0xfb, 0x9e, 0x10, 0xd4, 0xd5, 0xfd, 0x35, 0xb4, 0xe2,
+	0xe2, 0x94, 0x2c, 0xf1, 0xf8, 0x3e, 0xba, 0x06, 0x18, 0xa1, 0x23, 0xea, 0xcd, 0xa9, 0x0b, 0x39,
+	0xa0, 0x15, 0xd8, 0x29, 0xc9, 0x92, 0xf6, 0x1f, 0xd2, 0x27, 0xca, 0x13, 0xea, 0xcc, 0xe9, 0x55,
+	0xbc, 0x2e, 0x10, 0x2f, 0xfb, 0x4d, 0x09, 0x35, 0xa5, 0x45, 0x30, 0x86, 0x79, 0x27, 0xae, 0xdc,
+	0x49, 0x3a, 0x2c, 0xed, 0xc9, 0xeb, 0x0b, 0x4f, 0x00, 0xba, 0xe4, 0x01, 0xd5, 0x8d, 0xdd, 0x47,
+	0xb5, 0xa7, 0x54, 0x9c, 0x84, 0xae, 0x9e, 0x97, 0xc1, 0xeb, 0xcd, 0x07, 0xc4, 0x7c, 0xbd, 0x29,
+	0x19, 0xfc, 0x12, 0xe1, 0x43, 0x97, 0x06, 0xc2, 0x13, 0x67, 0xbb, 0x42, 0x30, 0xef, 0x78, 0x26,
+	0xdf, 0x93, 0x55, 0x1d, 0xb9, 0xfc, 0x04, 0x6d, 0x08, 0x33, 0xc0, 0xae, 0x0d, 0x13, 0x8f, 0x85,
+	0x78, 0xba, 0xec, 0xbf, 0x22, 0xab, 0xa6, 0x64, 0xc8, 0x39, 0xcb, 0xda, 0xbf, 0x29, 0x21, 0x24,
+	0x2d, 0xfb, 0x72, 0xea, 0x3a, 0xe2, 0xdd, 0xa4, 0xa7, 0x85, 0xaa, 0x24, 0x9c, 0x50, 0xe9, 0xd2,
+	0x72, 0x32, 0x8e, 0x64, 0x12, 0x20, 0x0a, 0xc7, 0x1f, 0xa3, 0xa6, 0x4e, 0x82, 0x90, 0x69, 0x0f,
+	0xaa, 0x56, 0x39, 0x01, 0x49, 0xca, 0xe3, 0x43, 0x54, 0xdf, 0x3f, 0x9d, 0x7a, 0x6c, 0xe1, 0xb2,
+	0xff, 0x36, 0x74, 0xbc, 0xa9, 0x27, 0x58, 0x75, 0xaa, 0x54, 0x60, 0xee, 0x98, 0xe8, 0xdb, 0xbf,
+	0x2d, 0xa1, 0x96, 0xac, 0xd0, 0x07, 0x21, 0xfb, 0xca, 0x61, 0xef, 0xa6, 0x6d, 0xcd, 0x1e, 0x9e,
+	0xf2, 0x05, 0x8a, 0x5d, 0x9a, 0xba, 0x95, 0x6f, 0x90, 0xba, 0xb2, 0x8d, 0x94, 0x37, 0x5d, 0x35,
+	0xed, 0x5f, 0xe0, 0x96, 0x03, 0xd4, 0xfe, 0x79, 0x09, 0x35, 0x87, 0xb3, 0x63, 0x7e, 0xc6, 0x05,
+	0xf5, 0x2f, 0xb9, 0x7f, 0xee, 0xa2, 0xca, 0x33, 0xc7, 0x4f, 0x46, 0xda, 0x60, 0x69, 0xe0, 0xf8,
+	0x94, 0x00, 0x8a, 0xbf, 0x9b, 0xbc, 0x94, 0xaa, 0x69, 0xfe, 0xd1, 0x53, 0x4f, 0x00, 0xa8, 0xdf,
+	0x48, 0xf6, 0xdf, 0x8b, 0x68, 0x65, 0x6f, 0xe2, 0xd1, 0x40, 0xf4, 0x3c, 0xae, 0xb3, 0xf3, 0x92,
+	0x7b, 0xc5, 0x46, 0x35, 0x42, 0x1d, 0xae, 0x47, 0x00, 0xcd, 0x2e, 0x8a, 0x23, 0xab, 0xc6, 0x00,
+	0x21, 0x9a, 0xb1, 0xbf, 0xae, 0xa1, 0xd5, 0xdd, 0x99, 0xeb, 0x89, 0x7d, 0xf8, 0x27, 0x02, 0xfd,
+	0xc9, 0x8c, 0x72, 0x81, 0x1f, 0x1a, 0xb5, 0x5a, 0x1b, 0xbe, 0x6a, 0x1a, 0x00, 0x44, 0xbf, 0x40,
+	0x8c, 0x8a, 0xbe, 0x63, 0xd6, 0x22, 0x6d, 0x34, 0x36, 0x75, 0x14, 0xd3, 0x2f, 0x90, 0x6c, 0xcd,
+	0xca, 0xcc, 0x62, 0xb5, 0xb9, 0x6b, 0xb9, 0x3b, 0x0e, 0xb8, 0x7e, 0x81, 0xe4, 0xe7, 0xb6, 0x99,
+	0x09, 0xa2, 0x3e, 0x1a, 0x79, 0x5d, 0xe0, 0x0c, 0x5d, 0x35, 0x6d, 0xdc, 0x4c, 0x86, 0x6c, 0xba,
+	0xd0, 0x2c, 0x0e, 0x94, 0x42, 0xfb, 0x05, 0x92, 0x0c, 0xe1, 0x76, 0xcc, 0x71, 0x10, 0x74, 0x18,
+	0x86, 0x5d, 0x29, 0x23, 0xed, 0x32, 0xc6, 0x46, 0x8f, 0xf3, 0xef, 0x66, 0x68, 0x35, 0x32, 0xb7,
+	0xaf, 0xc9, 0xf6, 0x0b, 0x24, 0xff, 0xce, 0x7e, 0x94, 0x79, 0xb3, 0x41, 0x17, 0x6a, 0xb4, 0xc3,
+	0x06, 0xd5, 0x2f, 0x90, 0xcc, 0xeb, 0xee, 0x71, 0xfe, 0x11, 0x01, 0x6d, 0xe9, 0xf2, 0xd6, 0x9a,
+	0x35, 0xb6, 0x4e, 0x1e, 0x1d, 0x8f, 0x32, 0x6d, 0x6a, 0x07, 0x9d, 0xbf, 0xb5, 0x23, 0x1c, 0x73,
+	0x6b, 0xd5, 0xd0, 0x66, 0x1a, 0xa6, 0x4e, 0xeb, 0xdc, 0x88, 0x00, 0x67, 0x44, 0x44, 0x35, 0x57,
+	0x8f, 0x32, 0xf5, 0xba, 0xd3, 0xce, 0x6e, 0x6a, 0x50, 0x72, 0x53, 0xb3, 0xb2, 0x3f, 0x34, 0xca,
+	0x58, 0xe7, 0x5a, 0x36, 0x57, 0x17, 0x84, 0xcc, 0xd5, 0xb4, 0xd8, 0x1d, 0x2c, 0x1f, 0xf5, 0xce,
+	0x75, 0xd0, 0xec, 0x2c, 0x0e, 0x5a, 0x8e, 0xef, 0x17, 0xc8, 0x92, 0x4e, 0xb7, 0x8e, 0xaa, 0x70,
+	0x6c, 0xba, 0x6b, 0xaf, 0xff, 0xba, 0x5e, 0x78, 0xfd, 0x76, 0xbd, 0xf8, 0xe6, 0xed, 0x7a, 0xf1,
+	0x2f, 0x6f, 0xd7, 0x8b, 0xbf, 0xfe, 0xdb, 0x7a, 0xe1, 0xb8, 0x06, 0xb7, 0xd6, 0x27, 0xff, 0x09,
+	0x00, 0x00, 0xff, 0xff, 0x60, 0x93, 0x9b, 0x41, 0x49, 0x1c, 0x00, 0x00,
 }

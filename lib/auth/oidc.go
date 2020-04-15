@@ -107,10 +107,12 @@ func (s *AuthServer) createOIDCClient(conn services.OIDCConnector) (*oidc.Client
 				Type: events.UserLoginEvent,
 				Code: events.UserSSOLoginFailureCode,
 			},
-			Method:             events.LoginMethodOIDC,
-			AuthAttemptSuccess: false,
-			AuthAttemptErr:     trace.Unwrap(ctx.Err()).Error(),
-			AuthAttemptMessage: err.Error(),
+			Method: events.LoginMethodOIDC,
+			Status: events.Status{
+				Success:     false,
+				Error:       trace.Unwrap(ctx.Err()).Error(),
+				UserMessage: err.Error(),
+			},
 		})
 		// return user-friendly error hiding the actual error in the event
 		// logs for security purposes
@@ -207,9 +209,9 @@ func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, 
 	}
 	if err != nil {
 		event.Code = events.UserSSOLoginFailureCode
-		event.AuthAttemptSuccess = false
-		event.AuthAttemptErr = trace.Unwrap(err).Error()
-		event.AuthAttemptMessage = err.Error()
+		event.Status.Success = false
+		event.Status.Error = trace.Unwrap(err).Error()
+		event.Status.UserMessage = err.Error()
 		if re != nil && re.claims != nil {
 			attributes, err := events.EncodeMap(re.claims)
 			if err != nil {
@@ -223,7 +225,7 @@ func (a *AuthServer) ValidateOIDCAuthCallback(q url.Values) (*OIDCAuthResponse, 
 	}
 	event.Code = events.UserSSOLoginCode
 	event.User = re.auth.Username
-	event.AuthAttemptSuccess = true
+	event.Status.Success = true
 	if re.claims != nil {
 		attributes, err := events.EncodeMap(re.claims)
 		if err != nil {

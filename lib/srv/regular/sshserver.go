@@ -526,6 +526,7 @@ func New(addr utils.NetAddr,
 		AuditLog:    s.alog,
 		AccessPoint: s.authService,
 		FIPS:        s.fips,
+		Emitter:     s.emitter,
 	}
 
 	// common term handlers
@@ -577,6 +578,11 @@ func New(addr utils.NetAddr,
 
 func (s *Server) getNamespace() string {
 	return services.ProcessNamespace(s.namespace)
+}
+
+// Context returns server shutdown context
+func (s *Server) Context() context.Context {
+	return s.ctx
 }
 
 func (s *Server) Component() string {
@@ -986,14 +992,23 @@ func (s *Server) handleDirectTCPIPRequest(wconn net.Conn, sconn *ssh.ServerConn,
 	}
 
 	// Emit a port forwarding event.
-	// !!!FIXEVENTS!!!
-	s.EmitAuditEvent(events.PortForwardE, events.EventFields{
-		events.PortForwardAddr:    ctx.DstAddr,
-		events.PortForwardSuccess: true,
-		events.EventLogin:         ctx.Identity.Login,
-		events.EventUser:          ctx.Identity.TeleportUser,
-		events.LocalAddr:          sconn.LocalAddr().String(),
-		events.RemoteAddr:         sconn.RemoteAddr().String(),
+	s.EmitAuditEvent(s.ctx, &events.PortForward{
+		Metadata: events.Metadata{
+			Type: events.PortForwardEvent,
+			Code: events.PortForwardCode,
+		},
+		UserMetadata: events.UserMetadata{
+			Login: ctx.Identity.Login,
+			User:  ctx.Identity.TeleportUser,
+		},
+		ConnectionMetadata: events.ConnectionMetadata{
+			LocalAddr:  sconn.LocalAddr().String(),
+			RemoteAddr: sconn.RemoteAddr().String(),
+		},
+		Addr: ctx.DstAddr,
+		Status: events.Status{
+			Success: true,
+		},
 	})
 }
 

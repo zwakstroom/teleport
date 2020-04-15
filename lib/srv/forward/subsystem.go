@@ -131,17 +131,27 @@ func (r *remoteSubsystem) Wait() error {
 
 func (r *remoteSubsystem) emitAuditEvent(err error) {
 	srv := r.serverContext.GetServer()
-	// !!!FIXEVENTS!!!
-	event := events.SubsystemE
-	if err != nil {
-		event = events.SubsystemFailureE
+	subsystemEvent := &events.Subsystem{
+		Metadata: events.Metadata{
+			Type: events.SubsystemEvent,
+		},
+		UserMetadata: events.UserMetadata{
+			User:  r.serverContext.Identity.TeleportUser,
+			Login: r.serverContext.Identity.Login,
+		},
+		ConnectionMetadata: events.ConnectionMetadata{
+			LocalAddr:  r.serverContext.RemoteClient.LocalAddr().String(),
+			RemoteAddr: r.serverContext.RemoteClient.RemoteAddr().String(),
+		},
+		Name: r.subsytemName,
 	}
-	srv.EmitAuditEvent(event, events.EventFields{
-		events.SubsystemName:  r.subsytemName,
-		events.SubsystemError: err,
-		events.EventUser:      r.serverContext.Identity.TeleportUser,
-		events.EventLogin:     r.serverContext.Identity.Login,
-		events.LocalAddr:      r.serverContext.RemoteClient.LocalAddr().String(),
-		events.RemoteAddr:     r.serverContext.RemoteClient.RemoteAddr().String(),
-	})
+
+	if err != nil {
+		subsystemEvent.Code = events.SubsystemFailureCode
+		subsystemEvent.Error = err.Error()
+	} else {
+		subsystemEvent.Code = events.SubsystemCode
+	}
+
+	srv.EmitAuditEvent(srv.Context(), subsystemEvent)
 }

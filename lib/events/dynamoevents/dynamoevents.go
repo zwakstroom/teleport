@@ -20,7 +20,6 @@ package dynamoevents
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"sort"
 	"time"
@@ -228,14 +227,13 @@ const (
 // EmitAuditEvent emits audit event
 func (l *Log) EmitAuditEvent(ctx context.Context, in events.AuditEvent) error {
 	data, err := utils.FastMarshal(in)
-	fmt.Printf("EmitAuditEvent(%v) -> %v\n\n", string(data), err)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	var sessionID string
 	getter, ok := in.(events.SessionMetadataGetter)
-	if ok {
+	if ok && getter.GetSessionID() != "" {
 		sessionID = getter.GetSessionID()
 	} else {
 		// no session id - global event gets a random uuid to get a good partition
@@ -260,7 +258,7 @@ func (l *Log) EmitAuditEvent(ctx context.Context, in events.AuditEvent) error {
 		Item:      av,
 		TableName: aws.String(l.Tablename),
 	}
-	_, err = l.svc.PutItem(&input)
+	_, err = l.svc.PutItemWithContext(ctx, &input)
 	err = convertError(err)
 	if err != nil {
 		return trace.Wrap(err)

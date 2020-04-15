@@ -434,7 +434,9 @@ func (a *AuthServer) UpsertUser(user services.User) error {
 			Type: events.UserUpdatedEvent,
 			Code: events.UserUpdateCode,
 		},
-		User:      user.GetName(),
+		UserMetadata: events.UserMetadata{
+			User: user.GetName(),
+		},
 		Expires:   user.Expiry(),
 		Roles:     user.GetRoles(),
 		Connector: connectorName,

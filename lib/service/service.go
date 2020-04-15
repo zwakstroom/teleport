@@ -1505,7 +1505,7 @@ func (process *TeleportProcess) initSSH() error {
 		}
 
 		emitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
-			Inner: conn.Client,
+			Inner: events.NewMultiEmitter(events.NewLoggingEmitter(), conn.Client),
 			Clock: process.Clock,
 		})
 		if err != nil {
@@ -2058,6 +2058,14 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		trace.Component: teleport.Component(teleport.ComponentReverseTunnelServer, process.id),
 	})
 
+	emitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
+		Inner: events.NewMultiEmitter(events.NewLoggingEmitter(), conn.Client),
+		Clock: process.Clock,
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	// register SSH reverse tunnel server that accepts connections
 	// from remote teleport nodes
 	var tsrv reversetunnel.Server
@@ -2087,6 +2095,7 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 				DataDir:       process.Config.DataDir,
 				PollingPeriod: process.Config.PollingPeriod,
 				FIPS:          cfg.FIPS,
+				Emitter:       emitter,
 			})
 		if err != nil {
 			return trace.Wrap(err)
@@ -2173,14 +2182,6 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		})
 	} else {
 		log.Infof("Web UI is disabled.")
-	}
-
-	emitter, err := events.NewCheckingEmitter(events.CheckingEmitterConfig{
-		Inner: conn.Client,
-		Clock: process.Clock,
-	})
-	if err != nil {
-		return trace.Wrap(err)
 	}
 
 	// Register SSH proxy server - SSH jumphost proxy server

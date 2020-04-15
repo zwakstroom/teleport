@@ -42,7 +42,6 @@ type AuthWithRoles struct {
 	authServer *AuthServer
 	sessions   session.Service
 	alog       events.IAuditLog
-	emitter    events.StreamEmitter
 	// context holds authorization context
 	context AuthContext
 }
@@ -1341,7 +1340,7 @@ func (a *AuthWithRoles) EmitAuditEvent(ctx context.Context, event events.AuditEv
 		// this message is sparse on purpose to avoid conveying extra data to potenital attacker
 		return trace.AccessDenied("failed to validate event metadata")
 	}
-	return a.emitter.EmitAuditEvent(ctx, event)
+	return a.authServer.emitter.EmitAuditEvent(ctx, event)
 }
 
 func (a *AuthWithRoles) EmitAuditEventLegacy(event events.Event, fields events.EventFields) error {

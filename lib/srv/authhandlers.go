@@ -48,6 +48,9 @@ type AuthHandlers struct {
 	// AuditLog is the service used to access Audit Log.
 	AuditLog events.IAuditLog
 
+	// Emitter is event emitter
+	Emitter events.Emitter
+
 	// AccessPoint is used to access the Auth Server.
 	AccessPoint auth.AccessPoint
 
@@ -108,16 +111,25 @@ func (h *AuthHandlers) CheckPortForward(addr string, ctx *ServerContext) error {
 		systemErrorMessage := fmt.Sprintf("port forwarding not allowed by role set: %v", ctx.Identity.RoleSet)
 		userErrorMessage := "port forwarding not allowed"
 
-		// emit port forward failure event
-		// !!!FIXEVENTS!!!
-		h.AuditLog.EmitAuditEventLegacy(events.PortForwardFailureE, events.EventFields{
-			events.PortForwardAddr:    addr,
-			events.PortForwardSuccess: false,
-			events.PortForwardErr:     systemErrorMessage,
-			events.EventLogin:         ctx.Identity.Login,
-			events.EventUser:          ctx.Identity.TeleportUser,
-			events.LocalAddr:          ctx.Conn.LocalAddr().String(),
-			events.RemoteAddr:         ctx.Conn.RemoteAddr().String(),
+		// Emit port forward failure event
+		h.Emitter.EmitAuditEvent(h.Server.Context(), &events.PortForward{
+			Metadata: events.Metadata{
+				Type: events.PortForwardEvent,
+				Code: events.PortForwardFailureCode,
+			},
+			UserMetadata: events.UserMetadata{
+				Login: ctx.Identity.Login,
+				User:  ctx.Identity.TeleportUser,
+			},
+			ConnectionMetadata: events.ConnectionMetadata{
+				LocalAddr:  ctx.Conn.LocalAddr().String(),
+				RemoteAddr: ctx.Conn.RemoteAddr().String(),
+			},
+			Addr: addr,
+			Status: events.Status{
+				Success: false,
+				Error:   systemErrorMessage,
+			},
 		})
 		h.Warnf("Port forwarding request denied: %v.", systemErrorMessage)
 

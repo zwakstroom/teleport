@@ -574,6 +574,18 @@ func auditEventToGRPC(in events.AuditEvent) (*events.AuditEventRequest, error) {
 		out.Event = &events.AuditEventRequest_SessionLeave{
 			SessionLeave: e,
 		}
+	case *events.PortForward:
+		out.Event = &events.AuditEventRequest_PortForward{
+			PortForward: e,
+		}
+	case *events.Subsystem:
+		out.Event = &events.AuditEventRequest_Subsystem{
+			Subsystem: e,
+		}
+	case *events.ClientDisconnect:
+		out.Event = &events.AuditEventRequest_ClientDisconnect{
+			ClientDisconnect: e,
+		}
 	default:
 		return nil, trace.BadParameter("event type %T is not supported", in)
 	}
@@ -603,6 +615,12 @@ func auditEventFromGRPC(in events.AuditEventRequest) (events.AuditEvent, error) 
 	} else if e := in.GetSessionData(); e != nil {
 		return e, nil
 	} else if e := in.GetSessionLeave(); e != nil {
+		return e, nil
+	} else if e := in.GetPortForward(); e != nil {
+		return e, nil
+	} else if e := in.GetSubsystem(); e != nil {
+		return e, nil
+	} else if e := in.GetClientDisconnect(); e != nil {
 		return e, nil
 	} else {
 		return nil, trace.BadParameter("received unsupported event %T", in.Event)

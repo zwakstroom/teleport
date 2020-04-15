@@ -64,8 +64,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
-					User:      "bob@example.com",
-					Login:     "bob",
+				},
+				UserMetadata: UserMetadata{
+					User:  "bob@example.com",
+					Login: "bob",
 				},
 				ConnectionMetadata: ConnectionMetadata{
 					LocalAddr:  "127.0.0.1:3022",
@@ -91,8 +93,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
-					User:      "bob@example.com",
-					Login:     "bob",
+				},
+				UserMetadata: UserMetadata{
+					User:  "bob@example.com",
+					Login: "bob",
 				},
 				TerminalSize: "194:59",
 			},
@@ -114,8 +118,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
-					User:      "bob@example.com",
-					Login:     "bob",
+				},
+				UserMetadata: UserMetadata{
+					User:  "bob@example.com",
+					Login: "bob",
 				},
 				TerminalSize: "194:59",
 			},
@@ -152,8 +158,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
-					User:      "alice@example.com",
-					Login:     "alice",
+				},
+				UserMetadata: UserMetadata{
+					User:  "alice@example.com",
+					Login: "alice",
 				},
 				BPFMetadata: BPFMetadata{
 					CgroupID: 4294971450,
@@ -183,8 +191,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "e9a4bd34-78ff-11ea-b062-507b9dd95841",
-					User:      "alice@example.com",
-					Login:     "alice",
+				},
+				UserMetadata: UserMetadata{
+					User:  "alice@example.com",
+					Login: "alice",
 				},
 				BPFMetadata: BPFMetadata{
 					CgroupID: 4294976805,
@@ -214,8 +224,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "ddddce15-7909-11ea-b062-507b9dd95841",
-					User:      "bob@example.com",
-					Login:     "bob",
+				},
+				UserMetadata: UserMetadata{
+					User:  "bob@example.com",
+					Login: "bob",
 				},
 				BPFMetadata: BPFMetadata{
 					CgroupID: 4294976835,
@@ -237,8 +249,12 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Time: time.Date(2020, 04, 07, 18, 45, 07, 0*int(time.Millisecond), time.UTC),
 					Code: UserSSOLoginCode,
 				},
-				User:               "bob@example.com",
-				AuthAttemptSuccess: true,
+				Status: Status{
+					Success: true,
+				},
+				UserMetadata: UserMetadata{
+					User: "bob@example.com",
+				},
 				IdentityAttributes: MustEncodeMap(map[string]interface{}{
 					"followers_url": "https://api.github.com/users/bob/followers",
 					"err":           nil,
@@ -279,8 +295,10 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "ddddce15-7909-11ea-b062-507b9dd95841",
-					User:      "alice@example.com",
-					Login:     "alice",
+				},
+				UserMetadata: UserMetadata{
+					User:  "alice@example.com",
+					Login: "alice",
 				},
 				ConnectionMetadata: ConnectionMetadata{
 					LocalAddr:  "127.0.0.1:3022",
@@ -307,7 +325,9 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 				SessionMetadata: SessionMetadata{
 					SessionID: "ddddce15-7909-11ea-b062-507b9dd95841",
-					User:      "alice@example.com",
+				},
+				UserMetadata: UserMetadata{
+					User: "alice@example.com",
 				},
 			},
 		},
@@ -321,10 +341,83 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 					Time: time.Date(2020, 4, 7, 18, 45, 7, 0*int(time.Millisecond), time.UTC),
 					Code: UserUpdateCode,
 				},
-				User:      "alice@example.com",
+				UserMetadata: UserMetadata{
+					User: "alice@example.com",
+				},
 				Expires:   time.Date(2020, 4, 8, 2, 45, 6, 524816756*int(time.Nanosecond), time.UTC),
 				Connector: "auth0",
 				Roles:     []string{"clusteradmin"},
+			},
+		},
+		{
+			name: "success port forward",
+			json: `{"ei": 0, "addr":"localhost:3025","addr.local":"127.0.0.1:3022","addr.remote":"127.0.0.1:45976","code":"T3003I","event":"port","login":"alice","success":true,"time":"2020-04-15T18:06:56.397Z","uid":"7efc5025-a712-47de-8086-7d935c110188","user":"alice@example.com"}`,
+			event: PortForward{
+				Metadata: Metadata{
+					ID:   "7efc5025-a712-47de-8086-7d935c110188",
+					Type: PortForwardEvent,
+					Time: time.Date(2020, 4, 15, 18, 06, 56, 397*int(time.Millisecond), time.UTC),
+					Code: PortForwardCode,
+				},
+				UserMetadata: UserMetadata{
+					User:  "alice@example.com",
+					Login: "alice",
+				},
+				ConnectionMetadata: ConnectionMetadata{
+					LocalAddr:  "127.0.0.1:3022",
+					RemoteAddr: "127.0.0.1:45976",
+				},
+				Status: Status{
+					Success: true,
+				},
+				Addr: "localhost:3025",
+			},
+		},
+		{
+			name: "rejected port forward",
+			json: `{"ei": 0, "addr":"localhost:3025","addr.local":"127.0.0.1:3022","addr.remote":"127.0.0.1:46452","code":"T3003E","error":"port forwarding not allowed by role set: roles clusteradmin,default-implicit-role","event":"port","login":"bob","success":false,"time":"2020-04-15T18:20:21Z","uid":"097724d1-5ee3-4c8d-a911-ea6021e5b3fb","user":"bob@example.com"}`,
+			event: PortForward{
+				Metadata: Metadata{
+					ID:   "097724d1-5ee3-4c8d-a911-ea6021e5b3fb",
+					Type: PortForwardEvent,
+					Time: time.Date(2020, 4, 15, 18, 20, 21, 0*int(time.Millisecond), time.UTC),
+					Code: PortForwardFailureCode,
+				},
+				UserMetadata: UserMetadata{
+					User:  "bob@example.com",
+					Login: "bob",
+				},
+				ConnectionMetadata: ConnectionMetadata{
+					LocalAddr:  "127.0.0.1:3022",
+					RemoteAddr: "127.0.0.1:46452",
+				},
+				Status: Status{
+					Error:   "port forwarding not allowed by role set: roles clusteradmin,default-implicit-role",
+					Success: false,
+				},
+				Addr: "localhost:3025",
+			},
+		},
+		{
+			name: "rejected subsystem",
+			json: `{"ei": 0, "addr.local":"127.0.0.1:57518","addr.remote":"127.0.0.1:3022","code":"T3001E","event":"subsystem","exitError":"some error","login":"alice","name":"proxy","time":"2020-04-15T20:28:18Z","uid":"3129a5ae-ee1e-4b39-8d7c-a0a3f218e7dc","user":"alice@example.com"}`,
+			event: Subsystem{
+				Metadata: Metadata{
+					ID:   "3129a5ae-ee1e-4b39-8d7c-a0a3f218e7dc",
+					Type: SubsystemEvent,
+					Time: time.Date(2020, 4, 15, 20, 28, 18, 0*int(time.Millisecond), time.UTC),
+					Code: SubsystemFailureCode,
+				},
+				UserMetadata: UserMetadata{
+					User:  "alice@example.com",
+					Login: "alice",
+				},
+				ConnectionMetadata: ConnectionMetadata{
+					LocalAddr:  "127.0.0.1:57518",
+					RemoteAddr: "127.0.0.1:3022",
+				},
+				Name:  "proxy",
+				Error: "some error",
 			},
 		},
 	}

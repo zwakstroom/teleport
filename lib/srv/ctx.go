@@ -120,6 +120,9 @@ type Server interface {
 
 	// GetBPF returns the BPF service used for enhanced session recording.
 	GetBPF() bpf.BPF
+
+	// Context returns server shutdown context
+	Context() context.Context
 }
 
 // IdentityContext holds all identity information associated with the user

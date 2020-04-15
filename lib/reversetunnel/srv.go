@@ -28,6 +28,7 @@ import (
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/limiter"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/sshca"
@@ -183,6 +184,9 @@ type Config struct {
 	// FIPS means Teleport was started in a FedRAMP/FIPS 140-2 compliant
 	// configuration.
 	FIPS bool
+
+	// Emitter is event emitter
+	Emitter events.Emitter
 }
 
 // CheckAndSetDefaults checks parameters and sets default values
@@ -201,6 +205,9 @@ func (cfg *Config) CheckAndSetDefaults() error {
 	}
 	if cfg.DataDir == "" {
 		return trace.BadParameter("missing parameter DataDir")
+	}
+	if cfg.Emitter == nil {
+		return trace.BadParameter("missing parameter Emitter")
 	}
 	if cfg.Context == nil {
 		cfg.Context = context.TODO()
