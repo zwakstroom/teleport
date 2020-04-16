@@ -48,12 +48,12 @@ type GRPCServer struct {
 }
 
 // EmitAuditEvent emtis audit event
-func (g *GRPCServer) EmitAuditEvent(ctx context.Context, req *events.AuditEventRequest) (*empty.Empty, error) {
+func (g *GRPCServer) EmitAuditEvent(ctx context.Context, req *events.OneOf) (*empty.Empty, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
-	event, err := auditEventFromGRPC(*req)
+	event, err := events.FromOneOf(*req)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
@@ -522,107 +522,5 @@ func eventTypeFromGRPC(in proto.Operation) (backend.OpType, error) {
 		return backend.OpDelete, nil
 	default:
 		return -1, trace.BadParameter("unsupported operation type: %v", in)
-	}
-}
-
-// auditEventToGRPC converts audit event to GRPC wrapper
-func auditEventToGRPC(in events.AuditEvent) (*events.AuditEventRequest, error) {
-	out := events.AuditEventRequest{}
-
-	switch e := in.(type) {
-	case *events.UserLogin:
-		out.Event = &events.AuditEventRequest_UserLogin{
-			UserLogin: e,
-		}
-	case *events.UserUpdate:
-		out.Event = &events.AuditEventRequest_UserUpdate{
-			UserUpdate: e,
-		}
-	case *events.SessionStart:
-		out.Event = &events.AuditEventRequest_SessionStart{
-			SessionStart: e,
-		}
-	case *events.SessionPrint:
-		out.Event = &events.AuditEventRequest_SessionPrint{
-			SessionPrint: e,
-		}
-	case *events.Resize:
-		out.Event = &events.AuditEventRequest_Resize{
-			Resize: e,
-		}
-	case *events.SessionEnd:
-		out.Event = &events.AuditEventRequest_SessionEnd{
-			SessionEnd: e,
-		}
-	case *events.SessionCommand:
-		out.Event = &events.AuditEventRequest_SessionCommand{
-			SessionCommand: e,
-		}
-	case *events.SessionDisk:
-		out.Event = &events.AuditEventRequest_SessionDisk{
-			SessionDisk: e,
-		}
-	case *events.SessionNetwork:
-		out.Event = &events.AuditEventRequest_SessionNetwork{
-			SessionNetwork: e,
-		}
-	case *events.SessionData:
-		out.Event = &events.AuditEventRequest_SessionData{
-			SessionData: e,
-		}
-	case *events.SessionLeave:
-		out.Event = &events.AuditEventRequest_SessionLeave{
-			SessionLeave: e,
-		}
-	case *events.PortForward:
-		out.Event = &events.AuditEventRequest_PortForward{
-			PortForward: e,
-		}
-	case *events.Subsystem:
-		out.Event = &events.AuditEventRequest_Subsystem{
-			Subsystem: e,
-		}
-	case *events.ClientDisconnect:
-		out.Event = &events.AuditEventRequest_ClientDisconnect{
-			ClientDisconnect: e,
-		}
-	default:
-		return nil, trace.BadParameter("event type %T is not supported", in)
-	}
-	return &out, nil
-}
-
-// auditEventFromGRPC converts audit event from GRPC wrapper to interface
-func auditEventFromGRPC(in events.AuditEventRequest) (events.AuditEvent, error) {
-	if e := in.GetUserLogin(); e != nil {
-		return e, nil
-	} else if e := in.GetUserUpdate(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionStart(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionPrint(); e != nil {
-		return e, nil
-	} else if e := in.GetResize(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionEnd(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionCommand(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionDisk(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionNetwork(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionData(); e != nil {
-		return e, nil
-	} else if e := in.GetSessionLeave(); e != nil {
-		return e, nil
-	} else if e := in.GetPortForward(); e != nil {
-		return e, nil
-	} else if e := in.GetSubsystem(); e != nil {
-		return e, nil
-	} else if e := in.GetClientDisconnect(); e != nil {
-		return e, nil
-	} else {
-		return nil, trace.BadParameter("received unsupported event %T", in.Event)
 	}
 }

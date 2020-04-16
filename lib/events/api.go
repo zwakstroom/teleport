@@ -288,6 +288,10 @@ const (
 
 // AuditEvent represents audit event
 type AuditEvent interface {
+	// ProtoMarshaler implements efficient
+	// protobuf marshaling methods
+	ProtoMarshaler
+
 	// GetID returns unique event ID
 	GetID() string
 	// SetID sets unique event ID
@@ -308,11 +312,21 @@ type AuditEvent interface {
 	// SetTime sets event time
 	SetTime(time.Time)
 
-	// GetIndex gets event index - a non-uniquemonotonicaly incremented number
+	// GetIndex gets event index - a non-unique
+	// monotonicaly incremented number
 	// in the event sequence
 	GetIndex() int64
 	// SetIndex sets event index
 	SetIndex(idx int64)
+}
+
+// ProtoMarshaler implements marshaler interface
+type ProtoMarshaler interface {
+	// Size returns size of the object when marshaled
+	Size() (n int)
+
+	// MarshalTo marshals the object to sized buffer
+	MarshalTo(dAtA []byte) (int, error)
 }
 
 // ServerMetadataGetter represents interface

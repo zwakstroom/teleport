@@ -1,0 +1,184 @@
+package events
+
+import (
+	"bytes"
+	"context"
+	"encoding/binary"
+	"io"
+	"io/ioutil"
+
+	"github.com/gravitational/teleport/lib/utils"
+
+	"github.com/gravitational/trace"
+)
+
+// Upload represents upload operation, for example
+// S3 multipart upload
+type Upload interface {
+	// Complete completes upload
+	Complete() error
+	// UploadPart uploads part
+	UploadPart(io.ReadSeeker) error
+}
+
+// NewProtoEmitter returns emitter that
+// writes a protobuf marshaled stream to the multipart uploader
+func NewProtoEmitter(upload Upload, pool utils.SlicePool) *ProtoEmitter {
+	return &ProtoEmitter{
+		upload: upload,
+		slice:  pool.Get(),
+		pool:   pool,
+	}
+}
+
+// ProtoEmitter implements a protobuf stream emitter,
+// that is not concurrent safe
+type ProtoEmitter struct {
+	bytesWritten int64
+	slice        []byte
+	upload       Upload
+	pool         utils.SlicePool
+}
+
+const int32Size = 4
+
+// MaxProtoMessageSize is maximum protobuf marshaled message size
+const MaxProtoMessageSize = 64 * 1024
+
+// EmitAuditEvent emtits a single audit event to the stream
+func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	// slice is closed
+	if s.slice == nil {
+		return trace.BadParameter("emitter is closed")
+	}
+
+	oneof, err := ToOneOf(event)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	messageSize := oneof.Size()
+	if messageSize > MaxProtoMessageSize {
+		return trace.BadParameter("record size %v exceeds %v bytes", messageSize, MaxProtoMessageSize)
+	}
+
+	recordSize := int64(messageSize + int32Size)
+	// if record size exceeds the allocated slice size, upload the part
+	// and start over
+	if recordSize > int64(len(s.slice))-s.bytesWritten {
+		if err := s.uploadSlice(); err != nil {
+			return trace.Wrap(err)
+		}
+	}
+	// Push record, starting with record size and then the record itself
+	// Network byte order is used because it's most convenient to read for humans
+	binary.BigEndian.PutUint32(s.slice[s.bytesWritten:], uint32(messageSize))
+	s.bytesWritten += int32Size
+	_, err = oneof.MarshalTo(s.slice[s.bytesWritten : s.bytesWritten+int64(messageSize)])
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	s.bytesWritten += int64(messageSize)
+	return nil
+}
+
+func (s *ProtoEmitter) uploadSlice() error {
+	// set the rest of the slice to zero bytes
+	s.pool.Zero(s.slice[s.bytesWritten:])
+	if err := s.upload.UploadPart(bytes.NewReader(s.slice[:s.bytesWritten])); err != nil {
+		return trace.Wrap(err)
+	}
+	s.bytesWritten = 0
+	// do not hold event data in memory with no good reason
+	s.pool.Zero(s.slice)
+	return nil
+}
+
+// Close completes the upload and returns all allocated resources
+func (s *ProtoEmitter) Close() error {
+	if s.bytesWritten == 0 {
+		return nil
+	}
+	err := s.uploadSlice()
+	// do not hold event data in memory with no good reason
+	s.pool.Put(s.slice)
+	s.slice = nil
+	return trace.Wrap(err)
+}
+
+// NewProtoReader returns a new proto reader with slice pool
+func NewProtoReader(r io.Reader) *ProtoReader {
+	return &ProtoReader{
+		reader: r,
+	}
+}
+
+// ProtoReader reads protobuf encoding from reader
+type ProtoReader struct {
+	reader       io.Reader
+	sizeBytes    [int32Size]byte
+	messageBytes [MaxProtoMessageSize]byte
+}
+
+// Reset sets reader to read from the passed reader
+func (r *ProtoReader) Reset(reader io.Reader) {
+	r.reader = reader
+}
+
+// Read returns next event or io.EOF in case of the end of the parts
+func (r *ProtoReader) Read() (AuditEvent, error) {
+	_, err := io.ReadFull(r.reader, r.sizeBytes[:])
+	if err != nil {
+		return nil, trace.ConvertSystemError(err)
+	}
+	messageSize := binary.BigEndian.Uint32(r.sizeBytes[:])
+	if messageSize == 0 {
+		return nil, io.EOF
+	}
+	_, err = io.ReadFull(r.reader, r.messageBytes[:messageSize])
+	if err != nil {
+		return nil, trace.ConvertSystemError(err)
+	}
+	oneof := OneOf{}
+	err = oneof.Unmarshal(r.messageBytes[:messageSize])
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return FromOneOf(oneof)
+}
+
+// ReadAll reads all events until EOF
+func (r *ProtoReader) ReadAll() ([]AuditEvent, error) {
+	var events []AuditEvent
+	for {
+		event, err := r.Read()
+		if err != nil {
+			if err == io.EOF {
+				return events, nil
+			}
+			return nil, trace.Wrap(err)
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
+// MemoryUpload uploads all bytes to memory, used in tests
+type MemoryUpload struct {
+	Parts [][]byte
+}
+
+// Complete completes upload
+func (m *MemoryUpload) Complete() error {
+	return nil
+}
+
+// UploadPart uploads part
+func (m *MemoryUpload) UploadPart(rs io.ReadSeeker) error {
+	data, err := ioutil.ReadAll(rs)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	m.Parts = append(m.Parts, data)
+	return nil
+}

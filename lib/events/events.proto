@@ -409,8 +409,8 @@ message ClientDisconnect {
 	string Reason = 4 [(gogoproto.jsontag) = "reason"];
 }
 
-// AuditEventRequest is one of audit events submitted to the auth service
-message AuditEventRequest {
+// OneOf is a union of one of audit events submitted to the auth service
+message OneOf {
     // Event is one of the audit events
     oneof Event {
         events.UserLogin UserLogin = 1;

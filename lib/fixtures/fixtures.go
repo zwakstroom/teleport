@@ -46,6 +46,26 @@ func DeepCompare(c *check.C, a, b interface{}) {
 	c.Assert(a, check.DeepEquals, b, check.Commentf("%v\nStack:\n%v\n", diff.Diff(d.Sdump(a), d.Sdump(b)), string(debug.Stack())))
 }
 
+// DeepCompareSlices compares two slices
+func DeepCompareSlices(c *check.C, a, b interface{}) {
+	aval, bval := reflect.ValueOf(a), reflect.ValueOf(b)
+	if aval.Kind() != reflect.Slice {
+		c.Fatalf("%v is not a map, %T", a, a)
+	}
+
+	if bval.Kind() != reflect.Slice {
+		c.Fatalf("%v is not a map, %T", b, b)
+	}
+
+	if aval.Len() != bval.Len() {
+		c.Fatalf("slices have different length of %v and %v", aval.Len(), bval.Len())
+	}
+
+	for i := 0; i < aval.Len(); i++ {
+		DeepCompare(c, aval.Index(i).Interface(), bval.Index(i).Interface())
+	}
+}
+
 // DeepCompareMaps compares two maps
 func DeepCompareMaps(c *check.C, a, b interface{}) {
 	aval, bval := reflect.ValueOf(a), reflect.ValueOf(b)

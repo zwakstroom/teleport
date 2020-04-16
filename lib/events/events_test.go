@@ -42,39 +42,9 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 	}
 	testCases := []testCase{
 		{
-			name: "session start event",
-			json: `{"ei":0,"event":"session.start","uid":"36cee9e9-9a80-4c32-9163-3d9241cdac7a","code":"T2000I","time":"2020-03-30T15:58:54.561Z","namespace":"default","sid":"5b3555dc-729f-11ea-b66a-507b9dd95841","login":"bob","user":"bob@example.com","server_id":"a7c54b0c-469c-431e-af4d-418cd3ae9694","server_hostname":"planet","server_labels":{"group":"gravitational/devc","kernel":"5.3.0-42-generic","date":"Mon Mar 30 08:58:54 PDT 2020"},"addr.local":"127.0.0.1:3022","addr.remote":"[::1]:37718","size":"80:25"}`,
-			event: SessionStart{
-				Metadata: Metadata{
-					Index: 0,
-					Type:  SessionStartEvent,
-					ID:    "36cee9e9-9a80-4c32-9163-3d9241cdac7a",
-					Code:  SessionStartCode,
-					Time:  time.Date(2020, 03, 30, 15, 58, 54, 561*int(time.Millisecond), time.UTC),
-				},
-				ServerMetadata: ServerMetadata{
-					ServerID: "a7c54b0c-469c-431e-af4d-418cd3ae9694",
-					ServerLabels: map[string]string{
-						"kernel": "5.3.0-42-generic",
-						"date":   "Mon Mar 30 08:58:54 PDT 2020",
-						"group":  "gravitational/devc",
-					},
-					ServerHostname:  "planet",
-					ServerNamespace: "default",
-				},
-				SessionMetadata: SessionMetadata{
-					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
-				},
-				UserMetadata: UserMetadata{
-					User:  "bob@example.com",
-					Login: "bob",
-				},
-				ConnectionMetadata: ConnectionMetadata{
-					LocalAddr:  "127.0.0.1:3022",
-					RemoteAddr: "[::1]:37718",
-				},
-				TerminalSize: "80:25",
-			},
+			name:  "session start event",
+			json:  `{"ei":0,"event":"session.start","uid":"36cee9e9-9a80-4c32-9163-3d9241cdac7a","code":"T2000I","time":"2020-03-30T15:58:54.561Z","namespace":"default","sid":"5b3555dc-729f-11ea-b66a-507b9dd95841","login":"bob","user":"bob@example.com","server_id":"a7c54b0c-469c-431e-af4d-418cd3ae9694","server_hostname":"planet","server_labels":{"group":"gravitational/devc","kernel":"5.3.0-42-generic","date":"Mon Mar 30 08:58:54 PDT 2020"},"addr.local":"127.0.0.1:3022","addr.remote":"[::1]:37718","size":"80:25"}`,
+			event: sessionStart,
 		},
 		{
 			name: "resize event",
@@ -102,29 +72,9 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 			},
 		},
 		{
-			name: "session end event",
-			json: `{"time":"2020-03-30T15:58:54.564Z","uid":"c34e512f-e6cb-44f1-ab94-4cea09002d29","event":"resize","login":"bob","sid":"5b3555dc-729f-11ea-b66a-507b9dd95841","size":"194:59","ei":1,"code":"T2002I","namespace":"default","server_id":"a7c54b0c-469c-431e-af4d-418cd3ae9694","user":"bob@example.com"}`,
-			event: Resize{
-				Metadata: Metadata{
-					Index: 1,
-					Type:  ResizeEvent,
-					ID:    "c34e512f-e6cb-44f1-ab94-4cea09002d29",
-					Code:  TerminalResizeCode,
-					Time:  time.Date(2020, 03, 30, 15, 58, 54, 564*int(time.Millisecond), time.UTC),
-				},
-				ServerMetadata: ServerMetadata{
-					ServerID:        "a7c54b0c-469c-431e-af4d-418cd3ae9694",
-					ServerNamespace: "default",
-				},
-				SessionMetadata: SessionMetadata{
-					SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
-				},
-				UserMetadata: UserMetadata{
-					User:  "bob@example.com",
-					Login: "bob",
-				},
-				TerminalSize: "194:59",
-			},
+			name:  "session end event",
+			json:  `{"code":"T2004I","ei":20,"enhanced_recording":true,"event":"session.end","interactive":true,"namespace":"default","participants":["alice@example.com"],"server_id":"a7c54b0c-469c-431e-af4d-418cd3ae9694","sid":"5b3555dc-729f-11ea-b66a-507b9dd95841","time":"2020-03-30T15:58:58.999Z","uid":"da455e0f-c27d-459f-a218-4e83b3db9426","user":"alice@example.com"}`,
+			event: sessionEnd,
 		},
 		{
 			name: "session print event",
@@ -446,3 +396,70 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 		fixtures.DeepCompare(c, outEvent.Elem().Interface(), tc.event)
 	}
 }
+
+var (
+	sessionStart = SessionStart{
+		Metadata: Metadata{
+			Index: 0,
+			Type:  SessionStartEvent,
+			ID:    "36cee9e9-9a80-4c32-9163-3d9241cdac7a",
+			Code:  SessionStartCode,
+			Time:  time.Date(2020, 03, 30, 15, 58, 54, 561*int(time.Millisecond), time.UTC),
+		},
+		ServerMetadata: ServerMetadata{
+			ServerID: "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+			ServerLabels: map[string]string{
+				"kernel": "5.3.0-42-generic",
+				"date":   "Mon Mar 30 08:58:54 PDT 2020",
+				"group":  "gravitational/devc",
+			},
+			ServerHostname:  "planet",
+			ServerNamespace: "default",
+		},
+		SessionMetadata: SessionMetadata{
+			SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
+		},
+		UserMetadata: UserMetadata{
+			User:  "bob@example.com",
+			Login: "bob",
+		},
+		ConnectionMetadata: ConnectionMetadata{
+			LocalAddr:  "127.0.0.1:3022",
+			RemoteAddr: "[::1]:37718",
+		},
+		TerminalSize: "80:25",
+	}
+	sessionPrint = SessionPrint{
+		Metadata: Metadata{
+			Index: 11,
+			Type:  SessionPrintEvent,
+			Time:  time.Date(2020, 03, 30, 15, 58, 56, 959*int(time.Millisecond), time.UTC),
+		},
+		ChunkIndex:        9,
+		Bytes:             1551,
+		DelayMilliseconds: 2284,
+		Offset:            1957,
+	}
+	sessionEnd = SessionEnd{
+		Metadata: Metadata{
+			Index: 20,
+			Type:  SessionEndEvent,
+			ID:    "da455e0f-c27d-459f-a218-4e83b3db9426",
+			Code:  SessionEndCode,
+			Time:  time.Date(2020, 03, 30, 15, 58, 58, 999*int(time.Millisecond), time.UTC),
+		},
+		ServerMetadata: ServerMetadata{
+			ServerID:        "a7c54b0c-469c-431e-af4d-418cd3ae9694",
+			ServerNamespace: "default",
+		},
+		SessionMetadata: SessionMetadata{
+			SessionID: "5b3555dc-729f-11ea-b66a-507b9dd95841",
+		},
+		UserMetadata: UserMetadata{
+			User: "alice@example.com",
+		},
+		EnhancedRecording: true,
+		Interactive:       true,
+		Participants:      []string{"alice@example.com"},
+	}
+)

@@ -191,6 +191,6 @@ service AuthService {
     // clients for verification or configuration on startup.
     rpc Ping(PingRequest) returns (PingResponse);
 
-    // EmitAuditEvent emtis audit event
-    rpc EmitAuditEvent(events.AuditEventRequest) returns (google.protobuf.Empty);
+    // EmitAuditEvent emits audit event
+    rpc EmitAuditEvent(events.OneOf) returns (google.protobuf.Empty);
 }

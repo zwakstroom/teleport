@@ -197,3 +197,105 @@ func (m *ServerMetadata) SetServerNamespace(ns string) {
 func (m *SessionMetadata) GetSessionID() string {
 	return m.SessionID
 }
+
+// ToOneOf converts audit event to union type of the events
+func ToOneOf(in AuditEvent) (*OneOf, error) {
+	out := OneOf{}
+
+	switch e := in.(type) {
+	case *UserLogin:
+		out.Event = &OneOf_UserLogin{
+			UserLogin: e,
+		}
+	case *UserUpdate:
+		out.Event = &OneOf_UserUpdate{
+			UserUpdate: e,
+		}
+	case *SessionStart:
+		out.Event = &OneOf_SessionStart{
+			SessionStart: e,
+		}
+	case *SessionPrint:
+		out.Event = &OneOf_SessionPrint{
+			SessionPrint: e,
+		}
+	case *Resize:
+		out.Event = &OneOf_Resize{
+			Resize: e,
+		}
+	case *SessionEnd:
+		out.Event = &OneOf_SessionEnd{
+			SessionEnd: e,
+		}
+	case *SessionCommand:
+		out.Event = &OneOf_SessionCommand{
+			SessionCommand: e,
+		}
+	case *SessionDisk:
+		out.Event = &OneOf_SessionDisk{
+			SessionDisk: e,
+		}
+	case *SessionNetwork:
+		out.Event = &OneOf_SessionNetwork{
+			SessionNetwork: e,
+		}
+	case *SessionData:
+		out.Event = &OneOf_SessionData{
+			SessionData: e,
+		}
+	case *SessionLeave:
+		out.Event = &OneOf_SessionLeave{
+			SessionLeave: e,
+		}
+	case *PortForward:
+		out.Event = &OneOf_PortForward{
+			PortForward: e,
+		}
+	case *Subsystem:
+		out.Event = &OneOf_Subsystem{
+			Subsystem: e,
+		}
+	case *ClientDisconnect:
+		out.Event = &OneOf_ClientDisconnect{
+			ClientDisconnect: e,
+		}
+	default:
+		return nil, trace.BadParameter("event type %T is not supported", in)
+	}
+	return &out, nil
+}
+
+// FromOneOf converts audit event from one of wrapper to interface
+func FromOneOf(in OneOf) (AuditEvent, error) {
+	if e := in.GetUserLogin(); e != nil {
+		return e, nil
+	} else if e := in.GetUserUpdate(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionStart(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionPrint(); e != nil {
+		return e, nil
+	} else if e := in.GetResize(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionEnd(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionCommand(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionDisk(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionNetwork(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionData(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionLeave(); e != nil {
+		return e, nil
+	} else if e := in.GetPortForward(); e != nil {
+		return e, nil
+	} else if e := in.GetSubsystem(); e != nil {
+		return e, nil
+	} else if e := in.GetClientDisconnect(); e != nil {
+		return e, nil
+	} else {
+		return nil, trace.BadParameter("received unsupported event %T", in.Event)
+	}
+}

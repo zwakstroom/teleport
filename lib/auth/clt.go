@@ -2044,7 +2044,7 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 
 // EmitAuditEvent sends an auditable event to the auth server
 func (c *Client) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
-	grpcEvent, err := auditEventToGRPC(event)
+	grpcEvent, err := events.ToOneOf(event)
 	if err != nil {
 		return trace.Wrap(err)
 	}
