@@ -33,7 +33,7 @@ import (
 	"gopkg.in/check.v1"
 )
 
-func TestS3ThirdParty(t *testing.T) { check.TestingT(t) }
+func TestS3(t *testing.T) { check.TestingT(t) }
 
 type S3ThirdPartySuite struct {
 	backend gofakes3.Backend
@@ -54,8 +54,7 @@ func (s *S3ThirdPartySuite) SetUpSuite(c *check.C) {
 	s.faker = gofakes3.New(s.backend, gofakes3.WithLogger(gofakes3.GlobalLog()))
 	s.server = httptest.NewServer(s.faker.Server())
 
-	var err error
-	s.HandlerSuite.Handler, err = NewHandler(Config{
+	handler, err := NewHandler(Config{
 		Credentials:                 credentials.NewStaticCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY", ""),
 		Region:                      "us-west-1",
 		Path:                        "/test/",
@@ -64,6 +63,7 @@ func (s *S3ThirdPartySuite) SetUpSuite(c *check.C) {
 		DisableServerSideEncryption: true,
 	})
 	c.Assert(err, check.IsNil)
+	s.HandlerSuite.Handler = handler
 }
 
 func (s *S3ThirdPartySuite) TestUploadDownload(c *check.C) {
@@ -72,6 +72,10 @@ func (s *S3ThirdPartySuite) TestUploadDownload(c *check.C) {
 
 func (s *S3ThirdPartySuite) TestDownloadNotFound(c *check.C) {
 	s.DownloadNotFound(c)
+}
+
+func (s *S3ThirdPartySuite) TestStream(c *check.C) {
+	s.Stream(c)
 }
 
 func (s *S3ThirdPartySuite) TearDownSuite(c *check.C) {

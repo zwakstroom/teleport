@@ -80,7 +80,7 @@ testcases:
 				c.Assert(err, check.IsNil)
 			}
 		}
-		err := emitter.Close()
+		err := emitter.Complete(ctx)
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent

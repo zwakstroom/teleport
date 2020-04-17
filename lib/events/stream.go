@@ -16,9 +16,9 @@ import (
 // S3 multipart upload
 type Upload interface {
 	// Complete completes upload
-	Complete() error
+	Complete(ctx context.Context) error
 	// UploadPart uploads part
-	UploadPart(io.ReadSeeker) error
+	UploadPart(ctx context.Context, rs io.ReadSeeker) error
 }
 
 // NewProtoEmitter returns emitter that
@@ -40,7 +40,8 @@ type ProtoEmitter struct {
 	pool         utils.SlicePool
 }
 
-const int32Size = 4
+// Int32Size is a constant for 32 bit integer byte size
+const Int32Size = 4
 
 // MaxProtoMessageSize is maximum protobuf marshaled message size
 const MaxProtoMessageSize = 64 * 1024
@@ -62,12 +63,12 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 		return trace.BadParameter("record size %v exceeds %v bytes", messageSize, MaxProtoMessageSize)
 	}
 
-	recordSize := int64(messageSize + int32Size)
+	recordSize := int64(messageSize + Int32Size)
 
 	// if record size exceeds the allocated slice size, upload the part
 	// and start over
 	if recordSize > int64(len(s.slice))-s.bytesWritten {
-		if err := s.uploadSlice(); err != nil {
+		if err := s.uploadSlice(ctx); err != nil {
 			return trace.Wrap(err)
 		}
 	}
@@ -79,7 +80,7 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 	// Push record, starting with record size and then the record itself
 	// Network byte order is used because it's most convenient to read for humans
 	binary.BigEndian.PutUint32(s.slice[s.bytesWritten:], uint32(messageSize))
-	s.bytesWritten += int32Size
+	s.bytesWritten += Int32Size
 	_, err = oneof.MarshalTo(s.slice[s.bytesWritten : s.bytesWritten+int64(messageSize)])
 	if err != nil {
 		return trace.Wrap(err)
@@ -88,10 +89,10 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 	return nil
 }
 
-func (s *ProtoEmitter) uploadSlice() error {
+func (s *ProtoEmitter) uploadSlice(ctx context.Context) error {
 	// set the rest of the slice to zero bytes
 	s.pool.Zero(s.slice[s.bytesWritten:])
-	if err := s.upload.UploadPart(bytes.NewReader(s.slice[:s.bytesWritten])); err != nil {
+	if err := s.upload.UploadPart(ctx, bytes.NewReader(s.slice[:s.bytesWritten])); err != nil {
 		return trace.Wrap(err)
 	}
 	s.bytesWritten = 0
@@ -100,16 +101,19 @@ func (s *ProtoEmitter) uploadSlice() error {
 	return nil
 }
 
-// Close completes the upload and returns all allocated resources
-func (s *ProtoEmitter) Close() error {
+// Complete completes the upload and returns all allocated resources
+func (s *ProtoEmitter) Complete(ctx context.Context) error {
 	if s.bytesWritten == 0 {
 		return nil
 	}
-	err := s.uploadSlice()
+	err := s.uploadSlice(ctx)
+	if err != nil {
+		return trace.Wrap(err)
+	}
 	// do not hold event data in memory with no good reason
 	s.pool.Put(s.slice)
 	s.slice = nil
-	return trace.Wrap(err)
+	return s.upload.Complete(ctx)
 }
 
 // NewProtoReader returns a new proto reader with slice pool
@@ -122,7 +126,7 @@ func NewProtoReader(r io.Reader) *ProtoReader {
 // ProtoReader reads protobuf encoding from reader
 type ProtoReader struct {
 	reader       io.Reader
-	sizeBytes    [int32Size]byte
+	sizeBytes    [Int32Size]byte
 	messageBytes [MaxProtoMessageSize]byte
 }
 
@@ -175,12 +179,12 @@ type MemoryUpload struct {
 }
 
 // Complete completes upload
-func (m *MemoryUpload) Complete() error {
+func (m *MemoryUpload) Complete(ctx context.Context) error {
 	return nil
 }
 
 // UploadPart uploads part
-func (m *MemoryUpload) UploadPart(rs io.ReadSeeker) error {
+func (m *MemoryUpload) UploadPart(ctx context.Context, rs io.ReadSeeker) error {
 	data, err := ioutil.ReadAll(rs)
 	if err != nil {
 		return trace.Wrap(err)

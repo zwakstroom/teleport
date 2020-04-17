@@ -38,7 +38,7 @@ import (
 // HandlerSuite is a conformance test suite to verify external UploadHandlers
 // behavior.
 type HandlerSuite struct {
-	Handler events.UploadHandler
+	Handler events.UploadStreamer
 }
 
 func (s *HandlerSuite) UploadDownload(c *check.C) {
@@ -85,7 +85,7 @@ type EventsSuite struct {
 // SessionEventsCRUD covers session events
 func (s *EventsSuite) SessionEventsCRUD(c *check.C) {
 	// Bob has logged in
-	err := s.Log.EmitAuditEvent(events.UserLocalLogin, events.EventFields{
+	err := s.Log.EmitAuditEventLegacy(events.UserLocalLoginE, events.EventFields{
 		events.LoginMethod:        events.LoginMethodSAML,
 		events.AuthAttemptSuccess: true,
 		events.EventUser:          "bob",

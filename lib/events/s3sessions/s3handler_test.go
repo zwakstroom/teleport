@@ -21,17 +21,13 @@ package s3sessions
 
 import (
 	"fmt"
-	"testing"
 
 	"github.com/gravitational/teleport/lib/events/test"
 	"github.com/gravitational/teleport/lib/utils"
 
-	"github.com/gravitational/trace"
-	"github.com/pborman/uuid"
+	//"github.com/gravitational/trace"
 	"gopkg.in/check.v1"
 )
-
-func TestS3(t *testing.T) { check.TestingT(t) }
 
 type S3Suite struct {
 	handler *Handler
@@ -43,13 +39,14 @@ var _ = check.Suite(&S3Suite{})
 func (s *S3Suite) SetUpSuite(c *check.C) {
 	utils.InitLoggerForTests()
 
-	var err error
-	s.HandlerSuite.Handler, err = NewHandler(Config{
+	handler, err := NewHandler(Config{
 		Region: "us-west-1",
 		Path:   "/test/",
-		Bucket: fmt.Sprintf("teleport-test-%v", uuid.New()),
+		Bucket: fmt.Sprintf("teleport-unit-tests"),
 	})
 	c.Assert(err, check.IsNil)
+
+	s.HandlerSuite.Handler = handler
 }
 
 func (s *S3Suite) TestUploadDownload(c *check.C) {
@@ -60,10 +57,14 @@ func (s *S3Suite) TestDownloadNotFound(c *check.C) {
 	s.DownloadNotFound(c)
 }
 
+func (s *S3Suite) TestStream(c *check.C) {
+	s.Stream(c)
+}
+
 func (s *S3Suite) TearDownSuite(c *check.C) {
 	if s.handler != nil {
-		if err := s.handler.deleteBucket(); err != nil {
-			c.Fatalf("Failed to delete bucket: %#v", trace.DebugReport(err))
-		}
+		//if err := s.handler.deleteBucket(); err != nil {
+		//	c.Fatalf("Failed to delete bucket: %#v", trace.DebugReport(err))
+		//}
 	}
 }

@@ -18,68 +18,100 @@ package s3sessions
 
 import (
 	"context"
-	"path/filepath"
-	"strings"
+	"io"
+	"sort"
 
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/session"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+
+	"github.com/gravitational/trace"
 )
 
 // CreateStream creates stream using multipart upload
 func (h *Handler) CreateStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
 	input := &s3.CreateMultipartUploadInput{
 		Bucket: aws.String(h.Bucket),
-		Key:    aws.String(h.protoPath(sessionID)),
+		Key:    aws.String(h.path(sessionID)),
 	}
 	if !h.Config.DisableServerSideEncryption {
 		input.ServerSideEncryption = aws.String(s3.ServerSideEncryptionAwsKms)
 	}
 
-	// Create the multipart
+	// Create the multipart upload
 	resp, err := h.client.CreateMultipartUploadWithContext(ctx, input)
 	if err != nil {
 		return nil, ConvertS3Error(err)
 	}
-	return &stream{
-		handler:  h,
-		uploadID: *resp.UploadId,
-	}, nil
-}
 
-func (h *Handler) protoPath(sessionID session.ID) string {
-	if h.Path == "" {
-		return string(sessionID) + ".pb"
+	up := &upload{
+		id:  *resp.UploadId,
+		h:   h,
+		key: *input.Key,
 	}
-	return strings.TrimPrefix(filepath.Join(h.Path, string(sessionID)+".pb"), "/")
+
+	return events.NewProtoEmitter(up, h.slicePool), nil
 }
 
-// StreamWriter uses stream
-type stream struct {
-	slice        []byte
-	bytesWritten int64
-	handler      *Handler
-	uploadID     string
-	upload       func()
+// ResumeStream resumes stream
+func (h *Handler) ResumeStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
+	return nil, trace.BadParameter("not supported")
 }
 
-// Close should complete the uplaod
-func (s *stream) Close() error {
-	s.handler.slicePool.Put(s.slice)
+// upload implements events.Upload interface
+type upload struct {
+	key            string
+	part           int64
+	h              *Handler
+	id             string
+	completedParts []*s3.CompletedPart
+}
+
+// Complete completes the upload
+func (u *upload) Complete(ctx context.Context) error {
+	// Parts must be sorted in PartNumber order.
+	sort.Slice(u.completedParts, func(i, j int) bool {
+		return *u.completedParts[i].PartNumber < *u.completedParts[j].PartNumber
+	})
+
+	params := &s3.CompleteMultipartUploadInput{
+		Bucket:          aws.String(u.h.Bucket),
+		Key:             aws.String(u.key),
+		UploadId:        &u.id,
+		MultipartUpload: &s3.CompletedMultipartUpload{Parts: u.completedParts},
+	}
+	_, err := u.h.client.CompleteMultipartUploadWithContext(ctx, params)
+	if err != nil {
+		return ConvertS3Error(err)
+	}
 	return nil
 }
 
-// Emit emtits a single audit event
-func (s *stream) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
-	size := event.Size()
-	if size > len(s.slice)+bytesWritten {
-		s.uploadPart()
+// UploadPart uploads part
+func (u *upload) UploadPart(ctx context.Context, partBody io.ReadSeeker) error {
+	u.part++
+	// This upload exceeded maximum number of supported parts, error now.
+	if u.part > int64(s3manager.MaxUploadParts) {
+		return trace.LimitExceeded(
+			"exceeded total allowed S3 limit MaxUploadParts (%d). Adjust PartSize to fit in this limit", s3manager.MaxUploadParts)
 	}
-	event.MarshalTo()
-}
 
-func (s *stream) uploadPart() error {
+	params := &s3.UploadPartInput{
+		Bucket:     aws.String(u.h.Bucket),
+		Key:        aws.String(u.key),
+		UploadId:   &u.id,
+		Body:       partBody,
+		PartNumber: &u.part,
+	}
 
+	resp, err := u.h.client.UploadPartWithContext(ctx, params)
+	if err != nil {
+		return err
+	}
+
+	u.completedParts = append(u.completedParts, &s3.CompletedPart{ETag: resp.ETag, PartNumber: &u.part})
+	return nil
 }

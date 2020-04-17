@@ -141,7 +141,7 @@ func NewHandler(cfg Config) (*Handler, error) {
 		client:     s3.New(cfg.Session),
 		// the trick of the upload size is to be two messages bigger than minimum upload of AWS (5MB),
 		// to make sure that upload always succeeds and every message fits without extra allocation
-		slicePool: utils.NewSlicePool(s3manager.MinUploadPartSize + 2*events.MaxProtoMessageSize),
+		slicePool: utils.NewSliceSyncPool(s3manager.MinUploadPartSize + 2*events.MaxProtoMessageSize),
 	}
 	start := time.Now()
 	h.Infof("Setting up bucket %q, sessions path %q in region %q.", h.Bucket, h.Path, h.Region)
@@ -161,7 +161,7 @@ type Handler struct {
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
 	client     *s3.S3
-	slicePool  *utils.SlicePool
+	slicePool  *utils.SliceSyncPool
 }
 
 // Close releases connection and resources associated with log if any
