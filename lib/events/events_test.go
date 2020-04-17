@@ -17,7 +17,6 @@ limitations under the License.
 package events
 
 import (
-	"context"
 	"encoding/json"
 	"reflect"
 	"time"
@@ -75,7 +74,7 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 		{
 			name:  "session end event",
 			json:  `{"code":"T2004I","ei":20,"enhanced_recording":true,"event":"session.end","interactive":true,"namespace":"default","participants":["alice@example.com"],"server_id":"a7c54b0c-469c-431e-af4d-418cd3ae9694","sid":"5b3555dc-729f-11ea-b66a-507b9dd95841","time":"2020-03-30T15:58:58.999Z","uid":"da455e0f-c27d-459f-a218-4e83b3db9426","user":"alice@example.com"}`,
-			event: sessionEndEvent,
+			event: sessionEnd,
 		},
 		{
 			name: "session print event",

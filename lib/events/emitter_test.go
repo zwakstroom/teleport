@@ -28,8 +28,8 @@ import (
 	"github.com/gravitational/trace"
 )
 
-// TestProtoReadWrite tests simple proto read write loop
-func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
+// TestProtoEmitter tests edge cases of proto emitter implementation
+func (a *EventsTestSuite) TestProtoEmitter(c *check.C) {
 	type testCase struct {
 		name       string
 		bufferSize int64
@@ -44,7 +44,7 @@ func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
 		},
 		{
 			name:       "pick largest message as buffer size to get more parts",
-			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + int32Size),
+			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + Int32Size),
 			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
 		{
@@ -53,7 +53,7 @@ func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
 		},
 		{
 			name:       "one event fitting 100%",
-			bufferSize: int64(MustToOneOf(&sessionStart).Size() + int32Size),
+			bufferSize: int64(MustToOneOf(&sessionStart).Size() + Int32Size),
 			events:     []AuditEvent{&sessionStart},
 		},
 		{
