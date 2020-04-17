@@ -24,6 +24,8 @@ import (
 
 	"github.com/gravitational/teleport/lib/fixtures"
 	"github.com/gravitational/teleport/lib/utils"
+
+	"github.com/gravitational/trace"
 )
 
 // TestProtoReadWrite tests simple proto read write loop
@@ -32,6 +34,7 @@ func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
 		name       string
 		bufferSize int64
 		events     []AuditEvent
+		err        error
 	}
 	testCases := []testCase{
 		{
@@ -44,9 +47,25 @@ func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
 			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + int32Size),
 			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
+		{
+			name:       "no events",
+			bufferSize: 1024*1024*5 + 64*1024,
+		},
+		{
+			name:       "one event fitting 100%",
+			bufferSize: int64(MustToOneOf(&sessionStart).Size() + int32Size),
+			events:     []AuditEvent{&sessionStart},
+		},
+		{
+			name:       "one event not fitting",
+			bufferSize: int64(MustToOneOf(&sessionStart).Size() - 2),
+			err:        trace.BadParameter("event is not fitting max size"),
+			events:     []AuditEvent{&sessionStart},
+		},
 	}
 
 	ctx := context.TODO()
+testcases:
 	for _, tc := range testCases {
 		upload := &MemoryUpload{}
 		pool := utils.NewSliceSyncPool(tc.bufferSize)
@@ -54,7 +73,12 @@ func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
 
 		for _, event := range tc.events {
 			err := emitter.EmitAuditEvent(ctx, event)
-			c.Assert(err, check.IsNil)
+			if tc.err != nil {
+				c.Assert(err, check.FitsTypeOf, tc.err)
+				continue testcases
+			} else {
+				c.Assert(err, check.IsNil)
+			}
 		}
 		err := emitter.Close()
 		c.Assert(err, check.IsNil)

@@ -63,12 +63,18 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 	}
 
 	recordSize := int64(messageSize + int32Size)
+
 	// if record size exceeds the allocated slice size, upload the part
 	// and start over
 	if recordSize > int64(len(s.slice))-s.bytesWritten {
 		if err := s.uploadSlice(); err != nil {
 			return trace.Wrap(err)
 		}
+	}
+	// if after the upload the record size still exceeds allocated sliice size
+	// it means the message is too big for the buffer
+	if recordSize > int64(len(s.slice)) {
+		return trace.BadParameter("message %v exceeds allocated buffer size %v", messageSize, len(s.slice))
 	}
 	// Push record, starting with record size and then the record itself
 	// Network byte order is used because it's most convenient to read for humans
