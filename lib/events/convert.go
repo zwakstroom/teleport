@@ -198,6 +198,16 @@ func (m *SessionMetadata) GetSessionID() string {
 	return m.SessionID
 }
 
+// MustToOneOf converts audit event to OneOf
+// or panics, used in tests
+func MustToOneOf(in AuditEvent) *OneOf {
+	out, err := ToOneOf(in)
+	if err != nil {
+		panic(err)
+	}
+	return out
+}
+
 // ToOneOf converts audit event to union type of the events
 func ToOneOf(in AuditEvent) (*OneOf, error) {
 	out := OneOf{}

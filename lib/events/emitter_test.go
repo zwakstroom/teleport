@@ -28,24 +28,54 @@ import (
 
 // TestProtoReadWrite tests simple proto read write loop
 func (a *EventsTestSuite) TestProtoReadWrite(c *check.C) {
-	// 64KB + 5MB similar to S3 min size in bytes
-	const size = 1024*1024*5 + 64*1024
-	upload := &MemoryUpload{}
-	pool := utils.NewSliceSyncPool(size)
-	emitter := NewProtoEmitter(upload, pool)
-	ctx := context.TODO()
-
-	events := []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd}
-	for _, event := range events {
-		err := emitter.EmitAuditEvent(ctx, event)
-		c.Assert(err, check.IsNil)
+	type testCase struct {
+		name       string
+		bufferSize int64
+		events     []AuditEvent
 	}
-	err := emitter.Close()
-	c.Assert(err, check.IsNil)
-	c.Assert(len(upload.Parts), check.Equals, 1)
+	testCases := []testCase{
+		{
+			name:       "64KB + 5MB similar to S3 min size in bytes",
+			bufferSize: 1024*1024*5 + 64*1024,
+			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
+		},
+		{
+			name:       "pick largest message as buffer size to get more parts",
+			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + int32Size),
+			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
+		},
+	}
 
-	reader := NewProtoReader(bytes.NewReader(upload.Parts[0]))
-	outEvents, err := reader.ReadAll()
-	c.Assert(err, check.IsNil)
-	fixtures.DeepCompareSlices(c, events, outEvents)
+	ctx := context.TODO()
+	for _, tc := range testCases {
+		upload := &MemoryUpload{}
+		pool := utils.NewSliceSyncPool(tc.bufferSize)
+		emitter := NewProtoEmitter(upload, pool)
+
+		for _, event := range tc.events {
+			err := emitter.EmitAuditEvent(ctx, event)
+			c.Assert(err, check.IsNil)
+		}
+		err := emitter.Close()
+		c.Assert(err, check.IsNil)
+
+		var outEvents []AuditEvent
+		for _, part := range upload.Parts {
+			reader := NewProtoReader(bytes.NewReader(part))
+			out, err := reader.ReadAll()
+			c.Assert(err, check.IsNil)
+			outEvents = append(outEvents, out...)
+		}
+		fixtures.DeepCompareSlices(c, tc.events, outEvents)
+	}
+}
+
+func max(vars ...int) int {
+	m := vars[0]
+	for _, zz := range vars {
+		if zz > m {
+			m = zz
+		}
+	}
+	return m
 }
