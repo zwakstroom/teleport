@@ -370,6 +370,25 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				Error: "some error",
 			},
 		},
+		{
+			name: "failed auth attempt",
+			json: `{"ei": 0, "code":"T3007W","error":"ssh: principal \"bob\" not in the set of valid principals for given certificate: [\"root\" \"alice\"]","event":"auth","success":false,"time":"2020-04-22T20:53:50Z","uid":"ebac95ca-8673-44af-b2cf-65f517acf35a","user":"alice@example.com"}`,
+			event: AuthAttempt{
+				Metadata: Metadata{
+					ID:   "ebac95ca-8673-44af-b2cf-65f517acf35a",
+					Type: AuthAttemptEvent,
+					Time: time.Date(2020, 4, 22, 20, 53, 50, 0*int(time.Millisecond), time.UTC),
+					Code: AuthAttemptFailureCode,
+				},
+				UserMetadata: UserMetadata{
+					User: "alice@example.com",
+				},
+				Status: Status{
+					Success: false,
+					Error:   "ssh: principal \"bob\" not in the set of valid principals for given certificate: [\"root\" \"alice\"]",
+				},
+			},
+		},
 	}
 	for i, tc := range testCases {
 		comment := check.Commentf("Test case %v: %v", i, tc.name)

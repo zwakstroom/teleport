@@ -199,6 +199,11 @@ type MemoryUpload struct {
 	Parts [][]byte
 }
 
+// Close does nothing for memory uploader
+func (m *MemoryUpload) Close(ctx context.Context) error {
+	return nil
+}
+
 // Complete completes upload
 func (m *MemoryUpload) Complete(ctx context.Context) error {
 	return nil
