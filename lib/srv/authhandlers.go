@@ -177,14 +177,25 @@ func (h *AuthHandlers) UserKeyAuth(conn ssh.ConnMetadata, key ssh.PublicKey) (*s
 
 	// only failed attempts are logged right now
 	recordFailedLogin := func(err error) {
-		fields := events.EventFields{
-			events.EventUser:          teleportUser,
-			events.AuthAttemptSuccess: false,
-			events.AuthAttemptErr:     err.Error(),
-		}
-		h.Warnf("failed login attempt %#v", fields)
-		// !!!FIXEVENTS!!!
-		h.AuditLog.EmitAuditEventLegacy(events.AuthAttemptFailureE, fields)
+		// Emit port forward failure event
+		h.Emitter.EmitAuditEvent(h.Server.Context(), &events.AuthAttempt{
+			Metadata: events.Metadata{
+				Type: events.AuthAttemptEvent,
+				Code: events.AuthAttemptFailureCode,
+			},
+			UserMetadata: events.UserMetadata{
+				Login: conn.User(),
+				User:  teleportUser,
+			},
+			ConnectionMetadata: events.ConnectionMetadata{
+				LocalAddr:  conn.LocalAddr().String(),
+				RemoteAddr: conn.RemoteAddr().String(),
+			},
+			Status: events.Status{
+				Success: false,
+				Error:   err.Error(),
+			},
+		})
 	}
 
 	// Check that the user certificate uses supported public key algorithms, was

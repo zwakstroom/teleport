@@ -409,6 +409,22 @@ message ClientDisconnect {
 	string Reason = 4 [(gogoproto.jsontag) = "reason"];
 }
 
+// AuthAttempt is emitted upon a failed or successfull authentication attempt.
+message AuthAttempt {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
+    // Status contains common command or operation status fields
+    Status Status = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+}
+
+
 // OneOf is a union of one of audit events submitted to the auth service
 message OneOf {
     // Event is one of the audit events
@@ -427,5 +443,6 @@ message OneOf {
         events.PortForward PortForward = 12;
         events.Subsystem Subsystem = 13;
         events.ClientDisconnect ClientDisconnect = 14;
+        events.AuthAttempt AuthAttempt = 15;
     }
 }
