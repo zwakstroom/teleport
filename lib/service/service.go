@@ -765,7 +765,7 @@ func adminCreds() (*int, *int, error) {
 // initUploadHandler initializes upload handler based on the config settings,
 // currently the only upload handler supported is S3
 // the call can return trace.NotFOund if no upload handler is setup
-func initUploadHandler(auditConfig services.AuditConfig) (events.UploadHandler, error) {
+func initUploadHandler(auditConfig services.AuditConfig) (events.UploadStreamer, error) {
 	if auditConfig.AuditSessionsURI == "" {
 		return nil, trace.NotFound("no upload handler is setup")
 	}
@@ -774,6 +774,7 @@ func initUploadHandler(auditConfig services.AuditConfig) (events.UploadHandler, 
 		return nil, trace.Wrap(err)
 	}
 
+	// FIXEVENTS: add support for GCS and local as well
 	switch uri.Scheme {
 	case teleport.SchemeGCS:
 		config := gcssessions.Config{}
@@ -782,7 +783,10 @@ func initUploadHandler(auditConfig services.AuditConfig) (events.UploadHandler, 
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		return handler, nil
+		// FIXEVENTS
+		//		return handler, nil
+		panic(handler)
+		return nil, nil
 	case teleport.SchemeS3:
 		config := s3sessions.Config{}
 		config.SetFromURL(uri, auditConfig.Region)
@@ -801,7 +805,10 @@ func initUploadHandler(auditConfig services.AuditConfig) (events.UploadHandler, 
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		return handler, nil
+		// FIXEVENTS
+		//		return handler, nil
+		panic(handler)
+		return nil, nil
 	default:
 		return nil, trace.BadParameter(
 			"unsupported scheme for audit_sesions_uri: %q, currently supported schemes are %q and %q",
@@ -916,6 +923,7 @@ func (process *TeleportProcess) initAuthService() error {
 	process.backend = b
 
 	var emitter events.Emitter
+	var streamer events.Streamer
 	// create the audit log, which will be consuming (and recording) all events
 	// and recording all sessions.
 	if cfg.Auth.NoAudit {
@@ -945,6 +953,8 @@ func (process *TeleportProcess) initAuthService() error {
 				return trace.Wrap(err)
 			}
 		}
+		// FIXEVENTS: fix all this setup, remove audit log
+		streamer = uploadHandler
 
 		externalLog, err := initExternalLog(auditConfig)
 		if err != nil {
@@ -989,6 +999,14 @@ func (process *TeleportProcess) initAuthService() error {
 		return trace.Wrap(err)
 	}
 
+	checkingStreamer, err := events.NewCheckingStreamer(events.CheckingStreamerConfig{
+		Inner: streamer,
+		Clock: process.Clock,
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	// first, create the AuthServer
 	authServer, err := auth.Init(auth.InitConfig{
 		Backend:              b,
@@ -1014,7 +1032,7 @@ func (process *TeleportProcess) initAuthService() error {
 		AuthPreference:       cfg.Auth.Preference,
 		OIDCConnectors:       cfg.OIDCConnectors,
 		AuditLog:             process.auditLog,
-		Emitter:              checkingEmitter,
+		Emitter:              &events.StreamerAndEmitter{Emitter: checkingEmitter, Streamer: checkingStreamer},
 		CipherSuites:         cfg.CipherSuites,
 	})
 	if err != nil {

@@ -160,6 +160,39 @@ message PingResponse {
     string ServerVersion = 2 [(gogoproto.jsontag) = "server_version"];
 }
 
+// AuditStreamRequest contains stream request - event or stream control request
+message AuditStreamRequest {
+    // Request is either stream request - create, resume or complete stream
+    // or event submitted as a part of the stream
+    oneof Request {
+        // CreateStream creates the stream for session ID
+        // should be the first message sent to the stream
+        CreateStream CreateStream = 1;
+        // ResumeStream resumes existing stream, should be the
+        // first message sent to the stream
+        ResumeStream ResumeStream = 2;
+        // CompleteStream completes the stream
+        CompleteStream CompleteStream = 3;
+        // Event contains the stream event
+        events.OneOf Event = 4;
+    }
+}
+
+// CreateStream creates stream for a new session ID
+message CreateStream {
+    string SessionID = 1;
+}
+
+// ResumeStream resumes stream that was previously created
+message ResumeStream {
+    string SessionID = 1;
+}
+
+// CompleteStream completes the stream
+// and uploads it to the session server
+message CompleteStream {
+}
+
 // AuthService is authentication/authorization service implementation
 service AuthService {
     // SendKeepAlives allows node to send a stream of keep alive requests
@@ -190,7 +223,8 @@ service AuthService {
     // to mimic the behavior of the proxy's Ping method, and may be used by
     // clients for verification or configuration on startup.
     rpc Ping(PingRequest) returns (PingResponse);
-
     // EmitAuditEvent emits audit event
     rpc EmitAuditEvent(events.OneOf) returns (google.protobuf.Empty);
+    // CreateAuditStream creates or resumes audit events streams
+    rpc CreateAuditStream(stream AuditStreamRequest) returns (google.protobuf.Empty);    
 }

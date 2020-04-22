@@ -31,8 +31,8 @@ import (
 	"github.com/gravitational/trace"
 )
 
-// CreateStream creates stream using multipart upload
-func (h *Handler) CreateStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
+// CreateAuditStream creates stream using multipart upload
+func (h *Handler) CreateAuditStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
 	input := &s3.CreateMultipartUploadInput{
 		Bucket: aws.String(h.Bucket),
 		Key:    aws.String(h.path(sessionID)),
@@ -56,8 +56,8 @@ func (h *Handler) CreateStream(ctx context.Context, sessionID session.ID) (event
 	return events.NewProtoEmitter(up, h.slicePool), nil
 }
 
-// ResumeStream resumes stream
-func (h *Handler) ResumeStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
+// ResumeAuditStream resumes stream
+func (h *Handler) ResumeAuditStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
 	return nil, trace.BadParameter("not supported")
 }
 
@@ -68,6 +68,12 @@ type upload struct {
 	h              *Handler
 	id             string
 	completedParts []*s3.CompletedPart
+}
+
+// Close cancels all resources allocated and associated with the
+// upload without cancelling the upload itself
+func (u *upload) Close(ctx context.Context) error {
+	return nil
 }
 
 // Complete completes the upload

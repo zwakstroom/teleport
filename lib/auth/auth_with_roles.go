@@ -46,6 +46,11 @@ type AuthWithRoles struct {
 	context AuthContext
 }
 
+// Context is closed when the auth server shuts down
+func (a *AuthWithRoles) Context() context.Context {
+	return a.authServer.closeCtx
+}
+
 func (a *AuthWithRoles) actionWithContext(ctx *services.Context, namespace string, resource string, action string) error {
 	return a.context.Checker.CheckAccessToRule(ctx, namespace, resource, action, false)
 }
@@ -1341,6 +1346,66 @@ func (a *AuthWithRoles) EmitAuditEvent(ctx context.Context, event events.AuditEv
 		return trace.AccessDenied("failed to validate event metadata")
 	}
 	return a.authServer.emitter.EmitAuditEvent(ctx, event)
+}
+
+// CreateAuditStream creates audit event stream
+func (a *AuthWithRoles) CreateAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbCreate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbUpdate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	role, ok := a.context.Identity.(BuiltinRole)
+	if !ok || !role.IsServer() {
+		return nil, trace.AccessDenied("this request can be only executed by proxy, node or auth")
+	}
+	stream, err := a.authServer.emitter.CreateAuditStream(ctx, sid)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &streamWithRoles{
+		stream:   stream,
+		a:        a,
+		serverID: role.GetServerID(),
+	}, nil
+}
+
+// ResumeAuditStream resumes the stream that has been created
+func (a *AuthWithRoles) ResumeAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	return nil, trace.NotImplemented("not implemented")
+}
+
+// streamWithRoles verifies every event
+type streamWithRoles struct {
+	a        *AuthWithRoles
+	serverID string
+	stream   events.Stream
+}
+
+// Complete closes the stream and marks it finalized
+func (s *streamWithRoles) Complete(ctx context.Context) error {
+	return s.stream.Complete(ctx)
+}
+
+// Close closes all resources associated with the stream
+// without aborting the stream or completing it
+func (s *streamWithRoles) Close(ctx context.Context) error {
+	return s.stream.Close(ctx)
+}
+
+func (s *streamWithRoles) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
+	err := events.ValidateServerMetadata(event, s.serverID)
+	if err != nil {
+		// TODO: this should be a proper audit event
+		// notifying about access violation
+		log.Warningf("Rejecting audit event %v from %v: %v. A node is attempting to "+
+			"submit events for an identity other than the one on its x509 certificate.",
+			event.GetID(), s.serverID, err)
+		// this message is sparse on purpose to avoid conveying extra data to potenital attacker
+		return trace.AccessDenied("failed to validate event metadata")
+	}
+	return s.stream.EmitAuditEvent(ctx, event)
 }
 
 func (a *AuthWithRoles) EmitAuditEventLegacy(event events.Event, fields events.EventFields) error {

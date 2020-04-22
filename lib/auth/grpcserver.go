@@ -27,6 +27,7 @@ import (
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -85,6 +86,71 @@ func (g *GRPCServer) SendKeepAlives(stream proto.AuthService_SendKeepAlivesServe
 		err = auth.KeepAliveNode(stream.Context(), *keepAlive)
 		if err != nil {
 			return trail.ToGRPC(err)
+		}
+	}
+}
+
+// CreateAuditStream creates or resumes audit event stream
+func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStreamServer) error {
+	defer stream.SendAndClose(&empty.Empty{})
+	auth, err := g.authenticate(stream.Context())
+	if err != nil {
+		return trail.ToGRPC(err)
+	}
+	var eventStream events.Stream
+	g.Debugf("Got heartbeat connection from %v.", auth.User.GetName())
+	for {
+		request, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			g.WithError(err).Debugf("Failed to receive stream request.")
+			return trail.ToGRPC(err)
+		}
+		if create := request.GetCreateStream(); create != nil {
+			if eventStream != nil {
+				return trail.ToGRPC(trace.BadParameter("stream is already created or resumed"))
+			}
+			eventStream, err = auth.CreateAuditStream(stream.Context(), session.ID(create.SessionID))
+			if err != nil {
+				return trace.Wrap(err)
+			}
+			// auth.Context is used here instead of the regular context
+			// to complete the events in case if the stream is cancelled
+			defer eventStream.Close(auth.Context())
+		} else if resume := request.GetResumeStream(); resume != nil {
+			if eventStream != nil {
+				return trail.ToGRPC(trace.BadParameter("stream is already created or resumed"))
+			}
+			eventStream, err = auth.ResumeAuditStream(stream.Context(), session.ID(resume.SessionID))
+			if err != nil {
+				return trace.Wrap(err)
+			}
+			// auth.Context is used here instead of the regular context
+			// to complete the events in case if the stream is cancelled
+			defer eventStream.Close(auth.Context())
+		} else if complete := request.GetCompleteStream(); complete != nil {
+			if eventStream == nil {
+				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not complete"))
+			}
+			return trail.ToGRPC(eventStream.Complete(stream.Context()))
+		} else if oneof := request.GetEvent(); oneof != nil {
+			if eventStream == nil {
+				return trail.ToGRPC(
+					trace.BadParameter("stream can not receive an event without first being created or resumed"))
+			}
+			event, err := events.FromOneOf(*oneof)
+			if err != nil {
+				g.WithError(err).Debugf("Failed to decode event.")
+				return trail.ToGRPC(err)
+			}
+			err = eventStream.EmitAuditEvent(stream.Context(), event)
+			if err != nil {
+				return trail.ToGRPC(err)
+			}
+		} else {
+			return trail.ToGRPC(trace.BadParameter("unsupported stream request"))
 		}
 	}
 }

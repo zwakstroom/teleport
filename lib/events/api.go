@@ -360,16 +360,22 @@ type Emitter interface {
 
 // Streamer creates and resumes event streams for session IDs
 type Streamer interface {
-	// CreateStream creates event stream
-	CreateStream(context.Context, session.ID) (Stream, error)
-	// ResumeStream resumes the stream that
+	// CreateAuditStream creates event stream
+	CreateAuditStream(context.Context, session.ID) (Stream, error)
+	// ResumeAuditStream resumes the stream that
 	// has not been completed yet
-	ResumeStream(ctx context.Context, sid session.ID) (Stream, error)
+	ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error)
 }
 
 // Stream is a continuous stream of events
 type Stream interface {
-	// Complete closes the stream and marks it finalized
+	// Close method cancels and releases all resources associated
+	// with the stream without completing the stream,
+	// can be called multiple times
+	Close(ctx context.Context) error
+	// Complete closes the stream and marks it finalized,
+	// releases associated resources, in case of failure,
+	// closes this stream on the client side
 	Complete(ctx context.Context) error
 	// Emitter alows stream to emit audit event in the context of the event stream
 	Emitter

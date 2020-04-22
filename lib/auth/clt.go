@@ -2042,6 +2042,86 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 	return &response, nil
 }
 
+// CreateAuditStream creates new audit stream
+func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	stream, err := clt.CreateAuditStream(ctx)
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+	s := &auditStreamer{
+		stream: stream,
+	}
+	go s.recv()
+	err = s.stream.Send(&proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_CreateStream{
+			CreateStream: &proto.CreateStream{SessionID: string(sid)}},
+	})
+	if err != nil {
+		return nil, trace.NewAggregate(s.Close(ctx), trail.FromGRPC(err))
+	}
+	return s, nil
+}
+
+type auditStreamer struct {
+	sync.RWMutex
+	stream proto.AuthService_CreateAuditStreamClient
+	err    error
+}
+
+// Complete completes stream
+func (s *auditStreamer) Complete(ctx context.Context) error {
+	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_CompleteStream{},
+	}))
+}
+
+// EmitAuditEvent emits audit event
+func (s *auditStreamer) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
+	oneof, err := events.ToOneOf(event)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_Event{Event: oneof},
+	}))
+}
+
+// Error returns last error of the stream
+func (s *auditStreamer) Error() error {
+	s.RLock()
+	defer s.RUnlock()
+	return s.err
+}
+
+// recv is necessary to receive errors from the
+// server, otherwise no errors will be propagated
+func (s *auditStreamer) recv() {
+	err := s.stream.RecvMsg(&empty.Empty{})
+	s.closeWithError(trail.FromGRPC(err))
+}
+
+func (s *auditStreamer) closeWithError(err error) {
+	s.Close(context.Background())
+	s.Lock()
+	defer s.Unlock()
+	s.err = err
+}
+
+// Close closes all resources associated with stream without aborting
+// it
+func (s *auditStreamer) Close(ctx context.Context) error {
+	_, err := s.stream.CloseAndRecv()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	s.closeWithError(err)
+	return nil
+}
+
 // EmitAuditEvent sends an auditable event to the auth server
 func (c *Client) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
 	grpcEvent, err := events.ToOneOf(event)

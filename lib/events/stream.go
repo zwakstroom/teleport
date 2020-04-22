@@ -19,6 +19,9 @@ type Upload interface {
 	Complete(ctx context.Context) error
 	// UploadPart uploads part
 	UploadPart(ctx context.Context, rs io.ReadSeeker) error
+	// Close cancels all resources associated with upload
+	// without aborting the upload itself
+	Close(ctx context.Context) error
 }
 
 // NewProtoEmitter returns emitter that
@@ -45,6 +48,24 @@ const Int32Size = 4
 
 // MaxProtoMessageSize is maximum protobuf marshaled message size
 const MaxProtoMessageSize = 64 * 1024
+
+// Close cancels all resources and attempts to do partial
+// upload to preserve the events that otherwise could have been lost
+// (imagine a scenario, when client node disconnected and
+// completely broke down, whatever events are buffered on the server
+// will be attempted to be commited as a part of this close)
+func (s *ProtoEmitter) Close(ctx context.Context) error {
+	if s.bytesWritten != 0 {
+		err := s.uploadSlice(ctx)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+	}
+	// do not hold event data in memory with no good reason
+	s.pool.Put(s.slice)
+	s.slice = nil
+	return s.upload.Close(ctx)
+}
 
 // EmitAuditEvent emtits a single audit event to the stream
 func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {

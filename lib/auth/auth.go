@@ -218,8 +218,8 @@ type AuthServer struct {
 
 	limiter *limiter.ConnectionsLimiter
 
-	// emitter is events emitter
-	emitter events.Emitter
+	// emitter is events streamer and emitter
+	emitter events.StreamEmitter
 }
 
 // SetCache sets cache used by auth server

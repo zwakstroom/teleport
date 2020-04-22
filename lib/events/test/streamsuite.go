@@ -18,7 +18,7 @@ import (
 func (s *HandlerSuite) Stream(c *check.C) {
 	ctx := context.TODO()
 	id := session.NewID()
-	stream, err := s.Handler.CreateStream(ctx, id)
+	stream, err := s.Handler.CreateAuditStream(ctx, id)
 	c.Assert(err, check.IsNil)
 
 	inEvents := []events.AuditEvent{&SessionStart, &SessionPrint, &SessionEnd}

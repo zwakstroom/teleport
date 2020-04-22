@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
@@ -105,6 +106,28 @@ func CheckAndSetEventFields(event AuditEvent, clock clockwork.Clock, uid utils.U
 	return nil
 }
 
+// DiscardStream returns a stream that discards all events
+type DiscardStream struct {
+}
+
+// Close cancels and releases all resources associated
+// with the stream without completing the stream,
+// can be called multiple times
+func (*DiscardStream) Close(ctx context.Context) error {
+	return nil
+}
+
+// Complete does nothing
+func (*DiscardStream) Complete(ctx context.Context) error {
+	return nil
+}
+
+// EmitAuditEvent discards audit event
+func (*DiscardStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	log.Debugf("Dicarding stream event: %v", event)
+	return nil
+}
+
 // NewDiscardEmitter returns a no-op discard emitter
 func NewDiscardEmitter() *DiscardEmitter {
 	return &DiscardEmitter{}
@@ -118,6 +141,16 @@ type DiscardEmitter struct {
 func (*DiscardEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
 	log.Debugf("Dicarding event: %v", event)
 	return nil
+}
+
+// CreateAuditStream creates a stream that discards all events
+func (*DiscardEmitter) CreateAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	return &DiscardStream{}, nil
+}
+
+// ResumeAuditStream resumes a stream that discards all events
+func (*DiscardEmitter) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	return &DiscardStream{}, nil
 }
 
 // NewLoggingEmitter returns an emitter that logs all events to the console
@@ -171,4 +204,108 @@ func (m *MultiEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 		}
 	}
 	return trace.NewAggregate(errors...)
+}
+
+// StreamerAndEmitter combines streamer and emitter to create stream emitter
+type StreamerAndEmitter struct {
+	Streamer
+	Emitter
+}
+
+// CheckingStreamerConfig provides parameters for streamer
+type CheckingStreamerConfig struct {
+	// Inner emits events to the underlying store
+	Inner Streamer
+	// Clock is a clock interface, used in tests
+	Clock clockwork.Clock
+	// UIDGenerator is unique ID generator
+	UIDGenerator utils.UID
+}
+
+// NewCheckingStreamer returns streamer that checks
+// that all required fields are properly set
+func NewCheckingStreamer(cfg CheckingStreamerConfig) (*CheckingStreamer, error) {
+	if err := cfg.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &CheckingStreamer{
+		CheckingStreamerConfig: cfg,
+	}, nil
+}
+
+// CheckingStreamer ensures that event fields have been set properly
+// and reports statistics for every wrapper
+type CheckingStreamer struct {
+	CheckingStreamerConfig
+}
+
+// CreateAuditStream creates audit event stream
+func (s *CheckingStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	stream, err := s.Inner.CreateAuditStream(ctx, sid)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &CheckingStream{
+		cfg:    s.CheckingStreamerConfig,
+		stream: stream,
+	}, nil
+}
+
+// ResumeAuditStream resumes audit event stream
+func (s *CheckingStreamer) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	stream, err := s.Inner.ResumeAuditStream(ctx, sid)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &CheckingStream{
+		cfg:    s.CheckingStreamerConfig,
+		stream: stream,
+	}, nil
+}
+
+// CheckAndSetDefaults checks and sets default values
+func (w *CheckingStreamerConfig) CheckAndSetDefaults() error {
+	if w.Inner == nil {
+		return trace.BadParameter("missing parameter Inner")
+	}
+	if w.Clock == nil {
+		w.Clock = clockwork.NewRealClock()
+	}
+	if w.UIDGenerator == nil {
+		w.UIDGenerator = utils.NewRealUID()
+	}
+	return nil
+}
+
+// CheckingStream verifies every event
+type CheckingStream struct {
+	stream Stream
+	cfg    CheckingStreamerConfig
+}
+
+// Close cancels and releases all resources associated
+// with the stream without completing the stream,
+// can be called multiple times
+func (s *CheckingStream) Close(ctx context.Context) error {
+	return s.stream.Close(ctx)
+}
+
+// Complete closes the stream and marks it finalized
+func (s *CheckingStream) Complete(ctx context.Context) error {
+	return s.stream.Complete(ctx)
+}
+
+// EmitAuditEvent emits audit event
+func (s *CheckingStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	if err := CheckAndSetEventFields(event, s.cfg.Clock, s.cfg.UIDGenerator); err != nil {
+		log.WithError(err).Errorf("Failed to emit audit event.")
+		auditFailedEmit.Inc()
+		return trace.Wrap(err)
+	}
+	if err := s.stream.EmitAuditEvent(ctx, event); err != nil {
+		auditFailedEmit.Inc()
+		log.WithError(err).Errorf("Failed to emit audit event.")
+		return trace.Wrap(err)
+	}
+	return nil
 }
