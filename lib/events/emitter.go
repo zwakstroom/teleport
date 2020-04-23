@@ -110,10 +110,15 @@ func CheckAndSetEventFields(event AuditEvent, clock clockwork.Clock, uid utils.U
 type DiscardStream struct {
 }
 
+// Write discards data
+func (*DiscardStream) Write(p []byte) (n int, err error) {
+	return len(p), nil
+}
+
 // Close cancels and releases all resources associated
 // with the stream without completing the stream,
 // can be called multiple times
-func (*DiscardStream) Close(ctx context.Context) error {
+func (*DiscardStream) Close() error {
 	return nil
 }
 
@@ -286,8 +291,8 @@ type CheckingStream struct {
 // Close cancels and releases all resources associated
 // with the stream without completing the stream,
 // can be called multiple times
-func (s *CheckingStream) Close(ctx context.Context) error {
-	return s.stream.Close(ctx)
+func (s *CheckingStream) Close() error {
+	return s.stream.Close()
 }
 
 // Complete closes the stream and marks it finalized

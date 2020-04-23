@@ -474,7 +474,7 @@ type session struct {
 
 	closeOnce sync.Once
 
-	recorder events.SessionRecorder
+	recorder events.StreamWriter
 
 	// hasEnhancedRecording returns true if this session has enhanced session
 	// recording events associated.
@@ -560,7 +560,7 @@ func (s *session) PID() int {
 
 // Recorder returns a events.SessionRecorder which can be used to emit events
 // to a session as well as the audit log.
-func (s *session) Recorder() events.SessionRecorder {
+func (s *session) Recorder() events.StreamWriter {
 	return s.recorder
 }
 
@@ -615,15 +615,17 @@ func (s *session) startInteractive(ch ssh.Channel, ctx *ServerContext) error {
 	// node so we don't create double recordings.
 	auditLog := s.registry.srv.GetAuditLog()
 	if auditLog == nil || isDiscardAuditLog(auditLog) {
-		s.recorder = &events.DiscardRecorder{}
+		s.recorder = &events.DiscardStream{}
 	} else {
-		s.recorder, err = events.NewForwardRecorder(events.ForwardRecorderConfig{
-			DataDir:        filepath.Join(ctx.srv.GetDataDir(), teleport.LogsDir),
-			SessionID:      s.id,
-			Namespace:      ctx.srv.GetNamespace(),
-			RecordSessions: ctx.ClusterConfig.GetSessionRecording() != services.RecordOff,
-			Component:      teleport.Component(teleport.ComponentSession, ctx.srv.Component()),
-			ForwardTo:      auditLog,
+		stream, err := ctx.srv.CreateAuditStream(ctx.CancelContext(), s.id)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		s.recorder, err = events.NewAuditWriter(events.AuditWriterConfig{
+			Namespace:    ctx.srv.GetNamespace(),
+			RecordOutput: ctx.ClusterConfig.GetSessionRecording() != services.RecordOff,
+			Component:    teleport.Component(teleport.ComponentSession, ctx.srv.Component()),
+			Stream:       stream,
 		})
 		if err != nil {
 			return trace.Wrap(err)

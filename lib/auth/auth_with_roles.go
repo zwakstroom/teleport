@@ -1390,8 +1390,8 @@ func (s *streamWithRoles) Complete(ctx context.Context) error {
 
 // Close closes all resources associated with the stream
 // without aborting the stream or completing it
-func (s *streamWithRoles) Close(ctx context.Context) error {
-	return s.stream.Close(ctx)
+func (s *streamWithRoles) Close() error {
+	return s.stream.Close()
 }
 
 func (s *streamWithRoles) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {

@@ -53,7 +53,7 @@ func (h *Handler) CreateAuditStream(ctx context.Context, sessionID session.ID) (
 		key: *input.Key,
 	}
 
-	return events.NewProtoEmitter(up, h.slicePool), nil
+	return events.NewProtoEmitter(ctx, up, h.slicePool), nil
 }
 
 // ResumeAuditStream resumes stream
@@ -72,7 +72,7 @@ type upload struct {
 
 // Close cancels all resources allocated and associated with the
 // upload without cancelling the upload itself
-func (u *upload) Close(ctx context.Context) error {
+func (u *upload) Close() error {
 	return nil
 }
 

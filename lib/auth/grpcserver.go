@@ -116,9 +116,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				return trace.Wrap(err)
 			}
-			// auth.Context is used here instead of the regular context
-			// to complete the events in case if the stream is cancelled
-			defer eventStream.Close(auth.Context())
+			defer eventStream.Close()
 		} else if resume := request.GetResumeStream(); resume != nil {
 			if eventStream != nil {
 				return trail.ToGRPC(trace.BadParameter("stream is already created or resumed"))
@@ -127,9 +125,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				return trace.Wrap(err)
 			}
-			// auth.Context is used here instead of the regular context
-			// to complete the events in case if the stream is cancelled
-			defer eventStream.Close(auth.Context())
+			defer eventStream.Close()
 		} else if complete := request.GetCompleteStream(); complete != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not complete"))

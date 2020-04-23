@@ -105,8 +105,9 @@ type Server struct {
 	// alog points to the AuditLog this server uses to report
 	// auditable events
 	alog events.IAuditLog
+
 	// emitter points to the auth service and emits audit events
-	emitter events.Emitter
+	emitter events.StreamEmitter
 
 	// clock is a system clock
 	clock clockwork.Clock
@@ -365,7 +366,7 @@ func SetAuditLog(alog events.IAuditLog) ServerOption {
 }
 
 // SetEmitter assigns an audit event emitter for this server
-func SetEmitter(emitter events.Emitter) ServerOption {
+func SetEmitter(emitter events.StreamEmitter) ServerOption {
 	return func(s *Server) error {
 		s.emitter = emitter
 		return nil

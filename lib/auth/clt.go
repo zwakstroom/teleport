@@ -2042,6 +2042,11 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 	return &response, nil
 }
 
+// ResumeAuditStream resumes new audit stream
+func (c *Client) ResumeAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	return nil, trace.NotImplemented("not implemented")
+}
+
 // CreateAuditStream creates new audit stream
 func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
 	clt, err := c.grpc()
@@ -2061,7 +2066,7 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 			CreateStream: &proto.CreateStream{SessionID: string(sid)}},
 	})
 	if err != nil {
-		return nil, trace.NewAggregate(s.Close(ctx), trail.FromGRPC(err))
+		return nil, trace.NewAggregate(s.Close(), trail.FromGRPC(err))
 	}
 	return s, nil
 }
@@ -2105,7 +2110,7 @@ func (s *auditStreamer) recv() {
 }
 
 func (s *auditStreamer) closeWithError(err error) {
-	s.Close(context.Background())
+	s.Close()
 	s.Lock()
 	defer s.Unlock()
 	s.err = err
@@ -2113,7 +2118,7 @@ func (s *auditStreamer) closeWithError(err error) {
 
 // Close closes all resources associated with stream without aborting
 // it
-func (s *auditStreamer) Close(ctx context.Context) error {
+func (s *auditStreamer) Close() error {
 	_, err := s.stream.CloseAndRecv()
 	if err != nil {
 		return trace.Wrap(err)

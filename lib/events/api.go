@@ -339,11 +339,28 @@ type ServerMetadataGetter interface {
 	GetServerNamespace() string
 }
 
+// ServerMetadataSetter represents interface
+// that provides information about it's server id
+type ServerMetadataSetter interface {
+	// SetServerID sets server ID of the event
+	SetServerID(string)
+
+	// SetServerNamespace returns event server namespace
+	SetServerNamespace(string)
+}
+
 // SessionMetadataGetter represents interface
 // that provides information about events' session metadata
 type SessionMetadataGetter interface {
 	// GetSessionID returns event session ID
 	GetSessionID() string
+}
+
+// SessionMetadataSetter represents interface
+// that sets session metadata
+type SessionMetadataSetter interface {
+	// SetSessionID sets event session ID
+	SetSessionID(string)
 }
 
 // SetCode is a shortcut that sets code for the audit event
@@ -372,13 +389,20 @@ type Stream interface {
 	// Close method cancels and releases all resources associated
 	// with the stream without completing the stream,
 	// can be called multiple times
-	Close(ctx context.Context) error
+	io.Closer
 	// Complete closes the stream and marks it finalized,
 	// releases associated resources, in case of failure,
 	// closes this stream on the client side
 	Complete(ctx context.Context) error
 	// Emitter alows stream to emit audit event in the context of the event stream
 	Emitter
+}
+
+// StreamWriter implements io.Writer to be plugged into the multi-writer
+// associated with every session. It forwards session stream to the audit log
+type StreamWriter interface {
+	io.Writer
+	Stream
 }
 
 // StreamEmitter supports submitting single events and streaming

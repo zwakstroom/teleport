@@ -70,8 +70,9 @@ func init() {
 
 // Server is regular or forwarding SSH server.
 type Server interface {
-	// Emitter allows server to emit audit events
-	events.Emitter
+	// Emitter allows server to emit audit events and create
+	// event streams for recording sessions
+	events.StreamEmitter
 
 	// ID is the unique ID of the server.
 	ID() string

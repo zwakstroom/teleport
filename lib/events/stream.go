@@ -21,16 +21,17 @@ type Upload interface {
 	UploadPart(ctx context.Context, rs io.ReadSeeker) error
 	// Close cancels all resources associated with upload
 	// without aborting the upload itself
-	Close(ctx context.Context) error
+	Close() error
 }
 
 // NewProtoEmitter returns emitter that
 // writes a protobuf marshaled stream to the multipart uploader
-func NewProtoEmitter(upload Upload, pool utils.SlicePool) *ProtoEmitter {
+func NewProtoEmitter(ctx context.Context, upload Upload, pool utils.SlicePool) *ProtoEmitter {
 	return &ProtoEmitter{
 		upload: upload,
 		slice:  pool.Get(),
 		pool:   pool,
+		ctx:    ctx,
 	}
 }
 
@@ -41,6 +42,7 @@ type ProtoEmitter struct {
 	slice        []byte
 	upload       Upload
 	pool         utils.SlicePool
+	ctx          context.Context
 }
 
 // Int32Size is a constant for 32 bit integer byte size
@@ -54,9 +56,9 @@ const MaxProtoMessageSize = 64 * 1024
 // (imagine a scenario, when client node disconnected and
 // completely broke down, whatever events are buffered on the server
 // will be attempted to be commited as a part of this close)
-func (s *ProtoEmitter) Close(ctx context.Context) error {
+func (s *ProtoEmitter) Close() error {
 	if s.bytesWritten != 0 {
-		err := s.uploadSlice(ctx)
+		err := s.uploadSlice(s.ctx)
 		if err != nil {
 			return trace.Wrap(err)
 		}
@@ -64,7 +66,7 @@ func (s *ProtoEmitter) Close(ctx context.Context) error {
 	// do not hold event data in memory with no good reason
 	s.pool.Put(s.slice)
 	s.slice = nil
-	return s.upload.Close(ctx)
+	return s.upload.Close()
 }
 
 // EmitAuditEvent emtits a single audit event to the stream
