@@ -227,6 +227,15 @@ type CheckingStreamerConfig struct {
 	UIDGenerator utils.UID
 }
 
+// NewCheckingStream wraps stream and makes sure event UIDs and timing are in place
+func NewCheckingStream(stream Stream, clock clockwork.Clock) Stream {
+	return &CheckingStream{
+		stream:       stream,
+		clock:        clock,
+		uidGenerator: utils.NewRealUID(),
+	}
+}
+
 // NewCheckingStreamer returns streamer that checks
 // that all required fields are properly set
 func NewCheckingStreamer(cfg CheckingStreamerConfig) (*CheckingStreamer, error) {
@@ -251,8 +260,9 @@ func (s *CheckingStreamer) CreateAuditStream(ctx context.Context, sid session.ID
 		return nil, trace.Wrap(err)
 	}
 	return &CheckingStream{
-		cfg:    s.CheckingStreamerConfig,
-		stream: stream,
+		clock:        s.CheckingStreamerConfig.Clock,
+		uidGenerator: s.CheckingStreamerConfig.UIDGenerator,
+		stream:       stream,
 	}, nil
 }
 
@@ -263,8 +273,9 @@ func (s *CheckingStreamer) ResumeAuditStream(ctx context.Context, sid session.ID
 		return nil, trace.Wrap(err)
 	}
 	return &CheckingStream{
-		cfg:    s.CheckingStreamerConfig,
-		stream: stream,
+		clock:        s.CheckingStreamerConfig.Clock,
+		uidGenerator: s.CheckingStreamerConfig.UIDGenerator,
+		stream:       stream,
 	}, nil
 }
 
@@ -284,8 +295,9 @@ func (w *CheckingStreamerConfig) CheckAndSetDefaults() error {
 
 // CheckingStream verifies every event
 type CheckingStream struct {
-	stream Stream
-	cfg    CheckingStreamerConfig
+	stream       Stream
+	clock        clockwork.Clock
+	uidGenerator utils.UID
 }
 
 // Close cancels and releases all resources associated
@@ -302,7 +314,7 @@ func (s *CheckingStream) Complete(ctx context.Context) error {
 
 // EmitAuditEvent emits audit event
 func (s *CheckingStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
-	if err := CheckAndSetEventFields(event, s.cfg.Clock, s.cfg.UIDGenerator); err != nil {
+	if err := CheckAndSetEventFields(event, s.clock, s.uidGenerator); err != nil {
 		log.WithError(err).Errorf("Failed to emit audit event.")
 		auditFailedEmit.Inc()
 		return trace.Wrap(err)

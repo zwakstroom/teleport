@@ -202,7 +202,7 @@ type MemoryUpload struct {
 }
 
 // Close does nothing for memory uploader
-func (m *MemoryUpload) Close(ctx context.Context) error {
+func (m *MemoryUpload) Close() error {
 	return nil
 }
 

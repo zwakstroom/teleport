@@ -34,6 +34,9 @@ type AuditWriterConfig struct {
 	// SessionID defines the session to record.
 	SessionID session.ID
 
+	// ServerID is a server ID to write
+	ServerID string
+
 	// Namespace is the session namespace.
 	Namespace string
 
@@ -120,6 +123,13 @@ func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 // that aborts it, because of the way the writer is usually used
 // the interface - io.WriteCloser has only close method
 func (a *AuditWriter) Close() error {
+	return a.Complete(a.cfg.Context)
+}
+
+// Complete closes the stream and marks it finalized,
+// releases associated resources, in case of failure,
+// closes this stream on the client side
+func (a *AuditWriter) Complete(ctx context.Context) error {
 	a.lock.Lock()
 	if a.isClosed {
 		a.lock.Unlock()
@@ -131,6 +141,17 @@ func (a *AuditWriter) Close() error {
 }
 
 func (a *AuditWriter) setupEvent(event AuditEvent) error {
+	sess, ok := event.(SessionMetadataSetter)
+	if ok {
+		sess.SetSessionID(string(a.cfg.SessionID))
+	}
+
+	srv, ok := event.(ServerMetadataSetter)
+	if ok {
+		srv.SetServerNamespace(a.cfg.Namespace)
+		srv.SetServerID(a.cfg.ServerID)
+	}
+
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -140,11 +161,6 @@ func (a *AuditWriter) setupEvent(event AuditEvent) error {
 
 	event.SetIndex(a.eventIndex)
 	a.eventIndex++
-
-	srv, ok := event.(ServerMetadataSetter)
-	if ok {
-		srv.SetServerNamespace(a.cfg.Namespace)
-	}
 
 	printEvent, ok := event.(*SessionPrint)
 	if !ok {

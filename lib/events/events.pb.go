@@ -49,7 +49,7 @@ func (m *Metadata) Reset()         { *m = Metadata{} }
 func (m *Metadata) String() string { return proto.CompactTextString(m) }
 func (*Metadata) ProtoMessage()    {}
 func (*Metadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{0}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{0}
 }
 func (m *Metadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -91,7 +91,7 @@ func (m *SessionMetadata) Reset()         { *m = SessionMetadata{} }
 func (m *SessionMetadata) String() string { return proto.CompactTextString(m) }
 func (*SessionMetadata) ProtoMessage()    {}
 func (*SessionMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{1}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{1}
 }
 func (m *SessionMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -135,7 +135,7 @@ func (m *UserMetadata) Reset()         { *m = UserMetadata{} }
 func (m *UserMetadata) String() string { return proto.CompactTextString(m) }
 func (*UserMetadata) ProtoMessage()    {}
 func (*UserMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{2}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{2}
 }
 func (m *UserMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -184,7 +184,7 @@ func (m *ServerMetadata) Reset()         { *m = ServerMetadata{} }
 func (m *ServerMetadata) String() string { return proto.CompactTextString(m) }
 func (*ServerMetadata) ProtoMessage()    {}
 func (*ServerMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{3}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{3}
 }
 func (m *ServerMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -228,7 +228,7 @@ func (m *ConnectionMetadata) Reset()         { *m = ConnectionMetadata{} }
 func (m *ConnectionMetadata) String() string { return proto.CompactTextString(m) }
 func (*ConnectionMetadata) ProtoMessage()    {}
 func (*ConnectionMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{4}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{4}
 }
 func (m *ConnectionMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -280,7 +280,7 @@ func (m *SessionStart) Reset()         { *m = SessionStart{} }
 func (m *SessionStart) String() string { return proto.CompactTextString(m) }
 func (*SessionStart) ProtoMessage()    {}
 func (*SessionStart) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{5}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{5}
 }
 func (m *SessionStart) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -309,6 +309,56 @@ func (m *SessionStart) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_SessionStart proto.InternalMessageInfo
 
+// SessionJoin emitted when another user joins a session
+type SessionJoin struct {
+	// Metadata is a common event metadata
+	Metadata `protobuf:"bytes,1,opt,name=Metadata,embedded=Metadata" json:""`
+	// User is a common user event metadata
+	UserMetadata `protobuf:"bytes,2,opt,name=User,embedded=User" json:""`
+	// SessionMetadata is a common event session metadata
+	SessionMetadata `protobuf:"bytes,3,opt,name=Session,embedded=Session" json:""`
+	// ServerMetadata is a common server metadata
+	ServerMetadata `protobuf:"bytes,4,opt,name=Server,embedded=Server" json:""`
+	// ConnectionMetadata holds information about the connection
+	ConnectionMetadata   `protobuf:"bytes,5,opt,name=Connection,embedded=Connection" json:""`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SessionJoin) Reset()         { *m = SessionJoin{} }
+func (m *SessionJoin) String() string { return proto.CompactTextString(m) }
+func (*SessionJoin) ProtoMessage()    {}
+func (*SessionJoin) Descriptor() ([]byte, []int) {
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{6}
+}
+func (m *SessionJoin) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SessionJoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SessionJoin.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *SessionJoin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SessionJoin.Merge(dst, src)
+}
+func (m *SessionJoin) XXX_Size() int {
+	return m.Size()
+}
+func (m *SessionJoin) XXX_DiscardUnknown() {
+	xxx_messageInfo_SessionJoin.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SessionJoin proto.InternalMessageInfo
+
 // SessionPrint event happens every time a write occurs to
 // temirnal I/O during a session
 type SessionPrint struct {
@@ -334,7 +384,7 @@ func (m *SessionPrint) Reset()         { *m = SessionPrint{} }
 func (m *SessionPrint) String() string { return proto.CompactTextString(m) }
 func (*SessionPrint) ProtoMessage()    {}
 func (*SessionPrint) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{6}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{7}
 }
 func (m *SessionPrint) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -386,7 +436,7 @@ func (m *Resize) Reset()         { *m = Resize{} }
 func (m *Resize) String() string { return proto.CompactTextString(m) }
 func (*Resize) ProtoMessage()    {}
 func (*Resize) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{7}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{8}
 }
 func (m *Resize) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -444,7 +494,7 @@ func (m *SessionEnd) Reset()         { *m = SessionEnd{} }
 func (m *SessionEnd) String() string { return proto.CompactTextString(m) }
 func (*SessionEnd) ProtoMessage()    {}
 func (*SessionEnd) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{8}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{9}
 }
 func (m *SessionEnd) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -476,9 +526,9 @@ var xxx_messageInfo_SessionEnd proto.InternalMessageInfo
 // BPFMetadata is a common BPF process metadata
 type BPFMetadata struct {
 	// PID is the ID of the process.
-	PID int32 `protobuf:"varint,1,opt,name=PID,proto3" json:"pid"`
+	PID uint64 `protobuf:"varint,1,opt,name=PID,proto3" json:"pid"`
 	// CgroupID is the internal cgroupv2 ID of the event.
-	CgroupID int64 `protobuf:"varint,2,opt,name=CgroupID,proto3" json:"cgroup_id"`
+	CgroupID uint64 `protobuf:"varint,2,opt,name=CgroupID,proto3" json:"cgroup_id"`
 	// Program is name of the executable.
 	Program              string   `protobuf:"bytes,3,opt,name=Program,proto3" json:"program"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -490,7 +540,7 @@ func (m *BPFMetadata) Reset()         { *m = BPFMetadata{} }
 func (m *BPFMetadata) String() string { return proto.CompactTextString(m) }
 func (*BPFMetadata) ProtoMessage()    {}
 func (*BPFMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{9}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{10}
 }
 func (m *BPFMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -536,7 +586,7 @@ func (m *Status) Reset()         { *m = Status{} }
 func (m *Status) String() string { return proto.CompactTextString(m) }
 func (*Status) ProtoMessage()    {}
 func (*Status) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{10}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{11}
 }
 func (m *Status) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -578,7 +628,7 @@ type SessionCommand struct {
 	// BPFMetadata is a common BPF subsystem metadata
 	BPFMetadata `protobuf:"bytes,5,opt,name=BPF,embedded=BPF" json:""`
 	// PPID is the PID of the parent process.
-	PPID int32 `protobuf:"varint,6,opt,name=PPID,proto3" json:"ppid"`
+	PPID uint64 `protobuf:"varint,6,opt,name=PPID,proto3" json:"ppid"`
 	// Path is the full path to the executable.
 	Path string `protobuf:"bytes,7,opt,name=Path,proto3" json:"path"`
 	// Argv is the list of arguments to the program. Note, the first element does
@@ -595,7 +645,7 @@ func (m *SessionCommand) Reset()         { *m = SessionCommand{} }
 func (m *SessionCommand) String() string { return proto.CompactTextString(m) }
 func (*SessionCommand) ProtoMessage()    {}
 func (*SessionCommand) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{11}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{12}
 }
 func (m *SessionCommand) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -651,7 +701,7 @@ func (m *SessionDisk) Reset()         { *m = SessionDisk{} }
 func (m *SessionDisk) String() string { return proto.CompactTextString(m) }
 func (*SessionDisk) ProtoMessage()    {}
 func (*SessionDisk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{12}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{13}
 }
 func (m *SessionDisk) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -709,7 +759,7 @@ func (m *SessionNetwork) Reset()         { *m = SessionNetwork{} }
 func (m *SessionNetwork) String() string { return proto.CompactTextString(m) }
 func (*SessionNetwork) ProtoMessage()    {}
 func (*SessionNetwork) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{13}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{14}
 }
 func (m *SessionNetwork) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -763,7 +813,7 @@ func (m *SessionData) Reset()         { *m = SessionData{} }
 func (m *SessionData) String() string { return proto.CompactTextString(m) }
 func (*SessionData) ProtoMessage()    {}
 func (*SessionData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{14}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{15}
 }
 func (m *SessionData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -813,7 +863,7 @@ func (m *SessionLeave) Reset()         { *m = SessionLeave{} }
 func (m *SessionLeave) String() string { return proto.CompactTextString(m) }
 func (*SessionLeave) ProtoMessage()    {}
 func (*SessionLeave) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{15}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{16}
 }
 func (m *SessionLeave) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -863,7 +913,7 @@ func (m *UserLogin) Reset()         { *m = UserLogin{} }
 func (m *UserLogin) String() string { return proto.CompactTextString(m) }
 func (*UserLogin) ProtoMessage()    {}
 func (*UserLogin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{16}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{17}
 }
 func (m *UserLogin) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -913,7 +963,7 @@ func (m *UserUpdate) Reset()         { *m = UserUpdate{} }
 func (m *UserUpdate) String() string { return proto.CompactTextString(m) }
 func (*UserUpdate) ProtoMessage()    {}
 func (*UserUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{17}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{18}
 }
 func (m *UserUpdate) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -963,7 +1013,7 @@ func (m *PortForward) Reset()         { *m = PortForward{} }
 func (m *PortForward) String() string { return proto.CompactTextString(m) }
 func (*PortForward) ProtoMessage()    {}
 func (*PortForward) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{18}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{19}
 }
 func (m *PortForward) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1013,7 +1063,7 @@ func (m *Subsystem) Reset()         { *m = Subsystem{} }
 func (m *Subsystem) String() string { return proto.CompactTextString(m) }
 func (*Subsystem) ProtoMessage()    {}
 func (*Subsystem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{19}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{20}
 }
 func (m *Subsystem) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1063,7 +1113,7 @@ func (m *ClientDisconnect) Reset()         { *m = ClientDisconnect{} }
 func (m *ClientDisconnect) String() string { return proto.CompactTextString(m) }
 func (*ClientDisconnect) ProtoMessage()    {}
 func (*ClientDisconnect) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{20}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{21}
 }
 func (m *ClientDisconnect) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1111,7 +1161,7 @@ func (m *AuthAttempt) Reset()         { *m = AuthAttempt{} }
 func (m *AuthAttempt) String() string { return proto.CompactTextString(m) }
 func (*AuthAttempt) ProtoMessage()    {}
 func (*AuthAttempt) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{21}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{22}
 }
 func (m *AuthAttempt) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1148,6 +1198,7 @@ type OneOf struct {
 	//	*OneOf_UserLogin
 	//	*OneOf_UserUpdate
 	//	*OneOf_SessionStart
+	//	*OneOf_SessionJoin
 	//	*OneOf_SessionPrint
 	//	*OneOf_Resize
 	//	*OneOf_SessionEnd
@@ -1170,7 +1221,7 @@ func (m *OneOf) Reset()         { *m = OneOf{} }
 func (m *OneOf) String() string { return proto.CompactTextString(m) }
 func (*OneOf) ProtoMessage()    {}
 func (*OneOf) Descriptor() ([]byte, []int) {
-	return fileDescriptor_events_0cd0c2a6b7e2bcf4, []int{22}
+	return fileDescriptor_events_9ec8be9fae1bb3ec, []int{23}
 }
 func (m *OneOf) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1214,46 +1265,50 @@ type OneOf_UserUpdate struct {
 type OneOf_SessionStart struct {
 	SessionStart *SessionStart `protobuf:"bytes,3,opt,name=SessionStart,oneof"`
 }
+type OneOf_SessionJoin struct {
+	SessionJoin *SessionJoin `protobuf:"bytes,4,opt,name=SessionJoin,oneof"`
+}
 type OneOf_SessionPrint struct {
-	SessionPrint *SessionPrint `protobuf:"bytes,4,opt,name=SessionPrint,oneof"`
+	SessionPrint *SessionPrint `protobuf:"bytes,5,opt,name=SessionPrint,oneof"`
 }
 type OneOf_Resize struct {
-	Resize *Resize `protobuf:"bytes,5,opt,name=Resize,oneof"`
+	Resize *Resize `protobuf:"bytes,6,opt,name=Resize,oneof"`
 }
 type OneOf_SessionEnd struct {
-	SessionEnd *SessionEnd `protobuf:"bytes,6,opt,name=SessionEnd,oneof"`
+	SessionEnd *SessionEnd `protobuf:"bytes,7,opt,name=SessionEnd,oneof"`
 }
 type OneOf_SessionCommand struct {
-	SessionCommand *SessionCommand `protobuf:"bytes,7,opt,name=SessionCommand,oneof"`
+	SessionCommand *SessionCommand `protobuf:"bytes,8,opt,name=SessionCommand,oneof"`
 }
 type OneOf_SessionDisk struct {
-	SessionDisk *SessionDisk `protobuf:"bytes,8,opt,name=SessionDisk,oneof"`
+	SessionDisk *SessionDisk `protobuf:"bytes,9,opt,name=SessionDisk,oneof"`
 }
 type OneOf_SessionNetwork struct {
-	SessionNetwork *SessionNetwork `protobuf:"bytes,9,opt,name=SessionNetwork,oneof"`
+	SessionNetwork *SessionNetwork `protobuf:"bytes,10,opt,name=SessionNetwork,oneof"`
 }
 type OneOf_SessionData struct {
-	SessionData *SessionData `protobuf:"bytes,10,opt,name=SessionData,oneof"`
+	SessionData *SessionData `protobuf:"bytes,11,opt,name=SessionData,oneof"`
 }
 type OneOf_SessionLeave struct {
-	SessionLeave *SessionLeave `protobuf:"bytes,11,opt,name=SessionLeave,oneof"`
+	SessionLeave *SessionLeave `protobuf:"bytes,12,opt,name=SessionLeave,oneof"`
 }
 type OneOf_PortForward struct {
-	PortForward *PortForward `protobuf:"bytes,12,opt,name=PortForward,oneof"`
+	PortForward *PortForward `protobuf:"bytes,13,opt,name=PortForward,oneof"`
 }
 type OneOf_Subsystem struct {
-	Subsystem *Subsystem `protobuf:"bytes,13,opt,name=Subsystem,oneof"`
+	Subsystem *Subsystem `protobuf:"bytes,14,opt,name=Subsystem,oneof"`
 }
 type OneOf_ClientDisconnect struct {
-	ClientDisconnect *ClientDisconnect `protobuf:"bytes,14,opt,name=ClientDisconnect,oneof"`
+	ClientDisconnect *ClientDisconnect `protobuf:"bytes,15,opt,name=ClientDisconnect,oneof"`
 }
 type OneOf_AuthAttempt struct {
-	AuthAttempt *AuthAttempt `protobuf:"bytes,15,opt,name=AuthAttempt,oneof"`
+	AuthAttempt *AuthAttempt `protobuf:"bytes,16,opt,name=AuthAttempt,oneof"`
 }
 
 func (*OneOf_UserLogin) isOneOf_Event()        {}
 func (*OneOf_UserUpdate) isOneOf_Event()       {}
 func (*OneOf_SessionStart) isOneOf_Event()     {}
+func (*OneOf_SessionJoin) isOneOf_Event()      {}
 func (*OneOf_SessionPrint) isOneOf_Event()     {}
 func (*OneOf_Resize) isOneOf_Event()           {}
 func (*OneOf_SessionEnd) isOneOf_Event()       {}
@@ -1291,6 +1346,13 @@ func (m *OneOf) GetUserUpdate() *UserUpdate {
 func (m *OneOf) GetSessionStart() *SessionStart {
 	if x, ok := m.GetEvent().(*OneOf_SessionStart); ok {
 		return x.SessionStart
+	}
+	return nil
+}
+
+func (m *OneOf) GetSessionJoin() *SessionJoin {
+	if x, ok := m.GetEvent().(*OneOf_SessionJoin); ok {
+		return x.SessionJoin
 	}
 	return nil
 }
@@ -1385,6 +1447,7 @@ func (*OneOf) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, 
 		(*OneOf_UserLogin)(nil),
 		(*OneOf_UserUpdate)(nil),
 		(*OneOf_SessionStart)(nil),
+		(*OneOf_SessionJoin)(nil),
 		(*OneOf_SessionPrint)(nil),
 		(*OneOf_Resize)(nil),
 		(*OneOf_SessionEnd)(nil),
@@ -1419,63 +1482,68 @@ func _OneOf_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 		if err := b.EncodeMessage(x.SessionStart); err != nil {
 			return err
 		}
-	case *OneOf_SessionPrint:
+	case *OneOf_SessionJoin:
 		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.SessionJoin); err != nil {
+			return err
+		}
+	case *OneOf_SessionPrint:
+		_ = b.EncodeVarint(5<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionPrint); err != nil {
 			return err
 		}
 	case *OneOf_Resize:
-		_ = b.EncodeVarint(5<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(6<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.Resize); err != nil {
 			return err
 		}
 	case *OneOf_SessionEnd:
-		_ = b.EncodeVarint(6<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(7<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionEnd); err != nil {
 			return err
 		}
 	case *OneOf_SessionCommand:
-		_ = b.EncodeVarint(7<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(8<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionCommand); err != nil {
 			return err
 		}
 	case *OneOf_SessionDisk:
-		_ = b.EncodeVarint(8<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(9<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionDisk); err != nil {
 			return err
 		}
 	case *OneOf_SessionNetwork:
-		_ = b.EncodeVarint(9<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(10<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionNetwork); err != nil {
 			return err
 		}
 	case *OneOf_SessionData:
-		_ = b.EncodeVarint(10<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(11<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionData); err != nil {
 			return err
 		}
 	case *OneOf_SessionLeave:
-		_ = b.EncodeVarint(11<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(12<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.SessionLeave); err != nil {
 			return err
 		}
 	case *OneOf_PortForward:
-		_ = b.EncodeVarint(12<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(13<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.PortForward); err != nil {
 			return err
 		}
 	case *OneOf_Subsystem:
-		_ = b.EncodeVarint(13<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(14<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.Subsystem); err != nil {
 			return err
 		}
 	case *OneOf_ClientDisconnect:
-		_ = b.EncodeVarint(14<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(15<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.ClientDisconnect); err != nil {
 			return err
 		}
 	case *OneOf_AuthAttempt:
-		_ = b.EncodeVarint(15<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(16<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.AuthAttempt); err != nil {
 			return err
 		}
@@ -1513,7 +1581,15 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionStart{msg}
 		return true, err
-	case 4: // Event.SessionPrint
+	case 4: // Event.SessionJoin
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(SessionJoin)
+		err := b.DecodeMessage(msg)
+		m.Event = &OneOf_SessionJoin{msg}
+		return true, err
+	case 5: // Event.SessionPrint
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1521,7 +1597,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionPrint{msg}
 		return true, err
-	case 5: // Event.Resize
+	case 6: // Event.Resize
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1529,7 +1605,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_Resize{msg}
 		return true, err
-	case 6: // Event.SessionEnd
+	case 7: // Event.SessionEnd
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1537,7 +1613,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionEnd{msg}
 		return true, err
-	case 7: // Event.SessionCommand
+	case 8: // Event.SessionCommand
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1545,7 +1621,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionCommand{msg}
 		return true, err
-	case 8: // Event.SessionDisk
+	case 9: // Event.SessionDisk
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1553,7 +1629,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionDisk{msg}
 		return true, err
-	case 9: // Event.SessionNetwork
+	case 10: // Event.SessionNetwork
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1561,7 +1637,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionNetwork{msg}
 		return true, err
-	case 10: // Event.SessionData
+	case 11: // Event.SessionData
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1569,7 +1645,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionData{msg}
 		return true, err
-	case 11: // Event.SessionLeave
+	case 12: // Event.SessionLeave
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1577,7 +1653,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_SessionLeave{msg}
 		return true, err
-	case 12: // Event.PortForward
+	case 13: // Event.PortForward
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1585,7 +1661,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_PortForward{msg}
 		return true, err
-	case 13: // Event.Subsystem
+	case 14: // Event.Subsystem
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1593,7 +1669,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_Subsystem{msg}
 		return true, err
-	case 14: // Event.ClientDisconnect
+	case 15: // Event.ClientDisconnect
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1601,7 +1677,7 @@ func _OneOf_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) 
 		err := b.DecodeMessage(msg)
 		m.Event = &OneOf_ClientDisconnect{msg}
 		return true, err
-	case 15: // Event.AuthAttempt
+	case 16: // Event.AuthAttempt
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -1630,6 +1706,11 @@ func _OneOf_OneofSizer(msg proto.Message) (n int) {
 		n += s
 	case *OneOf_SessionStart:
 		s := proto.Size(x.SessionStart)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *OneOf_SessionJoin:
+		s := proto.Size(x.SessionJoin)
 		n += 1 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
@@ -1690,7 +1771,7 @@ func _OneOf_OneofSizer(msg proto.Message) (n int) {
 		n += s
 	case *OneOf_AuthAttempt:
 		s := proto.Size(x.AuthAttempt)
-		n += 1 // tag and wire
+		n += 2 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
 	case nil:
@@ -1708,6 +1789,7 @@ func init() {
 	proto.RegisterMapType((map[string]string)(nil), "events.ServerMetadata.ServerLabelsEntry")
 	proto.RegisterType((*ConnectionMetadata)(nil), "events.ConnectionMetadata")
 	proto.RegisterType((*SessionStart)(nil), "events.SessionStart")
+	proto.RegisterType((*SessionJoin)(nil), "events.SessionJoin")
 	proto.RegisterType((*SessionPrint)(nil), "events.SessionPrint")
 	proto.RegisterType((*Resize)(nil), "events.Resize")
 	proto.RegisterType((*SessionEnd)(nil), "events.SessionEnd")
@@ -1994,6 +2076,67 @@ func (m *SessionStart) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *SessionJoin) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SessionJoin) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
+	n7, err := m.Metadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n7
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n8, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n8
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n9, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n9
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n10, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n10
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n11, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n11
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
 func (m *SessionPrint) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -2012,11 +2155,11 @@ func (m *SessionPrint) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n7, err := m.Metadata.MarshalTo(dAtA[i:])
+	n12, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n7
+	i += n12
 	if m.ChunkIndex != 0 {
 		dAtA[i] = 0x10
 		i++
@@ -2067,73 +2210,6 @@ func (m *Resize) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n8, err := m.Metadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n8
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n9, err := m.UserMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n9
-	dAtA[i] = 0x1a
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n10, err := m.SessionMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n10
-	dAtA[i] = 0x22
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n11, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n11
-	dAtA[i] = 0x2a
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n12, err := m.ServerMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n12
-	if len(m.TerminalSize) > 0 {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.TerminalSize)))
-		i += copy(dAtA[i:], m.TerminalSize)
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *SessionEnd) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *SessionEnd) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
 	n13, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
@@ -2171,6 +2247,73 @@ func (m *SessionEnd) MarshalTo(dAtA []byte) (int, error) {
 		return 0, err
 	}
 	i += n17
+	if len(m.TerminalSize) > 0 {
+		dAtA[i] = 0x32
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.TerminalSize)))
+		i += copy(dAtA[i:], m.TerminalSize)
+	}
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
+func (m *SessionEnd) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SessionEnd) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
+	n18, err := m.Metadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n18
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n19, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n19
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n20, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n20
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n21, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n21
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n22, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n22
 	if m.EnhancedRecording {
 		dAtA[i] = 0x30
 		i++
@@ -2310,43 +2453,43 @@ func (m *SessionCommand) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n18, err := m.Metadata.MarshalTo(dAtA[i:])
+	n23, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n18
+	i += n23
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n19, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n24, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n19
+	i += n24
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n20, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	n25, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n20
+	i += n25
 	dAtA[i] = 0x22
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n21, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	n26, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n21
+	i += n26
 	dAtA[i] = 0x2a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
-	n22, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	n27, err := m.BPFMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n22
+	i += n27
 	if m.PPID != 0 {
 		dAtA[i] = 0x30
 		i++
@@ -2402,43 +2545,43 @@ func (m *SessionDisk) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n23, err := m.Metadata.MarshalTo(dAtA[i:])
+	n28, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n23
+	i += n28
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n24, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n29, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n24
+	i += n29
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n25, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	n30, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n25
+	i += n30
 	dAtA[i] = 0x22
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n26, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	n31, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n26
+	i += n31
 	dAtA[i] = 0x2a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
-	n27, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	n32, err := m.BPFMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n27
+	i += n32
 	if len(m.Path) > 0 {
 		dAtA[i] = 0x32
 		i++
@@ -2479,43 +2622,43 @@ func (m *SessionNetwork) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n28, err := m.Metadata.MarshalTo(dAtA[i:])
+	n33, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n28
+	i += n33
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n29, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n34, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n29
+	i += n34
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n30, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	n35, err := m.SessionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n30
+	i += n35
 	dAtA[i] = 0x22
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n31, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	n36, err := m.ServerMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n31
+	i += n36
 	dAtA[i] = 0x2a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.BPFMetadata.Size()))
-	n32, err := m.BPFMetadata.MarshalTo(dAtA[i:])
+	n37, err := m.BPFMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n32
+	i += n37
 	if len(m.SrcAddr) > 0 {
 		dAtA[i] = 0x32
 		i++
@@ -2562,77 +2705,6 @@ func (m *SessionData) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n33, err := m.Metadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n33
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n34, err := m.UserMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n34
-	dAtA[i] = 0x1a
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
-	n35, err := m.SessionMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n35
-	dAtA[i] = 0x22
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
-	n36, err := m.ServerMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n36
-	dAtA[i] = 0x2a
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n37, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n37
-	if m.BytesTransmitted != 0 {
-		dAtA[i] = 0x30
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.BytesTransmitted))
-	}
-	if m.BytesReceived != 0 {
-		dAtA[i] = 0x38
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.BytesReceived))
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *SessionLeave) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *SessionLeave) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
 	n38, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
@@ -2670,6 +2742,77 @@ func (m *SessionLeave) MarshalTo(dAtA []byte) (int, error) {
 		return 0, err
 	}
 	i += n42
+	if m.BytesTransmitted != 0 {
+		dAtA[i] = 0x30
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.BytesTransmitted))
+	}
+	if m.BytesReceived != 0 {
+		dAtA[i] = 0x38
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.BytesReceived))
+	}
+	if m.XXX_unrecognized != nil {
+		i += copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	return i, nil
+}
+
+func (m *SessionLeave) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SessionLeave) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
+	n43, err := m.Metadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n43
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
+	n44, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n44
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.SessionMetadata.Size()))
+	n45, err := m.SessionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n45
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ServerMetadata.Size()))
+	n46, err := m.ServerMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n46
+	dAtA[i] = 0x2a
+	i++
+	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
+	n47, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n47
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
 	}
@@ -2694,27 +2837,27 @@ func (m *UserLogin) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n43, err := m.Metadata.MarshalTo(dAtA[i:])
+	n48, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n43
+	i += n48
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n44, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n49, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n44
+	i += n49
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Status.Size()))
-	n45, err := m.Status.MarshalTo(dAtA[i:])
+	n50, err := m.Status.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n45
+	i += n50
 	if len(m.Method) > 0 {
 		dAtA[i] = 0x22
 		i++
@@ -2725,11 +2868,11 @@ func (m *UserLogin) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x2a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.IdentityAttributes.Size()))
-		n46, err := m.IdentityAttributes.MarshalTo(dAtA[i:])
+		n51, err := m.IdentityAttributes.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n46
+		i += n51
 	}
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
@@ -2755,19 +2898,19 @@ func (m *UserUpdate) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n47, err := m.Metadata.MarshalTo(dAtA[i:])
+	n52, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n47
+	i += n52
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n48, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n53, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n48
+	i += n53
 	if len(m.Roles) > 0 {
 		for _, s := range m.Roles {
 			dAtA[i] = 0x1a
@@ -2792,11 +2935,11 @@ func (m *UserUpdate) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0x2a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(m.Expires)))
-	n49, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.Expires, dAtA[i:])
+	n54, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.Expires, dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n49
+	i += n54
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
 	}
@@ -2821,35 +2964,35 @@ func (m *PortForward) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n50, err := m.Metadata.MarshalTo(dAtA[i:])
+	n55, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n50
+	i += n55
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n51, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n56, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n51
+	i += n56
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n52, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	n57, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n52
+	i += n57
 	dAtA[i] = 0x22
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Status.Size()))
-	n53, err := m.Status.MarshalTo(dAtA[i:])
+	n58, err := m.Status.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n53
+	i += n58
 	if len(m.Addr) > 0 {
 		dAtA[i] = 0x2a
 		i++
@@ -2880,27 +3023,27 @@ func (m *Subsystem) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n54, err := m.Metadata.MarshalTo(dAtA[i:])
+	n59, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n54
+	i += n59
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n55, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n60, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n55
+	i += n60
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n56, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	n61, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n56
+	i += n61
 	if len(m.Name) > 0 {
 		dAtA[i] = 0x22
 		i++
@@ -2937,27 +3080,27 @@ func (m *ClientDisconnect) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n57, err := m.Metadata.MarshalTo(dAtA[i:])
+	n62, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n57
+	i += n62
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n58, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n63, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n58
+	i += n63
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n59, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	n64, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n59
+	i += n64
 	if len(m.Reason) > 0 {
 		dAtA[i] = 0x22
 		i++
@@ -2988,35 +3131,35 @@ func (m *AuthAttempt) MarshalTo(dAtA []byte) (int, error) {
 	dAtA[i] = 0xa
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Metadata.Size()))
-	n60, err := m.Metadata.MarshalTo(dAtA[i:])
+	n65, err := m.Metadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n60
+	i += n65
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.UserMetadata.Size()))
-	n61, err := m.UserMetadata.MarshalTo(dAtA[i:])
+	n66, err := m.UserMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n61
+	i += n66
 	dAtA[i] = 0x1a
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.ConnectionMetadata.Size()))
-	n62, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
+	n67, err := m.ConnectionMetadata.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n62
+	i += n67
 	dAtA[i] = 0x22
 	i++
 	i = encodeVarintEvents(dAtA, i, uint64(m.Status.Size()))
-	n63, err := m.Status.MarshalTo(dAtA[i:])
+	n68, err := m.Status.MarshalTo(dAtA[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n63
+	i += n68
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
 	}
@@ -3039,11 +3182,11 @@ func (m *OneOf) MarshalTo(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if m.Event != nil {
-		nn64, err := m.Event.MarshalTo(dAtA[i:])
+		nn69, err := m.Event.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += nn64
+		i += nn69
 	}
 	if m.XXX_unrecognized != nil {
 		i += copy(dAtA[i:], m.XXX_unrecognized)
@@ -3057,11 +3200,11 @@ func (m *OneOf_UserLogin) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0xa
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.UserLogin.Size()))
-		n65, err := m.UserLogin.MarshalTo(dAtA[i:])
+		n70, err := m.UserLogin.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n65
+		i += n70
 	}
 	return i, nil
 }
@@ -3071,11 +3214,11 @@ func (m *OneOf_UserUpdate) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.UserUpdate.Size()))
-		n66, err := m.UserUpdate.MarshalTo(dAtA[i:])
+		n71, err := m.UserUpdate.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n66
+		i += n71
 	}
 	return i, nil
 }
@@ -3085,77 +3228,7 @@ func (m *OneOf_SessionStart) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0x1a
 		i++
 		i = encodeVarintEvents(dAtA, i, uint64(m.SessionStart.Size()))
-		n67, err := m.SessionStart.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n67
-	}
-	return i, nil
-}
-func (m *OneOf_SessionPrint) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.SessionPrint != nil {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionPrint.Size()))
-		n68, err := m.SessionPrint.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n68
-	}
-	return i, nil
-}
-func (m *OneOf_Resize) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.Resize != nil {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.Resize.Size()))
-		n69, err := m.Resize.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n69
-	}
-	return i, nil
-}
-func (m *OneOf_SessionEnd) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.SessionEnd != nil {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionEnd.Size()))
-		n70, err := m.SessionEnd.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n70
-	}
-	return i, nil
-}
-func (m *OneOf_SessionCommand) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.SessionCommand != nil {
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionCommand.Size()))
-		n71, err := m.SessionCommand.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n71
-	}
-	return i, nil
-}
-func (m *OneOf_SessionDisk) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.SessionDisk != nil {
-		dAtA[i] = 0x42
-		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionDisk.Size()))
-		n72, err := m.SessionDisk.MarshalTo(dAtA[i:])
+		n72, err := m.SessionStart.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3163,13 +3236,13 @@ func (m *OneOf_SessionDisk) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_SessionNetwork) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_SessionJoin) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.SessionNetwork != nil {
-		dAtA[i] = 0x4a
+	if m.SessionJoin != nil {
+		dAtA[i] = 0x22
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionNetwork.Size()))
-		n73, err := m.SessionNetwork.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionJoin.Size()))
+		n73, err := m.SessionJoin.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3177,13 +3250,13 @@ func (m *OneOf_SessionNetwork) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_SessionData) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_SessionPrint) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.SessionData != nil {
-		dAtA[i] = 0x52
+	if m.SessionPrint != nil {
+		dAtA[i] = 0x2a
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionData.Size()))
-		n74, err := m.SessionData.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionPrint.Size()))
+		n74, err := m.SessionPrint.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3191,13 +3264,13 @@ func (m *OneOf_SessionData) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_SessionLeave) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_Resize) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.SessionLeave != nil {
-		dAtA[i] = 0x5a
+	if m.Resize != nil {
+		dAtA[i] = 0x32
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.SessionLeave.Size()))
-		n75, err := m.SessionLeave.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.Resize.Size()))
+		n75, err := m.Resize.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3205,13 +3278,13 @@ func (m *OneOf_SessionLeave) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_PortForward) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_SessionEnd) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.PortForward != nil {
-		dAtA[i] = 0x62
+	if m.SessionEnd != nil {
+		dAtA[i] = 0x3a
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.PortForward.Size()))
-		n76, err := m.PortForward.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionEnd.Size()))
+		n76, err := m.SessionEnd.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3219,13 +3292,13 @@ func (m *OneOf_PortForward) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_Subsystem) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_SessionCommand) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.Subsystem != nil {
-		dAtA[i] = 0x6a
+	if m.SessionCommand != nil {
+		dAtA[i] = 0x42
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.Subsystem.Size()))
-		n77, err := m.Subsystem.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionCommand.Size()))
+		n77, err := m.SessionCommand.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3233,13 +3306,13 @@ func (m *OneOf_Subsystem) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_ClientDisconnect) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_SessionDisk) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.ClientDisconnect != nil {
-		dAtA[i] = 0x72
+	if m.SessionDisk != nil {
+		dAtA[i] = 0x4a
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.ClientDisconnect.Size()))
-		n78, err := m.ClientDisconnect.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionDisk.Size()))
+		n78, err := m.SessionDisk.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -3247,17 +3320,103 @@ func (m *OneOf_ClientDisconnect) MarshalTo(dAtA []byte) (int, error) {
 	}
 	return i, nil
 }
-func (m *OneOf_AuthAttempt) MarshalTo(dAtA []byte) (int, error) {
+func (m *OneOf_SessionNetwork) MarshalTo(dAtA []byte) (int, error) {
 	i := 0
-	if m.AuthAttempt != nil {
-		dAtA[i] = 0x7a
+	if m.SessionNetwork != nil {
+		dAtA[i] = 0x52
 		i++
-		i = encodeVarintEvents(dAtA, i, uint64(m.AuthAttempt.Size()))
-		n79, err := m.AuthAttempt.MarshalTo(dAtA[i:])
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionNetwork.Size()))
+		n79, err := m.SessionNetwork.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n79
+	}
+	return i, nil
+}
+func (m *OneOf_SessionData) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.SessionData != nil {
+		dAtA[i] = 0x5a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionData.Size()))
+		n80, err := m.SessionData.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n80
+	}
+	return i, nil
+}
+func (m *OneOf_SessionLeave) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.SessionLeave != nil {
+		dAtA[i] = 0x62
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.SessionLeave.Size()))
+		n81, err := m.SessionLeave.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n81
+	}
+	return i, nil
+}
+func (m *OneOf_PortForward) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.PortForward != nil {
+		dAtA[i] = 0x6a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.PortForward.Size()))
+		n82, err := m.PortForward.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n82
+	}
+	return i, nil
+}
+func (m *OneOf_Subsystem) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.Subsystem != nil {
+		dAtA[i] = 0x72
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.Subsystem.Size()))
+		n83, err := m.Subsystem.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n83
+	}
+	return i, nil
+}
+func (m *OneOf_ClientDisconnect) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.ClientDisconnect != nil {
+		dAtA[i] = 0x7a
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.ClientDisconnect.Size()))
+		n84, err := m.ClientDisconnect.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n84
+	}
+	return i, nil
+}
+func (m *OneOf_AuthAttempt) MarshalTo(dAtA []byte) (int, error) {
+	i := 0
+	if m.AuthAttempt != nil {
+		dAtA[i] = 0x82
+		i++
+		dAtA[i] = 0x1
+		i++
+		i = encodeVarintEvents(dAtA, i, uint64(m.AuthAttempt.Size()))
+		n85, err := m.AuthAttempt.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n85
 	}
 	return i, nil
 }
@@ -3389,6 +3548,25 @@ func (m *SessionStart) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *SessionJoin) Size() (n int) {
+	var l int
+	_ = l
+	l = m.Metadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.UserMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.SessionMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.ServerMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.ConnectionMetadata.Size()
+	n += 1 + l + sovEvents(uint64(l))
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -3823,6 +4001,15 @@ func (m *OneOf_SessionStart) Size() (n int) {
 	}
 	return n
 }
+func (m *OneOf_SessionJoin) Size() (n int) {
+	var l int
+	_ = l
+	if m.SessionJoin != nil {
+		l = m.SessionJoin.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
 func (m *OneOf_SessionPrint) Size() (n int) {
 	var l int
 	_ = l
@@ -3927,7 +4114,7 @@ func (m *OneOf_AuthAttempt) Size() (n int) {
 	_ = l
 	if m.AuthAttempt != nil {
 		l = m.AuthAttempt.Size()
-		n += 1 + l + sovEvents(uint64(l))
+		n += 2 + l + sovEvents(uint64(l))
 	}
 	return n
 }
@@ -4916,6 +5103,207 @@ func (m *SessionStart) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *SessionJoin) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SessionJoin: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SessionJoin: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UserMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SessionMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.SessionMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServerMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ServerMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ConnectionMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *SessionPrint) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5647,7 +6035,7 @@ func (m *BPFMetadata) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.PID |= (int32(b) & 0x7F) << shift
+				m.PID |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -5666,7 +6054,7 @@ func (m *BPFMetadata) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CgroupID |= (int64(b) & 0x7F) << shift
+				m.CgroupID |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -6044,7 +6432,7 @@ func (m *SessionCommand) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.PPID |= (int32(b) & 0x7F) << shift
+				m.PPID |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -8422,6 +8810,38 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SessionJoin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &SessionJoin{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Event = &OneOf_SessionJoin{v}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionPrint", wireType)
 			}
 			var msglen int
@@ -8452,7 +8872,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionPrint{v}
 			iNdEx = postIndex
-		case 5:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Resize", wireType)
 			}
@@ -8484,7 +8904,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_Resize{v}
 			iNdEx = postIndex
-		case 6:
+		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionEnd", wireType)
 			}
@@ -8516,7 +8936,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionEnd{v}
 			iNdEx = postIndex
-		case 7:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionCommand", wireType)
 			}
@@ -8548,7 +8968,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionCommand{v}
 			iNdEx = postIndex
-		case 8:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionDisk", wireType)
 			}
@@ -8580,7 +9000,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionDisk{v}
 			iNdEx = postIndex
-		case 9:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionNetwork", wireType)
 			}
@@ -8612,7 +9032,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionNetwork{v}
 			iNdEx = postIndex
-		case 10:
+		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionData", wireType)
 			}
@@ -8644,7 +9064,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionData{v}
 			iNdEx = postIndex
-		case 11:
+		case 12:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SessionLeave", wireType)
 			}
@@ -8676,7 +9096,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_SessionLeave{v}
 			iNdEx = postIndex
-		case 12:
+		case 13:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PortForward", wireType)
 			}
@@ -8708,7 +9128,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_PortForward{v}
 			iNdEx = postIndex
-		case 13:
+		case 14:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Subsystem", wireType)
 			}
@@ -8740,7 +9160,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_Subsystem{v}
 			iNdEx = postIndex
-		case 14:
+		case 15:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ClientDisconnect", wireType)
 			}
@@ -8772,7 +9192,7 @@ func (m *OneOf) Unmarshal(dAtA []byte) error {
 			}
 			m.Event = &OneOf_ClientDisconnect{v}
 			iNdEx = postIndex
-		case 15:
+		case 16:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AuthAttempt", wireType)
 			}
@@ -8931,128 +9351,130 @@ var (
 	ErrIntOverflowEvents   = fmt.Errorf("proto: integer overflow")
 )
 
-func init() { proto.RegisterFile("events.proto", fileDescriptor_events_0cd0c2a6b7e2bcf4) }
+func init() { proto.RegisterFile("events.proto", fileDescriptor_events_9ec8be9fae1bb3ec) }
 
-var fileDescriptor_events_0cd0c2a6b7e2bcf4 = []byte{
-	// 1908 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x58, 0xcd, 0x6f, 0x1c, 0x49,
-	0x15, 0x9f, 0xef, 0xf1, 0xd4, 0x4c, 0x12, 0xbb, 0xe2, 0xdd, 0x4c, 0xa2, 0xac, 0xdb, 0x34, 0xda,
-	0xc8, 0xab, 0x0d, 0x8e, 0xe2, 0xb5, 0xd6, 0xcb, 0x0a, 0x69, 0xe3, 0xf1, 0xd8, 0x1a, 0x4b, 0xf9,
-	0x18, 0xd5, 0x78, 0xe1, 0x18, 0xb5, 0xa7, 0xcb, 0xe3, 0x56, 0xa6, 0xbb, 0x47, 0x55, 0x35, 0xb3,
-	0x76, 0x6e, 0x88, 0x03, 0x17, 0x0e, 0x48, 0x48, 0x08, 0x4e, 0x9c, 0xb8, 0xf1, 0x5f, 0x70, 0x89,
-	0xc4, 0x25, 0x07, 0xae, 0x34, 0x10, 0x6e, 0x7d, 0xe2, 0x00, 0x12, 0x42, 0x42, 0x42, 0xf5, 0xaa,
-	0x7a, 0xba, 0xba, 0xc7, 0x02, 0x76, 0x7d, 0x88, 0x22, 0x7c, 0x9b, 0xf9, 0xfd, 0xde, 0xab, 0xea,
-	0xf7, 0x51, 0xaf, 0x5e, 0x3d, 0xd4, 0xa2, 0x33, 0x1a, 0x08, 0xbe, 0x39, 0x61, 0xa1, 0x08, 0x71,
-	0x4d, 0xfd, 0xbb, 0xb3, 0x3a, 0x0a, 0x47, 0x21, 0x40, 0x0f, 0xe4, 0x2f, 0xc5, 0xde, 0xb1, 0x46,
-	0x61, 0x38, 0x1a, 0xd3, 0x07, 0xf0, 0xef, 0x78, 0x7a, 0xf2, 0x40, 0x78, 0x3e, 0xe5, 0xc2, 0xf1,
-	0x27, 0x5a, 0xe0, 0x6e, 0x5e, 0x80, 0x0b, 0x36, 0x1d, 0x0a, 0xc5, 0xda, 0xbf, 0x2f, 0xa2, 0xa5,
-	0x27, 0x54, 0x38, 0xae, 0x23, 0x1c, 0x7c, 0x17, 0x55, 0x0f, 0x03, 0x97, 0x9e, 0xb5, 0x8b, 0xeb,
-	0xc5, 0x8d, 0x72, 0xa7, 0x16, 0x47, 0x56, 0x89, 0x7a, 0x44, 0x81, 0xf8, 0x03, 0x54, 0x39, 0x3a,
-	0x9f, 0xd0, 0x76, 0x69, 0xbd, 0xb8, 0xd1, 0xe8, 0x34, 0xe2, 0xc8, 0xaa, 0xc2, 0x97, 0x11, 0x80,
-	0xf1, 0xb7, 0x50, 0xe9, 0xb0, 0xdb, 0x2e, 0x03, 0xb9, 0x12, 0x47, 0xd6, 0xb5, 0xa9, 0xe7, 0xde,
-	0x0f, 0x7d, 0x4f, 0x50, 0x7f, 0x22, 0xce, 0x49, 0xe9, 0xb0, 0x8b, 0xef, 0xa1, 0xca, 0x5e, 0xe8,
-	0xd2, 0x76, 0x05, 0x84, 0x70, 0x1c, 0x59, 0xd7, 0x87, 0xa1, 0x4b, 0x0d, 0x29, 0xe0, 0xf1, 0x23,
-	0x54, 0x39, 0xf2, 0x7c, 0xda, 0xae, 0xae, 0x17, 0x37, 0x9a, 0x5b, 0x77, 0x36, 0x95, 0x05, 0x9b,
-	0x89, 0x05, 0x9b, 0x47, 0x89, 0x89, 0x9d, 0xe5, 0x57, 0x91, 0x55, 0x88, 0x23, 0xab, 0x22, 0xad,
-	0xfe, 0xe9, 0x1f, 0xad, 0x22, 0x01, 0x4d, 0xfb, 0x33, 0x74, 0x63, 0x40, 0x39, 0xf7, 0xc2, 0x60,
-	0x6e, 0xdc, 0x87, 0xa8, 0xa1, 0xa1, 0xc3, 0x2e, 0x18, 0xd8, 0xe8, 0xd4, 0xe3, 0xc8, 0x2a, 0x73,
-	0xcf, 0x25, 0x29, 0x63, 0xff, 0x00, 0xb5, 0xbe, 0xe4, 0x94, 0x19, 0x3e, 0xa9, 0xc8, 0xff, 0x5a,
-	0x63, 0x49, 0xee, 0x35, 0xe5, 0x94, 0x11, 0x40, 0xf1, 0x47, 0xa8, 0xfa, 0x38, 0x1c, 0x79, 0x81,
-	0x76, 0xca, 0xcd, 0x38, 0xb2, 0x6e, 0x8c, 0x25, 0x60, 0xd8, 0xa4, 0x24, 0xec, 0xbf, 0x97, 0xd0,
-	0xf5, 0x01, 0x65, 0x33, 0x63, 0xed, 0x5d, 0xf9, 0x95, 0x12, 0x79, 0xea, 0xf8, 0x94, 0x4f, 0x9c,
-	0x21, 0xd5, 0xdb, 0xdc, 0x8a, 0x23, 0xeb, 0x66, 0x90, 0x80, 0xc6, 0x5a, 0x79, 0x79, 0xfc, 0x11,
-	0x5a, 0x52, 0xd0, 0x61, 0x57, 0x7f, 0xc3, 0xb5, 0x38, 0xb2, 0x1a, 0x1c, 0xb0, 0xe7, 0x9e, 0x4b,
-	0xe6, 0x34, 0xde, 0x4f, 0xf6, 0xef, 0x85, 0x5c, 0xc8, 0xc5, 0x75, 0xb0, 0x3e, 0x88, 0x23, 0xeb,
-	0xb6, 0x56, 0x38, 0xd5, 0x94, 0xb1, 0x65, 0x4e, 0x09, 0xfb, 0xa8, 0xa5, 0x90, 0xc7, 0xce, 0x31,
-	0x1d, 0xf3, 0x76, 0x65, 0xbd, 0xbc, 0xd1, 0xdc, 0xda, 0xd8, 0xd4, 0x39, 0x9b, 0x35, 0x71, 0xd3,
-	0x14, 0xdd, 0x0f, 0x04, 0x3b, 0xef, 0x58, 0x3a, 0x64, 0xb7, 0xf4, 0x96, 0x63, 0xe0, 0x8c, 0x0d,
-	0x33, 0xcb, 0xdf, 0xf9, 0x02, 0xad, 0x2c, 0xac, 0x81, 0x97, 0x51, 0xf9, 0x05, 0x3d, 0x57, 0xce,
-	0x22, 0xf2, 0x27, 0x5e, 0x45, 0xd5, 0x99, 0x33, 0x9e, 0xea, 0xec, 0x24, 0xea, 0xcf, 0xe7, 0xa5,
-	0xcf, 0x8a, 0xf6, 0x8f, 0x8b, 0x08, 0xef, 0x85, 0x41, 0x40, 0x87, 0xc2, 0x4c, 0x87, 0x4f, 0x51,
-	0xe3, 0x71, 0x38, 0x74, 0xc6, 0xbb, 0xae, 0x9b, 0x04, 0xb7, 0x1d, 0x47, 0xd6, 0xaa, 0xe3, 0xba,
-	0x6c, 0x73, 0x2c, 0x19, 0xe3, 0x93, 0x52, 0x51, 0xfc, 0x5d, 0x84, 0x08, 0xf5, 0x43, 0x41, 0x41,
-	0x51, 0xb9, 0xfc, 0x76, 0x1c, 0x59, 0xef, 0x81, 0x22, 0x03, 0xca, 0xd0, 0x34, 0x84, 0xed, 0x1f,
-	0x95, 0xa5, 0xeb, 0x20, 0xd1, 0x06, 0xc2, 0x61, 0x02, 0x7f, 0x9e, 0x9e, 0x3d, 0xf8, 0x84, 0xe6,
-	0xd6, 0x72, 0xe2, 0xc6, 0x04, 0xef, 0xb4, 0xa4, 0xbb, 0x5e, 0x47, 0x56, 0x31, 0x8e, 0xac, 0x02,
-	0x59, 0x32, 0xbe, 0x5f, 0xe5, 0x65, 0x09, 0xf4, 0x56, 0x13, 0x3d, 0x33, 0x77, 0x73, 0xba, 0x2a,
-	0x63, 0xbf, 0x40, 0x75, 0xfd, 0x0d, 0x10, 0xfe, 0xe6, 0xd6, 0xad, 0x34, 0x72, 0x99, 0x03, 0x93,
-	0xd3, 0x4e, 0xb4, 0xf0, 0xf7, 0x50, 0x4d, 0x05, 0x04, 0x8e, 0x71, 0x73, 0xeb, 0xfd, 0x8b, 0x23,
-	0x9f, 0x53, 0xd7, 0x3a, 0xb8, 0x87, 0x50, 0x1a, 0x8c, 0xf9, 0x01, 0xd7, 0x2b, 0x2c, 0x86, 0x29,
-	0xb7, 0x8a, 0xa1, 0x8b, 0x3f, 0x45, 0xad, 0x23, 0xca, 0x7c, 0x2f, 0x70, 0xc6, 0x03, 0xef, 0x25,
-	0x6d, 0xd7, 0xd2, 0xa2, 0xc2, 0xbd, 0x97, 0x66, 0x0c, 0x32, 0x72, 0xf6, 0xcf, 0x4b, 0xf3, 0x28,
-	0xf4, 0x99, 0x17, 0x5c, 0x2e, 0x0a, 0xf7, 0x10, 0xda, 0x3b, 0x9d, 0x06, 0x2f, 0x54, 0xd9, 0x2c,
-	0xa5, 0x65, 0x73, 0xe8, 0x11, 0x83, 0x91, 0xb5, 0xb3, 0x2b, 0xd7, 0x97, 0x2e, 0x6f, 0x75, 0x1a,
-	0xaf, 0xd4, 0x4a, 0xc5, 0xef, 0x10, 0x80, 0xb1, 0x85, 0xaa, 0x9d, 0x73, 0x41, 0x39, 0xb8, 0xb4,
-	0xac, 0x6a, 0xeb, 0xb1, 0x04, 0x88, 0xc2, 0xf1, 0x36, 0x5a, 0xe9, 0xd2, 0xb1, 0x73, 0xfe, 0xc4,
-	0x1b, 0x8f, 0x3d, 0x4e, 0x87, 0x61, 0xe0, 0x72, 0xf0, 0x9e, 0xde, 0xce, 0xe7, 0x64, 0x51, 0x00,
-	0xdf, 0x47, 0xb5, 0x67, 0x27, 0x27, 0x9c, 0x0a, 0x70, 0x4e, 0xb9, 0xb3, 0x1a, 0x47, 0xd6, 0x72,
-	0x08, 0x88, 0xe1, 0x1e, 0x2d, 0x63, 0xff, 0xab, 0x84, 0x6a, 0x84, 0x4a, 0xdf, 0xbd, 0x9b, 0x89,
-	0x99, 0x4d, 0xad, 0xca, 0x25, 0x52, 0x2b, 0x4d, 0xf1, 0xea, 0x37, 0x48, 0xf1, 0x6f, 0x9a, 0x98,
-	0xff, 0x28, 0x23, 0xa4, 0x6d, 0xd9, 0x0f, 0xdc, 0xab, 0x18, 0x5c, 0x26, 0x06, 0x5d, 0xb4, 0xb2,
-	0x1f, 0x9c, 0x3a, 0xc1, 0x90, 0xba, 0x84, 0x0e, 0x43, 0xe6, 0x7a, 0xc1, 0x08, 0x02, 0xb1, 0xd4,
-	0x79, 0x3f, 0x8e, 0x2c, 0x4c, 0x35, 0xf9, 0x9c, 0x25, 0x2c, 0x59, 0x54, 0xc0, 0x0f, 0x51, 0xf3,
-	0x30, 0x10, 0x94, 0x39, 0x43, 0xe1, 0xcd, 0x68, 0xbb, 0x0e, 0xfa, 0x37, 0xe2, 0xc8, 0x6a, 0x7a,
-	0x29, 0x4c, 0x4c, 0x19, 0xbc, 0x8d, 0x5a, 0x7d, 0x87, 0x09, 0x6f, 0xe8, 0x4d, 0x9c, 0x40, 0xf0,
-	0xf6, 0xd2, 0x7a, 0x79, 0xa3, 0xd1, 0x59, 0x8e, 0x23, 0xab, 0x35, 0x31, 0x70, 0x92, 0x91, 0xb2,
-	0x5f, 0xa2, 0x66, 0xa7, 0x7f, 0x30, 0x0f, 0xdf, 0x6d, 0x54, 0xee, 0xeb, 0x26, 0xa5, 0xaa, 0x9a,
-	0x94, 0x89, 0xe7, 0x12, 0x89, 0xc9, 0xfb, 0x7e, 0x6f, 0xc4, 0xc2, 0xe9, 0x44, 0xdf, 0xf7, 0x65,
-	0x75, 0xdf, 0x0f, 0x01, 0x83, 0xfb, 0x3e, 0xa1, 0xf1, 0x87, 0xa8, 0xde, 0x67, 0xe1, 0x88, 0x39,
-	0xbe, 0xbe, 0xe8, 0x9b, 0x71, 0x64, 0xd5, 0x27, 0x0a, 0x22, 0x09, 0x67, 0xff, 0xac, 0x88, 0x6a,
-	0x03, 0xe1, 0x88, 0x29, 0x97, 0x1a, 0x83, 0xe9, 0x70, 0x48, 0x39, 0x87, 0xbd, 0x97, 0x94, 0x06,
-	0x57, 0x10, 0x49, 0x38, 0xd9, 0xf4, 0xec, 0x33, 0x16, 0x32, 0xb3, 0xe9, 0xa1, 0x12, 0x30, 0x9b,
-	0x1e, 0x90, 0xc0, 0x3b, 0xa8, 0xa9, 0x92, 0x8e, 0x73, 0x67, 0x94, 0x34, 0x1c, 0xef, 0xc5, 0x91,
-	0xb5, 0xe2, 0x2b, 0xc8, 0x50, 0x31, 0x25, 0xed, 0xdf, 0x96, 0x65, 0xb7, 0x02, 0x49, 0xb5, 0x17,
-	0xfa, 0xbe, 0xf3, 0xae, 0x1e, 0x88, 0xcb, 0xdd, 0x96, 0x9f, 0xa0, 0x72, 0xa7, 0x7f, 0xa0, 0x4f,
-	0xc0, 0xcd, 0x44, 0xd5, 0x48, 0x95, 0x9c, 0x9e, 0x94, 0x96, 0x1d, 0x6b, 0x5f, 0xa6, 0x4f, 0x0d,
-	0xd2, 0x07, 0x3a, 0xd6, 0x89, 0xcc, 0x1f, 0x40, 0x81, 0x75, 0xc4, 0x29, 0x24, 0xb3, 0xee, 0x67,
-	0x27, 0x8e, 0x38, 0x25, 0x80, 0x4a, 0x76, 0x97, 0x8d, 0x66, 0x3a, 0x6d, 0x81, 0x75, 0xd8, 0x68,
-	0x46, 0x00, 0xc5, 0x0f, 0x64, 0xef, 0x23, 0xa6, 0x2c, 0x80, 0x2e, 0xbe, 0x01, 0xeb, 0xc3, 0x71,
-	0x60, 0x80, 0x3e, 0x97, 0xcd, 0x3c, 0x31, 0x44, 0xec, 0x5f, 0x97, 0x51, 0x53, 0x7b, 0xa2, 0xeb,
-	0xf1, 0x17, 0x57, 0x21, 0xfc, 0x1a, 0x21, 0x94, 0x41, 0xaa, 0x5d, 0x18, 0x24, 0x0b, 0x55, 0x0f,
-	0xc6, 0xce, 0x88, 0x43, 0x0c, 0xab, 0xaa, 0x5b, 0x38, 0x91, 0x00, 0x51, 0x78, 0x2e, 0x4e, 0x4b,
-	0xff, 0x3d, 0x4e, 0x7f, 0x48, 0x4f, 0xdb, 0x53, 0x2a, 0xbe, 0x0a, 0xd9, 0x55, 0xa8, 0xfe, 0xd7,
-	0x50, 0xdd, 0x43, 0xf5, 0x01, 0x1b, 0xc2, 0x63, 0x40, 0x45, 0xab, 0x15, 0x47, 0xd6, 0x12, 0x67,
-	0xc3, 0xe7, 0xf2, 0x41, 0x40, 0x12, 0x52, 0xca, 0x75, 0xb9, 0x00, 0xb9, 0x7a, 0x2a, 0xe7, 0x72,
-	0xa1, 0xe5, 0x34, 0xa9, 0xe5, 0xfa, 0x21, 0x13, 0x3a, 0x70, 0x73, 0xb9, 0x49, 0xc8, 0x04, 0x49,
-	0x48, 0xfc, 0x31, 0x42, 0x47, 0x7b, 0xfd, 0xef, 0x53, 0x06, 0xee, 0x52, 0x67, 0x11, 0xca, 0xf5,
-	0x4c, 0x41, 0xc4, 0xa0, 0xed, 0xdf, 0x18, 0xe7, 0x50, 0x06, 0xe8, 0xea, 0xe1, 0x71, 0x89, 0xce,
-	0x64, 0x0b, 0x2d, 0x43, 0x53, 0x7e, 0xc4, 0x9c, 0x80, 0xfb, 0x9e, 0x10, 0xd4, 0xd5, 0xfd, 0x35,
-	0xb4, 0xe2, 0xe2, 0x8c, 0x2c, 0xf0, 0xf8, 0x3e, 0xba, 0x06, 0x18, 0xa1, 0x43, 0xea, 0xcd, 0xa8,
-	0x0b, 0x39, 0xa0, 0x15, 0xd8, 0x19, 0xc9, 0x92, 0xf6, 0xef, 0xd2, 0x27, 0xca, 0x63, 0xea, 0xcc,
-	0xe8, 0x55, 0xbc, 0x2e, 0x11, 0x2f, 0xfb, 0x75, 0x09, 0x35, 0xa4, 0x45, 0x30, 0x86, 0x79, 0x2b,
-	0xae, 0xdc, 0x4e, 0x3a, 0x2c, 0xed, 0xc9, 0xeb, 0x73, 0x4f, 0x00, 0xba, 0xe0, 0x01, 0xd5, 0x8d,
-	0xdd, 0x47, 0xb5, 0x27, 0x54, 0x9c, 0x86, 0xae, 0x9e, 0x97, 0xc1, 0xeb, 0xcd, 0x07, 0xc4, 0x7c,
-	0xbd, 0x29, 0x19, 0xfc, 0x02, 0xe1, 0x43, 0x97, 0x06, 0xc2, 0x13, 0xe7, 0xbb, 0x42, 0x30, 0xef,
-	0x78, 0x2a, 0xdf, 0x93, 0x55, 0x1d, 0xb9, 0xfc, 0x04, 0x6d, 0x00, 0x33, 0xc0, 0x8e, 0x0d, 0x13,
-	0x8f, 0xb9, 0x78, 0xba, 0xec, 0x3f, 0x23, 0xab, 0xa6, 0x64, 0xc8, 0x05, 0xcb, 0xda, 0xbf, 0x2c,
-	0x21, 0x24, 0x2d, 0xfb, 0x72, 0xe2, 0x3a, 0xe2, 0xed, 0xa4, 0xa7, 0x85, 0xaa, 0x24, 0x1c, 0x53,
-	0xe9, 0xd2, 0x72, 0x32, 0x8e, 0x64, 0x12, 0x20, 0x0a, 0xc7, 0x1f, 0xa3, 0x86, 0x4e, 0x82, 0x90,
-	0x69, 0x0f, 0xaa, 0x56, 0x39, 0x01, 0x49, 0xca, 0xe3, 0x43, 0x54, 0xdf, 0x3f, 0x9b, 0x78, 0x6c,
-	0xee, 0xb2, 0xff, 0x34, 0x74, 0xbc, 0xa9, 0x27, 0x58, 0x75, 0xaa, 0x54, 0x60, 0xee, 0x98, 0xe8,
-	0xdb, 0xbf, 0x2a, 0xa1, 0xa6, 0xac, 0xd0, 0x07, 0x21, 0xfb, 0xca, 0x61, 0x6f, 0xa7, 0x6d, 0xcd,
-	0x1e, 0x9e, 0xf2, 0x25, 0x8a, 0x5d, 0x9a, 0xba, 0x95, 0xaf, 0x91, 0xba, 0xb2, 0x8d, 0x94, 0x37,
-	0x5d, 0x35, 0xed, 0x5f, 0xe0, 0x96, 0x03, 0xd4, 0xfe, 0x49, 0x09, 0x35, 0x06, 0xd3, 0x63, 0x7e,
-	0xce, 0x05, 0xf5, 0xdf, 0x71, 0xff, 0xdc, 0x45, 0x95, 0xa7, 0x8e, 0x9f, 0x8c, 0xb4, 0xc1, 0xd2,
-	0xc0, 0xf1, 0x29, 0x01, 0x14, 0x7f, 0x3b, 0x79, 0x29, 0x55, 0xd3, 0xfc, 0xa3, 0x67, 0x9e, 0x00,
-	0x50, 0xbf, 0x91, 0xec, 0xbf, 0x15, 0xd1, 0xf2, 0xde, 0xd8, 0xa3, 0x81, 0xe8, 0x7a, 0x5c, 0x67,
-	0xe7, 0x3b, 0xee, 0x15, 0x1b, 0xd5, 0x08, 0x75, 0xb8, 0x1e, 0x01, 0x34, 0x3a, 0x28, 0x8e, 0xac,
-	0x1a, 0x03, 0x84, 0x68, 0xc6, 0xfe, 0x61, 0x09, 0x35, 0x77, 0xa7, 0xe2, 0x74, 0x57, 0x40, 0xc9,
-	0xf9, 0x7f, 0x3c, 0x27, 0xf6, 0x5f, 0x6b, 0xa8, 0xfa, 0x2c, 0xa0, 0xcf, 0x4e, 0xf0, 0x43, 0xe3,
-	0x8e, 0xd2, 0xe6, 0xaf, 0x98, 0x66, 0x00, 0xd1, 0x2b, 0x10, 0xe3, 0x26, 0xdb, 0x36, 0x6b, 0xb0,
-	0x36, 0x1d, 0x9b, 0x3a, 0x8a, 0xe9, 0x15, 0x48, 0xb6, 0x56, 0x67, 0x66, 0xd0, 0xda, 0xe8, 0xd5,
-	0xdc, 0xdd, 0x0e, 0x5c, 0xaf, 0x40, 0xf2, 0xf3, 0xea, 0xcc, 0xe4, 0x54, 0x9b, 0x9a, 0xd7, 0x05,
-	0xce, 0xd0, 0x55, 0x53, 0xd6, 0x8d, 0x64, 0xb8, 0xa8, 0x0b, 0xec, 0xdc, 0x41, 0x0a, 0xed, 0x15,
-	0x48, 0x32, 0x7c, 0xdc, 0x36, 0xc7, 0x60, 0xd0, 0x59, 0x19, 0x76, 0xa5, 0x8c, 0xb4, 0xcb, 0x18,
-	0x97, 0x3d, 0xca, 0xcf, 0x0b, 0xa0, 0xc5, 0xca, 0x74, 0x1d, 0x26, 0xdb, 0x2b, 0x90, 0xfc, 0x7c,
-	0x61, 0x27, 0xf3, 0x56, 0x85, 0xee, 0xdb, 0x78, 0x06, 0x18, 0x54, 0xaf, 0x40, 0x32, 0xaf, 0xda,
-	0x47, 0xf9, 0xc7, 0x13, 0xb4, 0xe3, 0x8b, 0x5b, 0x6b, 0xd6, 0xd8, 0x3a, 0x79, 0x6c, 0xed, 0x64,
-	0xda, 0xf3, 0x36, 0xba, 0x78, 0x6b, 0x47, 0x38, 0xe6, 0xd6, 0xaa, 0x91, 0xcf, 0x34, 0x8a, 0xed,
-	0xe6, 0x85, 0x11, 0x01, 0xce, 0x88, 0x88, 0x6a, 0x2a, 0x77, 0x32, 0xf7, 0x54, 0xbb, 0x95, 0xdd,
-	0xd4, 0xa0, 0xe4, 0xa6, 0xe6, 0x8d, 0xf6, 0xd0, 0x28, 0xdf, 0xed, 0x6b, 0xd9, 0x5c, 0x9d, 0x13,
-	0x32, 0x57, 0xd3, 0x22, 0x7f, 0xb0, 0x58, 0xe2, 0xda, 0xd7, 0x41, 0xb3, 0x3d, 0x3f, 0x6e, 0x39,
-	0xbe, 0x57, 0x20, 0x8b, 0x65, 0x71, 0x27, 0x53, 0x33, 0xda, 0x37, 0xb2, 0xdf, 0x6c, 0x50, 0xf2,
-	0x9b, 0x8d, 0xbf, 0x9d, 0x3a, 0xaa, 0xee, 0x4b, 0xa1, 0xce, 0xea, 0xab, 0x3f, 0xaf, 0x15, 0x5e,
-	0xbd, 0x59, 0x2b, 0xbe, 0x7e, 0xb3, 0x56, 0xfc, 0xd3, 0x9b, 0xb5, 0xe2, 0x2f, 0xfe, 0xb2, 0x56,
-	0x38, 0xae, 0xc1, 0x35, 0xff, 0xc9, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0xf0, 0x67, 0xa9, 0x9d,
-	0x7a, 0x1d, 0x00, 0x00,
+var fileDescriptor_events_9ec8be9fae1bb3ec = []byte{
+	// 1941 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x59, 0xcd, 0x6f, 0x1c, 0x49,
+	0x15, 0x9f, 0xef, 0x8f, 0x9a, 0x49, 0x62, 0x97, 0xbd, 0x9b, 0x4e, 0x94, 0x75, 0x9b, 0x46, 0x1b,
+	0x79, 0xb5, 0xc1, 0x51, 0xbc, 0xd6, 0x7a, 0x59, 0x21, 0x6d, 0x3c, 0x1e, 0x5b, 0x63, 0x94, 0x8f,
+	0x51, 0x8d, 0x17, 0x8e, 0x51, 0x7b, 0xba, 0x3c, 0x6e, 0x65, 0xba, 0x7b, 0x54, 0x5d, 0x33, 0x6b,
+	0xe7, 0x86, 0x38, 0x70, 0xe1, 0x80, 0x84, 0x84, 0xe0, 0xc4, 0x89, 0x03, 0x12, 0xff, 0x05, 0x97,
+	0x08, 0x2e, 0x39, 0x70, 0xa5, 0x81, 0x70, 0xeb, 0x33, 0x48, 0x08, 0x09, 0x09, 0xd5, 0xab, 0xea,
+	0xe9, 0xea, 0x1e, 0x0b, 0xd8, 0xf8, 0x10, 0x45, 0xf8, 0xe6, 0xf9, 0xfd, 0xde, 0xab, 0xea, 0x7a,
+	0xef, 0x55, 0xd5, 0xaf, 0x9e, 0x51, 0x9b, 0xce, 0xa8, 0xcf, 0xc3, 0xcd, 0x09, 0x0b, 0x78, 0x80,
+	0x6b, 0xf2, 0xd7, 0xed, 0xd5, 0x51, 0x30, 0x0a, 0x00, 0xba, 0x2f, 0xfe, 0x92, 0xec, 0x6d, 0x73,
+	0x14, 0x04, 0xa3, 0x31, 0xbd, 0x0f, 0xbf, 0x8e, 0xa7, 0x27, 0xf7, 0xb9, 0xeb, 0xd1, 0x90, 0xdb,
+	0xde, 0x44, 0x19, 0xdc, 0xc9, 0x1b, 0x84, 0x9c, 0x4d, 0x87, 0x5c, 0xb2, 0xd6, 0x1f, 0x8a, 0xa8,
+	0xf1, 0x98, 0x72, 0xdb, 0xb1, 0xb9, 0x8d, 0xef, 0xa0, 0xea, 0xa1, 0xef, 0xd0, 0x33, 0xa3, 0xb8,
+	0x5e, 0xdc, 0x28, 0x77, 0x6a, 0x71, 0x64, 0x96, 0xa8, 0x4b, 0x24, 0x88, 0x3f, 0x40, 0x95, 0xa3,
+	0xf3, 0x09, 0x35, 0x4a, 0xeb, 0xc5, 0x8d, 0x66, 0xa7, 0x19, 0x47, 0x66, 0x15, 0xbe, 0x8c, 0x00,
+	0x8c, 0xbf, 0x81, 0x4a, 0x87, 0x5d, 0xa3, 0x0c, 0xe4, 0x72, 0x1c, 0x99, 0xd7, 0xa6, 0xae, 0x73,
+	0x2f, 0xf0, 0x5c, 0x4e, 0xbd, 0x09, 0x3f, 0x27, 0xa5, 0xc3, 0x2e, 0xbe, 0x8b, 0x2a, 0x7b, 0x81,
+	0x43, 0x8d, 0x0a, 0x18, 0xe1, 0x38, 0x32, 0xaf, 0x0f, 0x03, 0x87, 0x6a, 0x56, 0xc0, 0xe3, 0x87,
+	0xa8, 0x72, 0xe4, 0x7a, 0xd4, 0xa8, 0xae, 0x17, 0x37, 0x5a, 0x5b, 0xb7, 0x37, 0xe5, 0x0a, 0x36,
+	0x93, 0x15, 0x6c, 0x1e, 0x25, 0x4b, 0xec, 0x2c, 0xbd, 0x8c, 0xcc, 0x42, 0x1c, 0x99, 0x15, 0xb1,
+	0xea, 0x9f, 0xfc, 0xc9, 0x2c, 0x12, 0xf0, 0xb4, 0x3e, 0x43, 0x37, 0x06, 0x34, 0x0c, 0xdd, 0xc0,
+	0x9f, 0x2f, 0xee, 0x43, 0xd4, 0x54, 0xd0, 0x61, 0x17, 0x16, 0xd8, 0xec, 0xd4, 0xe3, 0xc8, 0x2c,
+	0x87, 0xae, 0x43, 0x52, 0xc6, 0xfa, 0x3e, 0x6a, 0x7f, 0x19, 0x52, 0xa6, 0xc5, 0xa4, 0x22, 0x7e,
+	0x2b, 0x8f, 0x86, 0x98, 0x6b, 0x1a, 0x52, 0x46, 0x00, 0xc5, 0x1f, 0xa1, 0xea, 0xa3, 0x60, 0xe4,
+	0xfa, 0x2a, 0x28, 0x2b, 0x71, 0x64, 0xde, 0x18, 0x0b, 0x40, 0x5b, 0x93, 0xb4, 0xb0, 0xfe, 0x5e,
+	0x42, 0xd7, 0x07, 0x94, 0xcd, 0xb4, 0xb1, 0x77, 0xc5, 0x57, 0x0a, 0xe4, 0x89, 0xed, 0xd1, 0x70,
+	0x62, 0x0f, 0xa9, 0x9a, 0xe6, 0x66, 0x1c, 0x99, 0x2b, 0x7e, 0x02, 0x6a, 0x63, 0xe5, 0xed, 0xf1,
+	0x47, 0xa8, 0x21, 0xa1, 0xc3, 0xae, 0xfa, 0x86, 0x6b, 0x71, 0x64, 0x36, 0x43, 0xc0, 0x9e, 0xb9,
+	0x0e, 0x99, 0xd3, 0x78, 0x3f, 0x99, 0xbf, 0x17, 0x84, 0x5c, 0x0c, 0xae, 0x92, 0xf5, 0x41, 0x1c,
+	0x99, 0xb7, 0x94, 0xc3, 0xa9, 0xa2, 0xb4, 0x29, 0x73, 0x4e, 0xd8, 0x43, 0x6d, 0x89, 0x3c, 0xb2,
+	0x8f, 0xe9, 0x38, 0x34, 0x2a, 0xeb, 0xe5, 0x8d, 0xd6, 0xd6, 0xc6, 0xa6, 0xaa, 0xd9, 0xec, 0x12,
+	0x37, 0x75, 0xd3, 0x7d, 0x9f, 0xb3, 0xf3, 0x8e, 0xa9, 0x52, 0x76, 0x53, 0x4d, 0x39, 0x06, 0x4e,
+	0x9b, 0x30, 0x33, 0xfc, 0xed, 0x2f, 0xd0, 0xf2, 0xc2, 0x18, 0x78, 0x09, 0x95, 0x9f, 0xd3, 0x73,
+	0x19, 0x2c, 0x22, 0xfe, 0xc4, 0xab, 0xa8, 0x3a, 0xb3, 0xc7, 0x53, 0x55, 0x9d, 0x44, 0xfe, 0xf8,
+	0xbc, 0xf4, 0x59, 0xd1, 0xfa, 0x51, 0x11, 0xe1, 0xbd, 0xc0, 0xf7, 0xe9, 0x90, 0xeb, 0xe5, 0xf0,
+	0x29, 0x6a, 0x3e, 0x0a, 0x86, 0xf6, 0x78, 0xd7, 0x71, 0x92, 0xe4, 0x1a, 0x71, 0x64, 0xae, 0xda,
+	0x8e, 0xc3, 0x36, 0xc7, 0x82, 0xd1, 0x3e, 0x29, 0x35, 0xc5, 0xdf, 0x46, 0x88, 0x50, 0x2f, 0xe0,
+	0x14, 0x1c, 0x65, 0xc8, 0x6f, 0xc5, 0x91, 0xf9, 0x1e, 0x38, 0x32, 0xa0, 0x34, 0x4f, 0xcd, 0xd8,
+	0xfa, 0x61, 0x59, 0x84, 0x0e, 0x0a, 0x6d, 0xc0, 0x6d, 0xc6, 0xf1, 0xe7, 0xe9, 0xde, 0x83, 0x4f,
+	0x68, 0x6d, 0x2d, 0x25, 0x61, 0x4c, 0xf0, 0x4e, 0x5b, 0x84, 0xeb, 0x55, 0x64, 0x16, 0xe3, 0xc8,
+	0x2c, 0x90, 0x86, 0xf6, 0xfd, 0xb2, 0x2e, 0x4b, 0xe0, 0xb7, 0x9a, 0xf8, 0xe9, 0xb5, 0x9b, 0xf3,
+	0x95, 0x15, 0xfb, 0x05, 0xaa, 0xab, 0x6f, 0x80, 0xf4, 0xb7, 0xb6, 0x6e, 0xa6, 0x99, 0xcb, 0x6c,
+	0x98, 0x9c, 0x77, 0xe2, 0x85, 0xbf, 0x83, 0x6a, 0x32, 0x21, 0xb0, 0x8d, 0x5b, 0x5b, 0xef, 0x5f,
+	0x9c, 0xf9, 0x9c, 0xbb, 0xf2, 0xc1, 0x3d, 0x84, 0xd2, 0x64, 0xcc, 0x37, 0xb8, 0x1a, 0x61, 0x31,
+	0x4d, 0xb9, 0x51, 0x34, 0x5f, 0xfc, 0x29, 0x6a, 0x1f, 0x51, 0xe6, 0xb9, 0xbe, 0x3d, 0x1e, 0xb8,
+	0x2f, 0xa8, 0x51, 0x4b, 0x0f, 0x95, 0xd0, 0x7d, 0xa1, 0xe7, 0x20, 0x63, 0x67, 0xfd, 0xae, 0x84,
+	0x5a, 0x6a, 0x2d, 0xdf, 0x0d, 0x5c, 0xff, 0x2a, 0x09, 0x97, 0x48, 0x82, 0xf5, 0xb3, 0xd2, 0xbc,
+	0xa4, 0xfb, 0xcc, 0xf5, 0x2f, 0x57, 0xd2, 0x77, 0x11, 0xda, 0x3b, 0x9d, 0xfa, 0xcf, 0xe5, 0x1d,
+	0x54, 0x4a, 0xef, 0xa0, 0xa1, 0x4b, 0x34, 0x46, 0x5c, 0x44, 0x5d, 0x31, 0xbe, 0x08, 0x5d, 0xbb,
+	0xd3, 0x7c, 0x29, 0x47, 0x2a, 0x7e, 0x8b, 0x00, 0x8c, 0x4d, 0x54, 0xed, 0x9c, 0x73, 0x1a, 0x42,
+	0x68, 0xca, 0xf2, 0xa2, 0x3a, 0x16, 0x00, 0x91, 0x38, 0xde, 0x46, 0xcb, 0x5d, 0x3a, 0xb6, 0xcf,
+	0x1f, 0xbb, 0xe3, 0xb1, 0x1b, 0xd2, 0x61, 0xe0, 0x3b, 0x21, 0x44, 0x41, 0x4d, 0xe7, 0x85, 0x64,
+	0xd1, 0x00, 0xdf, 0x43, 0xb5, 0xa7, 0x27, 0x27, 0x21, 0xe5, 0x50, 0x69, 0xe5, 0xce, 0x6a, 0x1c,
+	0x99, 0x4b, 0x01, 0x20, 0x5a, 0xad, 0x29, 0x1b, 0xeb, 0x5f, 0x25, 0x54, 0x23, 0x54, 0x14, 0xe2,
+	0xbb, 0x59, 0x60, 0xd9, 0x12, 0xa9, 0x5c, 0x62, 0x9f, 0xa6, 0xa5, 0x5a, 0x7d, 0x83, 0x52, 0x7d,
+	0xd3, 0x5d, 0xfe, 0x8f, 0x32, 0x42, 0x6a, 0x2d, 0xfb, 0xbe, 0x73, 0x95, 0x83, 0xcb, 0xe4, 0xa0,
+	0x8b, 0x96, 0xf7, 0xfd, 0x53, 0xdb, 0x1f, 0x52, 0x87, 0xd0, 0x61, 0xc0, 0x1c, 0xd7, 0x1f, 0x41,
+	0x22, 0x1a, 0x9d, 0xf7, 0xe3, 0xc8, 0xc4, 0x54, 0x91, 0xcf, 0x58, 0xc2, 0x92, 0x45, 0x07, 0xfc,
+	0x00, 0xb5, 0x0e, 0x7d, 0x4e, 0x99, 0x3d, 0xe4, 0xee, 0x8c, 0x1a, 0x75, 0xf0, 0xbf, 0x11, 0x47,
+	0x66, 0xcb, 0x4d, 0x61, 0xa2, 0xdb, 0xe0, 0x6d, 0xd4, 0xee, 0xdb, 0x8c, 0xbb, 0x43, 0x77, 0x62,
+	0xfb, 0x3c, 0x34, 0x1a, 0xeb, 0xe5, 0x8d, 0x66, 0x67, 0x29, 0x8e, 0xcc, 0xf6, 0x44, 0xc3, 0x49,
+	0xc6, 0xca, 0x7a, 0x81, 0x5a, 0x9d, 0xfe, 0xc1, 0x3c, 0x7d, 0xb7, 0x50, 0xb9, 0xaf, 0x14, 0x5f,
+	0x45, 0x2a, 0xbe, 0x89, 0xeb, 0x10, 0x81, 0x09, 0xf1, 0xb4, 0x37, 0x62, 0xc1, 0x74, 0xa2, 0xc4,
+	0x53, 0x45, 0x8a, 0xa7, 0x21, 0x60, 0x20, 0x9e, 0x12, 0x1a, 0x7f, 0x88, 0xea, 0x7d, 0x16, 0x8c,
+	0x98, 0xed, 0x29, 0xd5, 0xd4, 0x8a, 0x23, 0xb3, 0x3e, 0x91, 0x10, 0x49, 0x38, 0xeb, 0xa7, 0x45,
+	0x54, 0x1b, 0x70, 0x9b, 0x4f, 0x43, 0xe1, 0x31, 0x98, 0x0e, 0x87, 0x34, 0x0c, 0x61, 0xee, 0x86,
+	0xf4, 0x08, 0x25, 0x44, 0x12, 0x4e, 0x28, 0xc8, 0x7d, 0xc6, 0x02, 0xa6, 0x2b, 0x48, 0x2a, 0x00,
+	0x5d, 0x41, 0x82, 0x05, 0xde, 0x41, 0x2d, 0x59, 0x74, 0x61, 0x68, 0x8f, 0x12, 0xf5, 0xf6, 0x5e,
+	0x1c, 0x99, 0xcb, 0x9e, 0x84, 0x34, 0x17, 0xdd, 0xd2, 0xfa, 0x6d, 0x59, 0x48, 0x3f, 0x28, 0xaa,
+	0xbd, 0xc0, 0xf3, 0xec, 0x77, 0x75, 0x43, 0x5c, 0xee, 0xd6, 0xfb, 0x04, 0x95, 0x3b, 0xfd, 0x03,
+	0xb5, 0x03, 0x56, 0x12, 0x57, 0xad, 0x54, 0x72, 0x7e, 0xc2, 0x5a, 0xc8, 0xff, 0xbe, 0x28, 0x9f,
+	0x1a, 0x94, 0x07, 0xc8, 0xff, 0x89, 0xa8, 0x1f, 0x40, 0x81, 0xb5, 0xf9, 0x29, 0x14, 0xb3, 0x7a,
+	0x1c, 0x4c, 0x6c, 0x7e, 0x4a, 0x00, 0x15, 0xec, 0x2e, 0x1b, 0xcd, 0x54, 0xd9, 0x02, 0x6b, 0xb3,
+	0xd1, 0x8c, 0x00, 0x8a, 0xef, 0x0b, 0x21, 0xc9, 0xa7, 0xcc, 0x87, 0x27, 0x51, 0x73, 0xbd, 0xb8,
+	0x51, 0x95, 0xdb, 0x81, 0x01, 0xfa, 0x4c, 0xbc, 0x8c, 0x88, 0x66, 0x62, 0xfd, 0xaa, 0x3c, 0x17,
+	0x2e, 0x5d, 0x37, 0x7c, 0x7e, 0x95, 0xc2, 0xaf, 0x91, 0x42, 0x91, 0xa4, 0xda, 0x85, 0x49, 0x32,
+	0x51, 0xf5, 0x60, 0x6c, 0x8f, 0x42, 0xc8, 0x61, 0x55, 0xaa, 0x85, 0x13, 0x01, 0x10, 0x89, 0xe7,
+	0xf2, 0xd4, 0xf8, 0xef, 0x79, 0xfa, 0x63, 0xba, 0xdb, 0x9e, 0x50, 0xfe, 0x55, 0xc0, 0xae, 0x52,
+	0xf5, 0xbf, 0xa6, 0xea, 0x2e, 0xaa, 0x0f, 0xd8, 0x10, 0x5e, 0x56, 0x32, 0x5b, 0xed, 0x38, 0x32,
+	0x1b, 0x21, 0x1b, 0x3e, 0x13, 0xaf, 0x2b, 0x92, 0x90, 0xc2, 0xae, 0x1b, 0x72, 0xb0, 0xab, 0xa7,
+	0x76, 0x4e, 0xc8, 0x95, 0x9d, 0x22, 0x95, 0x5d, 0x3f, 0x60, 0x5c, 0x25, 0x6e, 0x6e, 0x37, 0x09,
+	0x18, 0x27, 0x09, 0x89, 0x3f, 0x46, 0xe8, 0x68, 0xaf, 0xff, 0x3d, 0xca, 0x20, 0x5c, 0x72, 0x2f,
+	0xc2, 0x71, 0x3d, 0x93, 0x10, 0xd1, 0x68, 0xeb, 0x37, 0xda, 0x3e, 0x14, 0x09, 0xba, 0x7a, 0x40,
+	0x5c, 0x42, 0x99, 0x6c, 0xa1, 0x25, 0x10, 0xe5, 0x47, 0xcc, 0xf6, 0x43, 0xcf, 0xe5, 0x9c, 0x3a,
+	0x4a, 0x5f, 0x83, 0x14, 0xe7, 0x67, 0x64, 0x81, 0xc7, 0xf7, 0xd0, 0x35, 0xc0, 0x08, 0x1d, 0x52,
+	0x77, 0x46, 0x1d, 0xa8, 0x01, 0xe5, 0xc0, 0xce, 0x48, 0x96, 0xb4, 0x7e, 0x9f, 0x3e, 0x51, 0x1e,
+	0x51, 0x7b, 0x46, 0xaf, 0xf2, 0x75, 0x99, 0x07, 0xdf, 0xab, 0x12, 0x6a, 0x8a, 0x15, 0x41, 0x4f,
+	0xeb, 0xad, 0x84, 0x72, 0x3b, 0x51, 0x58, 0x2a, 0x92, 0xd7, 0xe7, 0x91, 0x00, 0x74, 0x21, 0x02,
+	0x52, 0x8d, 0xdd, 0x43, 0xb5, 0xc7, 0x94, 0x9f, 0x06, 0x8e, 0x6a, 0x3e, 0xc2, 0xeb, 0xcd, 0x03,
+	0x44, 0x7f, 0xbd, 0x49, 0x1b, 0xfc, 0x1c, 0xe1, 0x43, 0x87, 0xfa, 0xdc, 0xe5, 0xe7, 0xbb, 0x9c,
+	0x33, 0xf7, 0x78, 0x2a, 0xde, 0x93, 0x55, 0x95, 0xb9, 0x7c, 0x3b, 0x72, 0x00, 0x0d, 0xd5, 0x8e,
+	0x05, 0xed, 0xa3, 0xb9, 0x79, 0x3a, 0xec, 0x3f, 0x23, 0xb3, 0x26, 0x6d, 0xc8, 0x05, 0xc3, 0x5a,
+	0xbf, 0x28, 0x21, 0x24, 0x56, 0xf6, 0xe5, 0xc4, 0xb1, 0xf9, 0xdb, 0x29, 0x4f, 0x13, 0x55, 0x49,
+	0x30, 0xa6, 0x22, 0xa4, 0xe5, 0xa4, 0xb7, 0xcb, 0x04, 0x40, 0x24, 0x8e, 0x3f, 0x46, 0x4d, 0x55,
+	0x04, 0x01, 0x53, 0x11, 0x94, 0x52, 0x39, 0x01, 0x49, 0xca, 0xe3, 0x43, 0x54, 0xdf, 0x3f, 0x9b,
+	0xb8, 0x6c, 0x1e, 0xb2, 0xff, 0xd4, 0xc1, 0x5d, 0x51, 0xed, 0xc0, 0x3a, 0x95, 0x2e, 0xd0, 0xc4,
+	0x4d, 0xfc, 0xad, 0x5f, 0x96, 0x50, 0x4b, 0x9c, 0xd0, 0x07, 0x01, 0xfb, 0xca, 0x66, 0x6f, 0x47,
+	0xb6, 0x66, 0x37, 0x4f, 0xf9, 0x12, 0x87, 0x5d, 0x5a, 0xba, 0x95, 0xaf, 0x51, 0xba, 0x42, 0x46,
+	0x8a, 0x9b, 0xae, 0x9a, 0xea, 0x17, 0xb8, 0xe5, 0x00, 0xb5, 0x7e, 0x5c, 0x42, 0xcd, 0xc1, 0xf4,
+	0x38, 0x3c, 0x0f, 0x39, 0xf5, 0xde, 0xf1, 0xf8, 0xdc, 0x41, 0x95, 0x27, 0xb6, 0x97, 0xfc, 0x7f,
+	0x00, 0x56, 0xea, 0xdb, 0x1e, 0x25, 0x80, 0xe2, 0x6f, 0x26, 0x2f, 0xa5, 0x6a, 0x5a, 0x7f, 0xf4,
+	0xcc, 0xe5, 0x00, 0xaa, 0x37, 0x92, 0xf5, 0xb7, 0x22, 0x5a, 0xda, 0x1b, 0xbb, 0xd4, 0xe7, 0x5d,
+	0x37, 0x54, 0xd5, 0xf9, 0x8e, 0x47, 0xc5, 0x42, 0x35, 0x42, 0xed, 0x50, 0xb5, 0x00, 0x9a, 0x1d,
+	0x14, 0x47, 0x66, 0x8d, 0x01, 0x42, 0x14, 0x63, 0xfd, 0xa0, 0x84, 0x5a, 0xbb, 0x53, 0x7e, 0xba,
+	0xcb, 0xe1, 0xc8, 0xf9, 0x7f, 0xdc, 0x27, 0xd6, 0xaf, 0xeb, 0xa8, 0xfa, 0xd4, 0xa7, 0x4f, 0x4f,
+	0xf0, 0x03, 0xed, 0x8e, 0x52, 0xcb, 0x5f, 0xd6, 0x97, 0x01, 0x44, 0xaf, 0x40, 0xb4, 0x9b, 0x6c,
+	0x5b, 0x3f, 0x83, 0xd5, 0xd2, 0xb1, 0xee, 0x23, 0x99, 0x5e, 0x81, 0x64, 0xcf, 0xea, 0x4c, 0x43,
+	0x5f, 0x2d, 0x7a, 0x35, 0x77, 0xb7, 0x03, 0xd7, 0x2b, 0x90, 0x6c, 0xf3, 0x7f, 0x27, 0xd3, 0x86,
+	0x56, 0x2b, 0x5d, 0xc9, 0xb9, 0x0a, 0xaa, 0x57, 0x20, 0xb9, 0x86, 0x75, 0xa6, 0xe5, 0xaa, 0xce,
+	0xd8, 0xfc, 0xa4, 0xc0, 0x69, 0x93, 0xca, 0xf6, 0xec, 0x46, 0xd2, 0x95, 0x04, 0x91, 0xa5, 0x45,
+	0x56, 0xa2, 0xbd, 0x02, 0x49, 0xba, 0x96, 0xdb, 0x7a, 0xff, 0x0c, 0x14, 0x96, 0x16, 0x90, 0x94,
+	0x11, 0x01, 0xd1, 0xfa, 0x6c, 0x0f, 0xf3, 0x8d, 0x06, 0xd0, 0xdd, 0x19, 0xb9, 0xa2, 0xb3, 0xbd,
+	0x02, 0xc9, 0x37, 0x26, 0x76, 0x32, 0x8f, 0x5c, 0xd0, 0xe2, 0x8b, 0x61, 0x11, 0x94, 0x16, 0x16,
+	0x78, 0x0e, 0x3f, 0xcc, 0xbf, 0xba, 0x0c, 0x74, 0xe1, 0xd4, 0x8a, 0xd5, 0xa6, 0x4e, 0x5e, 0x69,
+	0x3b, 0x19, 0x5d, 0x6f, 0xb4, 0x2e, 0x9e, 0xda, 0xe6, 0xb6, 0x3e, 0xb5, 0x7c, 0x01, 0x64, 0x14,
+	0xa6, 0xd1, 0xbe, 0x30, 0x23, 0xc0, 0x69, 0x19, 0x91, 0x6a, 0x74, 0x27, 0x73, 0xc1, 0x19, 0xd7,
+	0xb2, 0x93, 0x6a, 0x94, 0x98, 0x54, 0xbf, 0x0a, 0x1f, 0x68, 0xe7, 0xbe, 0x71, 0x3d, 0x5b, 0xe4,
+	0x73, 0x42, 0x14, 0x79, 0x7a, 0x3b, 0x1c, 0x2c, 0x9e, 0x8d, 0xc6, 0x0d, 0xf0, 0x34, 0xe6, 0xfb,
+	0x34, 0xc7, 0xf7, 0x0a, 0x64, 0xf1, 0x3c, 0xdd, 0xc9, 0x1c, 0x36, 0xc6, 0x52, 0xf6, 0x9b, 0x35,
+	0x4a, 0x7c, 0xb3, 0xf6, 0xb3, 0x53, 0x47, 0xd5, 0x7d, 0x61, 0xd4, 0x59, 0x7d, 0xf9, 0x97, 0xb5,
+	0xc2, 0xcb, 0xd7, 0x6b, 0xc5, 0x57, 0xaf, 0xd7, 0x8a, 0x7f, 0x7e, 0xbd, 0x56, 0xfc, 0xf9, 0x5f,
+	0xd7, 0x0a, 0xc7, 0x35, 0xd0, 0x07, 0x9f, 0xfc, 0x3b, 0x00, 0x00, 0xff, 0xff, 0xc7, 0xa1, 0x36,
+	0x0c, 0x00, 0x1f, 0x00, 0x00,
 }

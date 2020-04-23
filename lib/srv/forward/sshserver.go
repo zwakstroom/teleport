@@ -122,9 +122,12 @@ type Server struct {
 	// the server supports. If omitted the defaults will be used.
 	macAlgorithms []string
 
-	authClient      auth.ClientI
-	auditLog        events.IAuditLog
-	emitter         events.Emitter
+	authClient auth.ClientI
+	auditLog   events.IAuditLog
+
+	// StreamEmitter points to the auth service and emits audit events
+	events.StreamEmitter
+
 	authService     auth.AccessPoint
 	sessionRegistry *srv.SessionRegistry
 	sessionServer   session.Service
@@ -184,7 +187,7 @@ type ServerConfig struct {
 	HostUUID string
 
 	// Emitter is audit events emitter
-	Emitter events.Emitter
+	Emitter events.StreamEmitter
 }
 
 // CheckDefaults makes sure all required parameters are passed in.
@@ -259,7 +262,7 @@ func New(c ServerConfig) (*Server, error) {
 		dataDir:         c.DataDir,
 		clock:           c.Clock,
 		hostUUID:        c.HostUUID,
-		emitter:         c.Emitter,
+		StreamEmitter:   c.Emitter,
 	}
 
 	// Set the ciphers, KEX, and MACs that the in-memory server will send to the
@@ -334,12 +337,6 @@ func (s *Server) AdvertiseAddr() string {
 // Component is the type of node this server is.
 func (s *Server) Component() string {
 	return teleport.ComponentForwardingNode
-}
-
-// EmitAuditEvent logs a given event to the audit log attached to the
-// server that owns these sessions
-func (s *Server) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
-	return s.emitter.EmitAuditEvent(ctx, event)
 }
 
 // PermitUserEnvironment is always false because it's up the the remote host

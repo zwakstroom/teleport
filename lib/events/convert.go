@@ -225,6 +225,10 @@ func ToOneOf(in AuditEvent) (*OneOf, error) {
 		out.Event = &OneOf_SessionStart{
 			SessionStart: e,
 		}
+	case *SessionJoin:
+		out.Event = &OneOf_SessionJoin{
+			SessionJoin: e,
+		}
 	case *SessionPrint:
 		out.Event = &OneOf_SessionPrint{
 			SessionPrint: e,
@@ -286,6 +290,8 @@ func FromOneOf(in OneOf) (AuditEvent, error) {
 	} else if e := in.GetUserUpdate(); e != nil {
 		return e, nil
 	} else if e := in.GetSessionStart(); e != nil {
+		return e, nil
+	} else if e := in.GetSessionJoin(); e != nil {
 		return e, nil
 	} else if e := in.GetSessionPrint(); e != nil {
 		return e, nil

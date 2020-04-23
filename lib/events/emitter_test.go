@@ -69,7 +69,7 @@ testcases:
 	for _, tc := range testCases {
 		upload := &MemoryUpload{}
 		pool := utils.NewSliceSyncPool(tc.bufferSize)
-		emitter := NewProtoEmitter(upload, pool)
+		emitter := NewProtoEmitter(ctx, upload, pool)
 
 		for _, event := range tc.events {
 			err := emitter.EmitAuditEvent(ctx, event)

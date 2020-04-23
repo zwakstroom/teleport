@@ -186,7 +186,7 @@ type Config struct {
 	FIPS bool
 
 	// Emitter is event emitter
-	Emitter events.Emitter
+	Emitter events.StreamEmitter
 }
 
 // CheckAndSetDefaults checks parameters and sets default values

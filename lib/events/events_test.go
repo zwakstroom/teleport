@@ -389,6 +389,34 @@ func (a *EventsTestSuite) TestJSON(c *check.C) {
 				},
 			},
 		},
+		{
+			name: "session join",
+			json: `{"uid":"cd03665f-3ce1-4c22-809d-4be9512c36e2","addr.local":"127.0.0.1:3022","addr.remote":"[::1]:34902","code":"T2001I","event":"session.join","login":"root","time":"2020-04-23T18:22:35.35Z","namespace":"default","server_id":"00b54ef5-ae1e-425f-8565-c71b01d8f7b8","sid":"b0252ad2-2fa5-4bb2-a7de-2cacd1169c96","user":"bob@example.com","ei":4}`,
+			event: SessionJoin{
+				Metadata: Metadata{
+					Index: 4,
+					Type:  SessionJoinEvent,
+					ID:    "cd03665f-3ce1-4c22-809d-4be9512c36e2",
+					Code:  SessionJoinCode,
+					Time:  time.Date(2020, 04, 23, 18, 22, 35, 350*int(time.Millisecond), time.UTC),
+				},
+				ServerMetadata: ServerMetadata{
+					ServerID:        "00b54ef5-ae1e-425f-8565-c71b01d8f7b8",
+					ServerNamespace: "default",
+				},
+				SessionMetadata: SessionMetadata{
+					SessionID: "b0252ad2-2fa5-4bb2-a7de-2cacd1169c96",
+				},
+				UserMetadata: UserMetadata{
+					User:  "bob@example.com",
+					Login: "root",
+				},
+				ConnectionMetadata: ConnectionMetadata{
+					LocalAddr:  "127.0.0.1:3022",
+					RemoteAddr: "[::1]:34902",
+				},
+			},
+		},
 	}
 	for i, tc := range testCases {
 		comment := check.Commentf("Test case %v: %v", i, tc.name)

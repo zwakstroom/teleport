@@ -88,6 +88,24 @@ message SessionStart {
 	string TerminalSize = 6 [(gogoproto.jsontag) = "size,omitempty"];
 }
 
+// SessionJoin emitted when another user joins a session
+message SessionJoin {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
+    // SessionMetadata is a common event session metadata
+    SessionMetadata Session = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 5 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+}
+
 // SessionPrint event happens every time a write occurs to
 // temirnal I/O during a session
 message SessionPrint {
@@ -166,10 +184,10 @@ message SessionEnd {
 // BPFMetadata is a common BPF process metadata
 message BPFMetadata {
 	// PID is the ID of the process.
-	int32 PID = 1 [(gogoproto.jsontag) = "pid"];
+	uint64 PID = 1 [(gogoproto.jsontag) = "pid"];
 
 	// CgroupID is the internal cgroupv2 ID of the event.
-	int64 CgroupID = 2 [(gogoproto.jsontag) = "cgroup_id"];
+	uint64 CgroupID = 2 [(gogoproto.jsontag) = "cgroup_id"];
 
     // Program is name of the executable.
 	string Program = 3 [(gogoproto.jsontag) = "program"];
@@ -205,7 +223,7 @@ message SessionCommand {
     BPFMetadata BPF = 5 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
 
 	// PPID is the PID of the parent process.
-	int32 PPID = 6 [(gogoproto.jsontag) = "ppid"];
+	uint64 PPID = 6 [(gogoproto.jsontag) = "ppid"];
 
 	// Path is the full path to the executable.
 	string Path = 7 [(gogoproto.jsontag) = "path"];
@@ -432,17 +450,18 @@ message OneOf {
         events.UserLogin UserLogin = 1;
         events.UserUpdate UserUpdate = 2;
         events.SessionStart SessionStart = 3;
-        events.SessionPrint SessionPrint = 4;
-        events.Resize Resize = 5;
-        events.SessionEnd SessionEnd = 6; 
-        events.SessionCommand SessionCommand = 7;
-        events.SessionDisk SessionDisk = 8;
-        events.SessionNetwork SessionNetwork = 9;
-        events.SessionData SessionData = 10;
-        events.SessionLeave SessionLeave = 11;
-        events.PortForward PortForward = 12;
-        events.Subsystem Subsystem = 13;
-        events.ClientDisconnect ClientDisconnect = 14;
-        events.AuthAttempt AuthAttempt = 15;
+        events.SessionJoin SessionJoin = 4;
+        events.SessionPrint SessionPrint = 5;
+        events.Resize Resize = 6;
+        events.SessionEnd SessionEnd = 7;
+        events.SessionCommand SessionCommand = 8;
+        events.SessionDisk SessionDisk = 9;
+        events.SessionNetwork SessionNetwork = 10;
+        events.SessionData SessionData = 11;
+        events.SessionLeave SessionLeave = 12;
+        events.PortForward PortForward = 13;
+        events.Subsystem Subsystem = 14;
+        events.ClientDisconnect ClientDisconnect = 15;
+        events.AuthAttempt AuthAttempt = 16;
     }
 }

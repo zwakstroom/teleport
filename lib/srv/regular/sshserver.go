@@ -106,8 +106,8 @@ type Server struct {
 	// auditable events
 	alog events.IAuditLog
 
-	// emitter points to the auth service and emits audit events
-	emitter events.StreamEmitter
+	// StreamEmitter points to the auth service and emits audit events
+	events.StreamEmitter
 
 	// clock is a system clock
 	clock clockwork.Clock
@@ -368,7 +368,7 @@ func SetAuditLog(alog events.IAuditLog) ServerOption {
 // SetEmitter assigns an audit event emitter for this server
 func SetEmitter(emitter events.StreamEmitter) ServerOption {
 	return func(s *Server) error {
-		s.emitter = emitter
+		s.StreamEmitter = emitter
 		return nil
 	}
 }
@@ -491,7 +491,7 @@ func New(addr utils.NetAddr,
 		return nil, trace.BadParameter("setup valid AuditLog parameter using SetAuditLog")
 	}
 
-	if s.emitter == nil {
+	if s.StreamEmitter == nil {
 		return nil, trace.BadParameter("setup valid Emitter parameter using SetEmitter")
 	}
 
@@ -527,7 +527,7 @@ func New(addr utils.NetAddr,
 		AuditLog:    s.alog,
 		AccessPoint: s.authService,
 		FIPS:        s.fips,
-		Emitter:     s.emitter,
+		Emitter:     s.StreamEmitter,
 	}
 
 	// common term handlers
@@ -794,12 +794,6 @@ func (s *Server) serveAgent(ctx *srv.ServerContext) error {
 	go agentServer.Serve()
 
 	return nil
-}
-
-// EmitAuditEvent logs a given event to the audit log attached to the
-// server that owns these sessions
-func (s *Server) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
-	return s.emitter.EmitAuditEvent(ctx, event)
 }
 
 // HandleRequest processes global out-of-band requests. Global out-of-band

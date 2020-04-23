@@ -2129,7 +2129,7 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 				DataDir:       process.Config.DataDir,
 				PollingPeriod: process.Config.PollingPeriod,
 				FIPS:          cfg.FIPS,
-				Emitter:       emitter,
+				Emitter:       &events.StreamerAndEmitter{Emitter: emitter, Streamer: streamer},
 			})
 		if err != nil {
 			return trace.Wrap(err)
