@@ -241,6 +241,12 @@ func (s *KeyStoreTestSuite) makeSignedKey(c *check.C, makeExpired bool) *Key {
 		PermitPortForwarding:  true,
 	})
 	c.Assert(err, check.IsNil)
+
+	//fmt.Printf("--> priv: %v.\n", string(priv))
+	//fmt.Printf("--> pub: %v.\n", string(pub))
+	//fmt.Printf("--> Cert: %v.\n", string(cert))
+	//fmt.Printf("--> TLSCert: %v.\n", string(tlsCert))
+
 	return &Key{
 		Priv:    priv,
 		Pub:     pub,

@@ -168,6 +168,7 @@ func FromSubject(subject pkix.Name, expires time.Time) (*Identity, error) {
 		Principals: subject.Locality,
 		Expires:    expires,
 	}
+
 	if len(subject.StreetAddress) > 0 {
 		id.RouteToCluster = subject.StreetAddress[0]
 	}

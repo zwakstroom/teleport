@@ -117,7 +117,7 @@ type CLIConf struct {
 	BenchThreads int
 	// BenchDuration is a duration for the benchmark
 	BenchDuration time.Duration
-	// BenchRate is a requests per second rate to mantain
+	// BenchRate is a requests per second rate to maintain
 	BenchRate int
 	// BenchInteractive indicates that we should create interactive session
 	BenchInteractive bool
@@ -163,6 +163,12 @@ type CLIConf struct {
 
 	// Debug sends debug logs to stdout.
 	Debug bool
+
+	ProfileDir string
+
+	LoginFunc func(context.Context, bool) (*client.Key, error)
+
+	GetTrustedCAFunc func(context.Context, string) ([]services.CertAuthority, error)
 }
 
 func main() {
@@ -202,6 +208,7 @@ func Run(args []string, underTest bool) {
 	app.Flag("proxy", "SSH proxy address").Envar("TELEPORT_PROXY").StringVar(&cf.Proxy)
 	app.Flag("nocache", "do not cache cluster discovery locally").Hidden().BoolVar(&cf.NoCache)
 	app.Flag("user", fmt.Sprintf("SSH proxy user [%s]", localUser)).Envar("TELEPORT_USER").StringVar(&cf.Username)
+	app.Flag("profile-path", "").StringVar(&cf.ProfileDir)
 	app.Flag("option", "").Short('o').Hidden().AllowDuplicate().PreAction(func(ctx *kingpin.ParseContext) error {
 		return trace.BadParameter("invalid flag, perhaps you want to use this flag as tsh ssh -o?")
 	}).String()
@@ -376,6 +383,8 @@ func onPlay(cf *CLIConf) {
 
 // onLogin logs in with remote proxy and gets signed certificates
 func onLogin(cf *CLIConf) {
+	fmt.Printf("--> cf: %#v.\n", cf)
+
 	var (
 		err error
 		tc  *client.TeleportClient
@@ -435,7 +444,7 @@ func onLogin(cf *CLIConf) {
 			if err != nil {
 				utils.FatalError(err)
 			}
-			tc.SaveProfile("", "")
+			tc.SaveProfile("", cf.ProfileDir)
 			if err := kubeconfig.UpdateWithClient("", tc); err != nil {
 				utils.FatalError(err)
 			}
@@ -456,29 +465,16 @@ func onLogin(cf *CLIConf) {
 		cf.Username = tc.Username
 	}
 
-	// -i flag specified? save the retreived cert into an identity file
-	makeIdentityFile := (cf.IdentityFileOut != "")
-	activateKey := !makeIdentityFile
-
-	key, err = tc.Login(cf.Context, activateKey)
+	// Connect to the proxy, login, and fetch credentials.
+	key, err = tc.Login(cf.Context)
 	if err != nil {
 		utils.FatalError(err)
 	}
 
-	if makeIdentityFile {
-		if err := setupNoninteractiveClient(tc, key); err != nil {
-			utils.FatalError(err)
-		}
-		authorities, err := tc.GetTrustedCA(cf.Context, key.ClusterName)
-		if err != nil {
-			utils.FatalError(err)
-		}
-		filesWritten, err := identityfile.Write(cf.IdentityFileOut, key, cf.IdentityFormat, authorities)
-		if err != nil {
-			utils.FatalError(err)
-		}
-		fmt.Printf("\nThe certificate has been written to %s\n", strings.Join(filesWritten, ","))
-		return
+	// Save the key either to profile directory or export to an identity file.
+	err = key.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
+	if err != nil {
+		utils.FatalError(err)
 	}
 
 	// If the proxy is advertising that it supports Kubernetes, update kubeconfig.
@@ -489,7 +485,8 @@ func onLogin(cf *CLIConf) {
 	}
 
 	// Regular login without -i flag.
-	tc.SaveProfile(key.ProxyHost, "")
+	tc.SiteName = cf.SiteName
+	tc.SaveProfile(key.ProxyHost, cf.ProfileDir)
 
 	// Print status to show information of the logged in user. Update the
 	// command line flag (used to print status) for the proxy to make sure any
@@ -502,41 +499,8 @@ func onLogin(cf *CLIConf) {
 	} else {
 		onStatus(cf)
 	}
-}
 
-// setupNoninteractiveClient sets up existing client to use
-// non-interactive authentication methods
-func setupNoninteractiveClient(tc *client.TeleportClient, key *client.Key) error {
-	certUsername, err := key.CertUsername()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	tc.Username = certUsername
-
-	// Extract and set the HostLogin to be the first principal. It doesn't
-	// matter what the value is, but some valid principal has to be set
-	// otherwise the certificate won't be validated.
-	certPrincipals, err := key.CertPrincipals()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	if len(certPrincipals) == 0 {
-		return trace.BadParameter("no principals found")
-	}
-	tc.HostLogin = certPrincipals[0]
-
-	identityAuth, err := authFromIdentity(key)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	tc.TLS, err = key.ClientTLSConfig()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	tc.AuthMethods = []ssh.AuthMethod{identityAuth}
-	tc.Interactive = false
-	tc.SkipLocalAuth = true
-	return nil
+	fmt.Printf("--> Done!\n")
 }
 
 // onLogout deletes a "session certificate" from ~/.tsh for a given proxy
@@ -1068,6 +1032,11 @@ func makeClient(cf *CLIConf, useProfileLogin bool) (tc *client.TeleportClient, e
 
 	// Don't execute remote command, used when port forwarding.
 	c.NoRemoteExec = cf.NoRemoteExec
+
+	// Overwrite Login and GetTrustedCA if requested. Used by tests to simulate
+	// response from a Teleport server.
+	c.LoginFunc = cf.LoginFunc
+	c.GetTrustedCAFunc = cf.GetTrustedCAFunc
 
 	return client.NewClient(c)
 }

@@ -47,6 +47,7 @@ import (
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
+	"github.com/gravitational/teleport/lib/client/identityfile"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/modules"
@@ -252,6 +253,16 @@ type Config struct {
 	// NoRemoteExec will not execute a remote command after connecting to a host,
 	// will block instead. Useful when port forwarding. Equivalent of -N for OpenSSH.
 	NoRemoteExec bool
+
+	// LoginFunc supports setting a custom Login function. If this variable is
+	// not set, the default Login function is called on the Teleport client. Used
+	// in tests to simulate a Teleport server environment.
+	LoginFunc func(context.Context, bool) (*Key, error)
+
+	// GetTrustedCAFunc supports setting a custom GetTrustedCA function. If this
+	// variable is not set, the default GetTrustedCA function is called on the
+	// Teleport client. Used in tests to simulate a Teleport server environment.
+	GetTrustedCAFunc func(context.Context, string) ([]services.CertAuthority, error)
 }
 
 // CachePolicy defines cache policy for local clients
@@ -1636,8 +1647,13 @@ func (tc *TeleportClient) LogoutAll() error {
 //
 // If 'activateKey' is true, saves the received session cert into the local
 // keystore (and into the ssh-agent) for future use.
-//
 func (tc *TeleportClient) Login(ctx context.Context, activateKey bool) (*Key, error) {
+	// If a custom Login function is set, use it instead of the default. Used by
+	// tests to simulate response from a Teleport server.
+	if tc.LoginFunc != nil {
+		return tc.LoginFunc(ctx, activateKey)
+	}
+
 	// Ping the endpoint to see if it's up and find the type of authentication
 	// supported.
 	pr, err := Ping(
@@ -1728,37 +1744,138 @@ func (tc *TeleportClient) Login(ctx context.Context, activateKey bool) (*Key, er
 	key.ClusterName = response.HostSigners[0].ClusterName
 	tc.SiteName = response.HostSigners[0].ClusterName
 
-	if activateKey {
-		// save the list of CAs client trusts to ~/.tsh/known_hosts
-		err = tc.localAgent.AddHostSignersToCache(response.HostSigners)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	//if activateKey {
+	//	// save the list of CAs client trusts to ~/.tsh/known_hosts
+	//	err = tc.localAgent.AddHostSignersToCache(response.HostSigners)
+	//	if err != nil {
+	//		return nil, trace.Wrap(err)
+	//	}
 
-		// save the list of TLS CAs client trusts
-		err = tc.localAgent.SaveCerts(response.HostSigners)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	//	// save the list of TLS CAs client trusts
+	//	err = tc.localAgent.SaveCerts(response.HostSigners)
+	//	if err != nil {
+	//		return nil, trace.Wrap(err)
+	//	}
 
-		// save the cert to the local storage (~/.tsh usually):
-		_, err = tc.localAgent.AddKey(key)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	//	// save the cert to the local storage (~/.tsh usually):
+	//	_, err = tc.localAgent.AddKey(key)
+	//	if err != nil {
+	//		return nil, trace.Wrap(err)
+	//	}
 
-		// Connect to the Auth Server of the main cluster
-		// and fetch the known hosts for this cluster.
-		if err := tc.UpdateTrustedCA(ctx, key.ClusterName); err != nil {
-			return nil, trace.Wrap(err)
-		}
-	}
+	//	// Connect to the Auth Server of the main cluster
+	//	// and fetch the known hosts for this cluster.
+	//	if err := tc.UpdateTrustedCA(ctx, key.ClusterName); err != nil {
+	//		return nil, trace.Wrap(err)
+	//	}
+	//}
+
 	return key, nil
 }
 
-// GetTrustedCA returns a list of host certificate authorities
-// trusted by the cluster client is authenticated with.
+func (tc *TeleportClient) SaveKey(ctx context.Context, key *Key, identityFile string, identityFormat identityfile.Format) error {
+	if identityFileOut != "" {
+		return tc.saveToIdentityFile(ctx, key, identityFile, identityFormat)
+	}
+	return tc.saveToProfile(ctx, key)
+}
+
+// saveToIdentityFile will export a key (and cluster certificates) to a identity file.
+func (tc *TeleportClient) saveToIdentityFile(ctx context.Context, key *Key, identityFile string, identityFormat identityfile.Format) error {
+	// Setup the the Teleport client to be non-interactive.
+	// TODO(russjones): Why is this done?
+	err := setupNoninteractiveClient(tc, key)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	authorities, err := tc.GetTrustedCA(ctx, key.ClusterName)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	filesWritten, err := identityfile.Write(identityFile, key, identityFormat, authorities)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	fmt.Printf("\nThe certificate has been written to %s\n", strings.Join(filesWritten, ","))
+	return
+}
+
+// saveToProfile will save a key to the client profile directory, typically ~/.tsh.
+func (tc *TeleportClient) saveToProfile(ctx context.Context, key *Key) error {
+	// Update the SSH known_hosts cache with the clusters SSH host certificates.
+	err = tc.localAgent.AddHostSignersToCache(key.TrustedCA)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Update x509 server certificate for cluster.
+	err = tc.localAgent.SaveCerts(key.TrustedCA)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Add private key along with SSH and x509 certificates to profile.
+	_, err = tc.localAgent.AddKey(key)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Connect to the Auth Server of the main cluster and fetch the known hosts
+	// for this cluster.
+	if err := tc.UpdateTrustedCA(ctx, key.ClusterName); err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+// setupNoninteractiveClient sets up existing client to use
+// non-interactive authentication methods
+func setupNoninteractiveClient(tc *client.TeleportClient, key *client.Key) error {
+	certUsername, err := key.CertUsername()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	tc.Username = certUsername
+
+	// Extract and set the HostLogin to be the first principal. It doesn't
+	// matter what the value is, but some valid principal has to be set
+	// otherwise the certificate won't be validated.
+	certPrincipals, err := key.CertPrincipals()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	if len(certPrincipals) == 0 {
+		return trace.BadParameter("no principals found")
+	}
+	tc.HostLogin = certPrincipals[0]
+
+	identityAuth, err := authFromIdentity(key)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	tc.TLS, err = key.ClientTLSConfig()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	tc.AuthMethods = []ssh.AuthMethod{identityAuth}
+	tc.Interactive = false
+	tc.SkipLocalAuth = true
+	return nil
+}
+
+// GetTrustedCA returns a list of host certificate authorities for the client
+// the client is connected to.
 func (tc *TeleportClient) GetTrustedCA(ctx context.Context, clusterName string) ([]services.CertAuthority, error) {
+	// If a custom GetTrustedCA function is set, use it instead of the default.
+	// Used by tests to simulate responses from a Teleport server.
+	if tc.GetTrustedCAFunc != nil {
+		return tc.GetTrustedCAFunc(ctx, clusterName)
+	}
+
 	// Connect to the proxy.
 	if !tc.Config.ProxySpecified() {
 		return nil, trace.BadParameter("proxy server is not specified")
