@@ -91,22 +91,33 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 	}
 	// buffer is copied here to prevent data corruption:
 	// io.Copy allocates single buffer and calls multiple writes in a loop
-	// our PostSessionSlice is async and sends reader wrapping buffer
-	// to the channel. This can lead to cases when the buffer is re-used
+	// Write is async, this can lead to cases when the buffer is re-used
 	// and data is corrupted unless we copy the data buffer in the first place
 	dataCopy := make([]byte, len(data))
 	copy(dataCopy, data)
-	// post the chunk of bytes to the audit log:
-	printEvent := &SessionPrint{
-		Metadata: Metadata{
-			Type: SessionPrintEvent,
-			Time: time.Now().UTC(),
-		},
-		Data: dataCopy,
+
+	start := time.Now().UTC()
+	for len(dataCopy) != 0 {
+		printEvent := &SessionPrint{
+			Metadata: Metadata{
+				Type: SessionPrintEvent,
+				Time: start,
+			},
+			Data: dataCopy,
+		}
+		if printEvent.Size() > MaxProtoMessageSize {
+			extraBytes := printEvent.Size() - MaxProtoMessageSize
+			printEvent.Data = dataCopy[:extraBytes]
+			dataCopy = dataCopy[extraBytes:]
+			a.log.Debugf("REMOVEME, submitting chunk with %v bytes remaining", extraBytes)
+		} else {
+			dataCopy = nil
+		}
+		if err := a.EmitAuditEvent(a.cfg.Context, printEvent); err != nil {
+			a.log.WithError(err).Error("Failed to emit session print event.")
+		}
 	}
-	if err := a.EmitAuditEvent(a.cfg.Context, printEvent); err != nil {
-		a.log.WithError(err).Error("Failed to emit session print event.")
-	}
+
 	return len(data), nil
 }
 

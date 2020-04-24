@@ -168,8 +168,12 @@ func NewLoggingEmitter() *LoggingEmitter {
 type LoggingEmitter struct {
 }
 
-// EmitAuditEvent logs audit event
+// EmitAuditEvent logs audit event, skips session print events
+// and session disk events, because they are very verbose
 func (*LoggingEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	if event.GetType() == SessionDiskEvent || event.GetType() == SessionPrintEvent || event.GetType() == "" {
+		return nil
+	}
 	data, err := utils.FastMarshal(event)
 	if err != nil {
 		return trace.Wrap(err)
@@ -325,4 +329,73 @@ func (s *CheckingStream) EmitAuditEvent(ctx context.Context, event AuditEvent) e
 		return trace.Wrap(err)
 	}
 	return nil
+}
+
+// NewTeeStreamer returns a streamer that forwards non print event
+// to emitter in addition to sending them to the stream
+func NewTeeStreamer(streamer Streamer, emitter Emitter) *TeeStreamer {
+	return &TeeStreamer{
+		Emitter:  emitter,
+		streamer: streamer,
+	}
+}
+
+// CreateAuditStream creates audit event stream
+func (t *TeeStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	stream, err := t.streamer.CreateAuditStream(ctx, sid)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &TeeStream{stream: stream, emitter: t.Emitter}, nil
+
+}
+
+// ResumeAuditStream resumes audit event stream
+func (t *TeeStreamer) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	stream, err := t.streamer.ResumeAuditStream(ctx, sid)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &TeeStream{stream: stream, emitter: t.Emitter}, nil
+}
+
+// TeeStreamer creates streams that forwards non print events
+// to emitter
+type TeeStreamer struct {
+	Emitter
+	streamer Streamer
+}
+
+// TeeStream sends non print events to emitter
+// in addition to the stream itself
+type TeeStream struct {
+	emitter Emitter
+	stream  Stream
+}
+
+// Close cancels and releases all resources associated
+// with the stream without completing the stream,
+// can be called multiple times
+func (t *TeeStream) Close() error {
+	return t.stream.Close()
+}
+
+// Complete closes the stream and marks it finalized
+func (t *TeeStream) Complete(ctx context.Context) error {
+	return t.stream.Complete(ctx)
+}
+
+// EmitAuditEvent emits audit event
+func (t *TeeStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	var errors []error
+	if err := t.stream.EmitAuditEvent(ctx, event); err != nil {
+		errors = append(errors, err)
+	}
+	// Forward non print events to emitter
+	if event.GetType() != SessionPrintEvent && event.GetType() != "" {
+		if err := t.emitter.EmitAuditEvent(ctx, event); err != nil {
+			errors = append(errors, err)
+		}
+	}
+	return trace.NewAggregate(errors...)
 }

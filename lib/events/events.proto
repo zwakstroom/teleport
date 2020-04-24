@@ -312,10 +312,10 @@ message SessionData {
     ConnectionMetadata Connection = 5 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
 
     // BytesTransmitted is the amount of bytes transmitted
-	int64 BytesTransmitted = 6 [(gogoproto.jsontag) = "tx"];
+	uint64 BytesTransmitted = 6 [(gogoproto.jsontag) = "tx"];
 
     // BytesReceived is the amount of bytes received
-	int64 BytesReceived  = 7 [(gogoproto.jsontag) = "rx"];
+	uint64 BytesReceived  = 7 [(gogoproto.jsontag) = "rx"];
 }
 
 

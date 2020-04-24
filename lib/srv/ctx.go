@@ -546,23 +546,33 @@ func (c *ServerContext) reportStats(conn utils.Stater) {
 	// below, that is because the connection is held from the perspective of
 	// the server not the client, but the logs are from the perspective of the
 	// client.
-	eventFields := events.EventFields{
-		events.DataTransmitted: rxBytes,
-		events.DataReceived:    txBytes,
-		events.SessionServerID: c.GetServer().HostUUID(),
-		events.EventLogin:      c.Identity.Login,
-		events.EventUser:       c.Identity.TeleportUser,
-		events.RemoteAddr:      c.Conn.RemoteAddr().String(),
-		events.EventIndex:      events.SessionDataIndex,
+	sessionDataEvent := &events.SessionData{
+		Metadata: events.Metadata{
+			Index: events.SessionDataIndex,
+			Type:  events.SessionDataEvent,
+			Code:  events.SessionDataCode,
+		},
+		ServerMetadata: events.ServerMetadata{
+			ServerID:        c.GetServer().HostUUID(),
+			ServerNamespace: c.GetServer().GetNamespace(),
+		},
+		UserMetadata: events.UserMetadata{
+			User:  c.Identity.TeleportUser,
+			Login: c.Identity.Login,
+		},
+		ConnectionMetadata: events.ConnectionMetadata{
+			RemoteAddr: c.Conn.RemoteAddr().String(),
+		},
+		BytesTransmitted: rxBytes,
+		BytesReceived:    txBytes,
 	}
 	if !c.srv.UseTunnel() {
-		eventFields[events.LocalAddr] = c.Conn.LocalAddr().String()
+		sessionDataEvent.ConnectionMetadata.LocalAddr = c.Conn.LocalAddr().String()
 	}
 	if c.session != nil {
-		eventFields[events.SessionEventID] = c.session.id
+		sessionDataEvent.SessionMetadata.SessionID = string(c.session.id)
 	}
-	// !!!FIXEVENTS!!!
-	c.GetServer().GetAuditLog().EmitAuditEventLegacy(events.SessionDataE, eventFields)
+	c.GetServer().EmitAuditEvent(c.GetServer().Context(), sessionDataEvent)
 
 	// Emit TX and RX bytes to their respective Prometheus counters.
 	serverTX.Add(float64(txBytes))

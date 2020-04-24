@@ -81,7 +81,6 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 		return trace.BadParameter("emitter is closed")
 	}
 
-	log.Infof("bytes written: %v\n", s.bytesWritten)
 	if s.bytesWritten == 0 {
 		s.sliceStart = time.Now().UTC()
 	}

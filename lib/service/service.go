@@ -1032,7 +1032,7 @@ func (process *TeleportProcess) initAuthService() error {
 		AuthPreference:       cfg.Auth.Preference,
 		OIDCConnectors:       cfg.OIDCConnectors,
 		AuditLog:             process.auditLog,
-		Emitter:              &events.StreamerAndEmitter{Emitter: checkingEmitter, Streamer: checkingStreamer},
+		Emitter:              events.NewTeeStreamer(checkingStreamer, checkingEmitter),
 		CipherSuites:         cfg.CipherSuites,
 	})
 	if err != nil {
