@@ -96,7 +96,7 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 	dataCopy := make([]byte, len(data))
 	copy(dataCopy, data)
 
-	start := time.Now().UTC()
+	start := time.Now().UTC().Round(time.Millisecond)
 	for len(dataCopy) != 0 {
 		printEvent := &SessionPrint{
 			Metadata: Metadata{
@@ -108,9 +108,11 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 		if printEvent.Size() > MaxProtoMessageSize {
 			extraBytes := printEvent.Size() - MaxProtoMessageSize
 			printEvent.Data = dataCopy[:extraBytes]
+			printEvent.Bytes = int64(len(printEvent.Data))
 			dataCopy = dataCopy[extraBytes:]
 			a.log.Debugf("REMOVEME, submitting chunk with %v bytes remaining", extraBytes)
 		} else {
+			printEvent.Bytes = int64(len(printEvent.Data))
 			dataCopy = nil
 		}
 		if err := a.EmitAuditEvent(a.cfg.Context, printEvent); err != nil {

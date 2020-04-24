@@ -97,7 +97,7 @@ func CheckAndSetEventFields(event AuditEvent, clock clockwork.Clock, uid utils.U
 	if event.GetCode() == "" && event.GetType() != SessionPrintEvent {
 		return trace.BadParameter("missing mandatory event code field for %v event", event.GetType())
 	}
-	if event.GetID() == "" {
+	if event.GetID() == "" && event.GetType() != SessionPrintEvent {
 		event.SetID(uid.New())
 	}
 	if event.GetTime().IsZero() {

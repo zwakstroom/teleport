@@ -1,3 +1,19 @@
+/*
+Copyright 2020 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package events
 
 import (
@@ -41,12 +57,13 @@ func NewProtoEmitter(ctx context.Context, upload Upload, pool utils.SlicePool) *
 // ProtoEmitter implements a protobuf stream emitter,
 // that is not concurrent safe
 type ProtoEmitter struct {
-	sliceStart   time.Time
-	bytesWritten int64
-	slice        []byte
-	upload       Upload
-	pool         utils.SlicePool
-	ctx          context.Context
+	headerWritten bool
+	sliceStart    time.Time
+	bytesWritten  int64
+	slice         []byte
+	upload        Upload
+	pool          utils.SlicePool
+	ctx           context.Context
 }
 
 // Int32Size is a constant for 32 bit integer byte size
@@ -154,6 +171,13 @@ func NewProtoReader(r io.Reader) *ProtoReader {
 	return &ProtoReader{
 		reader: r,
 	}
+}
+
+// AuditReader provides method to read
+// audit events one by one
+type AuditReader interface {
+	// Read reads audit events
+	Read() (AuditEvent, error)
 }
 
 // ProtoReader reads protobuf encoding from reader

@@ -126,7 +126,7 @@ message SessionPrint {
 	int64 DelayMilliseconds = 5 [(gogoproto.jsontag) = "ms"];
 
 	// Offset is the offset in bytes in the session file
-	int64 Offset = 6 [(gogoproto.jsontag) = "offset,omitempty"];
+	int64 Offset = 6 [(gogoproto.jsontag) = "offset"];
 }
 
                 
