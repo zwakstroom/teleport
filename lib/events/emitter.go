@@ -91,11 +91,11 @@ func (r *CheckingEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) 
 // This method is a "final stop" for various audit log implementations for
 // updating event fields before it gets persisted in the backend.
 func CheckAndSetEventFields(event AuditEvent, clock clockwork.Clock, uid utils.UID) error {
-	if event.GetCode() == "" {
-		return trace.BadParameter("missing mandatory event code field")
-	}
 	if event.GetType() == "" {
 		return trace.BadParameter("missing mandatory event type field")
+	}
+	if event.GetCode() == "" && event.GetType() != SessionPrintEvent {
+		return trace.BadParameter("missing mandatory event code field for %v event", event.GetType())
 	}
 	if event.GetID() == "" {
 		event.SetID(uid.New())
@@ -315,13 +315,13 @@ func (s *CheckingStream) Complete(ctx context.Context) error {
 // EmitAuditEvent emits audit event
 func (s *CheckingStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
 	if err := CheckAndSetEventFields(event, s.clock, s.uidGenerator); err != nil {
-		log.WithError(err).Errorf("Failed to emit audit event.")
+		log.WithError(err).Errorf("Failed to emit audit event %v(%v).", event.GetType(), event.GetCode())
 		auditFailedEmit.Inc()
 		return trace.Wrap(err)
 	}
 	if err := s.stream.EmitAuditEvent(ctx, event); err != nil {
 		auditFailedEmit.Inc()
-		log.WithError(err).Errorf("Failed to emit audit event.")
+		log.WithError(err).Errorf("Failed to emit audit event %v(%v).", event.GetType(), event.GetCode())
 		return trace.Wrap(err)
 	}
 	return nil

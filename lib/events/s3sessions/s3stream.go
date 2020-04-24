@@ -20,6 +20,7 @@ import (
 	"context"
 	"io"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gravitational/teleport/lib/events"
@@ -33,6 +34,9 @@ import (
 
 // CreateAuditStream creates stream using multipart upload
 func (h *Handler) CreateAuditStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
+	start := time.Now()
+	defer func() { h.Infof("Upload created in %v.", time.Since(start)) }()
+
 	input := &s3.CreateMultipartUploadInput{
 		Bucket: aws.String(h.Bucket),
 		Key:    aws.String(h.path(sessionID)),
@@ -78,6 +82,9 @@ func (u *upload) Close() error {
 
 // Complete completes the upload
 func (u *upload) Complete(ctx context.Context) error {
+	start := time.Now()
+	defer func() { u.h.Infof("UploadPart(%v) completed in %v.", u.id, time.Since(start)) }()
+
 	// Parts must be sorted in PartNumber order.
 	sort.Slice(u.completedParts, func(i, j int) bool {
 		return *u.completedParts[i].PartNumber < *u.completedParts[j].PartNumber
@@ -98,6 +105,8 @@ func (u *upload) Complete(ctx context.Context) error {
 
 // UploadPart uploads part
 func (u *upload) UploadPart(ctx context.Context, partBody io.ReadSeeker) error {
+	start := time.Now()
+	defer func() { u.h.Infof("UploadPart(%v) part(%v) uploaded in %v.", u.id, u.part, time.Since(start)) }()
 	u.part++
 	// This upload exceeded maximum number of supported parts, error now.
 	if u.part > int64(s3manager.MaxUploadParts) {

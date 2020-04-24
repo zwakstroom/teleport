@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -104,7 +105,7 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 		Data: dataCopy,
 	}
 	if err := a.EmitAuditEvent(a.cfg.Context, printEvent); err != nil {
-		a.log.WithError(err).Error("Failed to emit audit event.")
+		a.log.WithError(err).Error("Failed to emit session print event.")
 	}
 	return len(data), nil
 }
@@ -123,6 +124,8 @@ func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 // that aborts it, because of the way the writer is usually used
 // the interface - io.WriteCloser has only close method
 func (a *AuditWriter) Close() error {
+	debug.PrintStack()
+	a.log.Debugf("Writer has been closed!")
 	return a.Complete(a.cfg.Context)
 }
 

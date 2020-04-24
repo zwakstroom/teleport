@@ -6,10 +6,13 @@ import (
 	"encoding/binary"
 	"io"
 	"io/ioutil"
+	"runtime/debug"
+	"time"
 
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
+	log "github.com/sirupsen/logrus"
 )
 
 // Upload represents upload operation, for example
@@ -38,6 +41,7 @@ func NewProtoEmitter(ctx context.Context, upload Upload, pool utils.SlicePool) *
 // ProtoEmitter implements a protobuf stream emitter,
 // that is not concurrent safe
 type ProtoEmitter struct {
+	sliceStart   time.Time
 	bytesWritten int64
 	slice        []byte
 	upload       Upload
@@ -58,6 +62,7 @@ const MaxProtoMessageSize = 64 * 1024
 // will be attempted to be commited as a part of this close)
 func (s *ProtoEmitter) Close() error {
 	if s.bytesWritten != 0 {
+		debug.PrintStack()
 		err := s.uploadSlice(s.ctx)
 		if err != nil {
 			return trace.Wrap(err)
@@ -74,6 +79,11 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 	// slice is closed
 	if s.slice == nil {
 		return trace.BadParameter("emitter is closed")
+	}
+
+	log.Infof("bytes written: %v\n", s.bytesWritten)
+	if s.bytesWritten == 0 {
+		s.sliceStart = time.Now().UTC()
 	}
 
 	oneof, err := ToOneOf(event)
@@ -113,6 +123,7 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 }
 
 func (s *ProtoEmitter) uploadSlice(ctx context.Context) error {
+	log.Debugf("LOOOK!!!! Slice filled to %v bytes in %v.", s.bytesWritten, time.Since(s.sliceStart))
 	// set the rest of the slice to zero bytes
 	s.pool.Zero(s.slice[s.bytesWritten:])
 	if err := s.upload.UploadPart(ctx, bytes.NewReader(s.slice[:s.bytesWritten])); err != nil {

@@ -28,6 +28,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -2080,7 +2081,9 @@ type auditStreamer struct {
 // Complete completes stream
 func (s *auditStreamer) Complete(ctx context.Context) error {
 	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
-		Request: &proto.AuditStreamRequest_CompleteStream{},
+		Request: &proto.AuditStreamRequest_CompleteStream{
+			CompleteStream: &proto.CompleteStream{},
+		},
 	}))
 }
 
@@ -2116,9 +2119,9 @@ func (s *auditStreamer) closeWithError(err error) {
 	s.err = err
 }
 
-// Close closes all resources associated with stream without aborting
-// it
+// Close closes all resources associated with stream without aborting it
 func (s *auditStreamer) Close() error {
+	debug.PrintStack()
 	_, err := s.stream.CloseAndRecv()
 	if err != nil {
 		return trace.Wrap(err)

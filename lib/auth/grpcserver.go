@@ -116,6 +116,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				return trace.Wrap(err)
 			}
+			g.Debugf("Created stream: %v.", err)
 			defer eventStream.Close()
 		} else if resume := request.GetResumeStream(); resume != nil {
 			if eventStream != nil {
@@ -125,12 +126,18 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				return trace.Wrap(err)
 			}
+			g.Debugf("Resumed stream: %v.", err)
 			defer eventStream.Close()
 		} else if complete := request.GetCompleteStream(); complete != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not complete"))
 			}
-			return trail.ToGRPC(eventStream.Complete(stream.Context()))
+			err := eventStream.Complete(stream.Context())
+			g.Debugf("Completed stream: %v.", err)
+			if err != nil {
+				return trail.ToGRPC(err)
+			}
+			return nil
 		} else if oneof := request.GetEvent(); oneof != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(
@@ -146,6 +153,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				return trail.ToGRPC(err)
 			}
 		} else {
+			g.Errorf("Unsupported stream request: %#v\n", request)
 			return trail.ToGRPC(trace.BadParameter("unsupported stream request"))
 		}
 	}

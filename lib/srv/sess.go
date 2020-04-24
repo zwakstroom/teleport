@@ -653,11 +653,15 @@ func (s *session) startInteractive(ch ssh.Channel, ctx *ServerContext) error {
 	if auditLog == nil || isDiscardAuditLog(auditLog) {
 		s.recorder = &events.DiscardStream{}
 	} else {
-		stream, err := ctx.srv.CreateAuditStream(ctx.CancelContext(), s.id)
+		// Audit stream is using server context, not session context,
+		// to make sure that session is uploaded even after it is closed
+		stream, err := ctx.srv.CreateAuditStream(ctx.srv.Context(), s.id)
 		if err != nil {
 			return trace.Wrap(err)
 		}
 		s.recorder, err = events.NewAuditWriter(events.AuditWriterConfig{
+			Context:      ctx.srv.Context(),
+			SessionID:    s.id,
 			Namespace:    ctx.srv.GetNamespace(),
 			ServerID:     ctx.srv.HostUUID(),
 			RecordOutput: ctx.ClusterConfig.GetSessionRecording() != services.RecordOff,
@@ -827,11 +831,14 @@ func (s *session) startExec(channel ssh.Channel, ctx *ServerContext) error {
 	if auditLog == nil || isDiscardAuditLog(auditLog) {
 		s.recorder = &events.DiscardStream{}
 	} else {
-		stream, err := ctx.srv.CreateAuditStream(ctx.CancelContext(), s.id)
+		// Audit stream is using server context, not session context,
+		// to make sure that session is uploaded even after it is closed
+		stream, err := ctx.srv.CreateAuditStream(ctx.srv.Context(), s.id)
 		if err != nil {
 			return trace.Wrap(err)
 		}
 		s.recorder, err = events.NewAuditWriter(events.AuditWriterConfig{
+			Context:      ctx.srv.Context(),
 			SessionID:    s.id,
 			Namespace:    ctx.srv.GetNamespace(),
 			ServerID:     ctx.srv.HostUUID(),
