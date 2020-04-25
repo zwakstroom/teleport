@@ -54,6 +54,7 @@ import (
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/shell"
+	"github.com/gravitational/teleport/lib/sshutils"
 	"github.com/gravitational/teleport/lib/sshutils/scp"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/utils/agentconn"
@@ -257,7 +258,7 @@ type Config struct {
 	// LoginFunc supports setting a custom Login function. If this variable is
 	// not set, the default Login function is called on the Teleport client. Used
 	// in tests to simulate a Teleport server environment.
-	LoginFunc func(context.Context, bool) (*Key, error)
+	LoginFunc func(context.Context) (*Key, error)
 
 	// GetTrustedCAFunc supports setting a custom GetTrustedCA function. If this
 	// variable is not set, the default GetTrustedCA function is called on the
@@ -332,13 +333,23 @@ func RetryWithRelogin(ctx context.Context, tc *TeleportClient, fn func() error) 
 		return err
 	}
 	log.Debugf("Activating relogin on %v.", err)
-	key, err := tc.Login(ctx, true)
+	key, err := tc.Login(ctx)
 	if err != nil {
 		if trace.IsTrustError(err) {
 			return trace.Wrap(err, "refusing to connect to untrusted proxy %v without --insecure flag\n", tc.Config.SSHProxyAddr)
 		}
 		return trace.Wrap(err)
 	}
+
+	// TODO(russjones): Make sure to test this, to test it try and run "tsh ls"
+	// with expired certificates, it should prompt you to re-login and then show
+	// you the results.
+	// Save key data to profile directory,.
+	err = tc.SaveKey(ctx, key, "", identityfile.DefaultFormat)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	// Save profile to record proxy credentials
 	if err := tc.SaveProfile(key.ProxyHost, "", ProfileCreateNew|ProfileMakeCurrent); err != nil {
 		log.Warningf("Failed to save profile: %v", err)
@@ -1644,14 +1655,11 @@ func (tc *TeleportClient) LogoutAll() error {
 }
 
 // Login logs the user into a Teleport cluster by talking to a Teleport proxy.
-//
-// If 'activateKey' is true, saves the received session cert into the local
-// keystore (and into the ssh-agent) for future use.
-func (tc *TeleportClient) Login(ctx context.Context, activateKey bool) (*Key, error) {
+func (tc *TeleportClient) Login(ctx context.Context) (*Key, error) {
 	// If a custom Login function is set, use it instead of the default. Used by
 	// tests to simulate response from a Teleport server.
 	if tc.LoginFunc != nil {
-		return tc.LoginFunc(ctx, activateKey)
+		return tc.LoginFunc(ctx)
 	}
 
 	// Ping the endpoint to see if it's up and find the type of authentication
@@ -1774,7 +1782,7 @@ func (tc *TeleportClient) Login(ctx context.Context, activateKey bool) (*Key, er
 }
 
 func (tc *TeleportClient) SaveKey(ctx context.Context, key *Key, identityFile string, identityFormat identityfile.Format) error {
-	if identityFileOut != "" {
+	if identityFile != "" {
 		return tc.saveToIdentityFile(ctx, key, identityFile, identityFormat)
 	}
 	return tc.saveToProfile(ctx, key)
@@ -1800,13 +1808,13 @@ func (tc *TeleportClient) saveToIdentityFile(ctx context.Context, key *Key, iden
 	}
 
 	fmt.Printf("\nThe certificate has been written to %s\n", strings.Join(filesWritten, ","))
-	return
+	return nil
 }
 
 // saveToProfile will save a key to the client profile directory, typically ~/.tsh.
 func (tc *TeleportClient) saveToProfile(ctx context.Context, key *Key) error {
 	// Update the SSH known_hosts cache with the clusters SSH host certificates.
-	err = tc.localAgent.AddHostSignersToCache(key.TrustedCA)
+	err := tc.localAgent.AddHostSignersToCache(key.TrustedCA)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -1834,7 +1842,7 @@ func (tc *TeleportClient) saveToProfile(ctx context.Context, key *Key) error {
 
 // setupNoninteractiveClient sets up existing client to use
 // non-interactive authentication methods
-func setupNoninteractiveClient(tc *client.TeleportClient, key *client.Key) error {
+func setupNoninteractiveClient(tc *TeleportClient, key *Key) error {
 	certUsername, err := key.CertUsername()
 	if err != nil {
 		return trace.Wrap(err)
@@ -1865,6 +1873,15 @@ func setupNoninteractiveClient(tc *client.TeleportClient, key *client.Key) error
 	tc.Interactive = false
 	tc.SkipLocalAuth = true
 	return nil
+}
+
+// authFromIdentity returns a standard ssh.Authmethod for a given identity file
+func authFromIdentity(k *Key) (ssh.AuthMethod, error) {
+	signer, err := sshutils.NewSigner(k.Priv, k.Cert)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return NewAuthMethodForCert(signer), nil
 }
 
 // GetTrustedCA returns a list of host certificate authorities for the client

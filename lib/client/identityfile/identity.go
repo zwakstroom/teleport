@@ -24,7 +24,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/gravitational/teleport/lib/client"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/sshutils"
 
@@ -50,12 +49,18 @@ const (
 	DefaultFormat = FormatFile
 )
 
+type keyBytesGetter interface {
+	PrivateKeyBytes() []byte
+	SSHCertBytes() []byte
+	TLSCertBytes() []byte
+}
+
 // Write takes a username + their credentials and saves them to disk
 // in a specified format.
 //
 // filePath is used as a base to generate output file names; these names are
 // returned in filesWritten.
-func Write(filePath string, key *client.Key, format Format, certAuthorities []services.CertAuthority) (filesWritten []string, err error) {
+func Write(filePath string, key keyBytesGetter, format Format, certAuthorities []services.CertAuthority) (filesWritten []string, err error) {
 	const (
 		// the files and the dir will be created with these permissions:
 		fileMode = 0600
@@ -79,15 +84,15 @@ func Write(filePath string, key *client.Key, format Format, certAuthorities []se
 		defer f.Close()
 
 		// write key:
-		if _, err = output.Write(key.Priv); err != nil {
+		if _, err = output.Write(key.PrivateKeyBytes()); err != nil {
 			return nil, trace.Wrap(err)
 		}
 		// append ssh cert:
-		if _, err = output.Write(key.Cert); err != nil {
+		if _, err = output.Write(key.SSHCertBytes()); err != nil {
 			return nil, trace.Wrap(err)
 		}
 		// append tls cert:
-		if _, err = output.Write(key.TLSCert); err != nil {
+		if _, err = output.Write(key.TLSCertBytes()); err != nil {
 			return nil, trace.Wrap(err)
 		}
 		// append trusted host certificate authorities
@@ -119,12 +124,12 @@ func Write(filePath string, key *client.Key, format Format, certAuthorities []se
 		certPath := keyPath + "-cert.pub"
 		filesWritten = append(filesWritten, keyPath, certPath)
 
-		err = ioutil.WriteFile(certPath, key.Cert, fileMode)
+		err = ioutil.WriteFile(certPath, key.SSHCertBytes(), fileMode)
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
 
-		err = ioutil.WriteFile(keyPath, key.Priv, fileMode)
+		err = ioutil.WriteFile(keyPath, key.PrivateKeyBytes(), fileMode)
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
@@ -135,12 +140,12 @@ func Write(filePath string, key *client.Key, format Format, certAuthorities []se
 		casPath := filePath + ".cas"
 		filesWritten = append(filesWritten, keyPath, certPath, casPath)
 
-		err = ioutil.WriteFile(certPath, key.TLSCert, fileMode)
+		err = ioutil.WriteFile(certPath, key.TLSCertBytes(), fileMode)
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
 
-		err = ioutil.WriteFile(keyPath, key.Priv, fileMode)
+		err = ioutil.WriteFile(keyPath, key.PrivateKeyBytes(), fileMode)
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}

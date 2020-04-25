@@ -166,7 +166,7 @@ type CLIConf struct {
 
 	ProfileDir string
 
-	LoginFunc func(context.Context, bool) (*client.Key, error)
+	LoginFunc func(context.Context) (*client.Key, error)
 
 	GetTrustedCAFunc func(context.Context, string) ([]services.CertAuthority, error)
 }
@@ -383,8 +383,6 @@ func onPlay(cf *CLIConf) {
 
 // onLogin logs in with remote proxy and gets signed certificates
 func onLogin(cf *CLIConf) {
-	fmt.Printf("--> cf: %#v.\n", cf)
-
 	var (
 		err error
 		tc  *client.TeleportClient
@@ -472,7 +470,7 @@ func onLogin(cf *CLIConf) {
 	}
 
 	// Save the key either to profile directory or export to an identity file.
-	err = key.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
+	err = tc.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
 	if err != nil {
 		utils.FatalError(err)
 	}
@@ -499,8 +497,6 @@ func onLogin(cf *CLIConf) {
 	} else {
 		onStatus(cf)
 	}
-
-	fmt.Printf("--> Done!\n")
 }
 
 // onLogout deletes a "session certificate" from ~/.tsh for a given proxy
@@ -1037,6 +1033,7 @@ func makeClient(cf *CLIConf, useProfileLogin bool) (tc *client.TeleportClient, e
 	// response from a Teleport server.
 	c.LoginFunc = cf.LoginFunc
 	c.GetTrustedCAFunc = cf.GetTrustedCAFunc
+	c.KeysDir = client.FullProfilePath(cf.ProfileDir)
 
 	return client.NewClient(c)
 }

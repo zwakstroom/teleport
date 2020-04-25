@@ -40,10 +40,13 @@ import (
 type Key struct {
 	// Priv is a PEM encoded private key
 	Priv []byte `json:"Priv,omitempty"`
+
 	// Pub is a public key
 	Pub []byte `json:"Pub,omitempty"`
+
 	// Cert is an SSH client certificate
 	Cert []byte `json:"Cert,omitempty"`
+
 	// TLSCert is a PEM encoded client TLS x509 certificate
 	TLSCert []byte `json:"TLSCert,omitempty"`
 
@@ -56,6 +59,18 @@ type Key struct {
 
 	// ClusterName is a cluster name this key is associated with
 	ClusterName string
+}
+
+func (k *Key) PrivateKeyBytes() []byte {
+	return k.Priv
+}
+
+func (k *Key) SSHCertBytes() []byte {
+	return k.Cert
+}
+
+func (k *Key) TLSCertBytes() []byte {
+	return k.TLSCert
 }
 
 // NewKey generates a new unsigned key. Such key must be signed by a
