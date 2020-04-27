@@ -171,6 +171,8 @@ type CLIConf struct {
 	LoginFunc func(context.Context) (*client.Key, error)
 
 	GetTrustedCAFunc func(context.Context, string) ([]services.CertAuthority, error)
+
+	UpdateTrustedCAFunc func(context.Context, []services.CertAuthority) error
 }
 
 func main() {
@@ -478,11 +480,38 @@ func onLogin(cf *CLIConf) {
 		utils.FatalError(err)
 	}
 
-	// Save the key either to profile directory or export to an identity file.
-	err = wtc.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
-	if err != nil {
-		utils.FatalError(err)
+	// If an identity file was requested save the identityFile to the requested
+	// path. Otherwise save the profile and update the list of trusted CAs.
+	if cf.IdentityFileOut != "" {
+		authorities, err := wtc.GetTrustedCA(cf.Context, key.ClusterName)
+		if err != nil {
+			utils.FatalError(err)
+		}
+		err = wtc.SaveIdentityFile(cf.Context, key, authorities, cf.IdentityFileOut, cf.IdentityFormat)
+		if err != nil {
+			utils.FatalError(err)
+		}
+	} else {
+		err = wtc.SaveKeyFiles(cf.Context, key)
+		if err != nil {
+			utils.FatalError(err)
+		}
+		// TODO: Use git-blame to figure out why this needs to happen.
+		authorities, err := wtc.GetTrustedCA(cf.Context, key.ClusterName)
+		if err != nil {
+			utils.FatalError(err)
+		}
+		err = wtc.UpdateTrustedCA(cf.Context, authorities)
+		if err != nil {
+			utils.FatalError(err)
+		}
 	}
+
+	//// Save the key either to profile directory or export to an identity file.
+	//err = wtc.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
+	//if err != nil {
+	//	utils.FatalError(err)
+	//}
 
 	// If the proxy is advertising that it supports Kubernetes, update kubeconfig.
 	if wtc.KubeProxyAddr != "" {
@@ -1038,10 +1067,8 @@ func makeClient(cf *CLIConf, useProfileLogin bool) (tc *client.TeleportClient, e
 	// Don't execute remote command, used when port forwarding.
 	c.NoRemoteExec = cf.NoRemoteExec
 
-	// Overwrite Login and GetTrustedCA if requested. Used by tests to simulate
-	// response from a Teleport server.
-	c.LoginFunc = cf.LoginFunc
-	c.GetTrustedCAFunc = cf.GetTrustedCAFunc
+	// Update the key directory with profile directory from flags. Used by tests
+	// to not clobber ~/.tsh.
 	c.KeysDir = client.FullProfilePath(cf.ProfileDir)
 
 	return client.NewClient(c)
@@ -1290,9 +1317,10 @@ func reissueWithRequests(cf *CLIConf, tc *client.TeleportClient, reqIDs ...strin
 }
 
 type wrappedClientConfig struct {
-	client           *client.TeleportClient
-	loginFunc        func(ctx context.Context) (*client.Key, error)
-	getTrustedCAFunc func(ctx context.Context, clusterName string) ([]services.CertAuthority, error)
+	client              *client.TeleportClient
+	loginFunc           func(ctx context.Context) (*client.Key, error)
+	getTrustedCAFunc    func(ctx context.Context, clusterName string) ([]services.CertAuthority, error)
+	updateTrustedCAFunc func(context.Context, []services.CertAuthority) error
 }
 
 type wrappedClient struct {
@@ -1319,4 +1347,11 @@ func (w *wrappedClient) GetTrustedCA(ctx context.Context, clusterName string) ([
 		return w.getTrustedCAFunc(ctx, clusterName)
 	}
 	return w.TeleportClient.GetTrustedCA(ctx, clusterName)
+}
+
+func (w *wrappedClient) UpdateTrustedCA(ctx context.Context, authorities []services.CertAuthority) error {
+	if w.updateTrustedCAFunc != nil {
+		return w.updateTrustedCAFunc(ctx, authorities)
+	}
+	return w.TeleportClient.UpdateTrustedCA(ctx, authorities)
 }

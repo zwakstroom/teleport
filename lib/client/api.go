@@ -331,11 +331,16 @@ func RetryWithRelogin(ctx context.Context, tc *TeleportClient, fn func() error) 
 		return trace.Wrap(err)
 	}
 
-	// TODO(russjones): Make sure to test this, to test it try and run "tsh ls"
-	// with expired certificates, it should prompt you to re-login and then show
-	// you the results.
-	// Save key data to profile directory,.
-	err = tc.SaveKey(ctx, key, "", identityfile.DefaultFormat)
+	//// TODO(russjones): Make sure to test this, to test it try and run "tsh ls"
+	//// with expired certificates, it should prompt you to re-login and then show
+	//// you the results.
+	//// Save key data to profile directory,.
+	//err = tc.SaveKey(ctx, key, "", identityfile.DefaultFormat)
+	//if err != nil {
+	//	return trace.Wrap(err)
+	//}
+
+	tc.SaveKeyFiles(ctx, key)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -1739,26 +1744,25 @@ func (tc *TeleportClient) Login(ctx context.Context) (*Key, error) {
 	return key, nil
 }
 
-func (tc *TeleportClient) SaveKey(ctx context.Context, key *Key, identityFile string, identityFormat identityfile.Format) error {
-	if identityFile != "" {
-		return tc.saveToIdentityFile(ctx, key, identityFile, identityFormat)
-	}
-	return tc.saveToProfile(ctx, key)
-}
+//func (tc *TeleportClient) SaveKey(ctx context.Context, key *Key, identityFile string, identityFormat identityfile.Format) error {
+//	if identityFile != "" {
+//		return tc.saveToIdentityFile(ctx, key, identityFile, identityFormat)
+//	}
+//	return tc.saveToProfile(ctx, key)
+//}
 
-// saveToIdentityFile will export a key (and cluster certificates) to a identity file.
-func (tc *TeleportClient) saveToIdentityFile(ctx context.Context, key *Key, identityFile string, identityFormat identityfile.Format) error {
+// SaveIdentityFile will export a key (and cluster certificates) to a identity file.
+func (tc *TeleportClient) SaveIdentityFile(ctx context.Context, key *Key, authorities []services.CertAuthority, identityFile string, identityFormat identityfile.Format) error {
 	// Setup the the Teleport client to be non-interactive.
-	// TODO(russjones): Why is this done?
 	err := setupNoninteractiveClient(tc, key)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	authorities, err := tc.GetTrustedCA(ctx, key.ClusterName)
-	if err != nil {
-		return trace.Wrap(err)
-	}
+	//authorities, err := tc.GetTrustedCA(ctx, key.ClusterName)
+	//if err != nil {
+	//	return trace.Wrap(err)
+	//}
 
 	filesWritten, err := identityfile.Write(identityFile, key, identityFormat, authorities)
 	if err != nil {
@@ -1769,8 +1773,8 @@ func (tc *TeleportClient) saveToIdentityFile(ctx context.Context, key *Key, iden
 	return nil
 }
 
-// saveToProfile will save a key to the client profile directory, typically ~/.tsh.
-func (tc *TeleportClient) saveToProfile(ctx context.Context, key *Key) error {
+// SaveKeyFiles will save a key to the client profile directory, typically ~/.tsh.
+func (tc *TeleportClient) SaveKeyFiles(ctx context.Context, key *Key) error {
 	// Update the SSH known_hosts cache with the clusters SSH host certificates.
 	err := tc.localAgent.AddHostSignersToCache(key.TrustedCA)
 	if err != nil {
@@ -1789,17 +1793,17 @@ func (tc *TeleportClient) saveToProfile(ctx context.Context, key *Key) error {
 		return trace.Wrap(err)
 	}
 
-	// Connect to the Auth Server of the main cluster and fetch the known hosts
-	// for this cluster.
-	if err := tc.UpdateTrustedCA(ctx, key.ClusterName); err != nil {
-		return trace.Wrap(err)
-	}
+	//// Connect to the Auth Server of the main cluster and fetch the known hosts
+	//// for this cluster.
+	//if err := tc.UpdateTrustedCA(ctx, key.ClusterName); err != nil {
+	//	return trace.Wrap(err)
+	//}
 
 	return nil
 }
 
-// setupNoninteractiveClient sets up existing client to use
-// non-interactive authentication methods
+// setupNoninteractiveClient sets up existing client to use the existing
+// certificate for authentication. This means login will be non-interactive.
 func setupNoninteractiveClient(tc *TeleportClient, key *Key) error {
 	certUsername, err := key.CertUsername()
 	if err != nil {
@@ -1867,17 +1871,17 @@ func (tc *TeleportClient) GetTrustedCA(ctx context.Context, clusterName string) 
 
 // UpdateTrustedCA connects to the Auth Server and fetches all host certificates
 // and updates ~/.tsh/keys/proxy/certs.pem and ~/.tsh/known_hosts.
-func (tc *TeleportClient) UpdateTrustedCA(ctx context.Context, clusterName string) error {
-	// Get the list of host certificates that this cluster knows about.
-	hostCerts, err := tc.GetTrustedCA(ctx, clusterName)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	trustedCerts := auth.AuthoritiesToTrustedCerts(hostCerts)
+func (tc *TeleportClient) UpdateTrustedCA(ctx context.Context, authorities []services.CertAuthority) error {
+	//// Get the list of host certificates that this cluster knows about.
+	//hostCerts, err := tc.GetTrustedCA(ctx, clusterName)
+	//if err != nil {
+	//	return trace.Wrap(err)
+	//}
+	trustedCerts := auth.AuthoritiesToTrustedCerts(authorities)
 
 	// Update the ~/.tsh/known_hosts file to include all the CA the cluster
 	// knows about.
-	err = tc.localAgent.AddHostSignersToCache(trustedCerts)
+	err := tc.localAgent.AddHostSignersToCache(trustedCerts)
 	if err != nil {
 		return trace.Wrap(err)
 	}

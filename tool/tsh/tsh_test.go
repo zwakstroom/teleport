@@ -257,12 +257,13 @@ func (s *MainTestSuite) TestOnLogin(c *check.C) {
 
 		// Perform "tsh login".
 		config := &CLIConf{
-			Proxy:            tt.inProxyAddr,
-			SiteName:         tt.inClusterName,
-			IdentityFormat:   identityfile.FormatFile,
-			LoginFunc:        loginFunc,
-			GetTrustedCAFunc: getTrustedCAFunc,
-			ProfileDir:       profileDir,
+			Proxy:               tt.inProxyAddr,
+			SiteName:            tt.inClusterName,
+			ProfileDir:          profileDir,
+			IdentityFormat:      identityfile.FormatFile,
+			LoginFunc:           loginFunc,
+			GetTrustedCAFunc:    getTrustedCAFunc,
+			UpdateTrustedCAFunc: updateTrustedCAFunc,
 		}
 		onLogin(config)
 
@@ -304,4 +305,14 @@ func getTrustedCAFunc(ctx context.Context, clusterName string) ([]services.CertA
 	// Create and return CA.
 	ca := services.NewCertAuthority(services.HostCA, clusterName, signingKeys, checkingKeys, roles)
 	return []services.CertAuthority{ca}, nil
+}
+
+// updateTrustedCA is a custom UpdateTrustedCA function used to simulate a
+// Teleport server response.
+//
+// Note, tests do not check content of certificates at the moment. When that
+// functionality is added, this function should be updated to generate keys
+// and certificates.
+func updateTrustedCAFunc(ctx context.Context, authorities []services.CertAuthority) error {
+	return nil
 }
