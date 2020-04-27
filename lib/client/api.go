@@ -1736,32 +1736,6 @@ func (tc *TeleportClient) Login(ctx context.Context) (*Key, error) {
 	key.ClusterName = response.HostSigners[0].ClusterName
 	tc.SiteName = response.HostSigners[0].ClusterName
 
-	//if activateKey {
-	//	// save the list of CAs client trusts to ~/.tsh/known_hosts
-	//	err = tc.localAgent.AddHostSignersToCache(response.HostSigners)
-	//	if err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-
-	//	// save the list of TLS CAs client trusts
-	//	err = tc.localAgent.SaveCerts(response.HostSigners)
-	//	if err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-
-	//	// save the cert to the local storage (~/.tsh usually):
-	//	_, err = tc.localAgent.AddKey(key)
-	//	if err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-
-	//	// Connect to the Auth Server of the main cluster
-	//	// and fetch the known hosts for this cluster.
-	//	if err := tc.UpdateTrustedCA(ctx, key.ClusterName); err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-	//}
-
 	return key, nil
 }
 
