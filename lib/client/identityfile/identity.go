@@ -49,9 +49,17 @@ const (
 	DefaultFormat = FormatFile
 )
 
+// keyBytesGetter is used to get bytes for a private key, SSH certificate,
+// and a TLS certificates from a *client.Key. Needed due to circular imports
+// between client and identityfile package.
 type keyBytesGetter interface {
+	// PrivateKeyBytes returns the bytes of the private key.
 	PrivateKeyBytes() []byte
+
+	// SSHCertBytes returns the bytes of the SSH certificate.
 	SSHCertBytes() []byte
+
+	// TLSCertBytes returns the bytes of the TLS certificate.
 	TLSCertBytes() []byte
 }
 

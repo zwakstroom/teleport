@@ -77,8 +77,10 @@ type CLIConf struct {
 	NodeLogin string
 	// InsecureSkipVerify bypasses verification of HTTPS certificate when talking to web proxy
 	InsecureSkipVerify bool
+
 	// IsUnderTest is set to true for unit testing
 	IsUnderTest bool
+
 	// AgentSocketAddr is address for agent listeing socket
 	AgentSocketAddr utils.NetAddrVal
 	// Remote SSH session to join
@@ -413,11 +415,18 @@ func onLogin(cf *CLIConf) {
 		}
 	}
 
-	// make the teleport client and retrieve the certificate from the proxy:
+	// Create a Teleport client then wrap with a *wrappedClient that can be used
+	// override functions on the Teleport client. Used in tests to simulate the
+	// response from an Teleport server.
 	tc, err = makeClient(cf, true)
 	if err != nil {
 		utils.FatalError(err)
 	}
+	wtc := newWrappedClient(&wrappedClientConfig{
+		client:           tc,
+		loginFunc:        cf.LoginFunc,
+		getTrustedCAFunc: cf.GetTrustedCAFunc,
+	})
 
 	// client is already logged in and profile is not expired
 	if profile != nil && !profile.IsExpired(clockwork.NewRealClock()) {
@@ -435,14 +444,14 @@ func onLogin(cf *CLIConf) {
 		// for the same proxy
 		case (cf.Proxy == "" || host(cf.Proxy) == host(profile.ProxyURL.Host)) && cf.SiteName != "":
 			// trigger reissue, preserving any active requests.
-			err = tc.ReissueUserCerts(cf.Context, client.ReissueParams{
+			err = wtc.ReissueUserCerts(cf.Context, client.ReissueParams{
 				AccessRequests: profile.ActiveRequests.AccessRequests,
 				RouteToCluster: cf.SiteName,
 			})
 			if err != nil {
 				utils.FatalError(err)
 			}
-			tc.SaveProfile("", cf.ProfileDir)
+			wtc.SaveProfile("", cf.ProfileDir)
 			if err := kubeconfig.UpdateWithClient("", tc); err != nil {
 				utils.FatalError(err)
 			}
@@ -460,36 +469,36 @@ func onLogin(cf *CLIConf) {
 	}
 
 	if cf.Username == "" {
-		cf.Username = tc.Username
+		cf.Username = wtc.Username
 	}
 
 	// Connect to the proxy, login, and fetch credentials.
-	key, err = tc.Login(cf.Context)
+	key, err = wtc.Login(cf.Context)
 	if err != nil {
 		utils.FatalError(err)
 	}
 
 	// Save the key either to profile directory or export to an identity file.
-	err = tc.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
+	err = wtc.SaveKey(cf.Context, key, cf.IdentityFileOut, cf.IdentityFormat)
 	if err != nil {
 		utils.FatalError(err)
 	}
 
 	// If the proxy is advertising that it supports Kubernetes, update kubeconfig.
-	if tc.KubeProxyAddr != "" {
+	if wtc.KubeProxyAddr != "" {
 		if err := kubeconfig.UpdateWithClient("", tc); err != nil {
 			utils.FatalError(err)
 		}
 	}
 
 	// Regular login without -i flag.
-	tc.SiteName = cf.SiteName
-	tc.SaveProfile(key.ProxyHost, cf.ProfileDir)
+	wtc.SiteName = cf.SiteName
+	wtc.SaveProfile(key.ProxyHost, cf.ProfileDir)
 
 	// Print status to show information of the logged in user. Update the
 	// command line flag (used to print status) for the proxy to make sure any
 	// advertised settings are picked up.
-	webProxyHost, _ := tc.WebProxyHostPort()
+	webProxyHost, _ := wtc.WebProxyHostPort()
 	cf.Proxy = webProxyHost
 	if cf.DesiredRoles != "" {
 		fmt.Println("") // visually separate onRequestExecute output
@@ -1278,4 +1287,36 @@ func reissueWithRequests(cf *CLIConf, tc *client.TeleportClient, reqIDs ...strin
 		return trace.Wrap(err)
 	}
 	return nil
+}
+
+type wrappedClientConfig struct {
+	client           *client.TeleportClient
+	loginFunc        func(ctx context.Context) (*client.Key, error)
+	getTrustedCAFunc func(ctx context.Context, clusterName string) ([]services.CertAuthority, error)
+}
+
+type wrappedClient struct {
+	*client.TeleportClient
+	*wrappedClientConfig
+}
+
+func newWrappedClient(config *wrappedClientConfig) *wrappedClient {
+	return &wrappedClient{
+		TeleportClient:      config.client,
+		wrappedClientConfig: config,
+	}
+}
+
+func (w *wrappedClient) Login(ctx context.Context) (*client.Key, error) {
+	if w.loginFunc != nil {
+		return w.loginFunc(ctx)
+	}
+	return w.TeleportClient.Login(ctx)
+}
+
+func (w *wrappedClient) GetTrustedCA(ctx context.Context, clusterName string) ([]services.CertAuthority, error) {
+	if w.getTrustedCAFunc != nil {
+		return w.getTrustedCAFunc(ctx, clusterName)
+	}
+	return w.TeleportClient.GetTrustedCA(ctx, clusterName)
 }

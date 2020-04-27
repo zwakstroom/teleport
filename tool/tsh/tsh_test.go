@@ -228,7 +228,7 @@ func (s *MainTestSuite) TestOptions(c *check.C) {
 	}
 }
 
-// TestOnLogin tests functionality of "tsh login".
+// TestOnLoginProfileSwitch tests that "tsh login" supports switching of profiles.
 func (s *MainTestSuite) TestOnLogin(c *check.C) {
 	var tests = []struct {
 		inProxyAddr    string

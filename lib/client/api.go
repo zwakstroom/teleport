@@ -254,16 +254,6 @@ type Config struct {
 	// NoRemoteExec will not execute a remote command after connecting to a host,
 	// will block instead. Useful when port forwarding. Equivalent of -N for OpenSSH.
 	NoRemoteExec bool
-
-	// LoginFunc supports setting a custom Login function. If this variable is
-	// not set, the default Login function is called on the Teleport client. Used
-	// in tests to simulate a Teleport server environment.
-	LoginFunc func(context.Context) (*Key, error)
-
-	// GetTrustedCAFunc supports setting a custom GetTrustedCA function. If this
-	// variable is not set, the default GetTrustedCA function is called on the
-	// Teleport client. Used in tests to simulate a Teleport server environment.
-	GetTrustedCAFunc func(context.Context, string) ([]services.CertAuthority, error)
 }
 
 // CachePolicy defines cache policy for local clients
@@ -1656,12 +1646,6 @@ func (tc *TeleportClient) LogoutAll() error {
 
 // Login logs the user into a Teleport cluster by talking to a Teleport proxy.
 func (tc *TeleportClient) Login(ctx context.Context) (*Key, error) {
-	// If a custom Login function is set, use it instead of the default. Used by
-	// tests to simulate response from a Teleport server.
-	if tc.LoginFunc != nil {
-		return tc.LoginFunc(ctx)
-	}
-
 	// Ping the endpoint to see if it's up and find the type of authentication
 	// supported.
 	pr, err := Ping(
@@ -1887,12 +1871,6 @@ func authFromIdentity(k *Key) (ssh.AuthMethod, error) {
 // GetTrustedCA returns a list of host certificate authorities for the client
 // the client is connected to.
 func (tc *TeleportClient) GetTrustedCA(ctx context.Context, clusterName string) ([]services.CertAuthority, error) {
-	// If a custom GetTrustedCA function is set, use it instead of the default.
-	// Used by tests to simulate responses from a Teleport server.
-	if tc.GetTrustedCAFunc != nil {
-		return tc.GetTrustedCAFunc(ctx, clusterName)
-	}
-
 	// Connect to the proxy.
 	if !tc.Config.ProxySpecified() {
 		return nil, trace.BadParameter("proxy server is not specified")
