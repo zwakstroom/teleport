@@ -61,18 +61,6 @@ type Key struct {
 	ClusterName string
 }
 
-func (k *Key) PrivateKeyBytes() []byte {
-	return k.Priv
-}
-
-func (k *Key) SSHCertBytes() []byte {
-	return k.Cert
-}
-
-func (k *Key) TLSCertBytes() []byte {
-	return k.TLSCert
-}
-
 // NewKey generates a new unsigned key. Such key must be signed by a
 // Teleport CA (auth server) before it becomes useful.
 func NewKey() (key *Key, err error) {
@@ -295,4 +283,19 @@ func (k *Key) CheckCert() error {
 	}
 
 	return nil
+}
+
+// PrivateKeyBytes returns the PEM-encoded private key bytes.
+func (k *Key) PrivateKeyBytes() []byte {
+	return k.Priv
+}
+
+// SSHCertBytes returns the SSH certificate bytes.
+func (k *Key) SSHCertBytes() []byte {
+	return k.Cert
+}
+
+// TLSCertBytes returns the PEM-encoded TLS x509 certificate.
+func (k *Key) TLSCertBytes() []byte {
+	return k.TLSCert
 }
