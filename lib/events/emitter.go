@@ -391,8 +391,8 @@ func (t *TeeStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error 
 	if err := t.stream.EmitAuditEvent(ctx, event); err != nil {
 		errors = append(errors, err)
 	}
-	// Forward non print events to emitter
-	if event.GetType() != SessionPrintEvent && event.GetType() != "" {
+	// Forward non print and non disk events to emitter
+	if event.GetType() != SessionDiskEvent && event.GetType() != SessionPrintEvent && event.GetType() != "" {
 		if err := t.emitter.EmitAuditEvent(ctx, event); err != nil {
 			errors = append(errors, err)
 		}

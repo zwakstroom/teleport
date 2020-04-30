@@ -2093,6 +2093,9 @@ func (s *auditStreamer) EmitAuditEvent(ctx context.Context, event events.AuditEv
 	if err != nil {
 		return trace.Wrap(err)
 	}
+	if event.GetIndex()%100 == 0 {
+		fmt.Printf("%v Sent event %v\n", time.Now().UTC(), event.GetIndex())
+	}
 	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
 		Request: &proto.AuditStreamRequest_Event{Event: oneof},
 	}))

@@ -24,7 +24,6 @@ import (
 
 	"github.com/gravitational/teleport/lib/fixtures"
 	"github.com/gravitational/teleport/lib/utils"
-
 	"github.com/gravitational/trace"
 )
 
@@ -42,11 +41,13 @@ func (a *EventsTestSuite) TestProtoEmitter(c *check.C) {
 			bufferSize: 1024*1024*5 + 64*1024,
 			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
+
 		{
 			name:       "pick largest message as buffer size to get more parts",
 			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + Int32Size),
 			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
+
 		{
 			name:       "no events",
 			bufferSize: 1024*1024*5 + 64*1024,
@@ -59,15 +60,16 @@ func (a *EventsTestSuite) TestProtoEmitter(c *check.C) {
 		{
 			name:       "one event not fitting",
 			bufferSize: int64(MustToOneOf(&sessionStart).Size() - 2),
-			err:        trace.BadParameter("event is not fitting max size"),
+			err:        trace.BadParameter("event is not fitting buffer size"),
 			events:     []AuditEvent{&sessionStart},
 		},
 	}
 
-	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
 testcases:
 	for _, tc := range testCases {
-		upload := &MemoryUpload{}
+		upload := NewMemoryUpload()
 		pool := utils.NewSliceSyncPool(tc.bufferSize)
 		emitter := NewProtoEmitter(ctx, upload, pool)
 
@@ -84,10 +86,10 @@ testcases:
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent
-		for _, part := range upload.Parts {
+		for _, part := range upload.Parts() {
 			reader := NewProtoReader(bytes.NewReader(part))
 			out, err := reader.ReadAll()
-			c.Assert(err, check.IsNil)
+			c.Assert(err, check.IsNil, check.Commentf("part crash %#v", part))
 			outEvents = append(outEvents, out...)
 		}
 		fixtures.DeepCompareSlices(c, tc.events, outEvents)

@@ -18,9 +18,11 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth/proto"
@@ -148,7 +150,11 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				g.WithError(err).Debugf("Failed to decode event.")
 				return trail.ToGRPC(err)
 			}
+			start := time.Now()
 			err = eventStream.EmitAuditEvent(stream.Context(), event)
+			if event.GetIndex()%100 == 0 {
+				fmt.Printf("%v Received event %v in %v\n", time.Now().UTC(), event.GetIndex(), time.Since(start))
+			}
 			if err != nil {
 				return trail.ToGRPC(err)
 			}
