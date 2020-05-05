@@ -656,6 +656,16 @@ func NewTeleport(cfg *Config) (*TeleportProcess, error) {
 		warnOnErr(process.closeImportedDescriptors(teleport.ComponentAuth))
 	}
 
+	if cfg.Proxy.Enabled {
+		eventMapping.In = append(eventMapping.In, ProxySSHReady)
+		if err := process.initProxy(); err != nil {
+			return nil, err
+		}
+		serviceStarted = true
+	} else {
+		warnOnErr(process.closeImportedDescriptors(teleport.ComponentProxy))
+	}
+
 	if cfg.SSH.Enabled {
 		if err := process.initSSH(); err != nil {
 			return nil, err
@@ -665,14 +675,14 @@ func NewTeleport(cfg *Config) (*TeleportProcess, error) {
 		warnOnErr(process.closeImportedDescriptors(teleport.ComponentNode))
 	}
 
-	if cfg.Proxy.Enabled {
-		eventMapping.In = append(eventMapping.In, ProxySSHReady)
-		if err := process.initProxy(); err != nil {
+	// If application support is enabled, start app service.
+	if cfg.App.Enabled {
+		if err := process.initApps(); err != nil {
 			return nil, err
 		}
 		serviceStarted = true
 	} else {
-		warnOnErr(process.closeImportedDescriptors(teleport.ComponentProxy))
+		warnOnErr(process.closeImportedDescriptors(teleport.ComponentNode))
 	}
 
 	process.RegisterFunc("common.rotate", process.periodicSyncRotationState)
@@ -1602,6 +1612,243 @@ func (process *TeleportProcess) initSSH() error {
 
 		log.Infof("Exited.")
 	})
+
+	return nil
+}
+
+// initApps initializes the app role: an agent proxying connection between
+// the proxy and target application.
+func (process *TeleportProcess) initApps() error {
+	process.RegisterCriticalFunc("apps", func() error {
+		fmt.Printf("--> Starting app proxy service.\n")
+		for _, v := range process.Config.App.Apps {
+			fmt.Printf("--> Name:       %v.\n", v.Name)
+			fmt.Printf("--> Protocol:   %v.\n", v.Protocol)
+			fmt.Printf("--> URI:        %v.\n", v.URI)
+			fmt.Printf("--> PublicAddr: %v.\n", v.PublicAddr)
+			fmt.Printf("--> Labels:     %v.\n", v.Labels)
+			fmt.Printf("--> Commands:   %v.\n", v.Commands)
+			fmt.Printf("--> --\n")
+		}
+		return nil
+	})
+
+	//process.registerWithAuthServer(teleport.RoleApp, SSHIdentityEvent)
+	//eventsC := make(chan Event)
+	//process.WaitForEvent(process.ExitContext(), SSHIdentityEvent, eventsC)
+
+	//log := logrus.WithFields(logrus.Fields{
+	//	trace.Component: teleport.Component(teleport.ComponentNode, process.id),
+	//})
+
+	//var agentPool *reversetunnel.AgentPool
+	//var conn *Connector
+	//var ebpf bpf.BPF
+	//var s *regular.Server
+
+	//process.RegisterCriticalFunc("ssh.node", func() error {
+	//	var ok bool
+	//	var event Event
+
+	//	select {
+	//	case event = <-eventsC:
+	//		log.Debugf("Received event %q.", event.Name)
+	//	case <-process.ExitContext().Done():
+	//		log.Debugf("Process is exiting.")
+	//		return nil
+	//	}
+
+	//	conn, ok = (event.Payload).(*Connector)
+	//	if !ok {
+	//		return trace.BadParameter("unsupported connector type: %T", event.Payload)
+	//	}
+
+	//	cfg := process.Config
+
+	//	limiter, err := limiter.NewLimiter(cfg.SSH.Limiter)
+	//	if err != nil {
+	//		return trace.Wrap(err)
+	//	}
+
+	//	authClient, err := process.newLocalCache(conn.Client, cache.ForNode, []string{teleport.ComponentNode})
+	//	if err != nil {
+	//		return trace.Wrap(err)
+	//	}
+
+	//	// If session recording is disabled at the cluster level and the node is
+	//	// attempting to enabled enhanced session recording, show an error.
+	//	clusterConfig, err := authClient.GetClusterConfig()
+	//	if err != nil {
+	//		return trace.Wrap(err)
+	//	}
+	//	if clusterConfig.GetSessionRecording() == services.RecordOff &&
+	//		cfg.SSH.BPF.Enabled == true {
+	//		return trace.BadParameter("session recording is disabled at the cluster " +
+	//			"level. To enable enhanced session recording, enable session recording at " +
+	//			"the cluster level, then restart Teleport.")
+	//	}
+
+	//	// If BPF is enabled in file configuration, but the operating system does
+	//	// not support enhanced session recording (like macOS), exit right away.
+	//	if cfg.SSH.BPF.Enabled && !bpf.SystemHasBPF() {
+	//		return trace.BadParameter("operating system does not support enhanced " +
+	//			"session recording, check Teleport documentation for more details on " +
+	//			"supported operating systems, kernels, and configuration")
+	//	}
+
+	//	// Start BPF programs. This is blocking and if the BPF programs fail to
+	//	// load, the node will not start. If BPF is not enabled, this will simply
+	//	// return a NOP struct that can be used to discard BPF data.
+	//	ebpf, err = bpf.New(cfg.SSH.BPF)
+	//	if err != nil {
+	//		return trace.Wrap(err)
+	//	}
+
+	//	// make sure the namespace exists
+	//	namespace := services.ProcessNamespace(cfg.SSH.Namespace)
+	//	_, err = authClient.GetNamespace(namespace)
+	//	if err != nil {
+	//		if trace.IsNotFound(err) {
+	//			return trace.NotFound(
+	//				"namespace %v is not found, ask your system administrator to create this namespace so you can register nodes there.", namespace)
+	//		}
+	//		return trace.Wrap(err)
+	//	}
+
+	//	// Provide helpful log message if listen_addr or public_addr are not being
+	//	// used (tunnel is used to connect to cluster).
+	//	//
+	//	// If a tunnel is not being used, set the default here (could not be done in
+	//	// file configuration because at that time it's not known if server is
+	//	// joining cluster directly or through a tunnel).
+	//	if conn.UseTunnel() {
+	//		if !cfg.SSH.Addr.IsEmpty() {
+	//			log.Info("Connected to cluster over tunnel connection, ignoring listen_addr setting.")
+	//		}
+	//		if len(cfg.SSH.PublicAddrs) > 0 {
+	//			log.Info("Connected to cluster over tunnel connection, ignoring public_addr setting.")
+	//		}
+	//	}
+	//	if !conn.UseTunnel() && cfg.SSH.Addr.IsEmpty() {
+	//		cfg.SSH.Addr = *defaults.SSHServerListenAddr()
+	//	}
+
+	//	s, err = regular.New(cfg.SSH.Addr,
+	//		cfg.Hostname,
+	//		[]ssh.Signer{conn.ServerIdentity.KeySigner},
+	//		authClient,
+	//		cfg.DataDir,
+	//		cfg.AdvertiseIP,
+	//		process.proxyPublicAddr(),
+	//		regular.SetLimiter(limiter),
+	//		regular.SetShell(cfg.SSH.Shell),
+	//		regular.SetAuditLog(conn.Client),
+	//		regular.SetSessionServer(conn.Client),
+	//		regular.SetLabels(cfg.SSH.Labels, cfg.SSH.CmdLabels),
+	//		regular.SetNamespace(namespace),
+	//		regular.SetPermitUserEnvironment(cfg.SSH.PermitUserEnvironment),
+	//		regular.SetCiphers(cfg.Ciphers),
+	//		regular.SetKEXAlgorithms(cfg.KEXAlgorithms),
+	//		regular.SetMACAlgorithms(cfg.MACAlgorithms),
+	//		regular.SetPAMConfig(cfg.SSH.PAM),
+	//		regular.SetRotationGetter(process.getRotation),
+	//		regular.SetUseTunnel(conn.UseTunnel()),
+	//		regular.SetFIPS(cfg.FIPS),
+	//		regular.SetBPF(ebpf),
+	//	)
+	//	if err != nil {
+	//		return trace.Wrap(err)
+	//	}
+
+	//	// init uploader service for recording SSH node, if proxy is not
+	//	// enabled on this node, because proxy stars uploader service as well
+	//	if !cfg.Proxy.Enabled {
+	//		if err := process.initUploaderService(authClient, conn.Client); err != nil {
+	//			return trace.Wrap(err)
+	//		}
+	//	}
+
+	//	if !conn.UseTunnel() {
+	//		listener, err := process.importOrCreateListener(teleport.ComponentNode, cfg.SSH.Addr.Addr)
+	//		if err != nil {
+	//			return trace.Wrap(err)
+	//		}
+	//		// clean up unused descriptors passed for proxy, but not used by it
+	//		warnOnErr(process.closeImportedDescriptors(teleport.ComponentNode))
+
+	//		log.Infof("Service %s:%s is starting on %v %v.", teleport.Version, teleport.Gitref, cfg.SSH.Addr.Addr, process.Config.CachePolicy)
+	//		utils.Consolef(cfg.Console, teleport.ComponentNode, "Service %s:%s is starting on %v.", teleport.Version, teleport.Gitref, cfg.SSH.Addr.Addr)
+
+	//		// Start the SSH server. This kicks off updating labels, starting the
+	//		// heartbeat, and accepting connections.
+	//		go s.Serve(listener)
+
+	//		// Broadcast that the node has started.
+	//		process.BroadcastEvent(Event{Name: NodeSSHReady, Payload: nil})
+	//	} else {
+	//		// Start the SSH server. This kicks off updating labels and starting the
+	//		// heartbeat.
+	//		s.Start()
+
+	//		// Create and start an agent pool.
+	//		agentPool, err = reversetunnel.NewAgentPool(reversetunnel.AgentPoolConfig{
+	//			Component:   teleport.ComponentNode,
+	//			HostUUID:    conn.ServerIdentity.ID.HostUUID,
+	//			ProxyAddr:   conn.TunnelProxy(),
+	//			Client:      conn.Client,
+	//			AccessPoint: conn.Client,
+	//			HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
+	//			Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
+	//			Server:      s,
+	//		})
+	//		if err != nil {
+	//			return trace.Wrap(err)
+	//		}
+
+	//		err = agentPool.Start()
+	//		if err != nil {
+	//			return trace.Wrap(err)
+	//		}
+	//		log.Infof("Service is starting in tunnel mode.")
+
+	//		// Broadcast that the node has started.
+	//		process.BroadcastEvent(Event{Name: NodeSSHReady, Payload: nil})
+	//	}
+
+	//	// Block and wait while the node is running.
+	//	s.Wait()
+	//	if conn.UseTunnel() {
+	//		agentPool.Wait()
+	//	}
+
+	//	log.Infof("Exited.")
+	//	return nil
+	//})
+
+	//// Execute this when process is asked to exit.
+	//process.onExit("ssh.shutdown", func(payload interface{}) {
+	//	if payload == nil {
+	//		log.Infof("Shutting down immediately.")
+	//		if s != nil {
+	//			warnOnErr(s.Close())
+	//		}
+	//	} else {
+	//		log.Infof("Shutting down gracefully.")
+	//		if s != nil {
+	//			warnOnErr(s.Shutdown(payloadContext(payload)))
+	//		}
+	//	}
+	//	if conn != nil && conn.UseTunnel() {
+	//		agentPool.Stop()
+	//	}
+
+	//	if ebpf != nil {
+	//		// Close BPF service.
+	//		warnOnErr(ebpf.Close())
+	//	}
+
+	//	log.Infof("Exited.")
+	//})
 
 	return nil
 }

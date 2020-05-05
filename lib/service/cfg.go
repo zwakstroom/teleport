@@ -77,6 +77,9 @@ type Config struct {
 	// SSH role an SSH endpoint server
 	SSH SSHConfig
 
+	// App service configuration.
+	App AppConfig
+
 	// Auth server authentication and authorization server config
 	Auth AuthConfig
 
@@ -438,6 +441,39 @@ type SSHConfig struct {
 
 	// BPF holds BPF configuration for Teleport.
 	BPF *bpf.Config
+}
+
+// AppConfig configures application proxy service.
+type AppConfig struct {
+	// Enabled enables application proxying service.
+	Enabled bool
+
+	// Apps is the list of applications that are being proxied.
+	Apps []App
+}
+
+// App is the specific application that will be proxied by the application
+// service.
+type App struct {
+	// Name of the application.
+	Name string `yaml:"name"`
+
+	// Protocol used to proxy this application. At the moment only HTTPS is
+	// supported.
+	Protocol string `yaml:"protocol"`
+
+	// URI is the internal address of the application.
+	URI utils.NetAddr `yaml:"uri"`
+
+	// Public address of the application. This is the address users will access
+	// the application at.
+	PublicAddr utils.NetAddr `yaml:"public_addr"`
+
+	// Labels is a map of static labels to apply to this application.
+	Labels map[string]string `yaml:"labels,omitempty"`
+
+	// Commands is a list of dynamic labels to apply to this application.
+	Commands services.CommandLabels `yaml:"commands,omitempty"`
 }
 
 // MakeDefaultConfig creates a new Config structure and populates it with defaults

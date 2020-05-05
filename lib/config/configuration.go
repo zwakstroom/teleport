@@ -315,23 +315,25 @@ func ApplyFileConfig(fc *FileConfig, cfg *service.Config) error {
 		}
 	}
 
-	// Apply configuration for "auth_service", "proxy_service", and
-	// "ssh_service" if it's enabled.
+	// Apply configuration for "auth_service", "proxy_service", "ssh_service",
+	// and "app_service", if they're enabled.
 	if fc.Auth.Enabled() {
-		err = applyAuthConfig(fc, cfg)
-		if err != nil {
+		if err := applyAuthConfig(fc, cfg); err != nil {
 			return trace.Wrap(err)
 		}
 	}
 	if fc.Proxy.Enabled() {
-		err = applyProxyConfig(fc, cfg)
-		if err != nil {
+		if err := applyProxyConfig(fc, cfg); err != nil {
 			return trace.Wrap(err)
 		}
 	}
 	if fc.SSH.Enabled() {
-		err = applySSHConfig(fc, cfg)
-		if err != nil {
+		if err := applySSHConfig(fc, cfg); err != nil {
+			return trace.Wrap(err)
+		}
+	}
+	if fc.Apps.Enabled() {
+		if err := applyAppsConfig(fc, cfg); err != nil {
 			return trace.Wrap(err)
 		}
 	}
@@ -570,7 +572,59 @@ func applyProxyConfig(fc *FileConfig, cfg *service.Config) error {
 	}
 
 	return nil
+}
 
+// applyAppsConfig applies file configuration for the "app_service" section.
+func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
+	// Apps are enabled.
+	cfg.App.Enabled = true
+
+	// Loop over all apps and load app configuration.
+	for _, app := range fc.Apps.Apps {
+		// Parse the internal address of the application.
+		uriAddr, err := utils.ParseHostPortAddr(app.URI, -1)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		// Parse the external address of the application.
+		publicAddr, err := utils.ParseHostPortAddr(app.PublicAddr, -1)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		// Parse the static labels of the application.
+		labels := make(map[string]string)
+		if app.Labels != nil {
+			for k, v := range app.Labels {
+				labels[k] = v
+			}
+		}
+
+		// Parse the dynamic labels of the application.
+		commands := make(services.CommandLabels)
+		if app.Commands != nil {
+			for _, v := range app.Commands {
+				commands[v.Name] = &services.CommandLabelV2{
+					Period:  services.NewDuration(v.Period),
+					Command: v.Command,
+					Result:  "",
+				}
+			}
+		}
+
+		// Add the application to the list of proxied applications.
+		cfg.App.Apps = append(cfg.App.Apps, service.App{
+			Name:       app.Name,
+			Protocol:   app.Protocol,
+			URI:        *uriAddr,
+			PublicAddr: *publicAddr,
+			Labels:     labels,
+			Commands:   commands,
+		})
+	}
+
+	return nil
 }
 
 // applySSHConfig applies file configuration for the "ssh_service" section.

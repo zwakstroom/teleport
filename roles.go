@@ -37,6 +37,8 @@ const (
 	RoleWeb Role = "Web"
 	// RoleNode is a role for SSH node in the cluster
 	RoleNode Role = "Node"
+	// RoleApp is a role for application node in the cluster.
+	RoleApp Role = "App"
 	// RoleProxy is a role for SSH proxy in the cluster
 	RoleProxy Role = "Proxy"
 	// RoleAdmin is admin role
@@ -152,14 +154,15 @@ func (r *Role) String() string {
 	}
 }
 
-// Check checks if this a a valid role value, returns nil
+// Check checks if this a valid role value, returns nil
 // if it's ok, false otherwise
 func (r *Role) Check() error {
 	switch *r {
 	case RoleAuth, RoleWeb, RoleNode,
 		RoleAdmin, RoleProvisionToken,
 		RoleTrustedCluster, LegacyClusterTokenType,
-		RoleSignup, RoleProxy, RoleNop:
+		RoleSignup, RoleProxy, RoleNop,
+		RoleApp:
 		return nil
 	}
 	return trace.BadParameter("role %v is not registered", *r)

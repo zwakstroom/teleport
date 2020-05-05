@@ -161,11 +161,15 @@ var (
 		"disk_buffer_size":        false,
 		"network_buffer_size":     false,
 		"cgroup_path":             false,
+		"app_service":             true,
+		"protocol":                false,
+		"uri":                     false,
+		"apps":                    false,
 	}
 )
 
-// FileConfig structre represents the teleport configuration stored in a config file
-// in YAML format (usually /etc/teleport.yaml)
+// FileConfig structure represents the teleport configuration stored in a
+// config file in YAML format, usually /etc/teleport.yaml.
 //
 // Use config.ReadFromFile() to read the parsed FileConfig from a YAML file.
 type FileConfig struct {
@@ -173,6 +177,9 @@ type FileConfig struct {
 	Auth   Auth  `yaml:"auth_service,omitempty"`
 	SSH    SSH   `yaml:"ssh_service,omitempty"`
 	Proxy  Proxy `yaml:"proxy_service,omitempty"`
+
+	// Apps is the "app_service" section in teleport file configuration.
+	Apps Apps `yaml:"app_service,omitempty"`
 }
 
 type YAMLMap map[interface{}]interface{}
@@ -765,6 +772,41 @@ func (b *BPF) Parse() *bpf.Config {
 		NetworkBufferSize: b.NetworkBufferSize,
 		CgroupPath:        b.CgroupPath,
 	}
+}
+
+// Apps is an application service represented by "app_service" in the
+// configuration file.
+type Apps struct {
+	// Service contains fields common to all services like "enabled" and
+	// "listen_addr".
+	Service `yaml:",inline"`
+
+	// Apps is a list of applications supported by this service.
+	Apps []App `yaml:"apps"`
+}
+
+// App is the specific application that will be proxied by the application
+// service.
+type App struct {
+	// Name of the application.
+	Name string `yaml:"name"`
+
+	// Protocol used to proxy this application. At the moment only HTTPS is
+	// supported.
+	Protocol string `yaml:"protocol"`
+
+	// URI is the internal address of the application.
+	URI string `yaml:"uri"`
+
+	// Public address of the application. This is the address users will access
+	// the application at.
+	PublicAddr string `yaml:"public_addr"`
+
+	// Labels is a map of static labels to apply to this application.
+	Labels map[string]string `yaml:"labels,omitempty"`
+
+	// Commands is a list of dynamic labels to apply to this application.
+	Commands []CommandLabel `yaml:"commands,omitempty"`
 }
 
 // Proxy is a `proxy_service` section of the config file:
