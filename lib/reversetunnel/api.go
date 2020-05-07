@@ -24,6 +24,7 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 
 	"github.com/gravitational/teleport/lib/auth"
+	"github.com/gravitational/teleport/lib/services"
 )
 
 // DialParams is a list of parameters used to Dial to a node within a cluster.
@@ -52,6 +53,8 @@ type DialParams struct {
 	// ServerID the hostUUID.clusterName of a Teleport node. Used with nodes
 	// that are connected over a reverse tunnel.
 	ServerID string
+
+	ConnType services.TunnelType
 }
 
 // RemoteSite represents remote teleport site that can be accessed via

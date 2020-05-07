@@ -112,6 +112,8 @@ const (
 	// ComponentNode is SSH node (SSH server serving requests)
 	ComponentNode = "node"
 
+	ComponentApps = "apps"
+
 	// ComponentForwardingNode is SSH node (SSH server serving requests)
 	ComponentForwardingNode = "node:forward"
 

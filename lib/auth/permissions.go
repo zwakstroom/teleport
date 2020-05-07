@@ -274,6 +274,29 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 					},
 				},
 			})
+	case teleport.RoleApp:
+		return services.FromSpec(
+			role.String(),
+			services.RoleSpecV3{
+				Allow: services.RoleConditions{
+					Namespaces: []string{services.Wildcard},
+					Rules: []services.Rule{
+						// TODO: Can these be reduced?
+						services.NewRule(services.KindNode, services.RW()),
+						services.NewRule(services.KindSSHSession, services.RW()),
+						services.NewRule(services.KindEvent, services.RW()),
+						services.NewRule(services.KindProxy, services.RO()),
+						services.NewRule(services.KindCertAuthority, services.ReadNoSecrets()),
+						services.NewRule(services.KindUser, services.RO()),
+						services.NewRule(services.KindNamespace, services.RO()),
+						services.NewRule(services.KindRole, services.RO()),
+						services.NewRule(services.KindAuthServer, services.RO()),
+						services.NewRule(services.KindReverseTunnel, services.RW()),
+						services.NewRule(services.KindTunnelConnection, services.RO()),
+						services.NewRule(services.KindClusterConfig, services.RO()),
+					},
+				},
+			})
 	case teleport.RoleProxy:
 		// if in recording mode, return a different set of permissions than regular
 		// mode. recording proxy needs to be able to generate host certificates.
@@ -434,7 +457,7 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 			})
 	}
 
-	return nil, trace.NotFound("%v is not reconginzed", role.String())
+	return nil, trace.NotFound("%v is not recognized", role.String())
 }
 
 func contextForBuiltinRole(clusterName string, clusterConfig services.ClusterConfig, r teleport.Role, username string) (*AuthContext, error) {

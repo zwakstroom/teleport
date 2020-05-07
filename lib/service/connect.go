@@ -17,6 +17,7 @@ limitations under the License.
 package service
 
 import (
+	"fmt"
 	"net"
 	"path/filepath"
 	"strconv"
@@ -132,6 +133,8 @@ func (process *TeleportProcess) connect(role teleport.Role) (conn *Connector, er
 			Client:         client,
 			ClientIdentity: identity,
 			ServerIdentity: identity,
+			// TODO: Hack!
+			isApp: true,
 		}, nil
 	case services.RotationStateInProgress:
 		switch rotation.Phase {
@@ -375,11 +378,15 @@ func (process *TeleportProcess) firstTimeConnect(role teleport.Role) (*Connector
 	log.Infof("%v has obtained credentials to connect to cluster.", role)
 	var connector *Connector
 	if role == teleport.RoleAdmin || role == teleport.RoleAuth {
+		fmt.Printf("--> here -1!.\n")
 		connector = &Connector{
 			ClientIdentity: identity,
 			ServerIdentity: identity,
+			// TODO: Hack!
+			isApp: true,
 		}
 	} else {
+		fmt.Printf("--> here -2!.\n")
 		client, err := process.newClient(process.Config.AuthServers, identity)
 		if err != nil {
 			return nil, trace.Wrap(err)
@@ -388,6 +395,10 @@ func (process *TeleportProcess) firstTimeConnect(role teleport.Role) (*Connector
 			ClientIdentity: identity,
 			ServerIdentity: identity,
 			Client:         client,
+		}
+		// TODO: Hack! Is there a better way to set this?
+		if role == teleport.RoleApp {
+			connector.isApp = true
 		}
 	}
 
