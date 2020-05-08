@@ -31,6 +31,10 @@ type Announcer interface {
 	// for the specified duration with second resolution if it's >= 1 second
 	UpsertNode(s services.Server) (*services.KeepAlive, error)
 
+	// UpsertApp registers an apps presence, permanently if ttl is 0 or
+	// for the specified duration with second resolution if it's >= 1 second.
+	UpsertApp(s services.App) (*services.KeepAlive, error)
+
 	// UpsertProxy registers proxy presence, permanently if ttl is 0 or
 	// for the specified duration with second resolution if it's >= 1 second
 	UpsertProxy(s services.Server) error

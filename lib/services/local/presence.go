@@ -657,6 +657,46 @@ func (s *PresenceService) DeleteAllRemoteClusters() error {
 	return trace.Wrap(err)
 }
 
+// UpsertApp registers a apps presence, permanently if TTL is 0 or for the
+// specified duration with second resolution if it's >= 1 second.
+func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	if app.GetNamespace() == "" {
+		return nil, trace.BadParameter("missing node namespace")
+	}
+	value, err := services.GetAppMarshaler().MarshalApp(app)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	lease, err := s.Put(ctx, backend.Item{
+		Key:     backend.Key(appsPrefix, app.GetNamespace(), app.GetName()),
+		Value:   value,
+		Expires: app.Expiry(),
+		ID:      app.GetResourceID(),
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if app.Expiry().IsZero() {
+		return &services.KeepAlive{}, nil
+	}
+	return &services.KeepAlive{
+		LeaseID: lease.ID,
+		AppName: app.GetName(),
+	}, nil
+}
+
+// KeepAliveApp updates the expiry services.App.
+func (s *PresenceService) KeepAliveApp(ctx context.Context, h services.KeepAlive) error {
+	if err := h.CheckAndSetDefaults(); err != nil {
+		return trace.Wrap(err)
+	}
+	err := s.KeepAlive(ctx, backend.Lease{
+		ID:  h.LeaseID,
+		Key: backend.Key(appsPrefix, h.Namespace, h.AppName),
+	}, h.Expires)
+	return trace.Wrap(err)
+}
+
 const (
 	localClusterPrefix      = "localCluster"
 	reverseTunnelsPrefix    = "reverseTunnels"
@@ -664,6 +704,7 @@ const (
 	trustedClustersPrefix   = "trustedclusters"
 	remoteClustersPrefix    = "remoteClusters"
 	nodesPrefix             = "nodes"
+	appsPrefix              = "apps"
 	namespacesPrefix        = "namespaces"
 	authServersPrefix       = "authservers"
 	proxiesPrefix           = "proxies"
