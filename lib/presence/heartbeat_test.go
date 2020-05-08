@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Gravitational, Inc.
+Copyright 2020 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package srv
+package presence
 
 import (
 	"context"
@@ -44,6 +44,7 @@ func (s *HeartbeatSuite) SetUpSuite(c *check.C) {
 	utils.InitLoggerForTests(testing.Verbose())
 }
 
+// TODO: Add test for heartbeat announce app.
 // TestHeartbeatAnnounce tests announce cycles used for proxies and auth servers
 func (s *HeartbeatSuite) TestHeartbeatAnnounce(c *check.C) {
 	s.heartbeatAnnounce(c, HeartbeatModeProxy, services.KindProxy)
@@ -267,6 +268,14 @@ type fakeAnnouncer struct {
 
 func (f *fakeAnnouncer) UpsertNode(s services.Server) (*services.KeepAlive, error) {
 	f.upsertCalls[HeartbeatModeNode] += 1
+	if f.err != nil {
+		return nil, f.err
+	}
+	return &services.KeepAlive{}, nil
+}
+
+func (f *fakeAnnouncer) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	f.upsertCalls[HeartbeatModeApp] += 1
 	if f.err != nil {
 		return nil, f.err
 	}

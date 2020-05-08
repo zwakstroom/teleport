@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Gravitational, Inc.
+Copyright 2020 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package srv
+// TODO: Godoc.
+package presence
 
 import (
 	"context"
@@ -27,7 +28,7 @@ import (
 
 	"github.com/gravitational/trace"
 	"github.com/jonboulle/clockwork"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // KeepAliveState represents state of the heartbeat
@@ -127,7 +128,7 @@ func NewHeartbeat(cfg HeartbeatConfig) (*Heartbeat, error) {
 		cancelCtx:       ctx,
 		cancel:          cancel,
 		HeartbeatConfig: cfg,
-		Entry: log.WithFields(log.Fields{
+		Entry: logrus.WithFields(logrus.Fields{
 			trace.Component: teleport.Component(cfg.Component, "beat"),
 		}),
 		checkTicker: time.NewTicker(cfg.CheckPeriod),
@@ -204,19 +205,19 @@ func (cfg *HeartbeatConfig) CheckAndSetDefaults() error {
 	}
 
 	switch cfg.Mode {
-	case HeartbeatModeNode:
+	case HeartbeatModeNode, HeartbeatModeProxy, HeartbeatModeAuth:
 		if cfg.GetServerInfo == nil {
 			return trace.BadParameter("missing parmeter GetServerInfo")
 		}
-		cfg.GetApp = func() services.App {
-			return nil
-		}
+		cfg.GetApp = GetAppFunc(func() (services.App, error) {
+			return nil, nil
+		})
 	case HeartbeatModeApp:
 		if cfg.GetApp == nil {
 			return trace.BadParameter("missing parmeter GetApp")
 		}
-		cfg.GetServerInfo = func() services.Server {
-			return nil
+		cfg.GetServerInfo = func() (services.Server, error) {
+			return nil, nil
 		}
 	default:
 		return trace.BadParameter("invalid mode: %v", cfg.Mode)
@@ -236,7 +237,7 @@ type Heartbeat struct {
 	HeartbeatConfig
 	cancelCtx context.Context
 	cancel    context.CancelFunc
-	*log.Entry
+	*logrus.Entry
 	state KeepAliveState
 
 	currentServer services.Server
@@ -318,34 +319,31 @@ func (h *Heartbeat) reset(state KeepAliveState) {
 	}
 }
 
-func (h *Heartbeat) updateCurrent(server services.Server, app services.App) error {
+func (h *Heartbeat) updateCurrent(server services.Server, app services.App) {
 	switch h.Mode {
-	case HeartbeatModeNode:
+	case HeartbeatModeNode, HeartbeatModeProxy, HeartbeatModeAuth:
 		h.currentServer = server
 	case HeartbeatModeApp:
 		h.currentApp = app
-	default:
-		return trace.BadParameter("heartbeat operating in unknown mode: %v", h.Mode)
 	}
-	return nil
 }
 
-func (h *Heartbeat) compare(server services.Server, app services.App) (int, error) {
-	var result int
+func (h *Heartbeat) compare(server services.Server, app services.App) int {
 	switch h.Mode {
-	case HeartbeatModeNode:
-		result = services.CompareServers(h.currentServer, server)
+	case HeartbeatModeNode, HeartbeatModeProxy, HeartbeatModeAuth:
+		return services.CompareServers(h.currentServer, server)
 	case HeartbeatModeApp:
-		result = services.CompareApps(h.currentApp, app)
-	default:
-		return 0, trace.BadParameter("heartbeat operating in unknown mode: %v", h.Mode)
+		return services.CompareApps(h.currentApp, app)
 	}
-	return result, nil
+	// TODO: This is clearly wrong?
+	panic("this is clearly wrong")
 }
 
 // fetch, if succeeded updates or sets current server
 // to the last received server
 func (h *Heartbeat) fetch() error {
+	// TODO: Safe this internally somehow...
+	//
 	// Failed to fetch either services.Service or services.App? Reset to
 	// HeartbeatStateInit regardless of the current state.
 	server, err := h.GetServerInfo()
@@ -371,6 +369,7 @@ func (h *Heartbeat) fetch() error {
 	case HeartbeatStateAnnounce:
 		return nil
 
+	// TODO: What does this state do?
 	case HeartbeatStateAnnounceWait:
 		// Time to announce.
 		if h.Clock.Now().UTC().After(h.nextAnnounce) {
@@ -380,8 +379,7 @@ func (h *Heartbeat) fetch() error {
 		}
 
 		// If either the server or app are actually different, update.
-		result, _ := h.compare(server, app)
-		if result == services.Different {
+		if h.compare(server, app) == services.Different {
 			h.updateCurrent(server, app)
 			h.reset(HeartbeatStateAnnounce)
 		}
@@ -400,8 +398,7 @@ func (h *Heartbeat) fetch() error {
 		}
 
 		// If either the server or app are actually different, update.
-		result, _ := h.compare(server, app)
-		if result == services.Different {
+		if h.compare(server, app) == services.Different {
 			h.updateCurrent(server, app)
 			h.reset(HeartbeatStateAnnounce)
 		}
@@ -421,7 +418,7 @@ func (h *Heartbeat) announce() error {
 		// so keep state at announce forever for proxies
 		switch h.Mode {
 		case HeartbeatModeProxy:
-			err := h.Announcer.UpsertProxy(h.current)
+			err := h.Announcer.UpsertProxy(h.currentServer)
 			if err != nil {
 				// try next announce using keep alive period,
 				// that happens more frequently
@@ -434,7 +431,7 @@ func (h *Heartbeat) announce() error {
 			h.setState(HeartbeatStateAnnounceWait)
 			return nil
 		case HeartbeatModeAuth:
-			err := h.Announcer.UpsertAuthServer(h.current)
+			err := h.Announcer.UpsertAuthServer(h.currentServer)
 			if err != nil {
 				h.nextAnnounce = h.Clock.Now().UTC().Add(h.KeepAlivePeriod)
 				h.setState(HeartbeatStateAnnounceWait)
@@ -445,7 +442,7 @@ func (h *Heartbeat) announce() error {
 			h.setState(HeartbeatStateAnnounceWait)
 			return nil
 		case HeartbeatModeNode:
-			keepAlive, err := h.Announcer.UpsertNode(h.current)
+			keepAlive, err := h.Announcer.UpsertNode(h.currentServer)
 			if err != nil {
 				return trace.Wrap(err)
 			}
@@ -462,7 +459,7 @@ func (h *Heartbeat) announce() error {
 			h.setState(HeartbeatStateKeepAliveWait)
 			return nil
 		case HeartbeatModeApp:
-			keepAlive, err := h.Announcer.UpsertApp(h.current)
+			keepAlive, err := h.Announcer.UpsertApp(context.TODO(), h.currentApp)
 			if err != nil {
 				return trace.Wrap(err)
 			}

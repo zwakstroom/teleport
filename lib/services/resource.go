@@ -107,6 +107,9 @@ const (
 	// KindNode is node resource
 	KindNode = "node"
 
+	// KindApp is a application resource.
+	KindApp = "app"
+
 	// KindToken is a provisioning token resource
 	KindToken = "token"
 

@@ -657,8 +657,39 @@ func (s *PresenceService) DeleteAllRemoteClusters() error {
 	return trace.Wrap(err)
 }
 
-// UpsertApp registers a apps presence, permanently if TTL is 0 or for the
-// specified duration with second resolution if it's >= 1 second.
+// GetApps returns the list of registered applications.
+func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+	if namespace == "" {
+		return nil, trace.BadParameter("missing namespace value")
+	}
+
+	// Get all items in the bucket.
+	startKey := backend.Key(appsPrefix, namespace)
+	result, err := s.GetRange(ctx, startKey, backend.RangeEnd(startKey), backend.NoLimit)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Marshal values into a []services.App slice.
+	apps := make([]services.App, len(result.Items))
+	for i, item := range result.Items {
+		app, err := services.GetAppMarshaler().UnmarshalApp(
+			item.Value,
+			services.KindApp,
+			services.AddOptions(opts,
+				services.WithResourceID(item.ID),
+				services.WithExpires(item.Expires))...)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		apps[i] = app
+	}
+
+	return apps, nil
+}
+
+// UpsertApp registers an application with a TTL. A services.KeepAlive is
+// returned that can be used to extend the TTL.
 func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
 	if app.GetNamespace() == "" {
 		return nil, trace.BadParameter("missing node namespace")
@@ -683,6 +714,13 @@ func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*ser
 		LeaseID: lease.ID,
 		AppName: app.GetName(),
 	}, nil
+}
+
+// DeleteApp will remove an application. Note that if application heartbeat
+// is not stopped, it will reappear.
+func (s *PresenceService) DeleteApp(ctx context.Context, namespace string, name string) error {
+	key := backend.Key(appsPrefix, namespace, name)
+	return s.Delete(ctx, key)
 }
 
 // KeepAliveApp updates the expiry services.App.

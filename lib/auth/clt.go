@@ -701,8 +701,8 @@ func (c *Client) RegisterNewAuthServer(token string) error {
 	return trace.Wrap(err)
 }
 
-// UpsertNode is used by SSH servers to reprt their presence
-// to the auth servers in form of hearbeat expiring after ttl period.
+// UpsertNode is used by SSH servers to report their presence to the auth
+// servers in form of heartbeat expiring after ttl period.
 func (c *Client) UpsertNode(s services.Server) (*services.KeepAlive, error) {
 	if s.GetNamespace() == "" {
 		return nil, trace.BadParameter("missing node namespace")
@@ -716,6 +716,30 @@ func (c *Client) UpsertNode(s services.Server) (*services.KeepAlive, error) {
 		return nil, trace.Wrap(err)
 	}
 	keepAlive, err := clt.UpsertNode(context.TODO(), protoServer)
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+	return keepAlive, nil
+}
+
+// UpsertApp is used by applications to report their presence to the backend.
+func (c *Client) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if app.GetNamespace() == "" {
+		return nil, trace.BadParameter("missing app namespace")
+	}
+	protoApp, ok := app.(*services.AppV3)
+	if !ok {
+		return nil, trace.BadParameter("invalid type for app: %T", app)
+	}
+
+	keepAlive, err := clt.UpsertApp(ctx, &proto.UpsertAppRequest{
+		App: protoApp,
+	})
 	if err != nil {
 		return nil, trail.FromGRPC(err)
 	}

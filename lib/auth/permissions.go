@@ -283,6 +283,7 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 					Rules: []services.Rule{
 						// TODO: Can these be reduced?
 						services.NewRule(services.KindNode, services.RW()),
+						services.NewRule(services.KindApp, services.RW()),
 						services.NewRule(services.KindSSHSession, services.RW()),
 						services.NewRule(services.KindEvent, services.RW()),
 						services.NewRule(services.KindProxy, services.RO()),

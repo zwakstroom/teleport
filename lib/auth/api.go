@@ -33,7 +33,7 @@ type Announcer interface {
 
 	// UpsertApp registers an apps presence, permanently if ttl is 0 or
 	// for the specified duration with second resolution if it's >= 1 second.
-	UpsertApp(s services.App) (*services.KeepAlive, error)
+	UpsertApp(context.Context, services.App) (*services.KeepAlive, error)
 
 	// UpsertProxy registers proxy presence, permanently if ttl is 0 or
 	// for the specified duration with second resolution if it's >= 1 second
@@ -173,6 +173,11 @@ func (w *Wrapper) Close() error {
 // UpsertNode is part of auth.AccessPoint implementation
 func (w *Wrapper) UpsertNode(s services.Server) (*services.KeepAlive, error) {
 	return w.Write.UpsertNode(s)
+}
+
+// UpsertApp is part of the auth.AccessPoint implementation.
+func (w *Wrapper) UpsertApp(ctx context.Context, a services.App) (*services.KeepAlive, error) {
+	return w.Write.UpsertApp(ctx, a)
 }
 
 // UpsertAuthServer is part of auth.AccessPoint implementation

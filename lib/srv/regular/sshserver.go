@@ -43,6 +43,7 @@ import (
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/limiter"
 	"github.com/gravitational/teleport/lib/pam"
+	"github.com/gravitational/teleport/lib/presence"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
 	rsession "github.com/gravitational/teleport/lib/session"
@@ -139,7 +140,7 @@ type Server struct {
 
 	// heartbeat sends updates about this server
 	// back to auth server
-	heartbeat *srv.Heartbeat
+	heartbeat *presence.Heartbeat
 
 	// useTunnel is used to inform other components that this server is
 	// requesting connections to it come over a reverse tunnel.
@@ -228,7 +229,7 @@ func (s *Server) Close() error {
 	s.reg.Close()
 	if s.heartbeat != nil {
 		if err := s.heartbeat.Close(); err != nil {
-			s.Warningf("Failed to close heartbeat: %v", err)
+			s.Warningf("Failed to close heartbeat: %v.", err)
 		}
 		s.heartbeat = nil
 	}
@@ -535,13 +536,13 @@ func New(addr utils.NetAddr,
 	}
 	s.srv = server
 
-	var heartbeatMode srv.HeartbeatMode
+	var heartbeatMode presence.HeartbeatMode
 	if s.proxyMode {
-		heartbeatMode = srv.HeartbeatModeProxy
+		heartbeatMode = presence.HeartbeatModeProxy
 	} else {
-		heartbeatMode = srv.HeartbeatModeNode
+		heartbeatMode = presence.HeartbeatModeNode
 	}
-	heartbeat, err := srv.NewHeartbeat(srv.HeartbeatConfig{
+	heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
 		Mode:            heartbeatMode,
 		Context:         ctx,
 		Component:       component,

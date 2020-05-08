@@ -19,12 +19,18 @@ limitations under the License.
 package apps
 
 import (
+	"context"
+
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/presence"
 	"github.com/gravitational/teleport/lib/services"
-	"github.com/gravitational/teleport/lib/srv"
 	"github.com/gravitational/teleport/lib/utils"
+
 	"github.com/gravitational/trace"
+
+	"github.com/jonboulle/clockwork"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,44 +38,65 @@ var log = logrus.WithFields(logrus.Fields{
 	trace.Component: teleport.ComponentApps,
 })
 
+type Config struct {
+	Clock clockwork.Clock
+
+	AccessPoint auth.AccessPoint
+	Storage     *auth.ProcessStorage
+}
+
+func (c *Config) CheckAndSetDefaults() error {
+	if c.Clock == nil {
+		c.Clock = clockwork.NewRealClock()
+	}
+
+	return nil
+}
+
 type Service struct {
+	*Config
+
+	heartbeat *presence.Heartbeat
 }
 
-func New() (*Service, error) {
-	return &Service{}, nil
-}
+func New(config *Config) (*Service, error) {
+	err := config.CheckAndSetDefaults()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 
-func (s *Service) Start() {
-	heartbeat, err := srv.NewHeartbeat(srv.HeartbeatConfig{
-		Mode:      srv.HeartbeatModeAuth,
-		Context:   process.ExitContext(),
-		Component: teleport.ComponentAuth,
-		Announcer: authServer,
-		GetServerInfo: func() (services.Server, error) {
-			srv := services.ServerV2{
-				Kind:    services.KindAuthServer,
-				Version: services.V2,
+	heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
+		Mode: presence.HeartbeatModeApp,
+		//Context:   process.ExitContext(),
+		Context:   context.TODO(),
+		Component: teleport.ComponentApps,
+		Announcer: config.AccessPoint,
+		GetApp: func() (services.App, error) {
+			app := services.AppV3{
+				Kind:    services.KindApp,
+				Version: services.V3,
 				Metadata: services.Metadata{
 					Namespace: defaults.Namespace,
-					Name:      process.Config.HostUUID,
+					Name:      "jenkins",
 				},
-				Spec: services.ServerSpecV2{
-					Addr:     authAddr,
-					Hostname: process.Config.Hostname,
-					Version:  teleport.Version,
+				Spec: services.AppSpecV3{
+					Protocol:   "https",
+					URI:        "localhost:8080",
+					PublicAddr: "jenkins.example.com",
+					Version:    teleport.Version,
 				},
 			}
-			state, err := process.storage.GetState(teleport.RoleAdmin)
+			state, err := config.Storage.GetState(teleport.RoleAdmin)
 			if err != nil {
 				if !trace.IsNotFound(err) {
 					log.Warningf("Failed to get rotation state: %v.", err)
 					return nil, trace.Wrap(err)
 				}
 			} else {
-				srv.Spec.Rotation = state.Spec.Rotation
+				app.Spec.Rotation = state.Spec.Rotation
 			}
-			srv.SetTTL(process, defaults.ServerAnnounceTTL)
-			return &srv, nil
+			app.SetTTL(config.Clock, defaults.ServerAnnounceTTL)
+			return &app, nil
 		},
 		KeepAlivePeriod: defaults.ServerKeepAliveTTL,
 		AnnouncePeriod:  defaults.ServerAnnounceTTL/2 + utils.RandomDuration(defaults.ServerAnnounceTTL/10),
@@ -77,6 +104,39 @@ func (s *Service) Start() {
 		ServerTTL:       defaults.ServerAnnounceTTL,
 	})
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
+
+	return &Service{
+		Config:    config,
+		heartbeat: heartbeat,
+	}, nil
+}
+
+func (s *Service) Start() error {
+	go s.heartbeat.Run()
+
+	return nil
+}
+
+func (s *Service) Close() error {
+	if s.heartbeat != nil {
+		if err := s.heartbeat.Close(); err != nil {
+			log.Warnf("Failed to close heartbeat: %v.", err)
+		}
+		s.heartbeat = nil
+	}
+
+	return nil
+}
+
+func (s *Service) Shutdown() error {
+	if s.heartbeat != nil {
+		if err := s.heartbeat.Close(); err != nil {
+			log.Warnf("Failed to close heartbeat: %v.", err)
+		}
+		s.heartbeat = nil
+	}
+
+	return nil
 }

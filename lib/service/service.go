@@ -38,6 +38,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/lib/apps"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/auth/native"
 	"github.com/gravitational/teleport/lib/backend"
@@ -60,10 +61,10 @@ import (
 	"github.com/gravitational/teleport/lib/limiter"
 	"github.com/gravitational/teleport/lib/modules"
 	"github.com/gravitational/teleport/lib/multiplexer"
+	"github.com/gravitational/teleport/lib/presence"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/session"
-	"github.com/gravitational/teleport/lib/srv"
 	"github.com/gravitational/teleport/lib/srv/regular"
 	"github.com/gravitational/teleport/lib/system"
 	"github.com/gravitational/teleport/lib/utils"
@@ -1165,8 +1166,8 @@ func (process *TeleportProcess) initAuthService() error {
 		log.Warnf("Configuration setting auth_service/advertise_ip is not set. guessing %v.", authAddr)
 	}
 
-	heartbeat, err := srv.NewHeartbeat(srv.HeartbeatConfig{
-		Mode:      srv.HeartbeatModeAuth,
+	heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
+		Mode:      presence.HeartbeatModeAuth,
 		Context:   process.ExitContext(),
 		Component: teleport.ComponentAuth,
 		Announcer: authServer,
@@ -1686,10 +1687,10 @@ func (process *TeleportProcess) initApps() error {
 		//	return trace.Wrap(err)
 		//}
 
-		//authClient, err := process.newLocalCache(conn.Client, cache.ForNode, []string{teleport.ComponentApps})
-		//if err != nil {
-		//	return trace.Wrap(err)
-		//}
+		authClient, err := process.newLocalCache(conn.Client, cache.ForNode, []string{teleport.ComponentApps})
+		if err != nil {
+			return trace.Wrap(err)
+		}
 
 		//// If session recording is disabled at the cluster level and the node is
 		//// attempting to enabled enhanced session recording, show an error.
@@ -1805,6 +1806,15 @@ func (process *TeleportProcess) initApps() error {
 		// Start the SSH server. This kicks off updating labels and starting the
 		// heartbeat.
 		//	s.Start()
+
+		app, err := apps.New(&apps.Config{
+			AccessPoint: authClient,
+			Storage:     process.storage,
+		})
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		app.Start()
 
 		fmt.Printf("--> conn.TunnelProxy(): %v.\n", conn.TunnelProxy())
 
