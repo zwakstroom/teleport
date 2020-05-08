@@ -2054,14 +2054,19 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	stream, err := clt.CreateAuditStream(ctx)
+	closeCtx, cancel := context.WithCancel(ctx)
+	stream, err := clt.CreateAuditStream(closeCtx)
 	if err != nil {
 		return nil, trail.FromGRPC(err)
 	}
 	s := &auditStreamer{
-		stream: stream,
+		stream:   stream,
+		eventsCh: make(chan *events.OneOf),
+		closeCtx: closeCtx,
+		cancel:   cancel,
 	}
 	go s.recv()
+	go s.send()
 	err = s.stream.Send(&proto.AuditStreamRequest{
 		Request: &proto.AuditStreamRequest_CreateStream{
 			CreateStream: &proto.CreateStream{SessionID: string(sid)}},
@@ -2073,9 +2078,12 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 }
 
 type auditStreamer struct {
+	eventsCh chan *events.OneOf
 	sync.RWMutex
-	stream proto.AuthService_CreateAuditStreamClient
-	err    error
+	stream   proto.AuthService_CreateAuditStreamClient
+	err      error
+	closeCtx context.Context
+	cancel   context.CancelFunc
 }
 
 // Complete completes stream
@@ -2093,12 +2101,25 @@ func (s *auditStreamer) EmitAuditEvent(ctx context.Context, event events.AuditEv
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	if event.GetIndex()%100 == 0 {
-		fmt.Printf("%v Sent event %v\n", time.Now().UTC(), event.GetIndex())
+	// Without serialization, EmitAuditEvent will call grpc's method directly.
+	// When BPF callback is emitting events concurrently with session data to the grpc stream,
+	// it becomes deadlocked (not just blocked temporarily, but permanently)
+	// in flowcontrol.go, trying to get quota:
+	// https://github.com/grpc/grpc-go/blob/a906ca0441ceb1f7cd4f5c7de30b8e81ce2ff5e8/internal/transport/flowcontrol.go#L60
+	select {
+	case s.eventsCh <- oneof:
+		return nil
+	case <-s.closeCtx.Done():
+		return s.Error()
+	case <-ctx.Done():
+		return trace.ConnectionProblem(ctx.Err(), "context cancelled")
 	}
-	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
-		Request: &proto.AuditStreamRequest_Event{Event: oneof},
-	}))
+}
+
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (s *auditStreamer) Done() <-chan struct{} {
+	return s.closeCtx.Done()
 }
 
 // Error returns last error of the stream
@@ -2106,6 +2127,25 @@ func (s *auditStreamer) Error() error {
 	s.RLock()
 	defer s.RUnlock()
 	return s.err
+}
+
+// EmitAuditEvent emits audit event
+func (s *auditStreamer) send() {
+	for {
+		select {
+		case <-s.closeCtx.Done():
+			return
+		case oneof := <-s.eventsCh:
+			err := trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
+				Request: &proto.AuditStreamRequest_Event{Event: oneof},
+			}))
+			if err != nil {
+				log.WithError(err).Errorf("Failed to send event.")
+				s.closeWithError(err)
+				return
+			}
+		}
+	}
 }
 
 // recv is necessary to receive errors from the
@@ -2116,6 +2156,7 @@ func (s *auditStreamer) recv() {
 }
 
 func (s *auditStreamer) closeWithError(err error) {
+	s.cancel()
 	s.Close()
 	s.Lock()
 	defer s.Unlock()

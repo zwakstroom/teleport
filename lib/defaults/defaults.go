@@ -282,6 +282,10 @@ var (
 	// to retry quickly, e.g. once in one second
 	NetworkRetryDuration = time.Second
 
+	// ConcurrentUploadsPerStream limits the amount of concurrent uploads
+	// per stream
+	ConcurrentUploadsPerStream = 3
+
 	// FastAttempts is the initial amount of fast retry attempts
 	// before switching to slow mode
 	FastAttempts = 10

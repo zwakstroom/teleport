@@ -18,7 +18,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -100,11 +99,16 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 		return trail.ToGRPC(err)
 	}
 	var eventStream events.Stream
-	g.Debugf("Got heartbeat connection from %v.", auth.User.GetName())
+	g.Debugf("CreateAuditStream connection from %v.", auth.User.GetName())
+	counter := 0
 	for {
 		request, err := stream.Recv()
 		if err == io.EOF {
 			return nil
+		}
+		counter++
+		if counter%1000 == 0 {
+			g.Debugf("Recievied %v events.", counter)
 		}
 		if err != nil {
 			g.WithError(err).Debugf("Failed to receive stream request.")
@@ -119,7 +123,9 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				return trace.Wrap(err)
 			}
 			g.Debugf("Created stream: %v.", err)
-			defer eventStream.Close()
+			// do not use stream context to give the auth server finish the upload
+			// even if the stream's context is cancelled
+			defer eventStream.Complete(auth.Context())
 		} else if resume := request.GetResumeStream(); resume != nil {
 			if eventStream != nil {
 				return trail.ToGRPC(trace.BadParameter("stream is already created or resumed"))
@@ -129,12 +135,16 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				return trace.Wrap(err)
 			}
 			g.Debugf("Resumed stream: %v.", err)
-			defer eventStream.Close()
+			// do not use stream context to give the auth server finish the upload
+			// even if the stream's context is cancelled
+			defer eventStream.Complete(auth.Context())
 		} else if complete := request.GetCompleteStream(); complete != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not complete"))
 			}
-			err := eventStream.Complete(stream.Context())
+			// do not use stream context to give the auth server finish the upload
+			// even if the stream's context is cancelled
+			err := eventStream.Complete(auth.Context())
 			g.Debugf("Completed stream: %v.", err)
 			if err != nil {
 				return trail.ToGRPC(err)
@@ -150,16 +160,21 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				g.WithError(err).Debugf("Failed to decode event.")
 				return trail.ToGRPC(err)
 			}
+			if time.Since(event.GetTime()) > 100*time.Millisecond && event.GetIndex()%100 == 0 {
+				log.Warningf("Received event %v older than 100ms: %v", event.GetType(), time.Since(event.GetTime()))
+			}
 			start := time.Now()
 			err = eventStream.EmitAuditEvent(stream.Context(), event)
-			if event.GetIndex()%100 == 0 {
-				fmt.Printf("%v Received event %v in %v\n", time.Now().UTC(), event.GetIndex(), time.Since(start))
-			}
 			if err != nil {
 				return trail.ToGRPC(err)
 			}
+			//			time.Sleep(time.Second)
+			diff := time.Since(start)
+			if diff > 100*time.Millisecond {
+				log.Warningf("EmitAuditEvent(%v) took longer than 100ms: %v", event.GetType(), time.Since(event.GetTime()))
+			}
 		} else {
-			g.Errorf("Unsupported stream request: %#v\n", request)
+			g.Errorf("Skipping unsupported stream request: %#v", request)
 			return trail.ToGRPC(trace.BadParameter("unsupported stream request"))
 		}
 	}

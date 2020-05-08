@@ -18,6 +18,7 @@ package events
 
 import (
 	"context"
+	"runtime/debug"
 	"time"
 
 	"github.com/gravitational/teleport"
@@ -80,7 +81,15 @@ func (r *CheckingEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) 
 	if err := r.Inner.EmitAuditEvent(ctx, event); err != nil {
 		auditFailedEmit.Inc()
 		log.WithError(err).Errorf("Failed to emit audit event.")
+		if event.GetType() == SessionEndEvent {
+			debug.PrintStack()
+			log.Errorf("EMITTER ERR sesh end %v %v %v.", SessionEndEvent, event, err)
+		}
 		return trace.Wrap(err)
+	}
+	if event.GetType() == SessionEndEvent {
+		debug.PrintStack()
+		log.Errorf("EMITTER OK sesh end %v %v.", SessionEndEvent, event)
 	}
 	return nil
 }
@@ -326,7 +335,15 @@ func (s *CheckingStream) EmitAuditEvent(ctx context.Context, event AuditEvent) e
 	if err := s.stream.EmitAuditEvent(ctx, event); err != nil {
 		auditFailedEmit.Inc()
 		log.WithError(err).Errorf("Failed to emit audit event %v(%v).", event.GetType(), event.GetCode())
+		if event.GetType() == SessionEndEvent {
+			debug.PrintStack()
+			log.Errorf("STREAM ERR sesh end %v %v %v.", SessionEndEvent, event, err)
+		}
 		return trace.Wrap(err)
+	}
+	if event.GetType() == SessionEndEvent {
+		debug.PrintStack()
+		log.Errorf("STREAM OK sesh end %v %v.", SessionEndEvent, event)
 	}
 	return nil
 }

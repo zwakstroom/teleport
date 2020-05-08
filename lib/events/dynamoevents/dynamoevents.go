@@ -434,7 +434,6 @@ func (l *Log) GetSessionEvents(namespace string, sid session.ID, after int, inlc
 // The only mandatory requirement is a date range (UTC). Results must always
 // show up sorted by date (newest first)
 func (l *Log) SearchEvents(fromUTC, toUTC time.Time, filter string, limit int) ([]events.EventFields, error) {
-	g := l.WithFields(log.Fields{"From": fromUTC, "To": toUTC, "Filter": filter, "Limit": limit})
 	filterVals, err := url.ParseQuery(filter)
 	if err != nil {
 		return nil, trace.BadParameter("missing parameter query")
@@ -459,12 +458,10 @@ func (l *Log) SearchEvents(fromUTC, toUTC time.Time, filter string, limit int) (
 		ExpressionAttributeValues: attributeValues,
 		IndexName:                 aws.String(indexTimeSearch),
 	}
-	start := time.Now()
 	out, err := l.svc.Query(&input)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	g.WithFields(log.Fields{"duration": time.Now().Sub(start), "items": len(out.Items)}).Debugf("Query completed.")
 	var total int
 	for _, item := range out.Items {
 		var e event

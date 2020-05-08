@@ -59,7 +59,7 @@ func (h *Handler) CreateAuditStream(ctx context.Context, sessionID session.ID) (
 		key: *input.Key,
 	}
 
-	return events.NewProtoEmitter(ctx, up, h.slicePool), nil
+	return events.NewProtoEmitter(events.ProtoEmitterConfig{Upload: up, Pool: h.slicePool})
 }
 
 // ResumeAuditStream resumes stream
@@ -128,14 +128,12 @@ func (u *upload) Complete(ctx context.Context) error {
 }
 
 // UploadPart uploads part
-func (u *upload) UploadPart(ctx context.Context, partBody io.ReadSeeker) error {
+func (u *upload) UploadPart(ctx context.Context, partNumber int, partBody io.ReadSeeker) error {
 	start := time.Now()
 	defer func() { u.h.Infof("UploadPart(%v) part(%v) uploaded in %v.", u.id, u.part, time.Since(start)) }()
 
-	partNumber := u.nextPart()
-
 	// This upload exceeded maximum number of supported parts, error now.
-	if partNumber > int64(s3manager.MaxUploadParts) {
+	if partNumber > s3manager.MaxUploadParts {
 		return trace.LimitExceeded(
 			"exceeded total allowed S3 limit MaxUploadParts (%d). Adjust PartSize to fit in this limit", s3manager.MaxUploadParts)
 	}
@@ -145,7 +143,7 @@ func (u *upload) UploadPart(ctx context.Context, partBody io.ReadSeeker) error {
 		Key:        aws.String(u.key),
 		UploadId:   aws.String(u.id),
 		Body:       partBody,
-		PartNumber: aws.Int64(partNumber),
+		PartNumber: aws.Int64(int64(partNumber)),
 	}
 
 	resp, err := u.h.client.UploadPartWithContext(ctx, params)
@@ -153,6 +151,6 @@ func (u *upload) UploadPart(ctx context.Context, partBody io.ReadSeeker) error {
 		return ConvertS3Error(err)
 	}
 
-	u.completedParts = append(u.completedParts, &s3.CompletedPart{ETag: resp.ETag, PartNumber: aws.Int64(partNumber)})
+	u.completedParts = append(u.completedParts, &s3.CompletedPart{ETag: resp.ETag, PartNumber: aws.Int64(int64(partNumber))})
 	return nil
 }

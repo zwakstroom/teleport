@@ -41,7 +41,6 @@ func (a *EventsTestSuite) TestProtoEmitter(c *check.C) {
 			bufferSize: 1024*1024*5 + 64*1024,
 			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
-
 		{
 			name:       "pick largest message as buffer size to get more parts",
 			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + Int32Size),
@@ -71,7 +70,8 @@ testcases:
 	for _, tc := range testCases {
 		upload := NewMemoryUpload()
 		pool := utils.NewSliceSyncPool(tc.bufferSize)
-		emitter := NewProtoEmitter(ctx, upload, pool)
+		emitter, err := NewProtoEmitter(ProtoEmitterConfig{Upload: upload, Pool: pool})
+		c.Assert(err, check.IsNil)
 
 		for _, event := range tc.events {
 			err := emitter.EmitAuditEvent(ctx, event)
@@ -82,7 +82,7 @@ testcases:
 				c.Assert(err, check.IsNil)
 			}
 		}
-		err := emitter.Complete(ctx)
+		err = emitter.Complete(ctx)
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent
