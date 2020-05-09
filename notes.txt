@@ -1,0 +1,2 @@
+* Run multiple apps from one binary or require one app per binary.
+* Run one agent pool for IoT and Apps or run two seperate agent pools.
