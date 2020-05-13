@@ -80,6 +80,7 @@ func New(config *Config) (*Service, error) {
 					Name:      "jenkins",
 				},
 				Spec: services.AppSpecV3{
+					HostUUID:   "00000000-0000-0000-0000-000000000000",
 					Protocol:   "https",
 					URI:        "localhost:8080",
 					PublicAddr: "jenkins.example.com",

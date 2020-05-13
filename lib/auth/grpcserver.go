@@ -403,13 +403,27 @@ func (g *GRPCServer) GetApps(ctx context.Context, req *proto.GetAppsRequest) (*p
 		return nil, trail.ToGRPC(err)
 	}
 
-	apps, err = auth.GetApps(ctx, req.GetNamespace())
+	var opts []services.MarshalOption
+	if req.GetSkipValidation() {
+		opts = append(opts, services.SkipValidation())
+	}
+
+	apps, err := auth.GetApps(ctx, req.GetNamespace(), opts...)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
+	var app3 []*services.AppV3
+	for _, app := range apps {
+		a, ok := app.(*services.AppV3)
+		if !ok {
+			return nil, trail.ToGRPC(trace.BadParameter("unexpected app type %T", app))
+		}
+		app3 = append(app3, a)
+	}
+
 	return &proto.GetAppsResponse{
-		Apps: apps,
+		Apps: app3,
 	}, nil
 }
 

@@ -203,8 +203,10 @@ message AppSpecV3 {
     // Commands is a list of dynamic labels to apply to this application.
     map<string, CommandLabelV2> Commands = 5
         [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "commands,omitempty" ];
+    // HostUUID is UUID of host the application proxy is running on.
+    string HostUUID = 6 [ (gogoproto.jsontag) = "uuid" ];
     // TeleportVersion is the Teleport version of the application proxy.
-    string Version = 6 [ (gogoproto.jsontag) = "version" ];
+    string Version = 7 [ (gogoproto.jsontag) = "version" ];
 }
 
 // TLSKeyPair is a TLS key pair

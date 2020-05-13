@@ -722,6 +722,35 @@ func (c *Client) UpsertNode(s services.Server) (*services.KeepAlive, error) {
 	return keepAlive, nil
 }
 
+// KeepAliveNode updates node keep alive information
+func (c *Client) KeepAliveNode(ctx context.Context, keepAlive services.KeepAlive) error {
+	return trace.BadParameter("not implemented, use StreamKeepAlives instead")
+}
+
+func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	cfg, err := services.CollectOptions(opts)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetApps(ctx, &proto.GetAppsRequest{
+		Namespace:      namespace,
+		SkipValidation: cfg.SkipValidation,
+	})
+
+	var apps []services.App
+	for _, app := range resp.GetApps() {
+		apps = append(apps, app)
+	}
+
+	return apps, nil
+}
+
 // UpsertApp is used by applications to report their presence to the backend.
 func (c *Client) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
 	clt, err := c.grpc()
@@ -729,6 +758,7 @@ func (c *Client) UpsertApp(ctx context.Context, app services.App) (*services.Kee
 		return nil, trace.Wrap(err)
 	}
 
+	// Validate request.
 	if app.GetNamespace() == "" {
 		return nil, trace.BadParameter("missing app namespace")
 	}
@@ -746,9 +776,21 @@ func (c *Client) UpsertApp(ctx context.Context, app services.App) (*services.Kee
 	return keepAlive, nil
 }
 
-// KeepAliveNode updates node keep alive information
-func (c *Client) KeepAliveNode(ctx context.Context, keepAlive services.KeepAlive) error {
-	return trace.BadParameter("not implemented, use StreamKeepAlives instead")
+func (c *Client) DeleteApp(ctx context.Context, namespace string, name string) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	_, err = clt.DeleteApp(ctx, &proto.DeleteAppRequest{
+		Namespace: namespace,
+		Name:      name,
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
 }
 
 // NewKeepAliver returns a new instance of keep aliver

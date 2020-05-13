@@ -18,6 +18,8 @@ package services
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/gravitational/teleport/lib/utils"
@@ -36,6 +38,11 @@ type App interface {
 	GetNamespace() string
 	// SetNamespace sets the application namespace.
 	SetNamespace(string)
+
+	// GetHostUUID gets the UUID of the application proxy.
+	GetHostUUID() string
+	// SetHostUUID sets the UUID of the application proxy.
+	SetHostUUID(string)
 
 	// GetProtocol gets the protocol of this application. At the moment
 	// only HTTPS is supported.
@@ -146,6 +153,16 @@ func (s *AppV3) SetNamespace(namespace string) {
 	s.Metadata.Namespace = namespace
 }
 
+// GetHostUUID gets the UUID of the application proxy.
+func (s *AppV3) GetHostUUID() string {
+	return s.Spec.HostUUID
+}
+
+// SetHostUUID sets the application namespace.
+func (s *AppV3) SetHostUUID(uuid string) {
+	s.Spec.HostUUID = uuid
+}
+
 // GetProtocol gets the protocol of this application. At the moment
 // only HTTPS is supported.
 func (s *AppV3) GetProtocol() string {
@@ -246,6 +263,7 @@ const AppSpecV3Schema = `{
   "properties": {
 	"version": {"type": "string"},
     "protocol": {"type": "string"},
+    "uuid": {"type": "string"},
     "uri": {"type": "string"},
     "public_addr": {"type": "string"},
     "labels": {
@@ -454,4 +472,20 @@ func CompareApps(a App, b App) int {
 	}
 
 	return Equal
+}
+
+// FlattenLabels flattens and returns a comma separated string of all labels.
+func FlattenLabels(app App) string {
+	var labels []string
+
+	// Extract all static and dynamic labels from app.
+	for key, val := range app.GetStaticLabels() {
+		labels = append(labels, fmt.Sprintf("%s=%s", key, val))
+	}
+	for key, val := range app.GetCommandLabels() {
+		labels = append(labels, fmt.Sprintf("%s=%s", key, val.GetResult()))
+	}
+
+	sort.Strings(labels)
+	return strings.Join(labels, ",")
 }

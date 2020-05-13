@@ -201,6 +201,9 @@ message PingResponse {
 message GetAppsRequest {
     // Namespace is the namespace for the registered application.
     string Namespace = 1 [ (gogoproto.jsontag) = "namespace" ];
+    // SkipValidation is used to not use JSON schema validation for
+    // performance reasons.
+    bool SkipValidation = 2 [ (gogoproto.jsontag) = "skip_validation" ];
 }
 
 // GetAppsResponse is the response message for all registered applications.

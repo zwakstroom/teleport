@@ -366,16 +366,6 @@ func (a *AuthWithRoles) UpsertNode(s services.Server) (*services.KeepAlive, erro
 	return a.authServer.UpsertNode(s)
 }
 
-func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
-	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbCreate); err != nil {
-		return nil, trace.Wrap(err)
-	}
-	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbUpdate); err != nil {
-		return nil, trace.Wrap(err)
-	}
-	return a.authServer.UpsertApp(ctx, app)
-}
-
 func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepAlive) error {
 	if !a.hasBuiltinRole(string(teleport.RoleNode)) {
 		return trace.AccessDenied("[10] access denied")
@@ -395,6 +385,44 @@ func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepA
 		return trace.Wrap(err)
 	}
 	return a.authServer.KeepAliveNode(ctx, handle)
+}
+
+func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+	if err := a.action(namespace, services.KindApp, services.VerbList); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	apps, err := a.authServer.GetApps(ctx, namespace, opts...)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return apps, nil
+}
+
+func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbCreate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbUpdate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return a.authServer.UpsertApp(ctx, app)
+}
+
+func (a *AuthWithRoles) DeleteApp(ctx context.Context, namespace string, name string) error {
+	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+
+	if err := a.authServer.DeleteApp(ctx, namespace, name); err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
 }
 
 // NewWatcher returns a new event watcher
