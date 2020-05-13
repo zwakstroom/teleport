@@ -2101,10 +2101,6 @@ func (s *auditStreamer) EmitAuditEvent(ctx context.Context, event events.AuditEv
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
-		Request: &proto.AuditStreamRequest_Event{Event: oneof},
-	}))
-
 	// Without serialization, EmitAuditEvent will call grpc's method directly.
 	// When BPF callback is emitting events concurrently with session data to the grpc stream,
 	// it becomes deadlocked (not just blocked temporarily, but permanently)
