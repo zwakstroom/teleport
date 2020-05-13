@@ -18,9 +18,8 @@ package auth
 
 import (
 	"context"
+	"crypto/tls"
 	"io"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gravitational/teleport"
@@ -43,10 +42,7 @@ import (
 type GRPCServer struct {
 	*logrus.Entry
 	APIConfig
-	// httpHandler is a server serving HTTP API
-	httpHandler http.Handler
-	// grpcHandler is golang GRPC handler
-	grpcHandler *grpc.Server
+	server *grpc.Server
 }
 
 // EmitAuditEvent emtis audit event
@@ -106,10 +102,6 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 		if err == io.EOF {
 			return nil
 		}
-		counter++
-		if counter%1000 == 0 {
-			g.Debugf("Recievied %v events.", counter)
-		}
 		if err != nil {
 			g.WithError(err).Debugf("Failed to receive stream request.")
 			return trail.ToGRPC(err)
@@ -168,7 +160,10 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				return trail.ToGRPC(err)
 			}
-			//			time.Sleep(time.Second)
+			counter++
+			if counter%10000 == 0 {
+				g.Debugf("Processed %v events.", counter)
+			}
 			diff := time.Since(start)
 			if diff > 100*time.Millisecond {
 				log.Warningf("EmitAuditEvent(%v) took longer than 100ms: %v", event.GetType(), time.Since(event.GetTime()))
@@ -440,29 +435,56 @@ func (g *GRPCServer) authenticate(ctx context.Context) (*grpcContext, error) {
 	}, nil
 }
 
+// GRPCServerConfig specifies GRPC server configuration
+type GRPCServerConfig struct {
+	// APIConfig is GRPC server API configuration
+	APIConfig
+	// TLS is GRPC server config
+	TLS *tls.Config
+	// UnaryInterceptor intercepts individual GRPC requests
+	// for authentication and rate limiting
+	UnaryInterceptor grpc.UnaryServerInterceptor
+	// UnaryInterceptor intercepts GRPC streams
+	// for authentication and rate limiting
+	StreamInterceptor grpc.StreamServerInterceptor
+}
+
+// CheckAndSetDefaults checks and sets default values
+func (cfg *GRPCServerConfig) CheckAndSetDefaults() error {
+	if cfg.TLS == nil {
+		return trace.BadParameter("missing parameter TLS")
+	}
+	if cfg.UnaryInterceptor == nil {
+		return trace.BadParameter("missing parameter UnaryInterceptor")
+	}
+	if cfg.StreamInterceptor == nil {
+		return trace.BadParameter("missing parameter StreamInterceptor")
+	}
+	return nil
+}
+
 // NewGRPCServer returns a new instance of GRPC server
-func NewGRPCServer(cfg APIConfig) http.Handler {
+func NewGRPCServer(cfg GRPCServerConfig) (*GRPCServer, error) {
+	if err := cfg.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	opts := []grpc.ServerOption{
+		grpc.Creds(&TLSCreds{
+			config: cfg.TLS,
+		}),
+		grpc.UnaryInterceptor(cfg.UnaryInterceptor),
+		grpc.StreamInterceptor(cfg.StreamInterceptor),
+	}
+	server := grpc.NewServer(opts...)
 	authServer := &GRPCServer{
-		APIConfig: cfg,
+		APIConfig: cfg.APIConfig,
 		Entry: logrus.WithFields(logrus.Fields{
 			trace.Component: teleport.Component(teleport.ComponentAuth, teleport.ComponentGRPC),
 		}),
-		httpHandler: NewAPIServer(&cfg),
-		grpcHandler: grpc.NewServer(),
+		server: server,
 	}
-	proto.RegisterAuthServiceServer(authServer.grpcHandler, authServer)
-	return authServer
-}
-
-// ServeHTTP dispatches requests based on the request type
-func (g *GRPCServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// magic combo match signifying GRPC request
-	// https://grpc.io/blog/coreos
-	if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-		g.grpcHandler.ServeHTTP(w, r)
-	} else {
-		g.httpHandler.ServeHTTP(w, r)
-	}
+	proto.RegisterAuthServiceServer(authServer.server, authServer)
+	return authServer, nil
 }
 
 func eventToGRPC(in services.Event) (*proto.Event, error) {

@@ -1093,16 +1093,7 @@ func (process *TeleportProcess) initAuthService() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	tlsServer, err := auth.NewTLSServer(auth.TLSServerConfig{
-		TLS:           tlsConfig,
-		APIConfig:     *apiConf,
-		LimiterConfig: cfg.Auth.Limiter,
-		AccessPoint:   authCache,
-		Component:     teleport.Component(teleport.ComponentAuth, process.id),
-	})
-	if err != nil {
-		return trace.Wrap(err)
-	}
+
 	// auth server listens on SSH and TLS, reusing the same socket
 	listener, err := process.importOrCreateListener(teleport.ComponentAuth, cfg.Auth.SSHAddr.Addr)
 	if err != nil {
@@ -1124,13 +1115,25 @@ func (process *TeleportProcess) initAuthService() error {
 		return trace.Wrap(err)
 	}
 	go mux.Serve()
+	tlsServer, err := auth.NewTLSServer(auth.TLSServerConfig{
+		TLS:           tlsConfig,
+		APIConfig:     *apiConf,
+		LimiterConfig: cfg.Auth.Limiter,
+		AccessPoint:   authCache,
+		Component:     teleport.Component(teleport.ComponentAuth, process.id),
+		ID:            process.id,
+		Listener:      mux.TLS(),
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
 	process.RegisterCriticalFunc("auth.tls", func() error {
 		utils.Consolef(cfg.Console, teleport.ComponentAuth, "Auth service %s:%s is starting on %v.", teleport.Version, teleport.Gitref, cfg.Auth.SSHAddr.Addr)
 
 		// since tlsServer.Serve is a blocking call, we emit this even right before
 		// the service has started
 		process.BroadcastEvent(Event{Name: AuthTLSReady, Payload: nil})
-		err := tlsServer.Serve(mux.TLS())
+		err := tlsServer.Serve()
 		if err != nil && err != http.ErrServerClosed {
 			log.Warningf("TLS server exited with error: %v.", err)
 		}
