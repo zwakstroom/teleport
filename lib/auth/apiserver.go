@@ -51,6 +51,22 @@ type APIConfig struct {
 	AuditLog       events.IAuditLog
 	Emitter        events.Emitter
 	Authorizer     Authorizer
+	// KeepAlivePeriod defines period between keep alives
+	KeepAlivePeriod time.Duration
+	// KeepAliveCount specifies amount of missed keep alives
+	// to wait for until declaring connection as broken
+	KeepAliveCount int
+}
+
+// CheckAndSetDefaults checks and sets default values
+func (a *APIConfig) CheckAndSetDefaults() error {
+	if a.KeepAlivePeriod == 0 {
+		a.KeepAlivePeriod = defaults.ServerKeepAliveTTL
+	}
+	if a.KeepAliveCount == 0 {
+		a.KeepAliveCount = defaults.KeepAliveCountMax
+	}
+	return nil
 }
 
 // APIServer implements http API server for AuthServer interface

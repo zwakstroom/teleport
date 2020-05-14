@@ -109,13 +109,13 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 			printEvent.Data = dataCopy[:extraBytes]
 			printEvent.Bytes = int64(len(printEvent.Data))
 			dataCopy = dataCopy[extraBytes:]
-			a.log.Debugf("REMOVEME, submitting chunk with %v bytes remaining", extraBytes)
 		} else {
 			printEvent.Bytes = int64(len(printEvent.Data))
 			dataCopy = nil
 		}
 		if err := a.EmitAuditEvent(a.cfg.Context, printEvent); err != nil {
 			a.log.WithError(err).Error("Failed to emit session print event.")
+			return 0, trace.Wrap(err)
 		}
 	}
 

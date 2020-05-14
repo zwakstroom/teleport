@@ -63,6 +63,9 @@ type TLSServerConfig struct {
 
 // CheckAndSetDefaults checks and sets default values
 func (c *TLSServerConfig) CheckAndSetDefaults() error {
+	if err := c.APIConfig.CheckAndSetDefaults(); err != nil {
+		return trace.Wrap(err)
+	}
 	if c.Listener == nil {
 		return trace.BadParameter("missing parameter Listener")
 	}

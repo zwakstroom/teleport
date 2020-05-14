@@ -35,6 +35,7 @@ import (
 	"github.com/gravitational/trace/trail"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/peer"
 )
 
@@ -96,6 +97,8 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	}
 	var eventStream events.Stream
 	g.Debugf("CreateAuditStream connection from %v.", auth.User.GetName())
+	streamStart := time.Now()
+	processed := int64(0)
 	counter := 0
 	for {
 		request, err := stream.Recv()
@@ -160,9 +163,15 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				return trail.ToGRPC(err)
 			}
+			event.Size()
+			processed += int64(event.Size())
+			seconds := time.Now().Sub(streamStart) / time.Second
 			counter++
 			if counter%10000 == 0 {
-				g.Debugf("Processed %v events.", counter)
+				if seconds > 0 {
+					kbytes := float64(processed) / 1000
+					g.Debugf("Processed %v events, tx rate kbytes %v/second.", counter, kbytes/float64(seconds))
+				}
 			}
 			diff := time.Since(start)
 			if diff > 100*time.Millisecond {
@@ -468,12 +477,25 @@ func NewGRPCServer(cfg GRPCServerConfig) (*GRPCServer, error) {
 	if err := cfg.CheckAndSetDefaults(); err != nil {
 		return nil, trace.Wrap(err)
 	}
+	log.Debugf("GRPC(SERVER): keep alive %v count: %v.", cfg.KeepAlivePeriod, cfg.KeepAliveCount)
 	opts := []grpc.ServerOption{
 		grpc.Creds(&TLSCreds{
 			config: cfg.TLS,
 		}),
 		grpc.UnaryInterceptor(cfg.UnaryInterceptor),
 		grpc.StreamInterceptor(cfg.StreamInterceptor),
+		grpc.KeepaliveParams(
+			keepalive.ServerParameters{
+				Time:    cfg.KeepAlivePeriod,
+				Timeout: cfg.KeepAlivePeriod * time.Duration(cfg.KeepAliveCount),
+			},
+		),
+		grpc.KeepaliveEnforcementPolicy(
+			keepalive.EnforcementPolicy{
+				MinTime:             cfg.KeepAlivePeriod,
+				PermitWithoutStream: true,
+			},
+		),
 	}
 	server := grpc.NewServer(opts...)
 	authServer := &GRPCServer{

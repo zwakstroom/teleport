@@ -1651,6 +1651,13 @@ func (process *TeleportProcess) initSSH() error {
 			agentPool.Stop()
 		}
 
+		// Close client after graceful shutdown has been completed,
+		// to make sure in flight streams are not terminated,
+		// but drained off
+		if conn.Client != nil {
+			warnOnErr(conn.Client.Close())
+		}
+
 		// Close BPF service.
 		warnOnErr(ebpf.Close())
 
@@ -1670,13 +1677,6 @@ func (process *TeleportProcess) registerWithAuthServer(role teleport.Role, event
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		process.onExit(fmt.Sprintf("auth.client.%v", serviceName), func(interface{}) {
-			process.Debugf("Closed client for %v.", role)
-			err := connector.Client.Close()
-			if err != nil {
-				process.Debugf("Failed to close client: %v", err)
-			}
-		})
 		process.BroadcastEvent(Event{Name: eventName, Payload: connector})
 		return nil
 	})
@@ -1934,6 +1934,9 @@ func (process *TeleportProcess) initProxy() error {
 
 		err := process.initProxyEndpoint(conn)
 		if err != nil {
+			if conn.Client != nil {
+				warnOnErr(conn.Client.Close())
+			}
 			return trace.Wrap(err)
 		}
 
@@ -2377,6 +2380,11 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 			if webHandler != nil {
 				warnOnErr(webHandler.Close())
 			}
+		}
+		// Close client after graceful shutdown has been completed,
+		// to make sure in flight streams are not terminated,
+		if conn.Client != nil {
+			warnOnErr(conn.Client.Close())
 		}
 		log.Infof("Exited.")
 	})

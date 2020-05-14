@@ -28,7 +28,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -304,13 +303,14 @@ func (c *Client) grpc() (proto.AuthServiceClient, error) {
 	})
 	tlsConfig := c.TLS.Clone()
 	tlsConfig.NextProtos = []string{http2.NextProtoTLS}
-	log.Debugf("GRPC(): keep alive %v count: %v.", c.KeepAlivePeriod, c.KeepAliveCount)
+	log.Debugf("GRPC(CLIENT): keep alive %v count: %v.", c.KeepAlivePeriod, c.KeepAliveCount)
 	conn, err := grpc.Dial(teleport.APIDomain,
 		dialer,
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:    c.KeepAlivePeriod,
-			Timeout: c.KeepAlivePeriod * time.Duration(c.KeepAliveCount),
+			Time:                c.KeepAlivePeriod,
+			Timeout:             c.KeepAlivePeriod * time.Duration(c.KeepAliveCount),
+			PermitWithoutStream: true,
 		}),
 	)
 	if err != nil {
@@ -2165,7 +2165,6 @@ func (s *auditStreamer) closeWithError(err error) {
 
 // Close closes all resources associated with stream without aborting it
 func (s *auditStreamer) Close() error {
-	debug.PrintStack()
 	_, err := s.stream.CloseAndRecv()
 	if err != nil {
 		return trace.Wrap(err)
