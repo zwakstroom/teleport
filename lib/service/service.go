@@ -1825,8 +1825,9 @@ func (process *TeleportProcess) initApps() error {
 					Protocol:   "https",
 					URI:        app.URI.String(),
 					PublicAddr: app.PublicAddr.String(),
-					Commands:   services.LabelsToV2(app.Commands),
-					Version:    teleport.Version,
+					// TODO: Why don't commands actually show up in the UI?
+					Commands: services.LabelsToV2(app.Commands),
+					Version:  teleport.Version,
 				},
 			}
 			// TODO: teleport.RoleApp?
@@ -2443,8 +2444,9 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		// the incoming request is for an application being proxied, if it is, it
 		// handles it. Otherwise passed it on to the web application.
 		wrappedHandler, err := apps.NewHandler(&apps.HandlerConfig{
-			AuthClient: conn.Client,
-			Next:       webHandler,
+			AuthClient:  conn.Client,
+			ProxyClient: tsrv,
+			Next:        webHandler,
 		})
 		if err != nil {
 			return trace.Wrap(err)

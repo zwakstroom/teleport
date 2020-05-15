@@ -23,6 +23,7 @@ import (
 
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/utils"
 
@@ -30,13 +31,17 @@ import (
 )
 
 type HandlerConfig struct {
-	AuthClient auth.ClientI
-	Next       http.Handler
+	AuthClient  auth.ClientI
+	ProxyClient reversetunnel.Server
+	Next        http.Handler
 }
 
 func (c *HandlerConfig) CheckAndSetDefaults() error {
 	if c.AuthClient == nil {
 		return trace.BadParameter("missing auth client")
+	}
+	if c.ProxyClient == nil {
+		return trace.BadParameter("missing proxy client")
 	}
 	if c.Next == nil {
 		return trace.BadParameter("missing next http.Handler")
@@ -103,6 +108,39 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprintf(w, "Welcome to %v.", matchedApp.GetName())
+	// Extract cluster name from domain.
+	cluster, err := a.ProxyClient.GetSite("example.com")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// TODO get this to actually work
+	/*
+		conn, err := cluster.Dial(&reversetunnel.DialParams{})
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	*/
+
+	// TODO get this to actually work
+	/*
+		roundTripper := forward.RoundTripper(newCustomTransport(conn))
+		fwd, _ := forward.New(roundTripper)
+
+		nu, _ := url.Parse(r.URL.String())
+		nu.Scheme = "https"
+		nu.Host = "rusty-gitlab.gravitational.io"
+
+		// let us forward this request to another server
+		r.URL = nu //testutils.ParseURI(nu.String())
+		//r.URL = testutils.ParseURI("https://rusty-gitlab.gravitational.io")
+		//r.URL = testutils.ParseURI("localhost:8080")
+
+		fwd.ServeHTTP(w, r)
+	*/
+
+	//w.Header().Set("Content-Type", "text/plain")
+	//fmt.Fprintf(w, "Welcome to %v.", matchedApp.GetName())
 }
