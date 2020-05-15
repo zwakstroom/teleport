@@ -1811,6 +1811,7 @@ func (process *TeleportProcess) initApps() error {
 		// instead of having to do this conversion here.
 		var appSlice []services.App
 		for _, app := range process.Config.App.Apps {
+			fmt.Printf("--> service.go: adding in %v.\n", app.Name)
 			appv3 := &services.AppV3{
 				Kind:    services.KindApp,
 				Version: services.V3,
@@ -1841,6 +1842,8 @@ func (process *TeleportProcess) initApps() error {
 			appv3.SetTTL(process.Clock, defaults.ServerAnnounceTTL)
 			appSlice = append(appSlice, appv3)
 		}
+
+		fmt.Printf("--> this is appSlice: %v.\n", appSlice)
 
 		app, err := apps.New(&apps.Config{
 			AccessPoint:  authClient,
@@ -2439,7 +2442,13 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		// Wrap web application handler with AAP handler. The AAP handler checks if
 		// the incoming request is for an application being proxied, if it is, it
 		// handles it. Otherwise passed it on to the web application.
-		wrappedHandler := apps.WrapHandler(webHandler)
+		wrappedHandler, err := apps.NewHandler(&apps.HandlerConfig{
+			AuthClient: conn.Client,
+			Next:       webHandler,
+		})
+		if err != nil {
+			return trace.Wrap(err)
+		}
 
 		// Rate limit all connections coming to the web endpoints of the proxy.
 		proxyLimiter.WrapHandle(wrappedHandler)

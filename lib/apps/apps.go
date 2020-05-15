@@ -20,6 +20,7 @@ package apps
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
@@ -70,41 +71,49 @@ func New(config *Config) (*Service, error) {
 
 	var heartbeats []*presence.Heartbeat
 
-	for _, app := range config.Apps {
+	for i := range config.Apps {
+		fmt.Printf("--> looping over: %v %v.\n", i, config.Apps[i])
+		getApp := func() (services.App, error) {
+			fmt.Printf("--> returning: %v %v.\n", i, config.Apps[i])
+			return config.Apps[i], nil
+		}
+
 		heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
 			Mode:      presence.HeartbeatModeApp,
 			Context:   config.CloseContext,
 			Component: teleport.ComponentApps,
 			Announcer: config.AccessPoint,
-			GetApp: func() (services.App, error) {
-				return app, nil
-				//app := services.AppV3{
-				//	Kind:    services.KindApp,
-				//	Version: services.V3,
-				//	Metadata: services.Metadata{
-				//		Namespace: defaults.Namespace,
-				//		Name:      "jenkins",
-				//	},
-				//	Spec: services.AppSpecV3{
-				//		HostUUID:   "00000000-0000-0000-0000-000000000000",
-				//		Protocol:   "https",
-				//		URI:        "localhost:8080",
-				//		PublicAddr: "jenkins.example.com",
-				//		Version:    teleport.Version,
-				//	},
-				//}
-				//state, err := config.Storage.GetState(teleport.RoleAdmin)
-				//if err != nil {
-				//	if !trace.IsNotFound(err) {
-				//		log.Warningf("Failed to get rotation state: %v.", err)
-				//		return nil, trace.Wrap(err)
-				//	}
-				//} else {
-				//	app.Spec.Rotation = state.Spec.Rotation
-				//}
-				//app.SetTTL(config.Clock, defaults.ServerAnnounceTTL)
-				//return &app, nil
-			},
+			GetApp:    getApp,
+			//GetApp: func() (services.App, error) {
+			//	fmt.Printf("--> returning: %v %v.\n", i, config.Apps[i])
+			//	return config.Apps[i], nil
+			//	//app := services.AppV3{
+			//	//	Kind:    services.KindApp,
+			//	//	Version: services.V3,
+			//	//	Metadata: services.Metadata{
+			//	//		Namespace: defaults.Namespace,
+			//	//		Name:      "jenkins",
+			//	//	},
+			//	//	Spec: services.AppSpecV3{
+			//	//		HostUUID:   "00000000-0000-0000-0000-000000000000",
+			//	//		Protocol:   "https",
+			//	//		URI:        "localhost:8080",
+			//	//		PublicAddr: "jenkins.example.com",
+			//	//		Version:    teleport.Version,
+			//	//	},
+			//	//}
+			//	//state, err := config.Storage.GetState(teleport.RoleAdmin)
+			//	//if err != nil {
+			//	//	if !trace.IsNotFound(err) {
+			//	//		log.Warningf("Failed to get rotation state: %v.", err)
+			//	//		return nil, trace.Wrap(err)
+			//	//	}
+			//	//} else {
+			//	//	app.Spec.Rotation = state.Spec.Rotation
+			//	//}
+			//	//app.SetTTL(config.Clock, defaults.ServerAnnounceTTL)
+			//	//return &app, nil
+			//},
 			KeepAlivePeriod: defaults.ServerKeepAliveTTL,
 			AnnouncePeriod:  defaults.ServerAnnounceTTL/2 + utils.RandomDuration(defaults.ServerAnnounceTTL/10),
 			CheckPeriod:     defaults.HeartbeatCheckPeriod,

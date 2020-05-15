@@ -17,27 +17,92 @@ limitations under the License.
 package apps
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/gravitational/teleport/lib/auth"
+	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/utils"
+
+	"github.com/gravitational/trace"
 )
 
-type appsHandler struct {
-	next http.Handler
+type HandlerConfig struct {
+	AuthClient auth.ClientI
+	Next       http.Handler
 }
 
-func WrapHandler(next http.Handler) *appsHandler {
-	return &appsHandler{
-		next: next,
+func (c *HandlerConfig) CheckAndSetDefaults() error {
+	if c.AuthClient == nil {
+		return trace.BadParameter("missing auth client")
 	}
+	if c.Next == nil {
+		return trace.BadParameter("missing next http.Handler")
+	}
+
+	return nil
 }
 
-func (a *appsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("--> r.Host: %v.\n", r.Host)
-	if r.Host == "dumper.proxy.example.com:3080" {
-		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(w, "Welcome to header dumper.")
+type Handler struct {
+	*HandlerConfig
+}
+
+func NewHandler(config *HandlerConfig) (*Handler, error) {
+	if err := config.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &Handler{
+		HandlerConfig: config,
+	}, nil
+}
+
+// ServeHTTP will try and find the proxied application that the caller is
+// requesting. If any error occurs or the application is not found, the
+// request is passed to the next handler (which would be the Web UI).
+func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// TODO: This should probably be: GetApp?
+	applist, err := a.AuthClient.GetApps(context.TODO(), defaults.Namespace)
+	if err != nil {
+		log.Debugf("Failed to get application list: %v.", err)
+		a.Next.ServeHTTP(w, r)
 		return
 	}
 
-	a.next.ServeHTTP(w, r)
+	var matchedApp services.App
+
+	for _, app := range applist {
+		wantHost, _, err := utils.SplitHostPort(app.GetPublicAddr())
+		if err != nil {
+			log.Debugf("Failed to parse application hostname: %v: %v.", app.GetPublicAddr(), err)
+			a.Next.ServeHTTP(w, r)
+			return
+		}
+
+		gotHost, _, err := utils.SplitHostPort(r.Host)
+		if err != nil {
+			log.Debugf("Failed to parse requested hostname: %v: %v.", r.Host, err)
+			a.Next.ServeHTTP(w, r)
+			return
+		}
+
+		fmt.Printf("--> gotHost: %v, wantHost: %v.\n", gotHost, wantHost)
+		if gotHost == wantHost {
+			matchedApp = app
+			break
+
+		}
+	}
+
+	// If no matching application was found, send the request to the web ui.
+	if matchedApp == nil {
+		log.Debugf("Failed to parse requested hostname: %v: %v.", r.Host, err)
+		a.Next.ServeHTTP(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, "Welcome to %v.", matchedApp.GetName())
 }
