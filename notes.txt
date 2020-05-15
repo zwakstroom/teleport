@@ -1,2 +1,3 @@
 * Run multiple apps from one binary or require one app per binary.
 * Run one agent pool for IoT and Apps or run two seperate agent pools.
+* Update cache to support GetApps and GetApp for faster lookup if an application is registered.

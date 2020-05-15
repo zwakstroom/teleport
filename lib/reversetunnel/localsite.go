@@ -73,7 +73,7 @@ func newlocalSite(srv *server, domainName string, client auth.ClientI) (*localSi
 			for key := range ls.remoteConns {
 				fmt.Printf("--> key: uuid: %v, connType: %v.\n", key.uuid, key.connType)
 			}
-			time.Sleep(2 * time.Second)
+			time.Sleep(10 * time.Second)
 		}
 	}()
 

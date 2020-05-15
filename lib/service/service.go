@@ -1415,10 +1415,10 @@ func (process *TeleportProcess) initSSH() error {
 		trace.Component: teleport.Component(teleport.ComponentNode, process.id),
 	})
 
-	var agentPool *reversetunnel.AgentPool
-	var conn *Connector
 	var ebpf bpf.BPF
+	var conn *Connector
 	var s *regular.Server
+	var agentPool *reversetunnel.AgentPool
 
 	process.RegisterCriticalFunc("ssh.node", func() error {
 		var ok bool
@@ -1661,7 +1661,7 @@ func (process *TeleportProcess) initApps() error {
 	//var ebpf bpf.BPF
 	//var s *regular.Server
 
-	process.RegisterCriticalFunc("ssh.node", func() error {
+	process.RegisterCriticalFunc("app.proxy", func() error {
 		var ok bool
 		var event Event
 
@@ -1807,9 +1807,46 @@ func (process *TeleportProcess) initApps() error {
 		// heartbeat.
 		//	s.Start()
 
+		// TODO: File config should parse and give us a []services.App right away
+		// instead of having to do this conversion here.
+		var appSlice []services.App
+		for _, app := range process.Config.App.Apps {
+			appv3 := &services.AppV3{
+				Kind:    services.KindApp,
+				Version: services.V3,
+				Metadata: services.Metadata{
+					Namespace: defaults.Namespace,
+					Name:      app.Name,
+					Labels:    app.Labels,
+				},
+				Spec: services.AppSpecV3{
+					HostUUID:   process.Config.HostUUID,
+					Protocol:   "https",
+					URI:        app.URI.String(),
+					PublicAddr: app.PublicAddr.String(),
+					Commands:   services.LabelsToV2(app.Commands),
+					Version:    teleport.Version,
+				},
+			}
+			// TODO: teleport.RoleApp?
+			state, err := process.storage.GetState(teleport.RoleAdmin)
+			if err != nil {
+				if !trace.IsNotFound(err) {
+					log.Warningf("Failed to get rotation state: %v.", err)
+					return trace.Wrap(err)
+				}
+			} else {
+				appv3.Spec.Rotation = state.Spec.Rotation
+			}
+			appv3.SetTTL(process.Clock, defaults.ServerAnnounceTTL)
+			appSlice = append(appSlice, appv3)
+		}
+
 		app, err := apps.New(&apps.Config{
-			AccessPoint: authClient,
-			Storage:     process.storage,
+			AccessPoint:  authClient,
+			Storage:      process.storage,
+			Apps:         appSlice,
+			CloseContext: process.ExitContext(),
 		})
 		if err != nil {
 			return trace.Wrap(err)
@@ -2398,7 +2435,15 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		proxyLimiter.WrapHandle(webHandler)
+
+		// Wrap web application handler with AAP handler. The AAP handler checks if
+		// the incoming request is for an application being proxied, if it is, it
+		// handles it. Otherwise passed it on to the web application.
+		wrappedHandler := apps.WrapHandler(webHandler)
+
+		// Rate limit all connections coming to the web endpoints of the proxy.
+		proxyLimiter.WrapHandle(wrappedHandler)
+
 		if !process.Config.Proxy.DisableTLS {
 			log.Infof("Using TLS cert %v, key %v", cfg.Proxy.TLSCert, cfg.Proxy.TLSKey)
 			tlsConfig, err := utils.CreateTLSConfiguration(cfg.Proxy.TLSCert, cfg.Proxy.TLSKey, cfg.CipherSuites)

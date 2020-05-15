@@ -41,8 +41,11 @@ var log = logrus.WithFields(logrus.Fields{
 type Config struct {
 	Clock clockwork.Clock
 
-	AccessPoint auth.AccessPoint
-	Storage     *auth.ProcessStorage
+	AccessPoint  auth.AccessPoint
+	Storage      *auth.ProcessStorage
+	CloseContext context.Context
+
+	Apps []services.App
 }
 
 func (c *Config) CheckAndSetDefaults() error {
@@ -56,7 +59,7 @@ func (c *Config) CheckAndSetDefaults() error {
 type Service struct {
 	*Config
 
-	heartbeat *presence.Heartbeat
+	heartbeats []*presence.Heartbeat
 }
 
 func New(config *Config) (*Service, error) {
@@ -65,78 +68,90 @@ func New(config *Config) (*Service, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
-		Mode: presence.HeartbeatModeApp,
-		//Context:   process.ExitContext(),
-		Context:   context.TODO(),
-		Component: teleport.ComponentApps,
-		Announcer: config.AccessPoint,
-		GetApp: func() (services.App, error) {
-			app := services.AppV3{
-				Kind:    services.KindApp,
-				Version: services.V3,
-				Metadata: services.Metadata{
-					Namespace: defaults.Namespace,
-					Name:      "jenkins",
-				},
-				Spec: services.AppSpecV3{
-					HostUUID:   "00000000-0000-0000-0000-000000000000",
-					Protocol:   "https",
-					URI:        "localhost:8080",
-					PublicAddr: "jenkins.example.com",
-					Version:    teleport.Version,
-				},
-			}
-			state, err := config.Storage.GetState(teleport.RoleAdmin)
-			if err != nil {
-				if !trace.IsNotFound(err) {
-					log.Warningf("Failed to get rotation state: %v.", err)
-					return nil, trace.Wrap(err)
-				}
-			} else {
-				app.Spec.Rotation = state.Spec.Rotation
-			}
-			app.SetTTL(config.Clock, defaults.ServerAnnounceTTL)
-			return &app, nil
-		},
-		KeepAlivePeriod: defaults.ServerKeepAliveTTL,
-		AnnouncePeriod:  defaults.ServerAnnounceTTL/2 + utils.RandomDuration(defaults.ServerAnnounceTTL/10),
-		CheckPeriod:     defaults.HeartbeatCheckPeriod,
-		ServerTTL:       defaults.ServerAnnounceTTL,
-	})
-	if err != nil {
-		return nil, trace.Wrap(err)
+	var heartbeats []*presence.Heartbeat
+
+	for _, app := range config.Apps {
+		heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
+			Mode:      presence.HeartbeatModeApp,
+			Context:   config.CloseContext,
+			Component: teleport.ComponentApps,
+			Announcer: config.AccessPoint,
+			GetApp: func() (services.App, error) {
+				return app, nil
+				//app := services.AppV3{
+				//	Kind:    services.KindApp,
+				//	Version: services.V3,
+				//	Metadata: services.Metadata{
+				//		Namespace: defaults.Namespace,
+				//		Name:      "jenkins",
+				//	},
+				//	Spec: services.AppSpecV3{
+				//		HostUUID:   "00000000-0000-0000-0000-000000000000",
+				//		Protocol:   "https",
+				//		URI:        "localhost:8080",
+				//		PublicAddr: "jenkins.example.com",
+				//		Version:    teleport.Version,
+				//	},
+				//}
+				//state, err := config.Storage.GetState(teleport.RoleAdmin)
+				//if err != nil {
+				//	if !trace.IsNotFound(err) {
+				//		log.Warningf("Failed to get rotation state: %v.", err)
+				//		return nil, trace.Wrap(err)
+				//	}
+				//} else {
+				//	app.Spec.Rotation = state.Spec.Rotation
+				//}
+				//app.SetTTL(config.Clock, defaults.ServerAnnounceTTL)
+				//return &app, nil
+			},
+			KeepAlivePeriod: defaults.ServerKeepAliveTTL,
+			AnnouncePeriod:  defaults.ServerAnnounceTTL/2 + utils.RandomDuration(defaults.ServerAnnounceTTL/10),
+			CheckPeriod:     defaults.HeartbeatCheckPeriod,
+			ServerTTL:       defaults.ServerAnnounceTTL,
+		})
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		heartbeats = append(heartbeats, heartbeat)
 	}
 
 	return &Service{
-		Config:    config,
-		heartbeat: heartbeat,
+		Config:     config,
+		heartbeats: heartbeats,
 	}, nil
 }
 
 func (s *Service) Start() error {
-	go s.heartbeat.Run()
+	for _, heartbeat := range s.heartbeats {
+		go heartbeat.Run()
+	}
 
 	return nil
 }
 
+// TODO: It should be safe to call Close() (or Shutdown() below) twice.
 func (s *Service) Close() error {
-	if s.heartbeat != nil {
-		if err := s.heartbeat.Close(); err != nil {
-			log.Warnf("Failed to close heartbeat: %v.", err)
+	for _, heartbeat := range s.heartbeats {
+		if heartbeat != nil {
+			if err := heartbeat.Close(); err != nil {
+				log.Warnf("Failed to close heartbeat: %v.", err)
+			}
+			heartbeat = nil
 		}
-		s.heartbeat = nil
 	}
 
 	return nil
 }
 
 func (s *Service) Shutdown() error {
-	if s.heartbeat != nil {
-		if err := s.heartbeat.Close(); err != nil {
-			log.Warnf("Failed to close heartbeat: %v.", err)
+	for _, heartbeat := range s.heartbeats {
+		if heartbeat != nil {
+			if err := heartbeat.Close(); err != nil {
+				log.Warnf("Failed to close heartbeat: %v.", err)
+			}
+			heartbeat = nil
 		}
-		s.heartbeat = nil
 	}
 
 	return nil
