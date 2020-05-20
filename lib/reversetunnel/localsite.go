@@ -298,10 +298,11 @@ func (s *localSite) addConn(nodeID string, connType services.TunnelType, conn ne
 	defer s.Unlock()
 
 	rconn := newRemoteConn(&connConfig{
-		conn:             conn,
-		sconn:            sconn,
-		accessPoint:      s.accessPoint,
-		tunnelType:       string(services.NodeTunnel),
+		conn:        conn,
+		sconn:       sconn,
+		accessPoint: s.accessPoint,
+		//tunnelType:       string(services.NodeTunnel),
+		tunnelType:       string(connType),
 		proxyName:        s.srv.ID,
 		clusterName:      s.domainName,
 		nodeID:           nodeID,
@@ -422,8 +423,15 @@ func (s *localSite) getRemoteConn(addr string, connType services.TunnelType) (*r
 func (s *localSite) chanTransportConn(rconn *remoteConn) (net.Conn, error) {
 	s.log.Debugf("Connecting to %v through tunnel.", rconn.conn.RemoteAddr())
 
+	fmt.Printf("--> rconn.tunnelType: %v.\n", rconn.tunnelType)
+
+	address := LocalNode
+	if rconn.tunnelType == string(services.AppTunnel) {
+		address = "localhost:8081"
+	}
+
 	conn, markInvalid, err := connectProxyTransport(rconn.sconn, &dialReq{
-		Address: LocalNode,
+		Address: address,
 	})
 	if err != nil {
 		if markInvalid {

@@ -117,6 +117,7 @@ func connectProxyTransport(sconn ssh.Conn, req *dialReq) (*utils.ChConn, bool, e
 		return nil, false, trace.Wrap(err)
 	}
 
+	fmt.Printf("--> connectProxyTransport: %#v.\n", req)
 	payload, err := marshalDialReq(req)
 	if err != nil {
 		return nil, false, trace.Wrap(err)
