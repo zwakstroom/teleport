@@ -60,6 +60,7 @@ func SetSession(w http.ResponseWriter, user, sid string) error {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
+		Domain:   ".example.com",
 	}
 	http.SetCookie(w, c)
 	return nil
@@ -72,6 +73,7 @@ func ClearSession(w http.ResponseWriter) error {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
+		Domain:   ".example.com",
 	})
 	return nil
 }

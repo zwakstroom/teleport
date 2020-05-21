@@ -37,6 +37,7 @@ import (
 	"time"
 
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/lib/apps"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/client"
 	"github.com/gravitational/teleport/lib/defaults"
@@ -117,14 +118,69 @@ type Config struct {
 type RewritingHandler struct {
 	http.Handler
 	handler *Handler
+
+	webHostAddr string
+	appsHandler *apps.Handler
 }
 
-func (r *RewritingHandler) GetHandler() *Handler {
-	return r.handler
+func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Try and extract the requested host from the host header. If not possible,
+	// fallback to just showing the Web UI.
+	requestedHost, err := utils.Host(r.Host)
+	if err != nil {
+		h.Handler.ServeHTTP(w, r)
+		return
+	}
+
+	// If the requested host differs from the host the Web UI is running on, the
+	// caller is asking for AAP, otherwise the Web UI.
+	if requestedHost != h.webHostAddr {
+		// TODO: checkBearerToken should be true!
+		ctx, err := h.handler.AuthenticateRequest(w, r, false)
+		if err != nil {
+			// Redirect to the Teleport login page.
+			http.Error(w, "failed to authenticate request", 401)
+			log.Debugf("Failed to authenticate request for application %v: %v.", requestedHost, err)
+			return
+		}
+
+		// Extract services.RoleSet from certificate.
+		clt, err := ctx.GetClient()
+		if err != nil {
+			http.Error(w, "TODO", 401)
+			return
+		}
+		cert, _, err := ctx.GetCertificates()
+		if err != nil {
+			http.Error(w, "TODO", 401)
+			return
+		}
+		roles, traits, err := services.ExtractFromCertificate(clt, cert)
+		if err != nil {
+			http.Error(w, "TODO", 401)
+			return
+		}
+		checker, err := services.FetchRoles(roles, clt, traits)
+		if err != nil {
+			http.Error(w, "TODO", 401)
+			return
+		}
+
+		// Add access checker
+		r := r.WithContext(context.WithValue(r.Context(), "checker", checker))
+
+		h.appsHandler.ServeHTTP(w, r)
+		return
+	}
+	h.Handler.ServeHTTP(w, r)
 }
 
-func (r *RewritingHandler) Close() error {
-	return r.handler.Close()
+func (h *RewritingHandler) GetHandler() *Handler {
+	return h.handler
+}
+
+func (h *RewritingHandler) Close() error {
+	return h.handler.Close()
 }
 
 // NewHandler returns a new instance of web proxy handler
@@ -324,7 +380,26 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 		plugin.AddHandlers(h)
 	}
 
+	webHostAddr, err := utils.Host(cfg.ProxySettings.SSH.PublicAddr)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Wrap web application handler with AAP handler. The AAP handler checks if
+	// the incoming request is for an application being proxied, if it is, it
+	// handles it. Otherwise passed it on to the web application.
+	appsHandler, err := apps.NewHandler(&apps.HandlerConfig{
+		AuthClient:  cfg.ProxyClient,
+		ProxyClient: cfg.Proxy,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	return &RewritingHandler{
+		webHostAddr: webHostAddr,
+		appsHandler: appsHandler,
+
 		Handler: httplib.RewritePaths(h,
 			httplib.Rewrite("/webapi/sites/([^/]+)/sessions/(.*)", "/webapi/sites/$1/namespaces/default/sessions/$2"),
 			httplib.Rewrite("/webapi/sites/([^/]+)/sessions", "/webapi/sites/$1/namespaces/default/sessions"),

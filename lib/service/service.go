@@ -2440,20 +2440,21 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 			return trace.Wrap(err)
 		}
 
-		// Wrap web application handler with AAP handler. The AAP handler checks if
-		// the incoming request is for an application being proxied, if it is, it
-		// handles it. Otherwise passed it on to the web application.
-		wrappedHandler, err := apps.NewHandler(&apps.HandlerConfig{
-			AuthClient:  conn.Client,
-			ProxyClient: tsrv,
-			Next:        webHandler,
-		})
-		if err != nil {
-			return trace.Wrap(err)
-		}
+		//// Wrap web application handler with AAP handler. The AAP handler checks if
+		//// the incoming request is for an application being proxied, if it is, it
+		//// handles it. Otherwise passed it on to the web application.
+		//wrappedHandler, err := apps.NewHandler(&apps.HandlerConfig{
+		//	AuthClient:  conn.Client,
+		//	ProxyClient: tsrv,
+		//	Next:        webHandler,
+		//})
+		//if err != nil {
+		//	return trace.Wrap(err)
+		//}
 
-		// Rate limit all connections coming to the web endpoints of the proxy.
-		proxyLimiter.WrapHandle(wrappedHandler)
+		//// Rate limit all connections coming to the web endpoints of the proxy.
+		//proxyLimiter.WrapHandle(wrappedHandler)
+		proxyLimiter.WrapHandle(webHandler)
 
 		if !process.Config.Proxy.DisableTLS {
 			log.Infof("Using TLS cert %v, key %v", cfg.Proxy.TLSCert, cfg.Proxy.TLSKey)

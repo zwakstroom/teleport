@@ -1320,6 +1320,9 @@ type AccessChecker interface {
 	// CheckAccessToServer checks access to server.
 	CheckAccessToServer(login string, server Server) error
 
+	// CheckAccessToApp checks access to an application.
+	CheckAccessToApp(app App) error
+
 	// CheckAccessToRule checks access to a rule within a namespace.
 	CheckAccessToRule(context RuleContext, namespace string, rule string, verb string, silent bool) error
 
@@ -1729,6 +1732,56 @@ func (set RoleSet) CheckLoginDuration(ttl time.Duration) ([]string, error) {
 		out = append(out, login)
 	}
 	return out, nil
+}
+
+// CheckAccessToApp checks if a role has access to an application. Deny rules
+// are checked first then allow rules. Access to an application is determined by
+// namespaces and labels.
+func (set RoleSet) CheckAccessToApp(app App) error {
+	var errs []error
+
+	// Check deny rules: a matching namespace and label in the deny section
+	// prohibits access.
+	for _, role := range set {
+		matchNamespace, namespaceMessage := MatchNamespace(role.GetNamespaces(Deny), app.GetNamespace())
+		matchLabels, labelsMessage, err := MatchLabels(role.GetNodeLabels(Deny), app.GetAllLabels())
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		if matchNamespace && matchLabels {
+			if log.GetLevel() == log.DebugLevel {
+				log.WithFields(log.Fields{
+					trace.Component: teleport.ComponentRBAC,
+				}).Debugf("Access to app %v denied, deny rule in %v matched; match(namespace=%v, label=%v)",
+					app.GetName(), role.GetName(), namespaceMessage, labelsMessage)
+			}
+			return trace.AccessDenied("access to app denied")
+		}
+	}
+
+	// Check allow rules: namespace and label both have to match in to be granted access.
+	for _, role := range set {
+		matchNamespace, namespaceMessage := MatchNamespace(role.GetNamespaces(Allow), app.GetNamespace())
+		matchLabels, labelsMessage, err := MatchLabels(role.GetNodeLabels(Allow), app.GetAllLabels())
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		if matchNamespace && matchLabels {
+			return nil
+		}
+		if log.GetLevel() == log.DebugLevel {
+			deniedError := trace.AccessDenied("role=%v, match(namespace=%v, label=%v)",
+				role.GetName(), namespaceMessage, labelsMessage)
+			errs = append(errs, deniedError)
+		}
+	}
+
+	if log.GetLevel() == log.DebugLevel {
+		log.WithFields(log.Fields{
+			trace.Component: teleport.ComponentRBAC,
+		}).Debugf("Access to app %v denied, no allow rule matched; %v", app.GetName(), errs)
+	}
+	return trace.AccessDenied("access to app denied")
 }
 
 // CheckAccessToServer checks if a role has access to a node. Deny rules are

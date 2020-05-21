@@ -36,7 +36,7 @@ import (
 type HandlerConfig struct {
 	AuthClient  auth.ClientI
 	ProxyClient reversetunnel.Server
-	Next        http.Handler
+	//Next        http.Handler
 }
 
 func (c *HandlerConfig) CheckAndSetDefaults() error {
@@ -46,9 +46,9 @@ func (c *HandlerConfig) CheckAndSetDefaults() error {
 	if c.ProxyClient == nil {
 		return trace.BadParameter("missing proxy client")
 	}
-	if c.Next == nil {
-		return trace.BadParameter("missing next http.Handler")
-	}
+	//if c.Next == nil {
+	//	return trace.BadParameter("missing next http.Handler")
+	//}
 
 	return nil
 }
@@ -67,6 +67,10 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 	}, nil
 }
 
+type checker interface {
+	CheckAccessToApp(services.App) error
+}
+
 // ServeHTTP will try and find the proxied application that the caller is
 // requesting. If any error occurs or the application is not found, the
 // request is passed to the next handler (which would be the Web UI).
@@ -75,7 +79,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	applist, err := a.AuthClient.GetApps(context.TODO(), defaults.Namespace)
 	if err != nil {
 		//fmt.Printf("--> Failed to get application list: %v.\n", err)
-		a.Next.ServeHTTP(w, r)
+		//a.Next.ServeHTTP(w, r)
 		return
 	}
 
@@ -89,14 +93,14 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		wantHost, _, err := utils.SplitHostPort(app.GetPublicAddr())
 		if err != nil {
 			//fmt.Printf("--> Failed to parse application hostname: %v: %v.\n", app.GetPublicAddr(), err)
-			a.Next.ServeHTTP(w, r)
+			//a.Next.ServeHTTP(w, r)
 			return
 		}
 
 		gotHost, _, err := utils.SplitHostPort(r.Host)
 		if err != nil {
 			//	fmt.Printf("--> Failed to parse requested hostname: %v: %v.\n", r.Host, err)
-			a.Next.ServeHTTP(w, r)
+			//a.Next.ServeHTTP(w, r)
 			return
 		}
 
@@ -112,7 +116,20 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// If no matching application was found, send the request to the web ui.
 	if matchedApp == nil {
 		//fmt.Printf("--> Failed to parse requested hostname: %v: %v.\n", r.Host, err)
-		a.Next.ServeHTTP(w, r)
+		//a.Next.ServeHTTP(w, r)
+		http.Error(w, fmt.Sprintf("unknown application %v", r.Host), 404)
+		return
+	}
+
+	// TODO: Does this even work??
+	checker, ok := r.Context().Value("checker").(checker)
+	if !ok {
+		http.Error(w, "TODO", 500)
+		return
+	}
+	err = checker.CheckAccessToApp(matchedApp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("access to app %v denied", matchedApp.GetName()), 401)
 		return
 	}
 
