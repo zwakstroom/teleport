@@ -19,16 +19,18 @@ package events
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"gopkg.in/check.v1"
 
 	"github.com/gravitational/teleport/lib/fixtures"
+	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/trace"
 )
 
-// TestProtoEmitter tests edge cases of proto emitter implementation
-func (a *EventsTestSuite) TestProtoEmitter(c *check.C) {
+// TestProtoStreamer tests edge cases of proto streamer implementation
+func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 	type testCase struct {
 		name       string
 		bufferSize int64
@@ -66,15 +68,20 @@ func (a *EventsTestSuite) TestProtoEmitter(c *check.C) {
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
+
 testcases:
-	for _, tc := range testCases {
-		upload := NewMemoryUpload()
+	for i, tc := range testCases {
+		uploader := NewMemoryUploader()
 		pool := utils.NewSliceSyncPool(tc.bufferSize)
-		emitter, err := NewProtoEmitter(ProtoEmitterConfig{Upload: upload, Pool: pool})
+		streamer, err := NewProtoStreamer(ProtoStreamerConfig{Uploader: uploader, Pool: pool})
+		c.Assert(err, check.IsNil)
+
+		sid := session.ID(fmt.Sprintf("test-%v", i))
+		stream, err := streamer.CreateAuditStream(ctx, sid)
 		c.Assert(err, check.IsNil)
 
 		for _, event := range tc.events {
-			err := emitter.EmitAuditEvent(ctx, event)
+			err := stream.EmitAuditEvent(ctx, event)
 			if tc.err != nil {
 				c.Assert(err, check.FitsTypeOf, tc.err)
 				continue testcases
@@ -82,16 +89,20 @@ testcases:
 				c.Assert(err, check.IsNil)
 			}
 		}
-		err = emitter.Complete(ctx)
+		err = stream.Complete(ctx)
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent
-		for _, part := range upload.Parts() {
+		parts, err := uploader.GetParts(uploader.GetUploads()[0].ID)
+		c.Assert(err, check.IsNil)
+
+		for _, part := range parts {
 			reader := NewProtoReader(bytes.NewReader(part))
 			out, err := reader.ReadAll()
 			c.Assert(err, check.IsNil, check.Commentf("part crash %#v", part))
 			outEvents = append(outEvents, out...)
 		}
+		fmt.Printf("Test case %v\n", tc.name)
 		fixtures.DeepCompareSlices(c, tc.events, outEvents)
 	}
 }

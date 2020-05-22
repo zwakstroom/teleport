@@ -104,8 +104,8 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 			},
 			Data: dataCopy,
 		}
-		if printEvent.Size() > MaxProtoMessageSize {
-			extraBytes := printEvent.Size() - MaxProtoMessageSize
+		if printEvent.Size() > MaxProtoMessageSizeBytes {
+			extraBytes := printEvent.Size() - MaxProtoMessageSizeBytes
 			printEvent.Data = dataCopy[:extraBytes]
 			printEvent.Bytes = int64(len(printEvent.Data))
 			dataCopy = dataCopy[extraBytes:]

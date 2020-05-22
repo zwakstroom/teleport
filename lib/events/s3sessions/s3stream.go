@@ -20,7 +20,6 @@ import (
 	"context"
 	"io"
 	"sort"
-	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -33,8 +32,8 @@ import (
 	"github.com/gravitational/trace"
 )
 
-// CreateAuditStream creates stream using multipart upload
-func (h *Handler) CreateAuditStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
+// CreateUpload creates a multipart upload
+func (h *Handler) CreateUpload(ctx context.Context, sessionID session.ID) (*events.StreamUpload, error) {
 	start := time.Now()
 	defer func() { h.Infof("Upload created in %v.", time.Since(start)) }()
 
@@ -46,111 +45,68 @@ func (h *Handler) CreateAuditStream(ctx context.Context, sessionID session.ID) (
 		input.ServerSideEncryption = aws.String(s3.ServerSideEncryptionAwsKms)
 	}
 
-	// Create the multipart upload
 	resp, err := h.client.CreateMultipartUploadWithContext(ctx, input)
 	if err != nil {
 		return nil, ConvertS3Error(err)
 	}
 
-	up := &upload{
-		mtx: &sync.Mutex{},
-		id:  *resp.UploadId,
-		h:   h,
-		key: *input.Key,
-	}
-
-	return events.NewProtoEmitter(events.ProtoEmitterConfig{Upload: up, Pool: h.slicePool})
-}
-
-// ResumeAuditStream resumes stream
-func (h *Handler) ResumeAuditStream(ctx context.Context, sessionID session.ID) (events.Stream, error) {
-	return nil, trace.BadParameter("not supported")
-}
-
-// upload implements events.Upload interface
-type upload struct {
-	mtx            *sync.Mutex
-	key            string
-	part           int64
-	h              *Handler
-	id             string
-	completedParts []*s3.CompletedPart
-}
-
-// Close cancels all resources allocated and associated with the
-// upload without cancelling the upload itself
-func (u *upload) Close() error {
-	return nil
-}
-
-func (u *upload) nextPart() int64 {
-	u.mtx.Lock()
-	defer u.mtx.Unlock()
-	u.part++
-	return u.part
-}
-
-// sortedParts returns completed uploaded parts sorted in PartNumber order
-// required by AWS API
-func (u *upload) sortedParts() []*s3.CompletedPart {
-	u.mtx.Lock()
-	defer u.mtx.Unlock()
-	// Parts must be sorted in PartNumber order.
-	sort.Slice(u.completedParts, func(i, j int) bool {
-		return *u.completedParts[i].PartNumber < *u.completedParts[j].PartNumber
-	})
-	out := make([]*s3.CompletedPart, len(u.completedParts))
-	for i, part := range u.completedParts {
-		out[i] = &s3.CompletedPart{
-			ETag:       aws.String(*part.ETag),
-			PartNumber: aws.Int64(*part.PartNumber),
-		}
-	}
-	return out
-}
-
-// Complete completes the upload
-func (u *upload) Complete(ctx context.Context) error {
-	start := time.Now()
-	defer func() { u.h.Infof("UploadPart(%v) completed in %v.", u.id, time.Since(start)) }()
-
-	params := &s3.CompleteMultipartUploadInput{
-		Bucket:          aws.String(u.h.Bucket),
-		Key:             aws.String(u.key),
-		UploadId:        aws.String(u.id),
-		MultipartUpload: &s3.CompletedMultipartUpload{Parts: u.sortedParts()},
-	}
-	_, err := u.h.client.CompleteMultipartUploadWithContext(ctx, params)
-	if err != nil {
-		return ConvertS3Error(err)
-	}
-	return nil
+	return &events.StreamUpload{Key: *resp.Key, ID: *resp.UploadId}, nil
 }
 
 // UploadPart uploads part
-func (u *upload) UploadPart(ctx context.Context, partNumber int, partBody io.ReadSeeker) error {
+func (h *Handler) UploadPart(ctx context.Context, upload events.StreamUpload, partNumber int64, partBody io.ReadSeeker) (*events.StreamPart, error) {
 	start := time.Now()
-	defer func() { u.h.Infof("UploadPart(%v) part(%v) uploaded in %v.", u.id, u.part, time.Since(start)) }()
+	defer func() { h.Infof("UploadPart(%v) part(%v) uploaded in %v.", upload.ID, partNumber, time.Since(start)) }()
 
 	// This upload exceeded maximum number of supported parts, error now.
 	if partNumber > s3manager.MaxUploadParts {
-		return trace.LimitExceeded(
+		return nil, trace.LimitExceeded(
 			"exceeded total allowed S3 limit MaxUploadParts (%d). Adjust PartSize to fit in this limit", s3manager.MaxUploadParts)
 	}
 
 	params := &s3.UploadPartInput{
-		Bucket:     aws.String(u.h.Bucket),
-		Key:        aws.String(u.key),
-		UploadId:   aws.String(u.id),
+		Bucket:     aws.String(h.Bucket),
+		Key:        aws.String(upload.Key),
+		UploadId:   aws.String(upload.ID),
 		Body:       partBody,
-		PartNumber: aws.Int64(int64(partNumber)),
+		PartNumber: aws.Int64(partNumber),
 	}
 
-	resp, err := u.h.client.UploadPartWithContext(ctx, params)
+	resp, err := h.client.UploadPartWithContext(ctx, params)
+	if err != nil {
+		return nil, ConvertS3Error(err)
+	}
+
+	return &events.StreamPart{ETag: *resp.ETag, Number: partNumber}, nil
+}
+
+// CompleteUpload completes the upload
+func (h *Handler) CompleteUpload(ctx context.Context, upload events.StreamUpload, parts []events.StreamPart) error {
+	start := time.Now()
+	defer func() { h.Infof("UploadPart(%v) completed in %v.", upload.ID, time.Since(start)) }()
+
+	// Parts must be sorted in PartNumber order.
+	sort.Slice(parts, func(i, j int) bool {
+		return parts[i].Number < parts[j].Number
+	})
+
+	completedParts := make([]*s3.CompletedPart, len(parts))
+	for i := range parts {
+		completedParts[i] = &s3.CompletedPart{
+			ETag:       aws.String(parts[i].ETag),
+			PartNumber: aws.Int64(parts[i].Number),
+		}
+	}
+
+	params := &s3.CompleteMultipartUploadInput{
+		Bucket:          aws.String(h.Bucket),
+		Key:             aws.String(upload.Key),
+		UploadId:        aws.String(upload.ID),
+		MultipartUpload: &s3.CompletedMultipartUpload{Parts: completedParts},
+	}
+	_, err := h.client.CompleteMultipartUploadWithContext(ctx, params)
 	if err != nil {
 		return ConvertS3Error(err)
 	}
-
-	u.completedParts = append(u.completedParts, &s3.CompletedPart{ETag: resp.ETag, PartNumber: aws.Int64(int64(partNumber))})
 	return nil
 }

@@ -38,7 +38,7 @@ import (
 // HandlerSuite is a conformance test suite to verify external UploadHandlers
 // behavior.
 type HandlerSuite struct {
-	Handler events.UploadStreamer
+	Handler events.MultipartHandler
 }
 
 func (s *HandlerSuite) UploadDownload(c *check.C) {

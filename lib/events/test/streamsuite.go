@@ -14,11 +14,17 @@ import (
 	"gopkg.in/check.v1"
 )
 
-// Stream tests stream upload and subsequent download and read
+// Stream tests stream upload and subsequent download and reads the results
 func (s *HandlerSuite) Stream(c *check.C) {
 	ctx := context.TODO()
 	id := session.NewID()
-	stream, err := s.Handler.CreateAuditStream(ctx, id)
+
+	streamer, err := events.NewProtoStreamer(events.ProtoStreamerConfig{
+		Uploader: s.Handler,
+	})
+	c.Assert(err, check.IsNil)
+
+	stream, err := streamer.CreateAuditStream(ctx, id)
 	c.Assert(err, check.IsNil)
 
 	inEvents := []events.AuditEvent{&SessionStart, &SessionPrint, &SessionEnd}

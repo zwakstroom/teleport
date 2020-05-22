@@ -28,45 +28,51 @@ import (
 	"time"
 
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
+	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
-// Upload represents upload operation, for example
-// S3 multipart upload
-type Upload interface {
-	// UploadPart uploads part by supplying
-	// monotonically incremented part number and readSeeker
-	// if part index is specified twice, it will be overwritten
-	// result of the upload will be assembled from parts
-	// sorted by the number
-	UploadPart(ctx context.Context, partNumber int, rs io.ReadSeeker) error
-	// Complete completes upload by assembling parts from the numbers
-	Complete(ctx context.Context) error
-	// Close cancels all resources associated with upload
-	// without aborting the upload itself
-	Close() error
-}
+const (
+	// Int32Size is a constant for 32 bit integer byte size
+	Int32Size = 4
 
-// ProtoEmitterConfig supplies proto emitter configuration
-type ProtoEmitterConfig struct {
-	// Upload handles upload to the storage
-	Upload Upload
-	// Pool provides pool of byte slices
-	Pool utils.SlicePool
+	// MaxProtoMessageSizeBytes is maximum protobuf marshaled message size
+	MaxProtoMessageSizeBytes = 64 * 1024
+
+	// MaxUploadParts is the maximum allowed number of parts in a multi-part upload
+	// on Amazon S3.
+	MaxUploadParts = 10000
+
+	// MinUploadPartSizeBytes is the minimum allowed part size when uploading a part to
+	// Amazon S3.
+	MinUploadPartSizeBytes = 1024 * 1024 * 5
+
+	// ReservedParts is the amount of parts reserved by default
+	ReservedParts = 100
+)
+
+// ProtoStreamerConfig
+type ProtoStreamerConfig struct {
+	Uploader MultipartUploader
 	// ConcurrentUploads specifies amount of concurrent uploads
 	ConcurrentUploads int
+	// Pool provides pool of byte slices
+	Pool utils.SlicePool
 }
 
-// CheckAndSetDefaults checks and sets default values
-func (cfg *ProtoEmitterConfig) CheckAndSetDefaults() error {
-	if cfg.Upload == nil {
-		return trace.BadParameter("missing parameter Upload")
+// CheckAndSetDefaults
+func (cfg *ProtoStreamerConfig) CheckAndSetDefaults() error {
+	if cfg.Uploader == nil {
+		return trace.BadParameter("missing parameter Uploader")
 	}
 	if cfg.Pool == nil {
-		return trace.BadParameter("missing parameter Pool")
+		// the trick of the upload size is to be two messages bigger than minimum upload of AWS (5MB),
+		// to make sure that upload always succeeds and every message fits without extra allocation
+		cfg.Pool = utils.NewSliceSyncPool(MinUploadPartSizeBytes + 2*MaxProtoMessageSizeBytes)
 	}
 	if cfg.ConcurrentUploads == 0 {
 		cfg.ConcurrentUploads = defaults.ConcurrentUploadsPerStream
@@ -74,19 +80,86 @@ func (cfg *ProtoEmitterConfig) CheckAndSetDefaults() error {
 	return nil
 }
 
-// NewProtoEmitter returns emitter that
+// NewProtoStreamer wraps a streamer and tracks the state of the individual
+func NewProtoStreamer(cfg ProtoStreamerConfig) (*ProtoStreamer, error) {
+	if err := cfg.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &ProtoStreamer{
+		cfg: cfg,
+	}, nil
+}
+
+// ProtoStreamer wraps a streamer and tracks the state of the individual
+// stream upload state
+type ProtoStreamer struct {
+	cfg ProtoStreamerConfig
+}
+
+// CreateAuditStream creates audit stream
+func (s *ProtoStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	upload, err := s.cfg.Uploader.CreateUpload(ctx, sid)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return NewProtoStream(ProtoStreamConfig{
+		Upload:            *upload,
+		Pool:              s.cfg.Pool,
+		Uploader:          s.cfg.Uploader,
+		ConcurrentUploads: s.cfg.ConcurrentUploads,
+	})
+}
+
+// ResumeAuditStream resumes the stream that
+// has not been completed yet
+func (s *ProtoStreamer) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+	return nil, trace.NotImplemented("not implemented")
+}
+
+// ProtoStreamConfig supplies proto emitter configuration
+type ProtoStreamConfig struct {
+	// Upload is the uplodad this stream is handling
+	Upload StreamUpload
+	// Uploader handles upload to the storage
+	Uploader MultipartUploader
+	// Concurrent uploads specifies amount of concurrent uploads
+	ConcurrentUploads int
+	// Pool is a pool of byte slices
+	Pool utils.SlicePool
+}
+
+// CheckAndSetDefaults checks and sets default values
+func (cfg *ProtoStreamConfig) CheckAndSetDefaults() error {
+	if cfg.Upload.ID == "" {
+		return trace.BadParameter("missing parameter Upload.ID")
+	}
+	if cfg.Uploader == nil {
+		return trace.BadParameter("missing parameter Uploader")
+	}
+	if cfg.ConcurrentUploads == 0 {
+		return trace.BadParameter("missing parameter ConcurrentUploads")
+	}
+	if cfg.Pool == nil {
+		return trace.BadParameter("misssing parameter Pool")
+	}
+	return nil
+}
+
+// NewProtoStream returns emitter that
 // writes a protobuf marshaled stream to the multipart uploader
-func NewProtoEmitter(cfg ProtoEmitterConfig) (*ProtoEmitter, error) {
+func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 	if err := cfg.CheckAndSetDefaults(); err != nil {
 		return nil, trace.Wrap(err)
 	}
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	completeCtx, complete := context.WithCancel(context.Background())
 	uploadsCtx, uploadsDone := context.WithCancel(context.Background())
-	emitter := &ProtoEmitter{
-		cfg:        cfg,
-		eventsCh:   make(chan *OneOf),
-		semUploads: make(chan struct{}, cfg.ConcurrentUploads),
+	stream := &ProtoStream{
+		cfg:      cfg,
+		eventsCh: make(chan *OneOf),
 
 		cancelCtx: cancelCtx,
 		cancel:    cancel,
@@ -97,14 +170,24 @@ func NewProtoEmitter(cfg ProtoEmitterConfig) (*ProtoEmitter, error) {
 		uploadsCtx:  uploadsCtx,
 		uploadsDone: uploadsDone,
 	}
-	go emitter.receiveAndUpload()
-	return emitter, nil
+
+	writer := &sliceWriter{
+		proto:             stream,
+		activeUploads:     make(map[int64]*activeUpload),
+		completedUploadsC: make(chan *activeUpload),
+		semUploads:        make(chan struct{}, cfg.ConcurrentUploads),
+		// TODO (klizhentas) when resuming stream this should be set
+		lastPartNumber: 0,
+	}
+
+	go writer.receiveAndUpload()
+	return stream, nil
 }
 
-// ProtoEmitter implements a protobuf stream emitter,
+// ProtoStream implements a protobuf stream emitter,
 // that is not concurrent safe
-type ProtoEmitter struct {
-	cfg ProtoEmitterConfig
+type ProtoStream struct {
+	cfg ProtoStreamConfig
 
 	slice    *slice
 	eventsCh chan *OneOf
@@ -124,20 +207,18 @@ type ProtoEmitter struct {
 	uploadsCtx context.Context
 	// uploadsDone is a function signalling that uploads have completed
 	uploadsDone context.CancelFunc
-
-	semUploads chan struct{}
 }
 
 // EmitAuditEvent emits a single audit event to the stream
-func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
 	oneof, err := ToOneOf(event)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	messageSize := oneof.Size()
-	if messageSize > MaxProtoMessageSize {
-		return trace.BadParameter("record size %v exceeds max message size of %v bytes", messageSize, MaxProtoMessageSize)
+	if messageSize > MaxProtoMessageSizeBytes {
+		return trace.BadParameter("record size %v exceeds max message size of %v bytes", messageSize, MaxProtoMessageSizeBytes)
 	}
 
 	if int64(messageSize) > s.cfg.Pool.Size()-Int32Size {
@@ -162,12 +243,12 @@ func (s *ProtoEmitter) EmitAuditEvent(ctx context.Context, event AuditEvent) err
 }
 
 // Complete completes the upload waits for completion and returns all allocated resources
-func (s *ProtoEmitter) Complete(ctx context.Context) error {
+func (s *ProtoStream) Complete(ctx context.Context) error {
 	s.complete()
 	select {
-	// wait for all in-flight uploads to complete
+	// wait for all in-flight uploads to complete and stream to be completed
 	case <-s.uploadsCtx.Done():
-		return s.cfg.Upload.Complete(ctx)
+		return nil
 	case <-ctx.Done():
 		return trace.ConnectionProblem(ctx.Err(), "context has cancelled before complete could succeed")
 	}
@@ -175,89 +256,64 @@ func (s *ProtoEmitter) Complete(ctx context.Context) error {
 
 // Close cancels all resources, aborts all operations
 // and exits immediatelly
-func (s *ProtoEmitter) Close() error {
+func (s *ProtoStream) Close() error {
 	s.cancel()
 	return nil
 }
 
+// sliceWriter is a helper struct that coordinates
+// writing slices and checkpointing
+type sliceWriter struct {
+	proto *ProtoStream
+	// current is the current slice being written to
+	current *slice
+	// lastPartNumber is the last assigned part number
+	lastPartNumber int64
+	// activeUploads tracks active uploads
+	activeUploads map[int64]*activeUpload
+	// completedUploadsC receives uploads that have been completed
+	completedUploadsC chan *activeUpload
+	// semUploads controls concurrent uploads that are in flight
+	semUploads chan struct{}
+	// completedParts is the list of completed parts
+	completedParts []StreamPart
+}
+
 // receiveAndUpload receives and uploads serialized events
-// this function implementation uses no-lock strategy,
-// becasuse it is serialized using single event loop and function local
-// variables
-func (s *ProtoEmitter) receiveAndUpload() {
-	var current *slice
-	var uploads []context.Context
-
-	partNumber := 0
-	waitForUploads := func() {
-		start := time.Now().UTC()
-		for _, upload := range uploads {
-			select {
-			case <-upload.Done():
-				log.Debugf("Waited upload for %v.", time.Since(start))
-			case <-s.cancelCtx.Done():
-			}
-		}
-	}
-
-	// startUploadCurrent starts uploading current slice
-	// and adds it to the waiting list
-	startUploadCurrent := func() error {
-		partNumber++
-		uploadCtx, err := s.startUpload(partNumber, current)
-		if err != nil {
-			return trace.Wrap(err)
-		}
-		uploads = append(uploads, uploadCtx)
-		current = nil
-		return nil
-	}
-
-	submitEvent := func(oneof *OneOf) error {
-		if current == nil {
-			current = &slice{
-				data: s.cfg.Pool.Get(),
-			}
-		}
-		return current.emitAuditEvent(oneof)
-	}
-
-	// this function waits for in flight upload
-	// to finish before closing the context signalling closure
-	defer func() {
-		defer s.uploadsDone()
-		waitForUploads()
-	}()
-
+func (w *sliceWriter) receiveAndUpload() {
 	for {
 		select {
-		case <-s.cancelCtx.Done():
-			// cancel stope all operations without waiting
+		case <-w.proto.cancelCtx.Done():
+			// cancel stops all operations without waiting
 			return
-		case <-s.completeCtx.Done():
-			// complete expects all in-flight uploads to complete
-			// and the last remaining data to be scheduled for upload
-			if current == nil {
+		case <-w.proto.completeCtx.Done():
+			// send remaining data for upload
+			if err := w.startUploadCurrentSlice(); err != nil {
 				return
 			}
-			if err := startUploadCurrent(); err != nil {
-				log.WithError(err).Warningf("Failed to start upload.")
+			defer w.completeStream()
+			return
+		case upload := <-w.completedUploadsC:
+			part, err := upload.getPart()
+			if err != nil {
+				log.WithError(err).Error("Could not upload part (assuming retries), aborting.")
+				w.proto.Close()
 				return
 			}
-			return
-		case oneof := <-s.eventsCh:
-			if err := submitEvent(oneof); err != nil {
+			delete(w.activeUploads, part.Number)
+			w.completedParts = append(w.completedParts, *part)
+		case oneof := <-w.proto.eventsCh:
+			if err := w.submitEvent(oneof); err != nil {
 				if !trace.IsLimitExceeded(err) {
 					log.WithError(err).Error("Lost event.")
 					continue
 				}
 				// this logic blocks the EmitAuditEvent in case if the
 				// upload has not completed and the current slice is out of capacity
-				if err := startUploadCurrent(); err != nil {
-					log.WithError(err).Warningf("Failed to start upload.")
+				if err := w.startUploadCurrentSlice(); err != nil {
 					return
 				}
-				if err := submitEvent(oneof); err != nil {
+				if err := w.submitEvent(oneof); err != nil {
 					log.WithError(err).Error("Lost event.")
 					continue
 				}
@@ -266,36 +322,93 @@ func (s *ProtoEmitter) receiveAndUpload() {
 	}
 }
 
+// startUploadCurrentSlice starts uploading current slice
+// and adds it to the waiting list
+func (w *sliceWriter) startUploadCurrentSlice() error {
+	if w.current == nil {
+		return nil
+	}
+	w.lastPartNumber++
+	activeUpload, err := w.startUpload(w.lastPartNumber, w.current)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	w.activeUploads[w.lastPartNumber] = activeUpload
+	w.current = nil
+	return nil
+}
+
+func (w *sliceWriter) submitEvent(oneof *OneOf) error {
+	if w.current == nil {
+		w.current = &slice{
+			data: w.proto.cfg.Pool.Get(),
+		}
+	}
+	return w.current.emitAuditEvent(oneof)
+}
+
+// completeStream  waits for in flight uploads to finish
+// and completes the stream
+func (w *sliceWriter) completeStream() {
+	defer w.proto.uploadsDone()
+	for range w.activeUploads {
+		select {
+		case upload := <-w.completedUploadsC:
+			part, err := upload.getPart()
+			if err != nil {
+				log.WithError(err).Warningf("Failed to upload part.")
+				continue
+			}
+			w.completedParts = append(w.completedParts, *part)
+		case <-w.proto.cancelCtx.Done():
+			return
+		}
+	}
+	w.proto.cfg.Uploader.CompleteUpload(w.proto.cancelCtx, w.proto.cfg.Upload, w.completedParts)
+}
+
 // startUpload acquires upload semaphore and starts upload, returns error
 // only if there is a critical error
-func (s *ProtoEmitter) startUpload(partNumber int, slice *slice) (context.Context, error) {
+func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload, error) {
+	// acquire semaphore limiting concurrent uploads
 	select {
-	case s.semUploads <- struct{}{}:
-	case <-s.cancelCtx.Done():
-		return nil, trace.ConnectionProblem(s.parentCtx.Err(), "emitter has been closed")
+	case w.semUploads <- struct{}{}:
+	case <-w.proto.cancelCtx.Done():
+		return nil, trace.ConnectionProblem(w.proto.cancelCtx.Err(), "context is closed")
 	}
 
-	ctx, cancel := context.WithCancel(s.cancelCtx)
+	activeUpload := &activeUpload{
+		partNumber: partNumber,
+		start:      time.Now().UTC(),
+	}
+
 	go func() {
+		defer w.proto.cfg.Pool.Put(slice.data)
+
+		defer func() {
+			<-w.semUploads
+		}()
+
 		defer func() {
 			select {
-			// this should always succeed, because this channel receive
-			// is only if the semaphore could acquired
-			case <-s.semUploads:
+			case w.completedUploadsC <- activeUpload:
+			case <-w.proto.cancelCtx.Done():
+				return
 			}
 		}()
 
-		defer s.cfg.Pool.Put(slice.data)
-		defer cancel()
-
 		var retry utils.Retry
 		for {
-			err := s.cfg.Upload.UploadPart(ctx, partNumber, slice.reader())
-			if err == nil || errors.Is(trace.Unwrap(err), context.Canceled) {
+			part, err := w.proto.cfg.Uploader.UploadPart(w.proto.cancelCtx, w.proto.cfg.Upload, partNumber, slice.reader())
+			if err == nil {
+				activeUpload.setPart(*part)
 				return
 			}
-			log.WithError(err).Debugf("Part upload failed.")
-			// retry is created opportunistically on first upload error
+			if errors.Is(trace.Unwrap(err), context.Canceled) {
+				activeUpload.setError(err)
+				return
+			}
+			// retry is created on first upload error
 			if retry == nil {
 				var rerr error
 				retry, rerr = utils.NewLinear(utils.LinearConfig{
@@ -303,28 +416,62 @@ func (s *ProtoEmitter) startUpload(partNumber int, slice *slice) (context.Contex
 					Max:  defaults.NetworkBackoffDuration,
 				})
 				if rerr != nil {
-					// this should never happen, but if it happens, let it crash
-					panic(rerr)
+					activeUpload.setError(rerr)
+					return
 				}
 			}
 			select {
 			case <-retry.After():
-				log.Debugf("Upload re-attempt after backoff.")
-			case <-ctx.Done():
-				log.Debugf("Upload aborted due to context closure.")
+				log.WithError(err).Debugf("Part upload failed, retrying after backoff.")
+			case <-w.proto.cancelCtx.Done():
+				return
 			}
 		}
 	}()
-	return ctx, nil
+
+	return activeUpload, nil
 }
 
-const (
-	// Int32Size is a constant for 32 bit integer byte size
-	Int32Size = 4
+type activeUpload struct {
+	mtx        sync.RWMutex
+	start      time.Time
+	end        time.Time
+	partNumber int64
+	part       *StreamPart
+	err        error
+}
 
-	// MaxProtoMessageSize is maximum protobuf marshaled message size
-	MaxProtoMessageSize = 64 * 1024
-)
+func (a *activeUpload) setError(err error) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+	a.end = time.Now().UTC()
+	a.err = err
+}
+
+func (a *activeUpload) setPart(part StreamPart) {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+	a.end = time.Now().UTC()
+	a.part = &part
+}
+
+func (a *activeUpload) getDiff() time.Duration {
+	a.mtx.RLock()
+	defer a.mtx.RUnlock()
+	return a.end.Sub(a.start)
+}
+
+func (a *activeUpload) getPart() (*StreamPart, error) {
+	a.mtx.RLock()
+	defer a.mtx.RUnlock()
+	if a.err != nil {
+		return nil, trace.Wrap(a.err)
+	}
+	if a.part == nil {
+		return nil, trace.NotFound("part is not set")
+	}
+	return a.part, nil
+}
 
 // slice contains serialized protobuf messages
 type slice struct {
@@ -388,7 +535,7 @@ type AuditReader interface {
 type ProtoReader struct {
 	reader       io.Reader
 	sizeBytes    [Int32Size]byte
-	messageBytes [MaxProtoMessageSize]byte
+	messageBytes [MaxProtoMessageSizeBytes]byte
 }
 
 // Reset sets reader to read from the passed reader
@@ -434,54 +581,126 @@ func (r *ProtoReader) ReadAll() ([]AuditEvent, error) {
 	return events, nil
 }
 
-// NewMemoryUpload returns a new memory upload
-func NewMemoryUpload() *MemoryUpload {
-	return &MemoryUpload{
-		mtx:   &sync.RWMutex{},
-		parts: make(map[int][]byte),
+// NewMemoryUploader returns a new memory upload implementing multipart
+// upload
+func NewMemoryUploader() *MemoryUploader {
+	return &MemoryUploader{
+		mtx:     &sync.RWMutex{},
+		uploads: make(map[string]*MemoryUpload),
 	}
 }
 
-// MemoryUpload uploads all bytes to memory, used in tests
+// MemoryUploader uploads all bytes to memory, used in tests
+type MemoryUploader struct {
+	mtx     *sync.RWMutex
+	uploads map[string]*MemoryUpload
+}
+
+// MemoryUpload is used in tests
 type MemoryUpload struct {
-	mtx   *sync.RWMutex
-	parts map[int][]byte
+	mtx *sync.RWMutex
+	// id is the upload ID
+	id string
+	// parts is the upload parts
+	parts map[int64][]byte
+	// sessionID is the session ID associated with the upload
+	sessionID session.ID
+	//completed specifies upload as completed
+	completed bool
 }
 
-// Close does nothing for memory uploader
-func (m *MemoryUpload) Close() error {
+// CreateUpload creates a multipart upload
+func (m *MemoryUploader) CreateUpload(ctx context.Context, sessionID session.ID) (*StreamUpload, error) {
+	upload := &StreamUpload{
+		ID: uuid.New(),
+	}
+	m.uploads[upload.ID] = &MemoryUpload{
+		id:        upload.ID,
+		sessionID: sessionID,
+		parts:     make(map[int64][]byte),
+	}
+	return upload, nil
+}
+
+// CompleteUpload completes the upload
+func (m *MemoryUploader) CompleteUpload(ctx context.Context, upload StreamUpload, parts []StreamPart) error {
+	m.mtx.Lock()
+	m.mtx.Unlock()
+	up, ok := m.uploads[upload.ID]
+	if !ok {
+		return trace.NotFound("upload not found")
+	}
+	if up.completed {
+		return trace.BadParameter("upload already completed")
+	}
+	// verify that all parts have been uploaded
+	partsSet := make(map[int64]bool, len(parts))
+	for _, part := range parts {
+		partsSet[part.Number] = true
+		_, ok := up.parts[part.Number]
+		if !ok {
+			return trace.NotFound("part %v has not been uploaded", part.Number)
+		}
+	}
+	// exclude parts that are not requested to be completed
+	for number := range up.parts {
+		if !partsSet[number] {
+			delete(up.parts, number)
+		}
+	}
+	up.completed = true
 	return nil
 }
 
-// Complete completes upload
-func (m *MemoryUpload) Complete(ctx context.Context) error {
-	return nil
-}
-
-// UploadPart uploads part
-func (m *MemoryUpload) UploadPart(ctx context.Context, partNumber int, rs io.ReadSeeker) error {
-	data, err := ioutil.ReadAll(rs)
+// UploadPart uploads part and returns the part
+func (m *MemoryUploader) UploadPart(ctx context.Context, upload StreamUpload, partNumber int64, partBody io.ReadSeeker) (*StreamPart, error) {
+	data, err := ioutil.ReadAll(partBody)
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
-	m.parts[partNumber] = data
-	return nil
+	up, ok := m.uploads[upload.ID]
+	if !ok {
+		return nil, trace.NotFound("upload is not found")
+	}
+	up.parts[partNumber] = data
+	return &StreamPart{Number: partNumber}, nil
 }
 
-// Parts returns upload parts uploaded up to date, sorted by part number
-func (m *MemoryUpload) Parts() [][]byte {
+// GetUploads returns a list of upload IDs
+func (m *MemoryUploader) GetUploads() []StreamUpload {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
-	partNumbers := make([]int, 0, len(m.parts))
-	sortedParts := make([][]byte, 0, len(m.parts))
-	for partNumber := range m.parts {
+	out := make([]StreamUpload, 0, len(m.uploads))
+	for id := range m.uploads {
+		out = append(out, StreamUpload{
+			ID: id,
+		})
+	}
+	return out
+}
+
+// GetParts returns upload parts uploaded up to date, sorted by part number
+func (m *MemoryUploader) GetParts(uploadID string) ([][]byte, error) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
+	up, ok := m.uploads[uploadID]
+	if !ok {
+		return nil, trace.NotFound("upload is not found")
+	}
+
+	partNumbers := make([]int64, 0, len(up.parts))
+	sortedParts := make([][]byte, 0, len(up.parts))
+	for partNumber := range up.parts {
 		partNumbers = append(partNumbers, partNumber)
 	}
-	sort.Ints(partNumbers)
+	sort.Slice(partNumbers, func(i, j int) bool {
+		return partNumbers[i] < partNumbers[j]
+	})
 	for _, partNumber := range partNumbers {
-		sortedParts = append(sortedParts, m.parts[partNumber])
+		sortedParts = append(sortedParts, up.parts[partNumber])
 	}
-	return sortedParts
+	return sortedParts, nil
 }

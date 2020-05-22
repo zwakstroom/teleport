@@ -765,7 +765,7 @@ func adminCreds() (*int, *int, error) {
 // initUploadHandler initializes upload handler based on the config settings,
 // currently the only upload handler supported is S3
 // the call can return trace.NotFOund if no upload handler is setup
-func initUploadHandler(auditConfig services.AuditConfig) (events.UploadStreamer, error) {
+func initUploadHandler(auditConfig services.AuditConfig) (events.MultipartHandler, error) {
 	if auditConfig.AuditSessionsURI == "" {
 		return nil, trace.NotFound("no upload handler is setup")
 	}
@@ -954,7 +954,12 @@ func (process *TeleportProcess) initAuthService() error {
 			}
 		}
 		// FIXEVENTS: fix all this setup, remove audit log
-		streamer = uploadHandler
+		streamer, err = events.NewProtoStreamer(events.ProtoStreamerConfig{
+			Uploader: uploadHandler,
+		})
+		if err != nil {
+			return trace.Wrap(err)
+		}
 
 		externalLog, err := initExternalLog(auditConfig)
 		if err != nil {

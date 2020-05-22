@@ -384,6 +384,32 @@ type Streamer interface {
 	ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error)
 }
 
+// StreamPart represents uploaded stream part
+type StreamPart struct {
+	// Number is a part number
+	Number int64
+	// ETag is a part e-tag
+	ETag string
+}
+
+// StreamUpload represents stream multipart upload
+type StreamUpload struct {
+	// ID is unique upload ID
+	ID string
+	// Key is a storage key used for upload
+	Key string
+}
+
+// MultipartUploader handles multipart uploads and downloads for session streams
+type MultipartUploader interface {
+	// CreateUpload creates a multipart upload
+	CreateUpload(ctx context.Context, sessionID session.ID) (*StreamUpload, error)
+	// CompleteUpload completes the upload
+	CompleteUpload(ctx context.Context, upload StreamUpload, parts []StreamPart) error
+	// UploadPart uploads part and returns the part
+	UploadPart(ctx context.Context, upload StreamUpload, partNumber int64, partBody io.ReadSeeker) (*StreamPart, error)
+}
+
 // Stream is a continuous stream of events
 type Stream interface {
 	// Close method cancels and releases all resources associated

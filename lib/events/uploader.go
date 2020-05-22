@@ -45,10 +45,10 @@ type UploadHandler interface {
 	Download(ctx context.Context, sessionID session.ID, writer io.WriterAt) error
 }
 
-// UploadStreamer handles both uploads and streams
-type UploadStreamer interface {
+// MultipartHandler handles both multipart uploads and downloads
+type MultipartHandler interface {
 	UploadHandler
-	Streamer
+	MultipartUploader
 }
 
 // UploadEvent is emitted by uploader and is used in tests
