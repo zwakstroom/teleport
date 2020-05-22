@@ -56,6 +56,7 @@ var AdminUserRules = []Rule{
 // assigned to all roles.
 var DefaultImplicitRules = []Rule{
 	NewRule(KindNode, RO()),
+	NewRule(KindApp, RO()),
 	NewRule(KindAuthServer, RO()),
 	NewRule(KindReverseTunnel, RO()),
 	NewRule(KindCertAuthority, ReadNoSecrets()),

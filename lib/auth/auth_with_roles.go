@@ -408,12 +408,31 @@ func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...s
 		return nil, trace.Wrap(err)
 	}
 
+	// Fetch full list of apps from the backend.
+	startFetch := time.Now()
 	apps, err := a.authServer.GetApps(ctx, namespace, opts...)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	elapsedFetch := time.Since(startFetch)
 
-	return apps, nil
+	// Filter apps to return the ones for the connected identity.
+	startFilter := time.Now()
+	filteredApps, err := a.filterApps(apps)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	elapsedFilter := time.Since(startFilter)
+
+	log.WithFields(logrus.Fields{
+		"user":           a.user.GetName(),
+		"elapsed_fetch":  elapsedFetch,
+		"elapsed_filter": elapsedFilter,
+	}).Debugf(
+		"GetApps(%v->%v) in %v.",
+		len(apps), len(filteredApps), elapsedFetch+elapsedFilter)
+
+	return filteredApps, nil
 }
 
 func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
@@ -540,6 +559,39 @@ func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (s
 		watch.QueueSize = defaults.NodeQueueSize
 	}
 	return a.authServer.NewWatcher(ctx, watch)
+}
+
+// filterApps filters apps based off the role of the logged in user.
+func (a *AuthWithRoles) filterApps(apps []services.App) ([]services.App, error) {
+	// For certain built-in roles, continue to allow full access and return
+	// the full set of nodes to not break existing clusters during migration.
+	//
+	// In addition, allow proxy (and remote proxy) to access all nodes for it's
+	// smart resolution address resolution. Once the smart resolution logic is
+	// moved to the auth server, this logic can be removed.
+	if a.hasBuiltinRole(string(teleport.RoleAdmin)) ||
+		a.hasBuiltinRole(string(teleport.RoleProxy)) ||
+		a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
+		return apps, nil
+	}
+
+	roleset, err := services.FetchRoles(a.user.GetRoles(), a.authServer, a.user.GetTraits())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Loop over all apps and check if the caller has access.
+	filteredApps := make([]services.App, 0, len(apps))
+NextApp:
+	for _, app := range apps {
+		err := roleset.CheckAccessToApp(app)
+		if err == nil {
+			filteredApps = append(filteredApps, app)
+			continue NextApp
+		}
+	}
+
+	return filteredApps, nil
 }
 
 // filterNodes filters nodes based off the role of the logged in user.
