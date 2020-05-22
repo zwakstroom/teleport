@@ -127,11 +127,13 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "TODO", 500)
 		return
 	}
+	fmt.Printf("--> GOT A CHECKER: %#v.\n", checker)
 	err = checker.CheckAccessToApp(matchedApp)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("access to app %v denied", matchedApp.GetName()), 401)
 		return
 	}
+	fmt.Printf("--> CHECKER RESULT: %v.\n", err)
 
 	//fmt.Printf("--> matchedApp: %v.\n", matchedApp)
 
@@ -167,9 +169,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//r.URL = testutils.ParseURI("https://rusty-gitlab.gravitational.io")
 	//r.URL = testutils.ParseURI("localhost:8080")
 
-	fmt.Printf("--> forwarding request.\n")
 	fwd.ServeHTTP(w, r)
-	fmt.Printf("--> forwarding request: done.\n")
 
 	//w.Header().Set("Content-Type", "text/plain")
 	//fmt.Fprintf(w, "Welcome to %v.", matchedApp.GetName())

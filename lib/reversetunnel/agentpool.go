@@ -201,11 +201,9 @@ func (m *AgentPool) processSeekEvents() {
 func (m *AgentPool) FetchAndSyncAgents() error {
 	tunnels, err := m.getReverseTunnels()
 	if err != nil {
-		fmt.Printf("--> here 0.\n")
 		return trace.Wrap(err)
 	}
 	if err := m.syncAgents(tunnels); err != nil {
-		fmt.Printf("--> here 1.\n")
 		return trace.Wrap(err)
 	}
 	return nil
@@ -357,7 +355,6 @@ func (m *AgentPool) getReverseTunnels() ([]services.ReverseTunnel, error) {
 		reverseTunnel.SetType(services.NodeTunnel)
 		return []services.ReverseTunnel{reverseTunnel}, nil
 	case teleport.ComponentApps:
-		fmt.Printf("--> m.cfg.ProxyAddr: %v.\n", m.cfg.ProxyAddr)
 		reverseTunnel := services.NewReverseTunnel(
 			m.cfg.Cluster,
 			[]string{m.cfg.ProxyAddr},

@@ -1428,6 +1428,16 @@ func (tc *TeleportClient) ListAllNodes(ctx context.Context) ([]services.Server, 
 	return proxyClient.FindServersByLabels(ctx, tc.Namespace, nil)
 }
 
+func (c *TeleportClient) ListApps(ctx context.Context) ([]services.App, error) {
+	proxyClient, err := c.ConnectToProxy(ctx)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	defer proxyClient.Close()
+
+	return proxyClient.GetApps(ctx, c.Namespace)
+}
+
 // runCommand executes a given bash command on a bunch of remote nodes
 func (tc *TeleportClient) runCommand(
 	ctx context.Context, siteName string, nodeAddresses []string, proxyClient *ProxyClient, command []string) error {

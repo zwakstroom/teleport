@@ -657,6 +657,32 @@ func (s *PresenceService) DeleteAllRemoteClusters() error {
 	return trace.Wrap(err)
 }
 
+// GetApp returns a specific application.
+func (s *PresenceService) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+	if namespace == "" {
+		return nil, trace.BadParameter("missing namespace value")
+	}
+
+	// Fetch the item from the backend.
+	item, err := s.Get(ctx, backend.Key(appsPrefix, namespace, name))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Marshal and services.App that can be returned to the client.
+	app, err := services.GetAppMarshaler().UnmarshalApp(
+		item.Value,
+		services.KindApp,
+		services.AddOptions(opts,
+			services.WithResourceID(item.ID),
+			services.WithExpires(item.Expires))...)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return app, nil
+}
+
 // GetApps returns the list of registered applications.
 func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
 	if namespace == "" {
@@ -714,6 +740,12 @@ func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*ser
 		LeaseID: lease.ID,
 		AppName: app.GetName(),
 	}, nil
+}
+
+// DeleteAllApps deletes all applications in a namespace.
+func (s *PresenceService) DeleteAllApps(ctx context.Context, namespace string) error {
+	startKey := backend.Key(appsPrefix, namespace)
+	return s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey))
 }
 
 // DeleteApp will remove an application. Note that if application heartbeat

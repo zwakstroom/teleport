@@ -387,6 +387,19 @@ func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepA
 	return a.authServer.KeepAliveNode(ctx, handle)
 }
 
+func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	app, err := a.authServer.GetApp(ctx, namespace, name, opts...)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return app, nil
+}
+
 func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
 	if err := a.action(namespace, services.KindApp, services.VerbList); err != nil {
 		return nil, trace.Wrap(err)
@@ -425,6 +438,18 @@ func (a *AuthWithRoles) DeleteApp(ctx context.Context, namespace string, name st
 	return nil
 }
 
+func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) error {
+	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+
+	if err := a.authServer.DeleteAllApps(ctx, namespace); err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
 // NewWatcher returns a new event watcher
 func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (services.Watcher, error) {
 	if len(watch.Kinds) == 0 {
@@ -446,6 +471,10 @@ func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (s
 			}
 		case services.KindNode:
 			if err := a.action(defaults.Namespace, services.KindNode, services.VerbRead); err != nil {
+				return nil, trace.Wrap(err)
+			}
+		case services.KindApp:
+			if err := a.action(defaults.Namespace, services.KindApp, services.VerbRead); err != nil {
 				return nil, trace.Wrap(err)
 			}
 		case services.KindProxy:

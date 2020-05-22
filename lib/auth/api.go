@@ -51,6 +51,7 @@ type Announcer interface {
 type ReadAccessPoint interface {
 	// Closer closes all the resources
 	io.Closer
+
 	// GetReverseTunnels returns  a list of reverse tunnels
 	GetReverseTunnels(opts ...services.MarshalOption) ([]services.ReverseTunnel, error)
 
@@ -68,6 +69,9 @@ type ReadAccessPoint interface {
 
 	// GetNodes returns a list of registered servers for this cluster.
 	GetNodes(namespace string, opts ...services.MarshalOption) ([]services.Server, error)
+
+	// GetApps returns a list of all applications registered with this cluster.
+	GetApps(context.Context, string, ...services.MarshalOption) ([]services.App, error)
 
 	// GetProxies returns a list of proxy servers registered in the cluster
 	GetProxies() ([]services.Server, error)
@@ -104,6 +108,7 @@ type ReadAccessPoint interface {
 type AccessPoint interface {
 	// ReadAccessPoint provides methods to read data
 	ReadAccessPoint
+
 	// Announcer adds methods used to announce presence
 	Announcer
 

@@ -20,7 +20,6 @@ package apps
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
@@ -72,15 +71,7 @@ func New(config *Config) (*Service, error) {
 	var heartbeats []*presence.Heartbeat
 
 	for i := range config.Apps {
-		fmt.Printf("--> looping over: %v %v.\n", i, config.Apps[i])
 		appThisOne := config.Apps[i]
-
-		//getApp := func() (services.App, error) {
-		//	fmt.Printf("--> returning: %v %v.\n", i, config.Apps[i])
-		//
-		//	return config.Apps[i], nil
-		//}
-
 		heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
 			Mode:      presence.HeartbeatModeApp,
 			Context:   config.CloseContext,
@@ -88,7 +79,6 @@ func New(config *Config) (*Service, error) {
 			Announcer: config.AccessPoint,
 			//GetApp:    getApp,
 			GetApp: func() (services.App, error) {
-				fmt.Printf("--> returning %v.\n", appThisOne)
 				return appThisOne, nil
 				//app := services.AppV3{
 				//	Kind:    services.KindApp,

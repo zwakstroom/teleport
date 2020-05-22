@@ -132,6 +132,12 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Fix this, this is just a hack to get tsh working, this needs to be replaced with better logic.
+	if requestedHost == "localhost" {
+		h.Handler.ServeHTTP(w, r)
+		return
+	}
+
 	// If the requested host differs from the host the Web UI is running on, the
 	// caller is asking for AAP, otherwise the Web UI.
 	if requestedHost != h.webHostAddr {

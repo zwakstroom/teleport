@@ -396,6 +396,33 @@ func (g *GRPCServer) CreateUser(ctx context.Context, req *services.UserV2) (*emp
 	return &empty.Empty{}, nil
 }
 
+// GetApp fetches a single application.
+func (g *GRPCServer) GetApp(ctx context.Context, req *proto.GetAppRequest) (*proto.GetAppResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	var opts []services.MarshalOption
+	if req.GetSkipValidation() {
+		opts = append(opts, services.SkipValidation())
+	}
+
+	app, err := auth.GetApp(ctx, req.GetNamespace(), req.GetName(), opts...)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	a3, ok := app.(*services.AppV3)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected app type %T", app))
+	}
+
+	return &proto.GetAppResponse{
+		App: a3,
+	}, nil
+}
+
 // GetApps returns all registered applications.
 func (g *GRPCServer) GetApps(ctx context.Context, req *proto.GetAppsRequest) (*proto.GetAppsResponse, error) {
 	auth, err := g.authenticate(ctx)
@@ -449,6 +476,21 @@ func (g *GRPCServer) DeleteApp(ctx context.Context, req *proto.DeleteAppRequest)
 	}
 
 	err = auth.DeleteApp(ctx, req.GetNamespace(), req.GetName())
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return nil, nil
+}
+
+// DeleteAllApps removes all applications from a namespace.
+func (g *GRPCServer) DeleteAllApps(ctx context.Context, req *proto.DeleteAllAppsRequest) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	err = auth.DeleteAllApps(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}

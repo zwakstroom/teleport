@@ -106,6 +106,7 @@ func NewAdminRole() Role {
 			Allow: RoleConditions{
 				Namespaces: []string{defaults.Namespace},
 				NodeLabels: Labels{Wildcard: []string{Wildcard}},
+				AppLabels:  Labels{Wildcard: []string{Wildcard}},
 				Rules:      CopyRulesSlice(AdminUserRules),
 			},
 		},
@@ -162,6 +163,7 @@ func RoleForUser(u User) Role {
 			Allow: RoleConditions{
 				Namespaces: []string{defaults.Namespace},
 				NodeLabels: Labels{Wildcard: []string{Wildcard}},
+				AppLabels:  Labels{Wildcard: []string{Wildcard}},
 				Rules:      CopyRulesSlice(AdminUserRules),
 			},
 		},
@@ -184,6 +186,7 @@ func RoleForCertAuthority(ca CertAuthority) Role {
 			Allow: RoleConditions{
 				Namespaces: []string{defaults.Namespace},
 				NodeLabels: Labels{Wildcard: []string{Wildcard}},
+				AppLabels:  Labels{Wildcard: []string{Wildcard}},
 				Rules:      CopyRulesSlice(DefaultCertAuthorityRules),
 			},
 		},
@@ -262,6 +265,11 @@ type Role interface {
 	GetNodeLabels(RoleConditionType) Labels
 	// SetNodeLabels sets the map of node labels this role is allowed or denied access to.
 	SetNodeLabels(RoleConditionType, Labels)
+
+	// GetAppLabels gets the map of app labels this role is allowed or denied access to.
+	GetAppLabels(RoleConditionType) Labels
+	// SetAppLabels sets the map of app labels this role is allowed or denied access to.
+	SetAppLabels(RoleConditionType, Labels)
 
 	// GetRules gets all allow or deny rules.
 	GetRules(rct RoleConditionType) []Rule
@@ -458,6 +466,9 @@ func (r *RoleV3) Equals(other Role) bool {
 		if !r.GetNodeLabels(condition).Equals(other.GetNodeLabels(condition)) {
 			return false
 		}
+		if !r.GetAppLabels(condition).Equals(other.GetAppLabels(condition)) {
+			return false
+		}
 		if !RuleSlicesEqual(r.GetRules(condition), other.GetRules(condition)) {
 			return false
 		}
@@ -626,6 +637,23 @@ func (r *RoleV3) SetNodeLabels(rct RoleConditionType, labels Labels) {
 	}
 }
 
+// GetAppLabels gets the map of app labels this role is allowed or denied access to.
+func (r *RoleV3) GetAppLabels(rct RoleConditionType) Labels {
+	if rct == Allow {
+		return r.Spec.Allow.AppLabels
+	}
+	return r.Spec.Deny.AppLabels
+}
+
+// SetAppLabels sets the map of node labels this role is allowed or denied access to.
+func (r *RoleV3) SetAppLabels(rct RoleConditionType, labels Labels) {
+	if rct == Allow {
+		r.Spec.Allow.AppLabels = labels.Clone()
+	} else {
+		r.Spec.Deny.AppLabels = labels.Clone()
+	}
+}
+
 // GetRules gets all allow or deny rules.
 func (r *RoleV3) GetRules(rct RoleConditionType) []Rule {
 	if rct == Allow {
@@ -671,6 +699,9 @@ func (r *RoleV3) CheckAndSetDefaults() error {
 	if r.Spec.Allow.NodeLabels == nil {
 		r.Spec.Allow.NodeLabels = Labels{Wildcard: []string{Wildcard}}
 	}
+	if r.Spec.Allow.AppLabels == nil {
+		r.Spec.Allow.AppLabels = Labels{Wildcard: []string{Wildcard}}
+	}
 	if r.Spec.Deny.Namespaces == nil {
 		r.Spec.Deny.Namespaces = []string{defaults.Namespace}
 	}
@@ -709,6 +740,11 @@ func (r *RoleV3) CheckAndSetDefaults() error {
 		}
 	}
 	for key, val := range r.Spec.Allow.NodeLabels {
+		if key == Wildcard && !(len(val) == 1 && val[0] == Wildcard) {
+			return trace.BadParameter("selector *:<val> is not supported")
+		}
+	}
+	for key, val := range r.Spec.Allow.AppLabels {
 		if key == Wildcard && !(len(val) == 1 && val[0] == Wildcard) {
 			return trace.BadParameter("selector *:<val> is not supported")
 		}
@@ -755,6 +791,9 @@ func (r *RoleConditions) Equals(o RoleConditions) bool {
 		return false
 	}
 	if !r.NodeLabels.Equals(o.NodeLabels) {
+		return false
+	}
+	if !r.AppLabels.Equals(o.AppLabels) {
 		return false
 	}
 	if len(r.Rules) != len(o.Rules) {
@@ -1744,7 +1783,7 @@ func (set RoleSet) CheckAccessToApp(app App) error {
 	// prohibits access.
 	for _, role := range set {
 		matchNamespace, namespaceMessage := MatchNamespace(role.GetNamespaces(Deny), app.GetNamespace())
-		matchLabels, labelsMessage, err := MatchLabels(role.GetNodeLabels(Deny), app.GetAllLabels())
+		matchLabels, labelsMessage, err := MatchLabels(role.GetAppLabels(Deny), app.GetAllLabels())
 		if err != nil {
 			return trace.Wrap(err)
 		}
@@ -1762,7 +1801,7 @@ func (set RoleSet) CheckAccessToApp(app App) error {
 	// Check allow rules: namespace and label both have to match in to be granted access.
 	for _, role := range set {
 		matchNamespace, namespaceMessage := MatchNamespace(role.GetNamespaces(Allow), app.GetNamespace())
-		matchLabels, labelsMessage, err := MatchLabels(role.GetNodeLabels(Allow), app.GetAllLabels())
+		matchLabels, labelsMessage, err := MatchLabels(role.GetAppLabels(Allow), app.GetAllLabels())
 		if err != nil {
 			return trace.Wrap(err)
 		}

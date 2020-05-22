@@ -1194,6 +1194,8 @@ func (s *ServicesTestSuite) Events(c *check.C) {
 				err = s.PresenceS.DeleteAllNodes(srv.Metadata.Namespace)
 				c.Assert(err, check.IsNil)
 
+				// TODO: DeleteAllApps!
+
 				return out[0]
 			},
 		},

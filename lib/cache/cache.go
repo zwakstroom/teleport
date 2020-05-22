@@ -45,6 +45,7 @@ func ForAuth(cfg Config) Config {
 		{Kind: services.KindRole},
 		{Kind: services.KindNamespace},
 		{Kind: services.KindNode},
+		{Kind: services.KindApp},
 		{Kind: services.KindProxy},
 		{Kind: services.KindReverseTunnel},
 		{Kind: services.KindTunnelConnection},
@@ -64,6 +65,7 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindRole},
 		{Kind: services.KindNamespace},
 		{Kind: services.KindNode},
+		{Kind: services.KindApp},
 		{Kind: services.KindProxy},
 		{Kind: services.KindAuthServer},
 		{Kind: services.KindReverseTunnel},
@@ -612,6 +614,11 @@ func (c *Cache) GetNamespaces() ([]services.Namespace, error) {
 // GetNodes is a part of auth.AccessPoint implementation
 func (c *Cache) GetNodes(namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	return c.presenceCache.GetNodes(namespace, opts...)
+}
+
+// GetApps is a part of auth.AccessPoint implementation
+func (c *Cache) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+	return c.presenceCache.GetApps(ctx, namespace, opts...)
 }
 
 // GetAuthServers returns a list of registered servers

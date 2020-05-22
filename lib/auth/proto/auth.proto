@@ -197,6 +197,23 @@ message PingResponse {
     string ServerVersion = 2 [ (gogoproto.jsontag) = "server_version" ];
 }
 
+// GetAppRequest is the request message to fetch a single application.
+message GetAppRequest {
+    // Namespace is the namespace for the registered application.
+    string Namespace = 1 [ (gogoproto.jsontag) = "namespace" ];
+    // Name is the name of the application being requested.
+    string Name = 2 [ (gogoproto.jsontag) = "name" ];
+    // SkipValidation is used to not use JSON schema validation for
+    // performance reasons.
+    bool SkipValidation = 3 [ (gogoproto.jsontag) = "skip_validation" ];
+}
+
+// GetAppResponse is the response message to fetch a single application.
+message GetAppResponse {
+    // App is a slice of applications.
+    services.AppV3 App = 1 [ (gogoproto.jsontag) = "app" ];
+}
+
 // GetAppsRequest is the request message for all registered applications.
 message GetAppsRequest {
     // Namespace is the namespace for the registered application.
@@ -221,6 +238,12 @@ message DeleteAppRequest {
     string Namespace = 1 [ (gogoproto.jsontag) = "namespace" ];
     // Name is the name of the application to delete.
     string Name = 2 [ (gogoproto.jsontag) = "name" ];
+}
+
+// DeleteAllAppsRequest is the request message to delete all applications.
+message DeleteAllAppsRequest {
+    // Namespace is the namespace for the registered application.
+    string Namespace = 1 [ (gogoproto.jsontag) = "namespace" ];
 }
 
 // AuthService is authentication/authorization service implementation
@@ -265,10 +288,14 @@ service AuthService {
     // CreateUser inserts a new user entry to a backend.
     rpc CreateUser(services.UserV2) returns (google.protobuf.Empty);
 
+    // GetApp returns an applications.
+    rpc GetApp(GetAppRequest) returns (GetAppResponse);
     // GetApps returns all registered applications.
     rpc GetApps(GetAppsRequest) returns (GetAppsResponse);
     // UpsertApp registers an application with a TTL.
     rpc UpsertApp(UpsertAppRequest) returns (services.KeepAlive);
     // DeleteApp un-registers an application.
     rpc DeleteApp(DeleteAppRequest) returns (google.protobuf.Empty);
+    // DeleteAllApp un-registers an application.
+    rpc DeleteAllApps(DeleteAllAppsRequest) returns (google.protobuf.Empty);
 }

@@ -727,6 +727,29 @@ func (c *Client) KeepAliveNode(ctx context.Context, keepAlive services.KeepAlive
 	return trace.BadParameter("not implemented, use StreamKeepAlives instead")
 }
 
+func (c *Client) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	cfg, err := services.CollectOptions(opts)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetApp(ctx, &proto.GetAppRequest{
+		Namespace:      namespace,
+		Name:           name,
+		SkipValidation: cfg.SkipValidation,
+	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetApp(), nil
+}
+
 func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
 	clt, err := c.grpc()
 	if err != nil {
@@ -742,6 +765,9 @@ func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services
 		Namespace:      namespace,
 		SkipValidation: cfg.SkipValidation,
 	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
 
 	var apps []services.App
 	for _, app := range resp.GetApps() {
@@ -785,6 +811,22 @@ func (c *Client) DeleteApp(ctx context.Context, namespace string, name string) e
 	_, err = clt.DeleteApp(ctx, &proto.DeleteAppRequest{
 		Namespace: namespace,
 		Name:      name,
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+func (c *Client) DeleteAllApps(ctx context.Context, namespace string) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	_, err = clt.DeleteAllApps(ctx, &proto.DeleteAllAppsRequest{
+		Namespace: namespace,
 	})
 	if err != nil {
 		return trace.Wrap(err)
