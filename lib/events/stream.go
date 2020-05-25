@@ -347,18 +347,17 @@ func (w *sliceWriter) receiveAndUpload() {
 			// cancel stops all operations without waiting
 			return
 		case <-w.proto.completeCtx.Done():
-			// send remaining data for upload
-			if w.current == nil {
-				return
-			}
-			// mark the current part is last (last parts are allowed to be
-			// smaller than the certain size, otherwise the padding
-			// have to be added (this is due to S3 API limits)
-			if atomic.LoadInt32(&w.proto.completeType) == completeTypeComplete {
-				w.current.isLast = true
-			}
-			if err := w.startUploadCurrentSlice(); err != nil {
-				return
+			// if present, send remaining data for upload
+			if w.current != nil {
+				// mark the current part is last (last parts are allowed to be
+				// smaller than the certain size, otherwise the padding
+				// have to be added (this is due to S3 API limits)
+				if atomic.LoadInt32(&w.proto.completeType) == completeTypeComplete {
+					w.current.isLast = true
+				}
+				if err := w.startUploadCurrentSlice(); err != nil {
+					return
+				}
 			}
 			defer w.completeStream()
 			return
@@ -768,29 +767,29 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 			// message and the message itself
 			_, err := io.ReadFull(r.gzipReader, r.sizeBytes[:Int32Size])
 			if err != nil {
-				// reached the end of the part, but not necessarily
+				if err != io.EOF {
+					return nil, r.setError(trace.ConvertSystemError(err))
+				}
+				// reached the end of the current part, but not necessarily
 				// the end of the stream
-				if err == io.EOF {
-					if err := r.gzipReader.Close(); err != nil {
+				if err := r.gzipReader.Close(); err != nil {
+					return nil, r.setError(trace.ConvertSystemError(err))
+				}
+				if r.padding != 0 {
+					fmt.Printf("Skipping padding %v\n", r.padding)
+					skipped, err := io.CopyBuffer(ioutil.Discard, io.LimitReader(r.reader, r.padding), r.messageBytes[:])
+					if err != nil {
 						return nil, r.setError(trace.ConvertSystemError(err))
 					}
-					if r.padding != 0 {
-						fmt.Printf("Skipping padding %v\n", r.padding)
-						skipped, err := io.CopyBuffer(ioutil.Discard, io.LimitReader(r.reader, r.padding), r.messageBytes[:])
-						if err != nil {
-							return nil, r.setError(trace.ConvertSystemError(err))
-						}
-						if skipped != r.padding {
-							return nil, r.setError(trace.BadParameter(
-								"data truncated, expected to read %v bytes, but got %v", r.padding, skipped))
-						}
+					if skipped != r.padding {
+						return nil, r.setError(trace.BadParameter(
+							"data truncated, expected to read %v bytes, but got %v", r.padding, skipped))
 					}
-					r.padding = 0
-					r.gzipReader = nil
-					r.state = protoReaderStateInit
-					continue
 				}
-				return nil, r.setError(trace.ConvertSystemError(err))
+				r.padding = 0
+				r.gzipReader = nil
+				r.state = protoReaderStateInit
+				continue
 			}
 			messageSize := binary.BigEndian.Uint32(r.sizeBytes[:Int32Size])
 			// zero message size indicates end of the part

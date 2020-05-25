@@ -38,35 +38,25 @@ func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 		err            error
 	}
 	testCases := []testCase{
-		/*
-			{
-				name:           "5MB similar to S3 min size in bytes",
-				minUploadBytes: 1024 * 1024 * 5,
-				events:         []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
-			},
-		*/
+		{
+			name:           "5MB similar to S3 min size in bytes",
+			minUploadBytes: 1024 * 1024 * 5,
+			events:         []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
+		},
 		{
 			name:           "get a part per message",
 			minUploadBytes: 1,
 			events:         []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
-		/*
-			{
-				name:           "no events",
-				minUploadBytes: 1024*1024*5 + 64*1024,
-			},
-			{
-				name:           "one event fitting 100%",
-				minUploadBytes: int64(MustToOneOf(&sessionStart).Size() + Int32Size),
-				events:         []AuditEvent{&sessionStart},
-			},
-			{
-				name:           "one event not fitting",
-				minUploadBytes: int64(MustToOneOf(&sessionStart).Size() - 2),
-				err:            trace.BadParameter("event is not fitting buffer size"),
-				events:         []AuditEvent{&sessionStart},
-			},
-		*/
+		{
+			name:           "no events",
+			minUploadBytes: 1024*1024*5 + 64*1024,
+		},
+		{
+			name:           "one event using the whole part",
+			minUploadBytes: 1,
+			events:         []AuditEvent{&sessionStart},
+		},
 	}
 
 	ctx, cancel := context.WithCancel(context.TODO())
