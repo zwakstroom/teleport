@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"sync"
 )
 
@@ -67,4 +68,41 @@ func (s *SliceSyncPool) Put(b []byte) {
 // Size returns a slice size
 func (s *SliceSyncPool) Size() int64 {
 	return s.sliceSize
+}
+
+// NewBufferSyncPool returns a new instance of sync pool of bytes.Buffers
+// that creates new buffers with preallocated underlying buffer of size
+func NewBufferSyncPool(size int64) *BufferSyncPool {
+	return &BufferSyncPool{
+		size: size,
+		Pool: sync.Pool{
+			New: func() interface{} {
+				return bytes.NewBuffer(make([]byte, size))
+			},
+		},
+	}
+}
+
+// BufferSyncPool is a sync pool of bytes.Buffer
+type BufferSyncPool struct {
+	sync.Pool
+	size int64
+}
+
+// Put resets the buffer (does not free the memory)
+// and returns it back to the pool. Users should be careful
+// not to use the buffer (e.g. via Bytes) after it was returned
+func (b *BufferSyncPool) Put(buf *bytes.Buffer) {
+	buf.Reset()
+	b.Pool.Put(buf)
+}
+
+// Get returns a new or already allocated buffer
+func (b *BufferSyncPool) Get() *bytes.Buffer {
+	return b.Pool.Get().(*bytes.Buffer)
+}
+
+// Size returns default allocated buffer size
+func (b *BufferSyncPool) Size() int64 {
+	return b.size
 }

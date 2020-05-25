@@ -21,10 +21,12 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"sort"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gravitational/teleport/lib/defaults"
@@ -40,6 +42,9 @@ const (
 	// Int32Size is a constant for 32 bit integer byte size
 	Int32Size = 4
 
+	// Int64Size is a constant for 64 bit integer byte size
+	Int64Size = 8
+
 	// MaxProtoMessageSizeBytes is maximum protobuf marshaled message size
 	MaxProtoMessageSizeBytes = 64 * 1024
 
@@ -53,26 +58,39 @@ const (
 
 	// ReservedParts is the amount of parts reserved by default
 	ReservedParts = 100
+
+	// ProtoStreamV1 is a version of the binary protocol
+	ProtoStreamV1 = 1
+
+	// ProtoStreamPartV1HeaderSize is the size of the part of the protocol stream
+	// on disk format, it consists of
+	// * 8 bytes for the format version
+	// * 8 bytes for meaningful size of the part
+	// * 8 bytes for padding (if present)
+	ProtoStreamV1PartHeaderSize = Int64Size * 3
+
+	// ProtoStreamV1RecordHeaderSize is the size of the header
+	// of the record header, it consists of the record length
+	ProtoStreamV1RecordHeaderSize = Int32Size
 )
 
-// ProtoStreamerConfig
+// ProtoStreamerConfig specifies configuration for the part
 type ProtoStreamerConfig struct {
 	Uploader MultipartUploader
 	// ConcurrentUploads specifies amount of concurrent uploads
 	ConcurrentUploads int
-	// Pool provides pool of byte slices
-	Pool utils.SlicePool
+	// MinUploadBytes submits upload when they have reached min bytes (could be more,
+	// but not less), due to the nature of gzip writer
+	MinUploadBytes int64
 }
 
-// CheckAndSetDefaults
+// CheckAndSetDefaults checks and sets streamer defaults
 func (cfg *ProtoStreamerConfig) CheckAndSetDefaults() error {
 	if cfg.Uploader == nil {
 		return trace.BadParameter("missing parameter Uploader")
 	}
-	if cfg.Pool == nil {
-		// the trick of the upload size is to be two messages bigger than minimum upload of AWS (5MB),
-		// to make sure that upload always succeeds and every message fits without extra allocation
-		cfg.Pool = utils.NewSliceSyncPool(MinUploadPartSizeBytes + 2*MaxProtoMessageSizeBytes)
+	if cfg.MinUploadBytes == 0 {
+		cfg.MinUploadBytes = MinUploadPartSizeBytes
 	}
 	if cfg.ConcurrentUploads == 0 {
 		cfg.ConcurrentUploads = defaults.ConcurrentUploadsPerStream
@@ -87,13 +105,19 @@ func NewProtoStreamer(cfg ProtoStreamerConfig) (*ProtoStreamer, error) {
 	}
 	return &ProtoStreamer{
 		cfg: cfg,
+		// Min upload bytes + some overhead to prevent buffer growth (gzip writer is not precise)
+		bufferPool: utils.NewBufferSyncPool(cfg.MinUploadBytes + cfg.MinUploadBytes/3),
+		// MaxProtoMessage size + length of the message record
+		slicePool: utils.NewSliceSyncPool(MaxProtoMessageSizeBytes + ProtoStreamV1RecordHeaderSize),
 	}, nil
 }
 
 // ProtoStreamer wraps a streamer and tracks the state of the individual
 // stream upload state
 type ProtoStreamer struct {
-	cfg ProtoStreamerConfig
+	cfg        ProtoStreamerConfig
+	bufferPool *utils.BufferSyncPool
+	slicePool  *utils.SliceSyncPool
 }
 
 // CreateAuditStream creates audit stream
@@ -105,11 +129,14 @@ func (s *ProtoStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+
 	return NewProtoStream(ProtoStreamConfig{
 		Upload:            *upload,
-		Pool:              s.cfg.Pool,
+		BufferPool:        s.bufferPool,
+		SlicePool:         s.slicePool,
 		Uploader:          s.cfg.Uploader,
 		ConcurrentUploads: s.cfg.ConcurrentUploads,
+		MinUploadBytes:    s.cfg.MinUploadBytes,
 	})
 }
 
@@ -127,8 +154,13 @@ type ProtoStreamConfig struct {
 	Uploader MultipartUploader
 	// Concurrent uploads specifies amount of concurrent uploads
 	ConcurrentUploads int
-	// Pool is a pool of byte slices
-	Pool utils.SlicePool
+	// BufferPool is a sync pool with buffers
+	BufferPool *utils.BufferSyncPool
+	// SlicePool is a sync pool with allocated slices
+	SlicePool *utils.SliceSyncPool
+	// MinUploadBytes submits upload when they have reached min bytes (could be more,
+	// but not less), due to the nature of gzip writer
+	MinUploadBytes int64
 }
 
 // CheckAndSetDefaults checks and sets default values
@@ -142,8 +174,14 @@ func (cfg *ProtoStreamConfig) CheckAndSetDefaults() error {
 	if cfg.ConcurrentUploads == 0 {
 		return trace.BadParameter("missing parameter ConcurrentUploads")
 	}
-	if cfg.Pool == nil {
-		return trace.BadParameter("misssing parameter Pool")
+	if cfg.BufferPool == nil {
+		return trace.BadParameter("missing parameter BufferPool")
+	}
+	if cfg.SlicePool == nil {
+		return trace.BadParameter("missing parameter SlicePool")
+	}
+	if cfg.MinUploadBytes == 0 {
+		return trace.BadParameter("missing parameter MinUploadBytes")
 	}
 	return nil
 }
@@ -200,14 +238,24 @@ type ProtoStream struct {
 	cancel    context.CancelFunc
 
 	// completeCtx is used to signal completion of the operation
-	completeCtx context.Context
-	complete    context.CancelFunc
+	completeCtx  context.Context
+	complete     context.CancelFunc
+	completeType int32
 
 	// uploadsCtx is used to signal that all uploads have been completed
 	uploadsCtx context.Context
 	// uploadsDone is a function signalling that uploads have completed
 	uploadsDone context.CancelFunc
 }
+
+const (
+	// completeTypeComplete means that proto stream
+	// should complete all in flight uploads and complete the upload itself
+	completeTypeComplete = 0
+	// completeTypeFlush means that proto stream
+	// should complete all in flight uploads but do not complete the upload
+	completeTypeFlush = 1
+)
 
 // EmitAuditEvent emits a single audit event to the stream
 func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
@@ -219,10 +267,6 @@ func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 	messageSize := oneof.Size()
 	if messageSize > MaxProtoMessageSizeBytes {
 		return trace.BadParameter("record size %v exceeds max message size of %v bytes", messageSize, MaxProtoMessageSizeBytes)
-	}
-
-	if int64(messageSize) > s.cfg.Pool.Size()-Int32Size {
-		return trace.BadParameter("record size %v exceeds max message size of %v bytes", messageSize, s.cfg.Pool.Size()-Int32Size)
 	}
 
 	start := time.Now()
@@ -244,6 +288,19 @@ func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 
 // Complete completes the upload waits for completion and returns all allocated resources
 func (s *ProtoStream) Complete(ctx context.Context) error {
+	s.complete()
+	select {
+	// wait for all in-flight uploads to complete and stream to be completed
+	case <-s.uploadsCtx.Done():
+		return nil
+	case <-ctx.Done():
+		return trace.ConnectionProblem(ctx.Err(), "context has cancelled before complete could succeed")
+	}
+}
+
+// Flush compoletes all in flight uploads but does not set the upload as completed
+func (s *ProtoStream) Flush(ctx context.Context) error {
+	atomic.StoreInt32(&s.completeType, completeTypeFlush)
 	s.complete()
 	select {
 	// wait for all in-flight uploads to complete and stream to be completed
@@ -277,6 +334,9 @@ type sliceWriter struct {
 	semUploads chan struct{}
 	// completedParts is the list of completed parts
 	completedParts []StreamPart
+	// emptyHeader is used to write empty header
+	// to preserve some bytes
+	emptyHeader [ProtoStreamV1PartHeaderSize]byte
 }
 
 // receiveAndUpload receives and uploads serialized events
@@ -288,6 +348,15 @@ func (w *sliceWriter) receiveAndUpload() {
 			return
 		case <-w.proto.completeCtx.Done():
 			// send remaining data for upload
+			if w.current == nil {
+				return
+			}
+			// mark the current part is last (last parts are allowed to be
+			// smaller than the certain size, otherwise the padding
+			// have to be added (this is due to S3 API limits)
+			if atomic.LoadInt32(&w.proto.completeType) == completeTypeComplete {
+				w.current.isLast = true
+			}
 			if err := w.startUploadCurrentSlice(); err != nil {
 				return
 			}
@@ -304,30 +373,29 @@ func (w *sliceWriter) receiveAndUpload() {
 			w.completedParts = append(w.completedParts, *part)
 		case oneof := <-w.proto.eventsCh:
 			if err := w.submitEvent(oneof); err != nil {
-				if !trace.IsLimitExceeded(err) {
-					log.WithError(err).Error("Lost event.")
-					continue
-				}
+				log.WithError(err).Error("Lost event.")
+				continue
+			}
+			if w.shouldUploadCurrentSlice() {
 				// this logic blocks the EmitAuditEvent in case if the
 				// upload has not completed and the current slice is out of capacity
 				if err := w.startUploadCurrentSlice(); err != nil {
 					return
-				}
-				if err := w.submitEvent(oneof); err != nil {
-					log.WithError(err).Error("Lost event.")
-					continue
 				}
 			}
 		}
 	}
 }
 
+// shouldUploadCurrentSlice returns true when it's time to upload
+// the current slice (it has reached upload bytes)
+func (w *sliceWriter) shouldUploadCurrentSlice() bool {
+	return w.current.shouldUpload()
+}
+
 // startUploadCurrentSlice starts uploading current slice
 // and adds it to the waiting list
 func (w *sliceWriter) startUploadCurrentSlice() error {
-	if w.current == nil {
-		return nil
-	}
 	w.lastPartNumber++
 	activeUpload, err := w.startUpload(w.lastPartNumber, w.current)
 	if err != nil {
@@ -338,11 +406,29 @@ func (w *sliceWriter) startUploadCurrentSlice() error {
 	return nil
 }
 
+type bufferCloser struct {
+	*bytes.Buffer
+}
+
+func (b *bufferCloser) Close() error {
+	return nil
+}
+
+func (w *sliceWriter) newSlice() *slice {
+	buffer := w.proto.cfg.BufferPool.Get()
+	buffer.Reset()
+	// reserve bytes for version header
+	buffer.Write(w.emptyHeader[:])
+	return &slice{
+		proto:  w.proto,
+		buffer: buffer,
+		writer: newGzipWriter(&bufferCloser{Buffer: buffer}),
+	}
+}
+
 func (w *sliceWriter) submitEvent(oneof *OneOf) error {
 	if w.current == nil {
-		w.current = &slice{
-			data: w.proto.cfg.Pool.Get(),
-		}
+		w.current = w.newSlice()
 	}
 	return w.current.emitAuditEvent(oneof)
 }
@@ -364,7 +450,12 @@ func (w *sliceWriter) completeStream() {
 			return
 		}
 	}
-	w.proto.cfg.Uploader.CompleteUpload(w.proto.cancelCtx, w.proto.cfg.Upload, w.completedParts)
+	if atomic.LoadInt32(&w.proto.completeType) == completeTypeComplete {
+		err := w.proto.cfg.Uploader.CompleteUpload(w.proto.cancelCtx, w.proto.cfg.Upload, w.completedParts)
+		if err != nil {
+			log.WithError(err).Warningf("Failed to complete upload.")
+		}
+	}
 }
 
 // startUpload acquires upload semaphore and starts upload, returns error
@@ -383,7 +474,11 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 	}
 
 	go func() {
-		defer w.proto.cfg.Pool.Put(slice.data)
+		defer func() {
+			if err := slice.Close(); err != nil {
+				log.WithError(err).Warningf("Failed to close slice.")
+			}
+		}()
 
 		defer func() {
 			<-w.semUploads
@@ -399,7 +494,12 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 
 		var retry utils.Retry
 		for {
-			part, err := w.proto.cfg.Uploader.UploadPart(w.proto.cancelCtx, w.proto.cfg.Upload, partNumber, slice.reader())
+			reader, err := slice.reader()
+			if err != nil {
+				activeUpload.setError(err)
+				return
+			}
+			part, err := w.proto.cfg.Uploader.UploadPart(w.proto.cancelCtx, w.proto.cfg.Upload, partNumber, reader)
 			if err == nil {
 				activeUpload.setPart(*part)
 				return
@@ -419,6 +519,10 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 					activeUpload.setError(rerr)
 					return
 				}
+			}
+			if _, err := reader.Seek(0, 0); err != nil {
+				activeUpload.setError(err)
+				return
 			}
 			select {
 			case <-retry.After():
@@ -475,45 +579,81 @@ func (a *activeUpload) getPart() (*StreamPart, error) {
 
 // slice contains serialized protobuf messages
 type slice struct {
-	start        time.Time
-	bytesWritten int64
-	data         []byte
+	proto  *ProtoStream
+	start  time.Time
+	writer *gzipWriter
+	buffer *bytes.Buffer
+	isLast bool
 }
 
-// reader returns a reader for the bytes writen
-func (s *slice) reader() io.ReadSeeker {
-	return bytes.NewReader(s.data[:s.bytesWritten])
+// reader returns a reader for the bytes writen,
+// no writes should be done after this method is called
+func (s *slice) reader() (io.ReadSeeker, error) {
+	if err := s.writer.Close(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	wroteBytes := int64(s.buffer.Len())
+	var paddingBytes int64
+	// non last slices should be at least min upload bytes (as limited by S3 API spec)
+	if !s.isLast && wroteBytes < s.proto.cfg.MinUploadBytes {
+		paddingBytes = s.proto.cfg.MinUploadBytes - wroteBytes
+		emptySlice := s.proto.cfg.SlicePool.Get()
+		s.proto.cfg.SlicePool.Zero(emptySlice)
+		if _, err := s.buffer.Write(emptySlice[:paddingBytes]); err != nil {
+			return nil, trace.Wrap(err)
+		}
+		s.proto.cfg.SlicePool.Put(emptySlice)
+		fmt.Printf("Added %v padding bytes to last small slice of %v\n", paddingBytes, wroteBytes)
+	}
+	data := s.buffer.Bytes()
+	// when the slice was created, the first bytes were reserved
+	// for the protocol version number and size of the slice in bytes
+	binary.BigEndian.PutUint64(data[0:], ProtoStreamV1)
+	binary.BigEndian.PutUint64(data[Int64Size:], uint64(wroteBytes-ProtoStreamV1PartHeaderSize))
+	binary.BigEndian.PutUint64(data[Int64Size*2:], uint64(paddingBytes))
+	fmt.Printf("Submitted slice with %v bytes, wrote %v bytes and have %v padding\n", len(data), wroteBytes, paddingBytes)
+	return bytes.NewReader(data), nil
+}
+
+// Close closes buffer and returns all allocated resources
+func (s *slice) Close() error {
+	err := s.writer.Close()
+	s.proto.cfg.BufferPool.Put(s.buffer)
+	return trace.Wrap(err)
+}
+
+// shouldUpload returns true if it's time to write the slice
+// (set to true when it has reached the min slice in bytes)
+func (s *slice) shouldUpload() bool {
+	fmt.Printf("buffer len: %v and min upload is %v so %v\n", s.buffer.Len(), s.proto.cfg.MinUploadBytes, int64(s.buffer.Len()) >= s.proto.cfg.MinUploadBytes)
+	return int64(s.buffer.Len()) >= s.proto.cfg.MinUploadBytes
 }
 
 // emitAuditEvent emits a single audit event to the stream
 func (s *slice) emitAuditEvent(oneof *OneOf) error {
+	bytes := s.proto.cfg.SlicePool.Get()
+
 	messageSize := oneof.Size()
+	recordSize := ProtoStreamV1RecordHeaderSize + messageSize
 
-	recordSize := int64(messageSize + Int32Size)
-
-	// if after the upload the record size still exceeds allocated slice size
-	// it means the message is too big for the buffer
-	if recordSize > int64(len(s.data)) {
-		return trace.BadParameter("message %v exceeds allocated buffer size %v", messageSize, len(s.data))
+	if len(bytes) < recordSize {
+		return trace.BadParameter(
+			"error in buffer allocation, expected size to be >= %v, got %v", recordSize, len(bytes))
 	}
-
-	if recordSize > int64(len(s.data))-s.bytesWritten {
-		return trace.LimitExceeded("the record size exceeds the allocated slice size")
-	}
-
-	if s.bytesWritten == 0 {
-		s.start = time.Now().UTC()
-	}
-
-	// Push record, starting with record size and then the record itself.
-	// Network byte order is used because it's most convenient to read for humans.
-	binary.BigEndian.PutUint32(s.data[s.bytesWritten:], uint32(messageSize))
-	s.bytesWritten += Int32Size
-	_, err := oneof.MarshalTo(s.data[s.bytesWritten : s.bytesWritten+int64(messageSize)])
+	binary.BigEndian.PutUint32(bytes, uint32(messageSize))
+	_, err := oneof.MarshalTo(bytes[Int32Size:])
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	s.bytesWritten += int64(messageSize)
+	wroteBytes, err := s.writer.Write(bytes[:recordSize])
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	if wroteBytes != recordSize {
+		return trace.BadParameter("expected %v bytes to be written, got %v", recordSize, wroteBytes)
+	}
+
+	s.proto.cfg.SlicePool.Put(bytes)
 	return nil
 }
 
@@ -531,11 +671,37 @@ type AuditReader interface {
 	Read() (AuditEvent, error)
 }
 
+const (
+	// protoReaderStateInit is ready to start reading the next part
+	protoReaderStateInit = 0
+	// protoReaderStateCurrent will read the data from the current part
+	protoReaderStateCurrent = iota
+	// protoReaderStateEOF indicates that reader has completed reading
+	// all parts
+	protoReaderStateEOF = iota
+	// protoReaderStateError indicates that reader has reached internal
+	// error and should close
+	protoReaderStateError = iota
+)
+
 // ProtoReader reads protobuf encoding from reader
 type ProtoReader struct {
+	gzipReader   *gzipReader
+	padding      int64
 	reader       io.Reader
-	sizeBytes    [Int32Size]byte
+	sizeBytes    [Int64Size]byte
 	messageBytes [MaxProtoMessageSizeBytes]byte
+	state        int
+	error        error
+	paddingBytes []byte
+}
+
+// Close releases reader resources
+func (r *ProtoReader) Close() error {
+	if r.gzipReader != nil {
+		return r.gzipReader.Close()
+	}
+	return nil
 }
 
 // Reset sets reader to read from the passed reader
@@ -543,26 +709,114 @@ func (r *ProtoReader) Reset(reader io.Reader) {
 	r.reader = reader
 }
 
+func (r *ProtoReader) setError(err error) error {
+	r.state = protoReaderStateError
+	r.error = err
+	return err
+}
+
 // Read returns next event or io.EOF in case of the end of the parts
 func (r *ProtoReader) Read() (AuditEvent, error) {
-	_, err := io.ReadFull(r.reader, r.sizeBytes[:])
-	if err != nil {
-		return nil, trace.ConvertSystemError(err)
+	// 2 iterations is an extra precaution to avoid endless loop
+	for i := 0; i < 2; i++ {
+		switch r.state {
+		case protoReaderStateEOF:
+			return nil, io.EOF
+		case protoReaderStateError:
+			return nil, r.error
+		case protoReaderStateInit:
+			// read the part header that consists of the protocol version
+			// and the part size (for the V1 version of the protocol)
+			_, err := io.ReadFull(r.reader, r.sizeBytes[:Int64Size])
+			if err != nil {
+				// reached the end of the stream
+				if err == io.EOF {
+					r.state = protoReaderStateEOF
+					return nil, err
+				}
+				return nil, r.setError(trace.ConvertSystemError(err))
+			}
+			protocolVersion := binary.BigEndian.Uint64(r.sizeBytes[:Int64Size])
+			fmt.Printf("Proto version: %v\n", protocolVersion)
+			if protocolVersion != ProtoStreamV1 {
+				return nil, trace.BadParameter("unsupported protocol version %v", protocolVersion)
+			}
+			// read size of this gzipped part as encoded by V1 protocol version
+			_, err = io.ReadFull(r.reader, r.sizeBytes[:Int64Size])
+			if err != nil {
+				return nil, r.setError(trace.ConvertSystemError(err))
+			}
+			partSize := binary.BigEndian.Uint64(r.sizeBytes[:Int64Size])
+			fmt.Printf("Part size: %v\n", partSize)
+			// read padding size (could be 0)
+			_, err = io.ReadFull(r.reader, r.sizeBytes[:Int64Size])
+			if err != nil {
+				return nil, r.setError(trace.ConvertSystemError(err))
+			}
+			r.padding = int64(binary.BigEndian.Uint64(r.sizeBytes[:Int64Size]))
+			fmt.Printf("Padding: %v\n", r.padding)
+			gzipReader, err := newGzipReader(ioutil.NopCloser(io.LimitReader(r.reader, int64(partSize))))
+			if err != nil {
+				return nil, r.setError(trace.Wrap(err))
+			}
+			r.gzipReader = gzipReader
+			r.state = protoReaderStateCurrent
+			continue
+			// read the next version from the gzip reader
+		case protoReaderStateCurrent:
+			// the record consists of length of the protobuf encoded
+			// message and the message itself
+			_, err := io.ReadFull(r.gzipReader, r.sizeBytes[:Int32Size])
+			if err != nil {
+				// reached the end of the part, but not necessarily
+				// the end of the stream
+				if err == io.EOF {
+					if err := r.gzipReader.Close(); err != nil {
+						return nil, r.setError(trace.ConvertSystemError(err))
+					}
+					if r.padding != 0 {
+						fmt.Printf("Skipping padding %v\n", r.padding)
+						skipped, err := io.CopyBuffer(ioutil.Discard, io.LimitReader(r.reader, r.padding), r.messageBytes[:])
+						if err != nil {
+							return nil, r.setError(trace.ConvertSystemError(err))
+						}
+						if skipped != r.padding {
+							return nil, r.setError(trace.BadParameter(
+								"data truncated, expected to read %v bytes, but got %v", r.padding, skipped))
+						}
+					}
+					r.padding = 0
+					r.gzipReader = nil
+					r.state = protoReaderStateInit
+					continue
+				}
+				return nil, r.setError(trace.ConvertSystemError(err))
+			}
+			messageSize := binary.BigEndian.Uint32(r.sizeBytes[:Int32Size])
+			// zero message size indicates end of the part
+			// that sometimes is present in partially submitted parts
+			// that have to be filled with zeroes for parts smaller
+			// than minimum allowed size
+			if messageSize == 0 {
+				return nil, r.setError(trace.BadParameter("unexpected message size 0"))
+			}
+			_, err = io.ReadFull(r.gzipReader, r.messageBytes[:messageSize])
+			if err != nil {
+				return nil, r.setError(trace.ConvertSystemError(err))
+			}
+			oneof := OneOf{}
+			err = oneof.Unmarshal(r.messageBytes[:messageSize])
+			fmt.Printf("Message size: %v\n", messageSize)
+			if err != nil {
+				return nil, trace.Wrap(err)
+			}
+			return FromOneOf(oneof)
+		default:
+			return nil, trace.BadParameter("unsupported reader size")
+		}
 	}
-	messageSize := binary.BigEndian.Uint32(r.sizeBytes[:])
-	if messageSize == 0 {
-		return nil, io.EOF
-	}
-	_, err = io.ReadFull(r.reader, r.messageBytes[:messageSize])
-	if err != nil {
-		return nil, trace.ConvertSystemError(err)
-	}
-	oneof := OneOf{}
-	err = oneof.Unmarshal(r.messageBytes[:messageSize])
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	return FromOneOf(oneof)
+	return nil, r.setError(
+		trace.BadParameter("internal algo error: too many interations reading the stream, the stream may be corrupted"))
 }
 
 // ReadAll reads all events until EOF

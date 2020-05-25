@@ -594,7 +594,7 @@ type printEvent struct {
 // gzipWriter wraps file, on close close both gzip writer and file
 type gzipWriter struct {
 	*gzip.Writer
-	file *os.File
+	inner io.WriteCloser
 }
 
 // Close closes gzip writer and file
@@ -606,9 +606,9 @@ func (f *gzipWriter) Close() error {
 		writerPool.Put(f.Writer)
 		f.Writer = nil
 	}
-	if f.file != nil {
-		errors = append(errors, f.file.Close())
-		f.file = nil
+	if f.inner != nil {
+		errors = append(errors, f.inner.Close())
+		f.inner = nil
 	}
 	return trace.NewAggregate(errors...)
 }
@@ -617,26 +617,26 @@ func (f *gzipWriter) Close() error {
 // each gzip writer allocates a lot of memory
 // so it makes sense to reset the writer and reuse the
 // internal buffers to avoid too many objects on the heap
-var writerPool = sync.Pool{
+var writerPool = &sync.Pool{
 	New: func() interface{} {
 		w, _ := gzip.NewWriterLevel(ioutil.Discard, gzip.BestSpeed)
 		return w
 	},
 }
 
-func newGzipWriter(file *os.File) *gzipWriter {
+func newGzipWriter(writer io.WriteCloser) *gzipWriter {
 	g := writerPool.Get().(*gzip.Writer)
-	g.Reset(file)
+	g.Reset(writer)
 	return &gzipWriter{
 		Writer: g,
-		file:   file,
+		inner:  writer,
 	}
 }
 
 // gzipReader wraps file, on close close both gzip writer and file
 type gzipReader struct {
 	io.ReadCloser
-	file io.Closer
+	inner io.Closer
 }
 
 // Close closes file and gzip writer
@@ -646,21 +646,21 @@ func (f *gzipReader) Close() error {
 		errors = append(errors, f.ReadCloser.Close())
 		f.ReadCloser = nil
 	}
-	if f.file != nil {
-		errors = append(errors, f.file.Close())
-		f.file = nil
+	if f.inner != nil {
+		errors = append(errors, f.inner.Close())
+		f.inner = nil
 	}
 	return trace.NewAggregate(errors...)
 }
 
-func newGzipReader(file *os.File) (*gzipReader, error) {
-	reader, err := gzip.NewReader(file)
+func newGzipReader(reader io.ReadCloser) (*gzipReader, error) {
+	gzReader, err := gzip.NewReader(reader)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 	return &gzipReader{
-		ReadCloser: reader,
-		file:       file,
+		ReadCloser: gzReader,
+		inner:      reader,
 	}, nil
 }
 

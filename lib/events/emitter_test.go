@@ -20,50 +20,53 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"math"
 
 	"gopkg.in/check.v1"
 
 	"github.com/gravitational/teleport/lib/fixtures"
 	"github.com/gravitational/teleport/lib/session"
-	"github.com/gravitational/teleport/lib/utils"
-	"github.com/gravitational/trace"
+	//"github.com/gravitational/trace"
 )
 
 // TestProtoStreamer tests edge cases of proto streamer implementation
 func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 	type testCase struct {
-		name       string
-		bufferSize int64
-		events     []AuditEvent
-		err        error
+		name           string
+		minUploadBytes int64
+		events         []AuditEvent
+		err            error
 	}
 	testCases := []testCase{
+		/*
+			{
+				name:           "5MB similar to S3 min size in bytes",
+				minUploadBytes: 1024 * 1024 * 5,
+				events:         []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
+			},
+		*/
 		{
-			name:       "64KB + 5MB similar to S3 min size in bytes",
-			bufferSize: 1024*1024*5 + 64*1024,
-			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
+			name:           "get a part per message",
+			minUploadBytes: 1,
+			events:         []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
 		},
-		{
-			name:       "pick largest message as buffer size to get more parts",
-			bufferSize: int64(max(MustToOneOf(&sessionStart).Size(), MustToOneOf(&sessionPrint).Size(), MustToOneOf(&sessionEnd).Size()) + Int32Size),
-			events:     []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
-		},
-
-		{
-			name:       "no events",
-			bufferSize: 1024*1024*5 + 64*1024,
-		},
-		{
-			name:       "one event fitting 100%",
-			bufferSize: int64(MustToOneOf(&sessionStart).Size() + Int32Size),
-			events:     []AuditEvent{&sessionStart},
-		},
-		{
-			name:       "one event not fitting",
-			bufferSize: int64(MustToOneOf(&sessionStart).Size() - 2),
-			err:        trace.BadParameter("event is not fitting buffer size"),
-			events:     []AuditEvent{&sessionStart},
-		},
+		/*
+			{
+				name:           "no events",
+				minUploadBytes: 1024*1024*5 + 64*1024,
+			},
+			{
+				name:           "one event fitting 100%",
+				minUploadBytes: int64(MustToOneOf(&sessionStart).Size() + Int32Size),
+				events:         []AuditEvent{&sessionStart},
+			},
+			{
+				name:           "one event not fitting",
+				minUploadBytes: int64(MustToOneOf(&sessionStart).Size() - 2),
+				err:            trace.BadParameter("event is not fitting buffer size"),
+				events:         []AuditEvent{&sessionStart},
+			},
+		*/
 	}
 
 	ctx, cancel := context.WithCancel(context.TODO())
@@ -72,8 +75,10 @@ func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 testcases:
 	for i, tc := range testCases {
 		uploader := NewMemoryUploader()
-		pool := utils.NewSliceSyncPool(tc.bufferSize)
-		streamer, err := NewProtoStreamer(ProtoStreamerConfig{Uploader: uploader, Pool: pool})
+		streamer, err := NewProtoStreamer(ProtoStreamerConfig{
+			Uploader:       uploader,
+			MinUploadBytes: tc.minUploadBytes,
+		})
 		c.Assert(err, check.IsNil)
 
 		sid := session.ID(fmt.Sprintf("test-%v", i))
@@ -89,7 +94,9 @@ testcases:
 				c.Assert(err, check.IsNil)
 			}
 		}
+		fmt.Printf("1 %v\n", tc.name)
 		err = stream.Complete(ctx)
+		fmt.Printf("2 %v\n", tc.name)
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent
@@ -107,10 +114,10 @@ testcases:
 	}
 }
 
-func max(vars ...int) int {
-	m := vars[0]
+func min(vars ...int) int {
+	m := math.MaxInt64
 	for _, zz := range vars {
-		if zz > m {
+		if zz < m {
 			m = zz
 		}
 	}
