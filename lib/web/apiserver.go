@@ -124,61 +124,102 @@ type RewritingHandler struct {
 }
 
 func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Try and extract the requested host from the host header. If not possible,
-	// fallback to just showing the Web UI.
-	requestedHost, err := utils.Host(r.Host)
+	// Check the host the client is requesting against the list of registered
+	// apps to figure out to discover request destination: apps handler or the
+	// Web UI.
+
+	ok, err := h.appsHandler.IsApp(r)
 	if err != nil {
-		h.Handler.ServeHTTP(w, r)
+		log.Debugf("Failed to discover request destination: %v: %v: %v.",
+			r.Host, r.RequestURI, err)
+
+		http.Error(w, "TODO", 500)
 		return
 	}
 
-	// TODO: Fix this, this is just a hack to get tsh working, this needs to be replaced with better logic.
-	if requestedHost == "localhost" {
-		h.Handler.ServeHTTP(w, r)
-		return
-	}
-
-	// If the requested host differs from the host the Web UI is running on, the
-	// caller is asking for AAP, otherwise the Web UI.
-	if requestedHost != h.webHostAddr {
-		// TODO: checkBearerToken should be true!
+	// If the caller requested a registered application, authenticate the
+	// request and then forward it to the apps handler.
+	if ok {
+		// TODO: This is a hack, "checkBearerToken" should be true.
 		ctx, err := h.handler.AuthenticateRequest(w, r, false)
 		if err != nil {
-			// Redirect to the Teleport login page.
-			http.Error(w, "failed to authenticate request", 401)
-			log.Debugf("Failed to authenticate request for application %v: %v.", requestedHost, err)
-			return
-		}
-
-		// Extract services.RoleSet from certificate.
-		clt, err := ctx.GetClient()
-		if err != nil {
-			http.Error(w, "TODO", 401)
-			return
-		}
-		cert, _, err := ctx.GetCertificates()
-		if err != nil {
-			http.Error(w, "TODO", 401)
-			return
-		}
-		roles, traits, err := services.ExtractFromCertificate(clt, cert)
-		if err != nil {
-			http.Error(w, "TODO", 401)
-			return
-		}
-		checker, err := services.FetchRoles(roles, clt, traits)
-		if err != nil {
 			http.Error(w, "TODO", 401)
 			return
 		}
 
-		// Add access checker
+		// Extract access checker and add it to the request.
+		checker, err := ctx.GetRoleSet()
+		if err != nil {
+			http.Error(w, "TODO", 401)
+			return
+		}
 		r := r.WithContext(context.WithValue(r.Context(), "checker", checker))
 
+		// TODO: Attach the cluster API to the request as well.
+
+		// Pass the request along to the apps handler.
 		h.appsHandler.ServeHTTP(w, r)
 		return
 	}
+
+	// Serve the Web UI.
 	h.Handler.ServeHTTP(w, r)
+
+	//// Try and extract the requested host from the host header. If not possible,
+	//// fallback to just showing the Web UI.
+	//requestedHost, err := utils.Host(r.Host)
+	//if err != nil {
+	//	h.Handler.ServeHTTP(w, r)
+	//	return
+	//}
+
+	//// TODO: Fix this, this is just a hack to get tsh working, this needs to be replaced with better logic.
+	//if requestedHost == "localhost" {
+	//	h.Handler.ServeHTTP(w, r)
+	//	return
+	//}
+
+	//// If the requested host differs from the host the Web UI is running on, the
+	//// caller is asking for AAP, otherwise the Web UI.
+	//if requestedHost != h.webHostAddr {
+	//	// TODO: checkBearerToken should be true!
+	//	ctx, err := h.handler.AuthenticateRequest(w, r, false)
+	//	if err != nil {
+	//		// Redirect to the Teleport login page.
+	//		http.Error(w, "failed to authenticate request", 401)
+	//		log.Debugf("Failed to authenticate request for application %v: %v.", requestedHost, err)
+	//		return
+	//	}
+
+	//	// Extract services.RoleSet from certificate.
+	//	clt, err := ctx.GetClient()
+	//	if err != nil {
+	//		http.Error(w, "TODO", 401)
+	//		return
+	//	}
+	//	cert, _, err := ctx.GetCertificates()
+	//	if err != nil {
+	//		http.Error(w, "TODO", 401)
+	//		return
+	//	}
+	//	roles, traits, err := services.ExtractFromCertificate(clt, cert)
+	//	if err != nil {
+	//		http.Error(w, "TODO", 401)
+	//		return
+	//	}
+	//	checker, err := services.FetchRoles(roles, clt, traits)
+	//	if err != nil {
+	//		http.Error(w, "TODO", 401)
+	//		return
+	//	}
+
+	//	// Add access checker
+	//	r := r.WithContext(context.WithValue(r.Context(), "checker", checker))
+
+	//	h.appsHandler.ServeHTTP(w, r)
+	//	return
+	//}
+	//h.Handler.ServeHTTP(w, r)
 }
 
 func (h *RewritingHandler) GetHandler() *Handler {

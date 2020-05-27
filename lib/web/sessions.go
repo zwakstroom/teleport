@@ -298,6 +298,28 @@ func (c *SessionContext) GetCertificates() (*ssh.Certificate, *x509.Certificate,
 	return sshcert, tlscert, nil
 }
 
+func (c *SessionContext) GetRoleSet() (services.RoleSet, error) {
+	clt, err := ctx.GetClient()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	cert, _, err := ctx.GetCertificates()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	roles, traits, err := services.ExtractFromCertificate(clt, cert)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	roleSet, err := services.FetchRoles(roles, clt, traits)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return roleSet, nil
+}
+
 // Close cleans up connections associated with requests
 func (c *SessionContext) Close() error {
 	closers := c.TransferClosers()

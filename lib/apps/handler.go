@@ -71,6 +71,32 @@ type checker interface {
 	CheckAccessToApp(services.App) error
 }
 
+func (a *Handler) IsApp(r *http.Request) (services.App, reversetunnel.Server, error) {
+	clusters, err := a.ProxyClient.GetSites()
+	if err != nil {
+		return false, trace.Wrap(err)
+	}
+
+	//for _, cluster := range clusters {
+	//
+	//}
+
+	//// Try and extract the requested host from the host header. If not possible,
+	//// fallback to just showing the Web UI.
+	//requestedHost, err := utils.Host(r.Host)
+	//if err != nil {
+	//	h.Handler.ServeHTTP(w, r)
+	//	return
+	//}
+
+	//// TODO: Fix this, this is just a hack to get tsh working, this needs to be replaced with better logic.
+	//if requestedHost == "localhost" {
+	//	h.Handler.ServeHTTP(w, r)
+	//	return
+	//}
+
+}
+
 // ServeHTTP will try and find the proxied application that the caller is
 // requesting. If any error occurs or the application is not found, the
 // request is passed to the next handler (which would be the Web UI).
