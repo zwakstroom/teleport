@@ -1097,7 +1097,7 @@
   revision = "f660b865573183437d2d868f703fe88bb8af0b55"
 
 [[projects]]
-  digest = "1:a9e3ffaf92b09cc18bbb3155e5a24a0576ac4b82c4b60fb17f0d087109155d67"
+  digest = "1:78ea6dda1356f87956f4b5b7a50b336d27ee3298af21fac7c6fd1bdc986e8927"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -1121,6 +1121,7 @@
     "credentials/internal",
     "credentials/oauth",
     "encoding",
+    "encoding/gzip",
     "encoding/proto",
     "grpclog",
     "internal",
@@ -1474,6 +1475,7 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",
+    "google.golang.org/grpc/encoding/gzip",
     "google.golang.org/grpc/keepalive",
     "google.golang.org/grpc/peer",
     "google.golang.org/grpc/status",

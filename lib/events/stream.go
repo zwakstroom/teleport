@@ -62,7 +62,7 @@ const (
 	// ProtoStreamV1 is a version of the binary protocol
 	ProtoStreamV1 = 1
 
-	// ProtoStreamPartV1HeaderSize is the size of the part of the protocol stream
+	// ProtoStreamV1PartHeaderSize is the size of the part of the protocol stream
 	// on disk format, it consists of
 	// * 8 bytes for the format version
 	// * 8 bytes for meaningful size of the part
@@ -212,7 +212,7 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 	writer := &sliceWriter{
 		proto:             stream,
 		activeUploads:     make(map[int64]*activeUpload),
-		completedUploadsC: make(chan *activeUpload),
+		completedUploadsC: make(chan *activeUpload, cfg.ConcurrentUploads),
 		semUploads:        make(chan struct{}, cfg.ConcurrentUploads),
 		// TODO (klizhentas) when resuming stream this should be set
 		lastPartNumber: 0,
@@ -466,7 +466,6 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 	case <-w.proto.cancelCtx.Done():
 		return nil, trace.ConnectionProblem(w.proto.cancelCtx.Err(), "context is closed")
 	}
-
 	activeUpload := &activeUpload{
 		partNumber: partNumber,
 		start:      time.Now().UTC(),
@@ -480,15 +479,15 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 		}()
 
 		defer func() {
-			<-w.semUploads
-		}()
-
-		defer func() {
 			select {
 			case w.completedUploadsC <- activeUpload:
 			case <-w.proto.cancelCtx.Done():
 				return
 			}
+		}()
+
+		defer func() {
+			<-w.semUploads
 		}()
 
 		var retry utils.Retry
@@ -596,12 +595,9 @@ func (s *slice) reader() (io.ReadSeeker, error) {
 	// non last slices should be at least min upload bytes (as limited by S3 API spec)
 	if !s.isLast && wroteBytes < s.proto.cfg.MinUploadBytes {
 		paddingBytes = s.proto.cfg.MinUploadBytes - wroteBytes
-		emptySlice := s.proto.cfg.SlicePool.Get()
-		s.proto.cfg.SlicePool.Zero(emptySlice)
-		if _, err := s.buffer.Write(emptySlice[:paddingBytes]); err != nil {
+		if _, err := s.buffer.ReadFrom(utils.NewRepeatReader(byte(0), int(paddingBytes))); err != nil {
 			return nil, trace.Wrap(err)
 		}
-		s.proto.cfg.SlicePool.Put(emptySlice)
 		fmt.Printf("Added %v padding bytes to last small slice of %v\n", paddingBytes, wroteBytes)
 	}
 	data := s.buffer.Bytes()
@@ -610,7 +606,6 @@ func (s *slice) reader() (io.ReadSeeker, error) {
 	binary.BigEndian.PutUint64(data[0:], ProtoStreamV1)
 	binary.BigEndian.PutUint64(data[Int64Size:], uint64(wroteBytes-ProtoStreamV1PartHeaderSize))
 	binary.BigEndian.PutUint64(data[Int64Size*2:], uint64(paddingBytes))
-	fmt.Printf("Submitted slice with %v bytes, wrote %v bytes and have %v padding\n", len(data), wroteBytes, paddingBytes)
 	return bytes.NewReader(data), nil
 }
 
@@ -624,7 +619,6 @@ func (s *slice) Close() error {
 // shouldUpload returns true if it's time to write the slice
 // (set to true when it has reached the min slice in bytes)
 func (s *slice) shouldUpload() bool {
-	fmt.Printf("buffer len: %v and min upload is %v so %v\n", s.buffer.Len(), s.proto.cfg.MinUploadBytes, int64(s.buffer.Len()) >= s.proto.cfg.MinUploadBytes)
 	return int64(s.buffer.Len()) >= s.proto.cfg.MinUploadBytes
 }
 
@@ -716,8 +710,9 @@ func (r *ProtoReader) setError(err error) error {
 
 // Read returns next event or io.EOF in case of the end of the parts
 func (r *ProtoReader) Read() (AuditEvent, error) {
-	// 2 iterations is an extra precaution to avoid endless loop
-	for i := 0; i < 2; i++ {
+	// fixed amount of iterations is an extra precaution to avoid
+	// accidental endless loop due to logic error crashing the system
+	for i := 0; i < defaults.MaxIterationLimit; i++ {
 		switch r.state {
 		case protoReaderStateEOF:
 			return nil, io.EOF
@@ -736,7 +731,6 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 				return nil, r.setError(trace.ConvertSystemError(err))
 			}
 			protocolVersion := binary.BigEndian.Uint64(r.sizeBytes[:Int64Size])
-			fmt.Printf("Proto version: %v\n", protocolVersion)
 			if protocolVersion != ProtoStreamV1 {
 				return nil, trace.BadParameter("unsupported protocol version %v", protocolVersion)
 			}
@@ -746,14 +740,12 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 				return nil, r.setError(trace.ConvertSystemError(err))
 			}
 			partSize := binary.BigEndian.Uint64(r.sizeBytes[:Int64Size])
-			fmt.Printf("Part size: %v\n", partSize)
 			// read padding size (could be 0)
 			_, err = io.ReadFull(r.reader, r.sizeBytes[:Int64Size])
 			if err != nil {
 				return nil, r.setError(trace.ConvertSystemError(err))
 			}
 			r.padding = int64(binary.BigEndian.Uint64(r.sizeBytes[:Int64Size]))
-			fmt.Printf("Padding: %v\n", r.padding)
 			gzipReader, err := newGzipReader(ioutil.NopCloser(io.LimitReader(r.reader, int64(partSize))))
 			if err != nil {
 				return nil, r.setError(trace.Wrap(err))
@@ -776,7 +768,6 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 					return nil, r.setError(trace.ConvertSystemError(err))
 				}
 				if r.padding != 0 {
-					fmt.Printf("Skipping padding %v\n", r.padding)
 					skipped, err := io.CopyBuffer(ioutil.Discard, io.LimitReader(r.reader, r.padding), r.messageBytes[:])
 					if err != nil {
 						return nil, r.setError(trace.ConvertSystemError(err))
@@ -805,7 +796,6 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 			}
 			oneof := OneOf{}
 			err = oneof.Unmarshal(r.messageBytes[:messageSize])
-			fmt.Printf("Message size: %v\n", messageSize)
 			if err != nil {
 				return nil, trace.Wrap(err)
 			}
@@ -815,7 +805,7 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 		}
 	}
 	return nil, r.setError(
-		trace.BadParameter("internal algo error: too many interations reading the stream, the stream may be corrupted"))
+		trace.BadParameter("entered loop while reading the stream, the stream may be corrupted"))
 }
 
 // ReadAll reads all events until EOF

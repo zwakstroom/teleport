@@ -35,6 +35,7 @@ import (
 	"github.com/gravitational/trace/trail"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	_ "google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/peer"
 )

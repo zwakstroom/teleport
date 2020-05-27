@@ -18,6 +18,7 @@ package auth
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/tls"
 	"encoding/hex"
@@ -55,8 +56,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	ggzip "google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/keepalive"
 )
+
+func init() {
+	ggzip.SetLevel(gzip.BestSpeed)
+}
 
 const (
 	// CurrentVersion is a current API version
@@ -2055,7 +2061,7 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 		return nil, trace.Wrap(err)
 	}
 	closeCtx, cancel := context.WithCancel(ctx)
-	stream, err := clt.CreateAuditStream(closeCtx)
+	stream, err := clt.CreateAuditStream(closeCtx, grpc.UseCompressor(ggzip.Name))
 	if err != nil {
 		return nil, trail.FromGRPC(err)
 	}

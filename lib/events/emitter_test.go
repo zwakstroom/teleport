@@ -21,21 +21,23 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"time"
 
 	"gopkg.in/check.v1"
 
 	"github.com/gravitational/teleport/lib/fixtures"
 	"github.com/gravitational/teleport/lib/session"
-	//"github.com/gravitational/trace"
 )
 
 // TestProtoStreamer tests edge cases of proto streamer implementation
 func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
+	type generateEventsFn func() []AuditEvent
 	type testCase struct {
 		name           string
 		minUploadBytes int64
 		events         []AuditEvent
 		err            error
+		generateEvents generateEventsFn
 	}
 	testCases := []testCase{
 		{
@@ -47,6 +49,31 @@ func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 			name:           "get a part per message",
 			minUploadBytes: 1,
 			events:         []AuditEvent{&sessionStart, &sessionPrint, &sessionEnd},
+		},
+		{
+			name:           "small load test with some uneven numbers",
+			minUploadBytes: 1024,
+			generateEvents: func() []AuditEvent {
+				events := []AuditEvent{&sessionStart}
+				for i := 0; i < 1000; i++ {
+					event := &SessionPrint{
+						Metadata: Metadata{
+							Index: int64(i) + 1,
+							Type:  SessionPrintEvent,
+							Time:  time.Date(2020, 03, 30, 15, 58, 56, 959*int(time.Millisecond), time.UTC),
+						},
+						ChunkIndex:        int64(i),
+						DelayMilliseconds: int64(i),
+						Offset:            int64(i),
+						Data:              bytes.Repeat([]byte("hello"), i%177+1),
+					}
+					event.Bytes = int64(len(event.Data))
+					event.Time = event.Time.Add(time.Duration(i) * time.Millisecond)
+					events = append(events, event)
+				}
+				events = append(events, &sessionEnd)
+				return events
+			},
 		},
 		{
 			name:           "no events",
@@ -75,7 +102,12 @@ testcases:
 		stream, err := streamer.CreateAuditStream(ctx, sid)
 		c.Assert(err, check.IsNil)
 
-		for _, event := range tc.events {
+		events := tc.events
+		if tc.generateEvents != nil {
+			events = tc.generateEvents()
+		}
+
+		for _, event := range events {
 			err := stream.EmitAuditEvent(ctx, event)
 			if tc.err != nil {
 				c.Assert(err, check.FitsTypeOf, tc.err)
@@ -84,9 +116,7 @@ testcases:
 				c.Assert(err, check.IsNil)
 			}
 		}
-		fmt.Printf("1 %v\n", tc.name)
 		err = stream.Complete(ctx)
-		fmt.Printf("2 %v\n", tc.name)
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent
@@ -100,7 +130,7 @@ testcases:
 			outEvents = append(outEvents, out...)
 		}
 		fmt.Printf("Test case %v\n", tc.name)
-		fixtures.DeepCompareSlices(c, tc.events, outEvents)
+		fixtures.DeepCompareSlices(c, events, outEvents)
 	}
 }
 
