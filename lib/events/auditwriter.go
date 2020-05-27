@@ -83,6 +83,12 @@ type AuditWriter struct {
 	eventIndex     int64
 }
 
+// Status returns channel receiving updates about stream status
+// last event index that was uploaded and upload ID
+func (a *AuditWriter) Status() <-chan StreamStatus {
+	return nil
+}
+
 // Write takes a chunk and writes it into the audit log
 func (a *AuditWriter) Write(data []byte) (int, error) {
 	if !a.cfg.RecordOutput {

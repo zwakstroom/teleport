@@ -1383,6 +1383,12 @@ type streamWithRoles struct {
 	stream   events.Stream
 }
 
+// Status returns channel receiving updates about stream status
+// last event index that was uploaded and upload ID
+func (s *streamWithRoles) Status() <-chan events.StreamStatus {
+	return nil
+}
+
 // Complete closes the stream and marks it finalized
 func (s *streamWithRoles) Complete(ctx context.Context) error {
 	return s.stream.Complete(ctx)

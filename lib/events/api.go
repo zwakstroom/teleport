@@ -412,6 +412,9 @@ type MultipartUploader interface {
 
 // Stream is a continuous stream of events
 type Stream interface {
+	// Status returns channel receiving updates about stream status
+	// last event index that was uploaded and upload ID
+	Status() <-chan StreamStatus
 	// Close method cancels and releases all resources associated
 	// with the stream without completing the stream,
 	// can be called multiple times

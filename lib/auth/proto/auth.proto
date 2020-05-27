@@ -178,6 +178,14 @@ message AuditStreamRequest {
     }
 }
 
+// AuditStreamStatus returns audit stream status
+// with corresponding upload ID
+message AuditStreamStatus {
+    // UploadID is upload ID associated with the stream,
+    // can be used to resume the stream
+    string UploadID = 1;
+}
+
 // CreateStream creates stream for a new session ID
 message CreateStream {
     string SessionID = 1;
@@ -185,7 +193,10 @@ message CreateStream {
 
 // ResumeStream resumes stream that was previously created
 message ResumeStream {
+    // SessionID is a session ID of the stream
     string SessionID = 1;
+    // UploadID is upload ID to resume
+    string UploadID = 2;
 }
 
 // CompleteStream completes the stream
@@ -226,5 +237,5 @@ service AuthService {
     // EmitAuditEvent emits audit event
     rpc EmitAuditEvent(events.OneOf) returns (google.protobuf.Empty);
     // CreateAuditStream creates or resumes audit events streams
-    rpc CreateAuditStream(stream AuditStreamRequest) returns (google.protobuf.Empty);    
+    rpc CreateAuditStream(stream AuditStreamRequest) returns (stream events.StreamStatus);
 }

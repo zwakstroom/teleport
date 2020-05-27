@@ -197,7 +197,7 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 	uploadsCtx, uploadsDone := context.WithCancel(context.Background())
 	stream := &ProtoStream{
 		cfg:      cfg,
-		eventsCh: make(chan *OneOf),
+		eventsCh: make(chan protoEvent),
 
 		cancelCtx: cancelCtx,
 		cancel:    cancel,
@@ -207,6 +207,8 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 
 		uploadsCtx:  uploadsCtx,
 		uploadsDone: uploadsDone,
+
+		statusCh: make(chan StreamStatus, cfg.ConcurrentUploads),
 	}
 
 	writer := &sliceWriter{
@@ -228,7 +230,7 @@ type ProtoStream struct {
 	cfg ProtoStreamConfig
 
 	slice    *slice
-	eventsCh chan *OneOf
+	eventsCh chan protoEvent
 
 	// parentCtx, when closed will abort all operations
 	parentCtx context.Context
@@ -246,6 +248,9 @@ type ProtoStream struct {
 	uploadsCtx context.Context
 	// uploadsDone is a function signalling that uploads have completed
 	uploadsDone context.CancelFunc
+
+	// statusCh sends updates on the stream status
+	statusCh chan StreamStatus
 }
 
 const (
@@ -256,6 +261,11 @@ const (
 	// should complete all in flight uploads but do not complete the upload
 	completeTypeFlush = 1
 )
+
+type protoEvent struct {
+	index int64
+	oneof *OneOf
+}
 
 // EmitAuditEvent emits a single audit event to the stream
 func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
@@ -271,7 +281,7 @@ func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 
 	start := time.Now()
 	select {
-	case s.eventsCh <- oneof:
+	case s.eventsCh <- protoEvent{index: event.GetIndex(), oneof: oneof}:
 		diff := time.Since(start)
 		if diff > 100*time.Millisecond {
 			log.Debugf("[SLOW] EmitAuditDevnt took %v.", diff)
@@ -296,6 +306,12 @@ func (s *ProtoStream) Complete(ctx context.Context) error {
 	case <-ctx.Done():
 		return trace.ConnectionProblem(ctx.Err(), "context has cancelled before complete could succeed")
 	}
+}
+
+// Status returns channel receiving updates about stream status
+// last event index that was uploaded and upload ID
+func (s *ProtoStream) Status() <-chan StreamStatus {
+	return s.statusCh
 }
 
 // Flush compoletes all in flight uploads but does not set the upload as completed
@@ -334,9 +350,67 @@ type sliceWriter struct {
 	semUploads chan struct{}
 	// completedParts is the list of completed parts
 	completedParts []StreamPart
+	// pendingParts keeps track of parts that have been uploaded
+	// but have not been notified about
+	pendingParts []pendingPart
+	// lastNotifiedPartNumber tracks the last part number
+	// that was notified to be uploaded by the writer
+	lastNotifiedPartNumber int64
 	// emptyHeader is used to write empty header
 	// to preserve some bytes
 	emptyHeader [ProtoStreamV1PartHeaderSize]byte
+}
+
+type pendingPart struct {
+	lastEventIndex int64
+	part           StreamPart
+}
+
+func (w *sliceWriter) updateCompletedParts(part StreamPart, lastEventIndex int64) {
+	w.completedParts = append(w.completedParts, part)
+
+	// the section below makes sure that the writer notifies about the
+	// last event index if and only if all parts with prior events have been
+	// also uploaded
+	lastPart := pendingPart{part: part, lastEventIndex: lastEventIndex}
+	if part.Number == w.lastNotifiedPartNumber+1 {
+		// find the last consecutive part number, notify about it and remove
+		// all parts up to it from the list, this guarantees
+		// the event index will get notified to be uploaded only if all prior
+		// events have been uploaded as well
+		sort.Slice(w.pendingParts, func(i, j int) bool {
+			return w.pendingParts[i].part.Number < w.pendingParts[j].part.Number
+		})
+		lastPartIndex := -1
+		for i := 0; i < len(w.pendingParts); i++ {
+			if w.pendingParts[i].part.Number != lastPart.part.Number {
+				break
+			}
+			lastPartIndex = i
+			lastPart = w.pendingParts[i]
+		}
+		// remove all parts prior to the last consecutive part
+		// from pending, because they were uploaded and the last
+		// part's index has been notified
+		if lastPartIndex > 0 {
+			fmt.Printf(">>>>> Removed pending parts: %v\n", w.pendingParts[:lastPartIndex])
+			w.pendingParts = w.pendingParts[lastPartIndex+1:]
+		}
+		w.lastNotifiedPartNumber = lastPart.part.Number
+		w.trySendStreamStatusUpdate(lastPart.lastEventIndex)
+		return
+	}
+	w.pendingParts = append(w.pendingParts, lastPart)
+	fmt.Printf(">>>>> Pushed pending parts: %v\n", w.pendingParts)
+	return
+}
+
+func (w *sliceWriter) trySendStreamStatusUpdate(lastEventIndex int64) {
+	fmt.Printf(">>>>> streamStatusUpdate(%v)\n", lastEventIndex)
+	select {
+	case w.proto.statusCh <- StreamStatus{UploadID: w.proto.cfg.Upload.ID, LastEventIndex: lastEventIndex}:
+	default:
+	}
 }
 
 // receiveAndUpload receives and uploads serialized events
@@ -369,9 +443,9 @@ func (w *sliceWriter) receiveAndUpload() {
 				return
 			}
 			delete(w.activeUploads, part.Number)
-			w.completedParts = append(w.completedParts, *part)
-		case oneof := <-w.proto.eventsCh:
-			if err := w.submitEvent(oneof); err != nil {
+			w.updateCompletedParts(*part, upload.lastEventIndex)
+		case event := <-w.proto.eventsCh:
+			if err := w.submitEvent(event); err != nil {
 				log.WithError(err).Error("Lost event.")
 				continue
 			}
@@ -425,11 +499,11 @@ func (w *sliceWriter) newSlice() *slice {
 	}
 }
 
-func (w *sliceWriter) submitEvent(oneof *OneOf) error {
+func (w *sliceWriter) submitEvent(event protoEvent) error {
 	if w.current == nil {
 		w.current = w.newSlice()
 	}
-	return w.current.emitAuditEvent(oneof)
+	return w.current.emitAuditEvent(event)
 }
 
 // completeStream  waits for in flight uploads to finish
@@ -444,7 +518,7 @@ func (w *sliceWriter) completeStream() {
 				log.WithError(err).Warningf("Failed to upload part.")
 				continue
 			}
-			w.completedParts = append(w.completedParts, *part)
+			w.updateCompletedParts(*part, upload.lastEventIndex)
 		case <-w.proto.cancelCtx.Done():
 			return
 		}
@@ -467,8 +541,9 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 		return nil, trace.ConnectionProblem(w.proto.cancelCtx.Err(), "context is closed")
 	}
 	activeUpload := &activeUpload{
-		partNumber: partNumber,
-		start:      time.Now().UTC(),
+		partNumber:     partNumber,
+		lastEventIndex: slice.lastEventIndex,
+		start:          time.Now().UTC(),
 	}
 
 	go func() {
@@ -535,12 +610,13 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 }
 
 type activeUpload struct {
-	mtx        sync.RWMutex
-	start      time.Time
-	end        time.Time
-	partNumber int64
-	part       *StreamPart
-	err        error
+	mtx            sync.RWMutex
+	start          time.Time
+	end            time.Time
+	partNumber     int64
+	part           *StreamPart
+	err            error
+	lastEventIndex int64
 }
 
 func (a *activeUpload) setError(err error) {
@@ -577,11 +653,12 @@ func (a *activeUpload) getPart() (*StreamPart, error) {
 
 // slice contains serialized protobuf messages
 type slice struct {
-	proto  *ProtoStream
-	start  time.Time
-	writer *gzipWriter
-	buffer *bytes.Buffer
-	isLast bool
+	proto          *ProtoStream
+	start          time.Time
+	writer         *gzipWriter
+	buffer         *bytes.Buffer
+	isLast         bool
+	lastEventIndex int64
 }
 
 // reader returns a reader for the bytes writen,
@@ -623,10 +700,11 @@ func (s *slice) shouldUpload() bool {
 }
 
 // emitAuditEvent emits a single audit event to the stream
-func (s *slice) emitAuditEvent(oneof *OneOf) error {
+func (s *slice) emitAuditEvent(event protoEvent) error {
 	bytes := s.proto.cfg.SlicePool.Get()
+	defer s.proto.cfg.SlicePool.Put(bytes)
 
-	messageSize := oneof.Size()
+	messageSize := event.oneof.Size()
 	recordSize := ProtoStreamV1RecordHeaderSize + messageSize
 
 	if len(bytes) < recordSize {
@@ -634,7 +712,7 @@ func (s *slice) emitAuditEvent(oneof *OneOf) error {
 			"error in buffer allocation, expected size to be >= %v, got %v", recordSize, len(bytes))
 	}
 	binary.BigEndian.PutUint32(bytes, uint32(messageSize))
-	_, err := oneof.MarshalTo(bytes[Int32Size:])
+	_, err := event.oneof.MarshalTo(bytes[Int32Size:])
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -645,8 +723,9 @@ func (s *slice) emitAuditEvent(oneof *OneOf) error {
 	if wroteBytes != recordSize {
 		return trace.BadParameter("expected %v bytes to be written, got %v", recordSize, wroteBytes)
 	}
-
-	s.proto.cfg.SlicePool.Put(bytes)
+	if event.index > s.lastEventIndex {
+		s.lastEventIndex = event.index
+	}
 	return nil
 }
 

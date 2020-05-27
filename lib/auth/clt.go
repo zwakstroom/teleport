@@ -2101,6 +2101,12 @@ func (s *auditStreamer) Complete(ctx context.Context) error {
 	}))
 }
 
+// Status returns channel receiving updates about stream status
+// last event index that was uploaded and upload ID
+func (s *auditStreamer) Status() <-chan events.StreamStatus {
+	return nil
+}
+
 // EmitAuditEvent emits audit event
 func (s *auditStreamer) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
 	oneof, err := events.ToOneOf(event)
@@ -2157,13 +2163,19 @@ func (s *auditStreamer) send() {
 // recv is necessary to receive errors from the
 // server, otherwise no errors will be propagated
 func (s *auditStreamer) recv() {
-	err := s.stream.RecvMsg(&empty.Empty{})
-	s.closeWithError(trail.FromGRPC(err))
+	for {
+		status, err := s.stream.Recv()
+		if err != nil {
+			s.closeWithError(trail.FromGRPC(err))
+			fmt.Printf("AUDIT STREAMER EXITED\n")
+			return
+		}
+		fmt.Printf("Got status: %#v=", status)
+	}
 }
 
 func (s *auditStreamer) closeWithError(err error) {
 	s.cancel()
-	s.Close()
 	s.Lock()
 	defer s.Unlock()
 	s.err = err
@@ -2171,11 +2183,7 @@ func (s *auditStreamer) closeWithError(err error) {
 
 // Close closes all resources associated with stream without aborting it
 func (s *auditStreamer) Close() error {
-	_, err := s.stream.CloseAndRecv()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	s.closeWithError(err)
+	s.closeWithError(nil)
 	return nil
 }
 

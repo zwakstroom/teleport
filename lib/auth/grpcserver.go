@@ -91,7 +91,6 @@ func (g *GRPCServer) SendKeepAlives(stream proto.AuthService_SendKeepAlivesServe
 
 // CreateAuditStream creates or resumes audit event stream
 func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStreamServer) error {
-	defer stream.SendAndClose(&empty.Empty{})
 	auth, err := g.authenticate(stream.Context())
 	if err != nil {
 		return trail.ToGRPC(err)
@@ -119,6 +118,18 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				return trace.Wrap(err)
 			}
 			g.Debugf("Created stream: %v.", err)
+			go func() {
+				// FIXEVENTS: if failed to send status update,
+				// should we return from main loop?
+				select {
+				case <-stream.Context().Done():
+					return
+				case statusUpdate := <-eventStream.Status():
+					if err := stream.Send(&statusUpdate); err != nil {
+						g.WithError(err).Debugf("Failed to send status update.")
+					}
+				}
+			}()
 			// do not use stream context to give the auth server finish the upload
 			// even if the stream's context is cancelled
 			defer eventStream.Complete(auth.Context())

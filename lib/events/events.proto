@@ -465,3 +465,12 @@ message OneOf {
         events.AuthAttempt AuthAttempt = 16;
     }
 }
+
+
+// StreamStatus reflects stream status
+message StreamStatus  {
+    // UploadID represents upload ID
+	string UploadID  = 1;
+    // LastEventIndex updates last event index
+	int64 LastEventIndex = 2;
+}

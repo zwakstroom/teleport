@@ -124,6 +124,11 @@ func (*DiscardStream) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// Status returns a channel that always blocks
+func (*DiscardStream) Status() <-chan StreamStatus {
+	return nil
+}
+
 // Close cancels and releases all resources associated
 // with the stream without completing the stream,
 // can be called multiple times
@@ -313,6 +318,12 @@ type CheckingStream struct {
 	uidGenerator utils.UID
 }
 
+// Status returns channel receiving updates about stream status
+// last event index that was uploaded and upload ID
+func (s *CheckingStream) Status() <-chan StreamStatus {
+	return s.stream.Status()
+}
+
 // Close cancels and releases all resources associated
 // with the stream without completing the stream,
 // can be called multiple times
@@ -388,6 +399,12 @@ type TeeStreamer struct {
 type TeeStream struct {
 	emitter Emitter
 	stream  Stream
+}
+
+// Status returns channel receiving updates about stream status
+// last event index that was uploaded and upload ID
+func (t *TeeStream) Status() <-chan StreamStatus {
+	return t.stream.Status()
 }
 
 // Close cancels and releases all resources associated
