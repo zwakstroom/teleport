@@ -379,9 +379,9 @@ type Emitter interface {
 type Streamer interface {
 	// CreateAuditStream creates event stream
 	CreateAuditStream(context.Context, session.ID) (Stream, error)
-	// ResumeAuditStream resumes the stream that
-	// has not been completed yet
-	ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error)
+	// ResumeAuditStream resumes the stream for session upload that
+	// has not been completed yet.
+	ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error)
 }
 
 // StreamPart represents uploaded stream part
@@ -408,6 +408,8 @@ type MultipartUploader interface {
 	CompleteUpload(ctx context.Context, upload StreamUpload, parts []StreamPart) error
 	// UploadPart uploads part and returns the part
 	UploadPart(ctx context.Context, upload StreamUpload, partNumber int64, partBody io.ReadSeeker) (*StreamPart, error)
+	// ListParts returns all uploaded parts for the completed upload in sorted order
+	ListParts(ctx context.Context, sessionID session.ID, uploadID string) ([]StreamPart, error)
 }
 
 // Stream is a continuous stream of events
@@ -415,6 +417,9 @@ type Stream interface {
 	// Status returns channel receiving updates about stream status
 	// last event index that was uploaded and upload ID
 	Status() <-chan StreamStatus
+	// Done returns channel closed when streamer is closed
+	// should be used to detect sending errors
+	Done() <-chan struct{}
 	// Close method cancels and releases all resources associated
 	// with the stream without completing the stream,
 	// can be called multiple times

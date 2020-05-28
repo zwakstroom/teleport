@@ -1372,8 +1372,26 @@ func (a *AuthWithRoles) CreateAuditStream(ctx context.Context, sid session.ID) (
 }
 
 // ResumeAuditStream resumes the stream that has been created
-func (a *AuthWithRoles) ResumeAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
-	return nil, trace.NotImplemented("not implemented")
+func (a *AuthWithRoles) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (events.Stream, error) {
+	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbCreate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(defaults.Namespace, services.KindEvent, services.VerbUpdate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	role, ok := a.context.Identity.(BuiltinRole)
+	if !ok || !role.IsServer() {
+		return nil, trace.AccessDenied("this request can be only executed by proxy, node or auth")
+	}
+	stream, err := a.authServer.emitter.ResumeAuditStream(ctx, sid, uploadID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &streamWithRoles{
+		stream:   stream,
+		a:        a,
+		serverID: role.GetServerID(),
+	}, nil
 }
 
 // streamWithRoles verifies every event
@@ -1386,7 +1404,13 @@ type streamWithRoles struct {
 // Status returns channel receiving updates about stream status
 // last event index that was uploaded and upload ID
 func (s *streamWithRoles) Status() <-chan events.StreamStatus {
-	return nil
+	return s.stream.Status()
+}
+
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (s *streamWithRoles) Done() <-chan struct{} {
+	return s.stream.Done()
 }
 
 // Complete closes the stream and marks it finalized

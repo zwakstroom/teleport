@@ -2068,6 +2068,7 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 	s := &auditStreamer{
 		stream:   stream,
 		eventsCh: make(chan *events.OneOf),
+		statusCh: make(chan events.StreamStatus, 1),
 		closeCtx: closeCtx,
 		cancel:   cancel,
 	}
@@ -2085,6 +2086,7 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 
 type auditStreamer struct {
 	eventsCh chan *events.OneOf
+	statusCh chan events.StreamStatus
 	sync.RWMutex
 	stream   proto.AuthService_CreateAuditStreamClient
 	err      error
@@ -2104,7 +2106,7 @@ func (s *auditStreamer) Complete(ctx context.Context) error {
 // Status returns channel receiving updates about stream status
 // last event index that was uploaded and upload ID
 func (s *auditStreamer) Status() <-chan events.StreamStatus {
-	return nil
+	return s.statusCh
 }
 
 // EmitAuditEvent emits audit event
@@ -2167,10 +2169,14 @@ func (s *auditStreamer) recv() {
 		status, err := s.stream.Recv()
 		if err != nil {
 			s.closeWithError(trail.FromGRPC(err))
-			fmt.Printf("AUDIT STREAMER EXITED\n")
 			return
 		}
-		fmt.Printf("Got status: %#v=", status)
+		select {
+		case <-s.closeCtx.Done():
+			return
+		case s.statusCh <- *status:
+		default:
+		}
 	}
 }
 

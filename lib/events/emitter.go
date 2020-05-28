@@ -129,6 +129,12 @@ func (*DiscardStream) Status() <-chan StreamStatus {
 	return nil
 }
 
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (*DiscardStream) Done() <-chan struct{} {
+	return nil
+}
+
 // Close cancels and releases all resources associated
 // with the stream without completing the stream,
 // can be called multiple times
@@ -285,8 +291,8 @@ func (s *CheckingStreamer) CreateAuditStream(ctx context.Context, sid session.ID
 }
 
 // ResumeAuditStream resumes audit event stream
-func (s *CheckingStreamer) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
-	stream, err := s.Inner.ResumeAuditStream(ctx, sid)
+func (s *CheckingStreamer) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error) {
+	stream, err := s.Inner.ResumeAuditStream(ctx, sid, uploadID)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -316,6 +322,12 @@ type CheckingStream struct {
 	stream       Stream
 	clock        clockwork.Clock
 	uidGenerator utils.UID
+}
+
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (s *CheckingStream) Done() <-chan struct{} {
+	return s.stream.Done()
 }
 
 // Status returns channel receiving updates about stream status
@@ -379,8 +391,8 @@ func (t *TeeStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (St
 }
 
 // ResumeAuditStream resumes audit event stream
-func (t *TeeStreamer) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
-	stream, err := t.streamer.ResumeAuditStream(ctx, sid)
+func (t *TeeStreamer) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error) {
+	stream, err := t.streamer.ResumeAuditStream(ctx, sid, uploadID)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -399,6 +411,12 @@ type TeeStreamer struct {
 type TeeStream struct {
 	emitter Emitter
 	stream  Stream
+}
+
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (t *TeeStream) Done() <-chan struct{} {
+	return t.stream.Done()
 }
 
 // Status returns channel receiving updates about stream status

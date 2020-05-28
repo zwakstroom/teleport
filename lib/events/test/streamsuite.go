@@ -32,6 +32,7 @@ func (s *HandlerSuite) Stream(c *check.C) {
 		err := stream.EmitAuditEvent(ctx, event)
 		c.Assert(err, check.IsNil)
 	}
+
 	err = stream.Complete(ctx)
 	c.Assert(err, check.IsNil)
 

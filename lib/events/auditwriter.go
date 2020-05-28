@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/gravitational/teleport/lib/session"
 
 	"github.com/gravitational/trace"
+	"github.com/jonboulle/clockwork"
 
 	logrus "github.com/sirupsen/logrus"
 )
@@ -19,14 +21,22 @@ func NewAuditWriter(cfg AuditWriterConfig) (*AuditWriter, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	sr := &AuditWriter{
-		lock: &sync.Mutex{},
-		cfg:  cfg,
+	stream, err := cfg.Streamer.CreateAuditStream(cfg.Context, cfg.SessionID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	writer := &AuditWriter{
+		lock:   &sync.Mutex{},
+		cfg:    cfg,
+		stream: NewCheckingStream(stream, cfg.Clock),
 		log: logrus.WithFields(logrus.Fields{
 			trace.Component: cfg.Component,
 		}),
 	}
-	return sr, nil
+	go writer.updateStreamStatus()
+
+	return writer, nil
 }
 
 // AuditWriterConfig configures audit writer
@@ -46,12 +56,15 @@ type AuditWriterConfig struct {
 	// Component is a component used for logging
 	Component string
 
-	// Stream is a stream to wrap
-	Stream Stream
+	// Streamer is used to create and resume audit streams
+	Streamer Streamer
 
 	// Context is a context to cancel the writes
 	// or any other operations
 	Context context.Context
+
+	// Clock is used to override time in tests
+	Clock clockwork.Clock
 }
 
 // CheckAndSetDefaults checks and sets defaults
@@ -59,14 +72,14 @@ func (cfg *AuditWriterConfig) CheckAndSetDefaults() error {
 	if cfg.SessionID.IsZero() {
 		return trace.BadParameter("missing parameter SessionID")
 	}
+	if cfg.Streamer == nil {
+		return trace.BadParameter("missing parameter Streamer")
+	}
 	if cfg.Context == nil {
 		return trace.BadParameter("missing parameter Context")
 	}
 	if cfg.Namespace == "" {
 		cfg.Namespace = defaults.Namespace
-	}
-	if cfg.Stream == nil {
-		cfg.Stream = &DiscardStream{}
 	}
 
 	return nil
@@ -81,12 +94,70 @@ type AuditWriter struct {
 	log            *logrus.Entry
 	lastPrintEvent *SessionPrint
 	eventIndex     int64
+	buffer         []AuditEvent
+	lastStatus     *StreamStatus
+	stream         Stream
 }
 
 // Status returns channel receiving updates about stream status
 // last event index that was uploaded and upload ID
 func (a *AuditWriter) Status() <-chan StreamStatus {
-	return nil
+	return a.stream.Status()
+}
+
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (a *AuditWriter) Done() <-chan struct{} {
+	return a.stream.Done()
+}
+
+func (a *AuditWriter) updateStatus(status StreamStatus) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	a.lastStatus = &status
+	lastIndex := -1
+	for i := 0; i < len(a.buffer); i++ {
+		if status.LastEventIndex < a.buffer[i].GetIndex() {
+			break
+		}
+		lastIndex = i
+	}
+	if lastIndex > 0 {
+		before := len(a.buffer)
+		a.buffer = a.buffer[lastIndex+1:]
+		fmt.Printf("Dropped %v events buffer size: %v\n", before-len(a.buffer), len(a.buffer))
+	}
+}
+
+func (a *AuditWriter) updateStreamStatus() {
+	for {
+		select {
+		case status := <-a.stream.Status():
+			a.updateStatus(status)
+		case <-a.stream.Done():
+			wasClosed, lastStatus := a.getStatus()
+			if wasClosed {
+				a.log.Debugf("Audit WRITER GOT STREAM DONE WITH NO PROBLEM")
+				return
+			}
+			if lastStatus == nil {
+				a.log.Debugf("Audit WRITER GOT STREAM DONE WITH PROBLEM BUT HAVE NO STATUS, RETURNING!!!!!")
+				if err := a.closeStream(); err != nil {
+					a.log.WithError(err).Debugf("Failed to close stream.")
+				}
+				return
+			}
+			a.log.Debugf("Audit WRITER GOT STREAM DONE WITH PROBLEM!")
+			resumedStream, err := a.cfg.Streamer.ResumeAuditStream(a.cfg.Context, a.cfg.SessionID, lastStatus.UploadID)
+			if err != nil {
+				a.log.WithError(err).Errorf("Could not resume stream: %v")
+				return
+			}
+			a.log.Debugf("Could resume stream, but closing.")
+			resumedStream.Close()
+			return
+		}
+	}
 }
 
 // Write takes a chunk and writes it into the audit log
@@ -134,7 +205,7 @@ func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	return a.cfg.Stream.EmitAuditEvent(ctx, event)
+	return a.stream.EmitAuditEvent(ctx, event)
 }
 
 // Close closes the stream and completes it,
@@ -143,6 +214,19 @@ func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 // the interface - io.WriteCloser has only close method
 func (a *AuditWriter) Close() error {
 	return a.Complete(a.cfg.Context)
+}
+
+func (a *AuditWriter) closeStream() error {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	a.isClosed = true
+	return a.stream.Close()
+}
+
+func (a *AuditWriter) getStatus() (bool, *StreamStatus) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	return a.isClosed, a.lastStatus
 }
 
 // Complete closes the stream and marks it finalized,
@@ -156,7 +240,7 @@ func (a *AuditWriter) Complete(ctx context.Context) error {
 	}
 	a.isClosed = true
 	a.lock.Unlock()
-	return a.cfg.Stream.Complete(a.cfg.Context)
+	return a.stream.Complete(a.cfg.Context)
 }
 
 func (a *AuditWriter) setupEvent(event AuditEvent) error {
@@ -180,6 +264,8 @@ func (a *AuditWriter) setupEvent(event AuditEvent) error {
 
 	event.SetIndex(a.eventIndex)
 	a.eventIndex++
+
+	a.buffer = append(a.buffer, event)
 
 	printEvent, ok := event.(*SessionPrint)
 	if !ok {

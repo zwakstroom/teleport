@@ -77,8 +77,6 @@ const (
 // ProtoStreamerConfig specifies configuration for the part
 type ProtoStreamerConfig struct {
 	Uploader MultipartUploader
-	// ConcurrentUploads specifies amount of concurrent uploads
-	ConcurrentUploads int
 	// MinUploadBytes submits upload when they have reached min bytes (could be more,
 	// but not less), due to the nature of gzip writer
 	MinUploadBytes int64
@@ -91,9 +89,6 @@ func (cfg *ProtoStreamerConfig) CheckAndSetDefaults() error {
 	}
 	if cfg.MinUploadBytes == 0 {
 		cfg.MinUploadBytes = MinUploadPartSizeBytes
-	}
-	if cfg.ConcurrentUploads == 0 {
-		cfg.ConcurrentUploads = defaults.ConcurrentUploadsPerStream
 	}
 	return nil
 }
@@ -131,19 +126,26 @@ func (s *ProtoStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (
 	}
 
 	return NewProtoStream(ProtoStreamConfig{
-		Upload:            *upload,
-		BufferPool:        s.bufferPool,
-		SlicePool:         s.slicePool,
-		Uploader:          s.cfg.Uploader,
-		ConcurrentUploads: s.cfg.ConcurrentUploads,
-		MinUploadBytes:    s.cfg.MinUploadBytes,
+		Upload:         *upload,
+		BufferPool:     s.bufferPool,
+		SlicePool:      s.slicePool,
+		Uploader:       s.cfg.Uploader,
+		MinUploadBytes: s.cfg.MinUploadBytes,
 	})
 }
 
 // ResumeAuditStream resumes the stream that
 // has not been completed yet
-func (s *ProtoStreamer) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
-	return nil, trace.NotImplemented("not implemented")
+func (s *ProtoStreamer) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error) {
+	parts, err := s.cfg.Uploader.ListParts(ctx, sid, uploadID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	fmt.Printf("Got parts: %v\n", parts)
+	return nil, trace.NotImplemented("yet")
 }
 
 // ProtoStreamConfig supplies proto emitter configuration
@@ -152,8 +154,6 @@ type ProtoStreamConfig struct {
 	Upload StreamUpload
 	// Uploader handles upload to the storage
 	Uploader MultipartUploader
-	// Concurrent uploads specifies amount of concurrent uploads
-	ConcurrentUploads int
 	// BufferPool is a sync pool with buffers
 	BufferPool *utils.BufferSyncPool
 	// SlicePool is a sync pool with allocated slices
@@ -161,6 +161,8 @@ type ProtoStreamConfig struct {
 	// MinUploadBytes submits upload when they have reached min bytes (could be more,
 	// but not less), due to the nature of gzip writer
 	MinUploadBytes int64
+	// CompletedParts is a lsit of completed parts, used for resuming stream
+	CompletedParts []StreamPart
 }
 
 // CheckAndSetDefaults checks and sets default values
@@ -170,9 +172,6 @@ func (cfg *ProtoStreamConfig) CheckAndSetDefaults() error {
 	}
 	if cfg.Uploader == nil {
 		return trace.BadParameter("missing parameter Uploader")
-	}
-	if cfg.ConcurrentUploads == 0 {
-		return trace.BadParameter("missing parameter ConcurrentUploads")
 	}
 	if cfg.BufferPool == nil {
 		return trace.BadParameter("missing parameter BufferPool")
@@ -208,14 +207,14 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 		uploadsCtx:  uploadsCtx,
 		uploadsDone: uploadsDone,
 
-		statusCh: make(chan StreamStatus, cfg.ConcurrentUploads),
+		statusCh: make(chan StreamStatus, 1),
 	}
 
 	writer := &sliceWriter{
 		proto:             stream,
 		activeUploads:     make(map[int64]*activeUpload),
-		completedUploadsC: make(chan *activeUpload, cfg.ConcurrentUploads),
-		semUploads:        make(chan struct{}, cfg.ConcurrentUploads),
+		completedUploadsC: make(chan *activeUpload, 1),
+		semUploads:        make(chan struct{}, 1),
 		// TODO (klizhentas) when resuming stream this should be set
 		lastPartNumber: 0,
 	}
@@ -224,8 +223,8 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 	return stream, nil
 }
 
-// ProtoStream implements a protobuf stream emitter,
-// that is not concurrent safe
+// ProtoStream implements concurrent safe event emitter
+// that uploads the parts in parallel to S3
 type ProtoStream struct {
 	cfg ProtoStreamConfig
 
@@ -267,6 +266,12 @@ type protoEvent struct {
 	oneof *OneOf
 }
 
+// Done returns channel closed when streamer is closed
+// should be used to detect sending errors
+func (s *ProtoStream) Done() <-chan struct{} {
+	return s.cancelCtx.Done()
+}
+
 // EmitAuditEvent emits a single audit event to the stream
 func (s *ProtoStream) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
 	oneof, err := ToOneOf(event)
@@ -302,6 +307,7 @@ func (s *ProtoStream) Complete(ctx context.Context) error {
 	select {
 	// wait for all in-flight uploads to complete and stream to be completed
 	case <-s.uploadsCtx.Done():
+		s.cancel()
 		return nil
 	case <-ctx.Done():
 		return trace.ConnectionProblem(ctx.Err(), "context has cancelled before complete could succeed")
@@ -350,12 +356,6 @@ type sliceWriter struct {
 	semUploads chan struct{}
 	// completedParts is the list of completed parts
 	completedParts []StreamPart
-	// pendingParts keeps track of parts that have been uploaded
-	// but have not been notified about
-	pendingParts []pendingPart
-	// lastNotifiedPartNumber tracks the last part number
-	// that was notified to be uploaded by the writer
-	lastNotifiedPartNumber int64
 	// emptyHeader is used to write empty header
 	// to preserve some bytes
 	emptyHeader [ProtoStreamV1PartHeaderSize]byte
@@ -368,41 +368,7 @@ type pendingPart struct {
 
 func (w *sliceWriter) updateCompletedParts(part StreamPart, lastEventIndex int64) {
 	w.completedParts = append(w.completedParts, part)
-
-	// the section below makes sure that the writer notifies about the
-	// last event index if and only if all parts with prior events have been
-	// also uploaded
-	lastPart := pendingPart{part: part, lastEventIndex: lastEventIndex}
-	if part.Number == w.lastNotifiedPartNumber+1 {
-		// find the last consecutive part number, notify about it and remove
-		// all parts up to it from the list, this guarantees
-		// the event index will get notified to be uploaded only if all prior
-		// events have been uploaded as well
-		sort.Slice(w.pendingParts, func(i, j int) bool {
-			return w.pendingParts[i].part.Number < w.pendingParts[j].part.Number
-		})
-		lastPartIndex := -1
-		for i := 0; i < len(w.pendingParts); i++ {
-			if w.pendingParts[i].part.Number != lastPart.part.Number {
-				break
-			}
-			lastPartIndex = i
-			lastPart = w.pendingParts[i]
-		}
-		// remove all parts prior to the last consecutive part
-		// from pending, because they were uploaded and the last
-		// part's index has been notified
-		if lastPartIndex > 0 {
-			fmt.Printf(">>>>> Removed pending parts: %v\n", w.pendingParts[:lastPartIndex])
-			w.pendingParts = w.pendingParts[lastPartIndex+1:]
-		}
-		w.lastNotifiedPartNumber = lastPart.part.Number
-		w.trySendStreamStatusUpdate(lastPart.lastEventIndex)
-		return
-	}
-	w.pendingParts = append(w.pendingParts, lastPart)
-	fmt.Printf(">>>>> Pushed pending parts: %v\n", w.pendingParts)
-	return
+	w.trySendStreamStatusUpdate(lastEventIndex)
 }
 
 func (w *sliceWriter) trySendStreamStatusUpdate(lastEventIndex int64) {

@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/session"
 
@@ -109,4 +110,36 @@ func (h *Handler) CompleteUpload(ctx context.Context, upload events.StreamUpload
 		return ConvertS3Error(err)
 	}
 	return nil
+}
+
+// ListParts lists upload parts
+func (h *Handler) ListParts(ctx context.Context, sessionID session.ID, uploadID string) ([]events.StreamPart, error) {
+	var parts []events.StreamPart
+	var partNumberMarker *int64
+	for i := 0; i < defaults.MaxIterationLimit; i++ {
+		re, err := h.client.ListParts(&s3.ListPartsInput{
+			Bucket:           aws.String(h.Bucket),
+			Key:              aws.String(h.path(sessionID)),
+			UploadId:         aws.String(uploadID),
+			PartNumberMarker: partNumberMarker,
+		})
+		if err != nil {
+			return nil, ConvertS3Error(err)
+		}
+		for _, part := range re.Parts {
+			parts = append(parts, events.StreamPart{
+				Number: *part.PartNumber,
+				ETag:   *part.ETag,
+			})
+		}
+		if !*re.IsTruncated {
+			break
+		}
+		partNumberMarker = re.PartNumberMarker
+	}
+	// Parts must be sorted in PartNumber order.
+	sort.Slice(parts, func(i, j int) bool {
+		return parts[i].Number < parts[j].Number
+	})
+	return parts, nil
 }
