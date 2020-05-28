@@ -259,4 +259,18 @@ func ReadCertificateChain(certificateChainBytes []byte) ([]*x509.Certificate, er
 	return x509Chain, nil
 }
 
+// GenerateJWTKeypair returns a PEM encoded RSA keypair. Note that the JWT
+// keypair can use a different algorithm than the CA.
+func GenerateJWTKeypair() ([]byte, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, teleport.RSAKeySize)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	}), nil
+}
+
 const pemBlockCertificate = "CERTIFICATE"

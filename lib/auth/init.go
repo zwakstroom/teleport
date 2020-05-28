@@ -18,7 +18,6 @@ package auth
 
 import (
 	"context"
-	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -348,19 +347,25 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 		}
 	}
 
-	// generate a host certificate authority if it doesn't exist
-	hostCA, err := asrv.GetCertAuthority(services.CertAuthID{DomainName: cfg.ClusterName.GetClusterName(), Type: services.HostCA}, true)
+	// Generate a host certificate authority if it doesn't exist.
+	hostCA, err := asrv.GetCertAuthority(services.CertAuthID{
+		DomainName: cfg.ClusterName.GetClusterName(),
+		Type:       services.HostCA,
+	}, true)
 	if err != nil {
 		if !trace.IsNotFound(err) {
 			return nil, trace.Wrap(err)
 		}
 
-		log.Infof("First start: generating host certificate authority.")
+		log.Infof("First start: Generating host certificate authority.")
+
+		// Generate SSH keypair.
 		priv, pub, err := asrv.GenerateKeyPair("")
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
 
+		// Generate TLS keypair.
 		keyPEM, certPEM, err := tlsca.GenerateSelfSignedCA(pkix.Name{
 			CommonName:   cfg.ClusterName.GetClusterName(),
 			Organization: []string{cfg.ClusterName.GetClusterName()},
@@ -368,6 +373,13 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
+
+		// Generate JWT kepair.
+		jwtPEM, err := utils.GenerateJWTKeypair()
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+
 		hostCA = &services.CertAuthorityV2{
 			Kind:    services.KindCertAuthority,
 			Version: services.V2,
@@ -381,32 +393,49 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 				SigningKeys:  [][]byte{priv},
 				CheckingKeys: [][]byte{pub},
 				TLSKeyPairs:  []services.TLSKeyPair{{Cert: certPEM, Key: keyPEM}},
+				JWTKeyPairs: []services.RSAKeyPair{
+					services.RSAKeyPair{
+						PrivateKey: jwtPEM,
+					},
+				},
 			},
 		}
 		if err := asrv.Trust.UpsertCertAuthority(hostCA); err != nil {
 			return nil, trace.Wrap(err)
 		}
-	} else if len(hostCA.GetTLSKeyPairs()) == 0 {
-		log.Infof("Migrate: generating TLS CA for existing host CA.")
-		privateKey, err := ssh.ParseRawPrivateKey(hostCA.GetSigningKeys()[0])
+		//} else if len(hostCA.GetTLSKeyPairs()) == 0 {
+		//	log.Infof("Migrate: generating TLS CA for existing host CA.")
+		//	privateKey, err := ssh.ParseRawPrivateKey(hostCA.GetSigningKeys()[0])
+		//	if err != nil {
+		//		return nil, trace.Wrap(err)
+		//	}
+		//	privateKeyRSA, ok := privateKey.(*rsa.PrivateKey)
+		//	if !ok {
+		//		return nil, trace.BadParameter("expected RSA private key, got %T", privateKey)
+		//	}
+		//	keyPEM, certPEM, err := tlsca.GenerateSelfSignedCAWithPrivateKey(privateKeyRSA, pkix.Name{
+		//		CommonName:   cfg.ClusterName.GetClusterName(),
+		//		Organization: []string{cfg.ClusterName.GetClusterName()},
+		//	}, nil, defaults.CATTL)
+		//	if err != nil {
+		//		return nil, trace.Wrap(err)
+		//	}
+		//	hostCA.SetTLSKeyPairs([]services.TLSKeyPair{{Cert: certPEM, Key: keyPEM}})
+		//	if err := asrv.Trust.UpsertCertAuthority(hostCA); err != nil {
+		//		return nil, trace.Wrap(err)
+		//	}
+	} else if len(hostCA.GetJWTKeyPairs()) == 0 {
+		log.Infof("Migrate: Adding JWT keypair to exisiting host CA.")
+
+		jwtPEM, err := utils.GenerateJWTKeypair()
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		privateKeyRSA, ok := privateKey.(*rsa.PrivateKey)
-		if !ok {
-			return nil, trace.BadParameter("expected RSA private key, got %T", privateKey)
-		}
-		keyPEM, certPEM, err := tlsca.GenerateSelfSignedCAWithPrivateKey(privateKeyRSA, pkix.Name{
-			CommonName:   cfg.ClusterName.GetClusterName(),
-			Organization: []string{cfg.ClusterName.GetClusterName()},
-		}, nil, defaults.CATTL)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
-		hostCA.SetTLSKeyPairs([]services.TLSKeyPair{{Cert: certPEM, Key: keyPEM}})
-		if err := asrv.Trust.UpsertCertAuthority(hostCA); err != nil {
-			return nil, trace.Wrap(err)
-		}
+		hostCA.SetJWTKeyPairs([]services.RSAKeyPair{
+			services.RSAKeyPair{
+				PrivateKey: jwtPEM,
+			},
+		})
 	}
 
 	if lib.IsInsecureDevMode() {

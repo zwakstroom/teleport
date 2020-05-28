@@ -24,6 +24,7 @@ import (
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/wrappers"
@@ -208,16 +209,26 @@ type CertAuthority interface {
 	V2() *CertAuthorityV2
 	// String returns human readable version of the CertAuthority
 	String() string
+
 	// TLSCA returns first TLS certificate authority from the list of key pairs
 	TLSCA() (*tlsca.CertAuthority, error)
 	// SetTLSKeyPairs sets TLS key pairs
 	SetTLSKeyPairs(keyPairs []TLSKeyPair)
 	// GetTLSKeyPairs returns first PEM encoded TLS cert
 	GetTLSKeyPairs() []TLSKeyPair
+
+	// JWTKeyPair return the first JWT keypair from the list of keypairs.
+	JWTKeyPair() (*jwt.Key, error)
+	// GetJWTKeyPairs gets a RSA keypair used to sign a JWT.
+	GetJWTKeyPairs() []RSAKeyPair
+	// SetJWTKeyPairs sets a RSA keypair used to sign a JWT.
+	SetJWTKeyPairs([]RSAKeyPair)
+
 	// GetRotation returns rotation state.
 	GetRotation() Rotation
 	// SetRotation sets rotation state.
 	SetRotation(Rotation)
+
 	// Clone returns a copy of the cert authority object.
 	Clone() CertAuthority
 }
@@ -371,6 +382,24 @@ func (c *CertAuthorityV2) SetTLSKeyPairs(pairs []TLSKeyPair) {
 // GetTLSPrivateKey returns TLS key pairs
 func (c *CertAuthorityV2) GetTLSKeyPairs() []TLSKeyPair {
 	return c.Spec.TLSKeyPairs
+}
+
+// JWTKeyPair return the first JWT keypair from the list of keypairs.
+func (c *CertAuthorityV2) JWTKeyPair() (*jwt.Key, error) {
+	if len(c.Spec.JWTKeyPairs) == 0 {
+		return nil, trace.BadParameter("not JWT keypairs found")
+	}
+	return jwt.New(c.Spec.JWTKeyPairs[0].PrivateKey)
+}
+
+// GetJWTKeyPairs gets a RSA keypair used to sign a JWT.
+func (c *CertAuthorityV2) GetJWTKeyPairs() []RSAKeyPair {
+	return c.Spec.JWTKeyPairs
+}
+
+// SetJWTKeyPairs sets a RSA keypair used to sign a JWT.
+func (c *CertAuthorityV2) SetJWTKeyPairs(jwtKeyPairs []RSAKeyPair) {
+	c.Spec.JWTKeyPairs = jwtKeyPairs
 }
 
 // GetMetadata returns object metadata
