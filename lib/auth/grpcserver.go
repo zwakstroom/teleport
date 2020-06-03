@@ -102,8 +102,24 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	processed := int64(0)
 	start := time.Now()
 	counter := 0
+	forwardEvents := func(eventStream events.Stream) {
+		// FIXEVENTS: if failed to send status update,
+		// should we return from main loop?
+		for {
+			select {
+			case <-stream.Context().Done():
+				fmt.Printf("EXITED AS SHOULD BE!!!!!!")
+				return
+			case statusUpdate := <-eventStream.Status():
+				if err := stream.Send(&statusUpdate); err != nil {
+					g.WithError(err).Debugf("Failed to send status update.")
+				}
+			}
+		}
+	}
+
 	for {
-		if time.Now().Sub(start) >= 10*time.Second {
+		if time.Now().Sub(start) >= 20*time.Second {
 			fmt.Printf("EXITING AFTER 10 SECONDS\n")
 			return nil
 		}
@@ -124,36 +140,27 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				return trace.Wrap(err)
 			}
 			g.Debugf("Created stream: %v.", err)
-			go func() {
-				// FIXEVENTS: if failed to send status update,
-				// should we return from main loop?
-				for {
-					select {
-					case <-stream.Context().Done():
-						fmt.Printf("EXITED AS SHOULD BE!!!!!!")
-						return
-					case statusUpdate := <-eventStream.Status():
-						if err := stream.Send(&statusUpdate); err != nil {
-							g.WithError(err).Debugf("Failed to send status update.")
-						}
-					}
+			go forwardEvents(eventStream)
+			defer func() {
+				if err := eventStream.Close(); err != nil {
+					g.WithError(err).Warningf("Failed to close the stream.")
 				}
 			}()
-			// do not use stream context to give the auth server finish the upload
-			// even if the stream's context is cancelled
-			defer eventStream.Complete(auth.Context())
 		} else if resume := request.GetResumeStream(); resume != nil {
 			if eventStream != nil {
 				return trail.ToGRPC(trace.BadParameter("stream is already created or resumed"))
 			}
-			eventStream, err = auth.ResumeAuditStream(stream.Context(), session.ID(resume.SessionID))
+			eventStream, err = auth.ResumeAuditStream(stream.Context(), session.ID(resume.SessionID), resume.UploadID)
 			if err != nil {
 				return trace.Wrap(err)
 			}
 			g.Debugf("Resumed stream: %v.", err)
-			// do not use stream context to give the auth server finish the upload
-			// even if the stream's context is cancelled
-			defer eventStream.Complete(auth.Context())
+			go forwardEvents(eventStream)
+			defer func() {
+				if err := eventStream.Close(); err != nil {
+					g.WithError(err).Warningf("Failed to close the stream.")
+				}
+			}()
 		} else if complete := request.GetCompleteStream(); complete != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not complete"))

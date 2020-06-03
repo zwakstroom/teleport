@@ -2049,13 +2049,27 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 	return &response, nil
 }
 
-// ResumeAuditStream resumes new audit stream
-func (c *Client) ResumeAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
-	return nil, trace.NotImplemented("not implemented")
+// ResumeAuditStream resumes existing audit stream
+func (c *Client) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (events.Stream, error) {
+	return c.createOrResumeAuditStream(ctx, proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_ResumeStream{
+			ResumeStream: &proto.ResumeStream{
+				SessionID: string(sid),
+				UploadID:  uploadID,
+			}},
+	})
 }
 
 // CreateAuditStream creates new audit stream
 func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	return c.createOrResumeAuditStream(ctx, proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_CreateStream{
+			CreateStream: &proto.CreateStream{SessionID: string(sid)}},
+	})
+}
+
+// createOrResumeAuditStream creates or resumes audit stream
+func (c *Client) createOrResumeAuditStream(ctx context.Context, request proto.AuditStreamRequest) (events.Stream, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -2074,10 +2088,7 @@ func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.
 	}
 	go s.recv()
 	go s.send()
-	err = s.stream.Send(&proto.AuditStreamRequest{
-		Request: &proto.AuditStreamRequest_CreateStream{
-			CreateStream: &proto.CreateStream{SessionID: string(sid)}},
-	})
+	err = s.stream.Send(&request)
 	if err != nil {
 		return nil, trace.NewAggregate(s.Close(), trail.FromGRPC(err))
 	}

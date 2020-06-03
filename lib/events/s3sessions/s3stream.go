@@ -51,7 +51,7 @@ func (h *Handler) CreateUpload(ctx context.Context, sessionID session.ID) (*even
 		return nil, ConvertS3Error(err)
 	}
 
-	return &events.StreamUpload{Key: *resp.Key, ID: *resp.UploadId}, nil
+	return &events.StreamUpload{SessionID: sessionID, ID: *resp.UploadId}, nil
 }
 
 // UploadPart uploads part
@@ -67,8 +67,8 @@ func (h *Handler) UploadPart(ctx context.Context, upload events.StreamUpload, pa
 
 	params := &s3.UploadPartInput{
 		Bucket:     aws.String(h.Bucket),
-		Key:        aws.String(upload.Key),
 		UploadId:   aws.String(upload.ID),
+		Key:        aws.String(h.path(upload.SessionID)),
 		Body:       partBody,
 		PartNumber: aws.Int64(partNumber),
 	}
@@ -101,7 +101,7 @@ func (h *Handler) CompleteUpload(ctx context.Context, upload events.StreamUpload
 
 	params := &s3.CompleteMultipartUploadInput{
 		Bucket:          aws.String(h.Bucket),
-		Key:             aws.String(upload.Key),
+		Key:             aws.String(h.path(upload.SessionID)),
 		UploadId:        aws.String(upload.ID),
 		MultipartUpload: &s3.CompletedMultipartUpload{Parts: completedParts},
 	}
@@ -113,14 +113,14 @@ func (h *Handler) CompleteUpload(ctx context.Context, upload events.StreamUpload
 }
 
 // ListParts lists upload parts
-func (h *Handler) ListParts(ctx context.Context, sessionID session.ID, uploadID string) ([]events.StreamPart, error) {
+func (h *Handler) ListParts(ctx context.Context, upload events.StreamUpload) ([]events.StreamPart, error) {
 	var parts []events.StreamPart
 	var partNumberMarker *int64
 	for i := 0; i < defaults.MaxIterationLimit; i++ {
 		re, err := h.client.ListParts(&s3.ListPartsInput{
 			Bucket:           aws.String(h.Bucket),
-			Key:              aws.String(h.path(sessionID)),
-			UploadId:         aws.String(uploadID),
+			Key:              aws.String(h.path(upload.SessionID)),
+			UploadId:         aws.String(upload.ID),
 			PartNumberMarker: partNumberMarker,
 		})
 		if err != nil {

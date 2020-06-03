@@ -134,18 +134,27 @@ func (s *ProtoStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (
 	})
 }
 
-// ResumeAuditStream resumes the stream that
-// has not been completed yet
+// ResumeAuditStream resumes the stream that has not been completed yet
 func (s *ProtoStreamer) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error) {
-	parts, err := s.cfg.Uploader.ListParts(ctx, sid, uploadID)
+	fmt.Printf("RESUME AUDIT STREAM %v %v\n", sid, uploadID)
+	// Note, that if the session ID does not match the upload ID,
+	// the request will fail
+	upload := StreamUpload{SessionID: sid, ID: uploadID}
+	parts, err := s.cfg.Uploader.ListParts(ctx, upload)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	fmt.Printf("Got parts: %v\n", parts)
-	return nil, trace.NotImplemented("yet")
+	return NewProtoStream(ProtoStreamConfig{
+		Upload:         upload,
+		BufferPool:     s.bufferPool,
+		SlicePool:      s.slicePool,
+		Uploader:       s.cfg.Uploader,
+		MinUploadBytes: s.cfg.MinUploadBytes,
+		CompletedParts: parts,
+	})
 }
 
 // ProtoStreamConfig supplies proto emitter configuration
@@ -167,8 +176,8 @@ type ProtoStreamConfig struct {
 
 // CheckAndSetDefaults checks and sets default values
 func (cfg *ProtoStreamConfig) CheckAndSetDefaults() error {
-	if cfg.Upload.ID == "" {
-		return trace.BadParameter("missing parameter Upload.ID")
+	if err := cfg.Upload.CheckAndSetDefaults(); err != nil {
+		return trace.Wrap(err)
 	}
 	if cfg.Uploader == nil {
 		return trace.BadParameter("missing parameter Uploader")
@@ -191,6 +200,8 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 	if err := cfg.CheckAndSetDefaults(); err != nil {
 		return nil, trace.Wrap(err)
 	}
+	fmt.Printf("ZZZ?? NewProtoStream: %v parts %v\n", cfg.Upload, cfg.CompletedParts)
+
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	completeCtx, complete := context.WithCancel(context.Background())
 	uploadsCtx, uploadsDone := context.WithCancel(context.Background())
@@ -215,10 +226,12 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 		activeUploads:     make(map[int64]*activeUpload),
 		completedUploadsC: make(chan *activeUpload, 1),
 		semUploads:        make(chan struct{}, 1),
-		// TODO (klizhentas) when resuming stream this should be set
-		lastPartNumber: 0,
+		lastPartNumber:    0,
 	}
-
+	if len(cfg.CompletedParts) > 0 {
+		writer.lastPartNumber = cfg.CompletedParts[len(cfg.CompletedParts)-1].Number
+		writer.completedParts = cfg.CompletedParts
+	}
 	go writer.receiveAndUpload()
 	return stream, nil
 }
@@ -372,15 +385,22 @@ func (w *sliceWriter) updateCompletedParts(part StreamPart, lastEventIndex int64
 }
 
 func (w *sliceWriter) trySendStreamStatusUpdate(lastEventIndex int64) {
-	fmt.Printf(">>>>> streamStatusUpdate(%v)\n", lastEventIndex)
+	fmt.Printf(">>>>> try send streamStatusUpdate(%v)\n", lastEventIndex)
 	select {
 	case w.proto.statusCh <- StreamStatus{UploadID: w.proto.cfg.Upload.ID, LastEventIndex: lastEventIndex}:
+		fmt.Printf(">>>>> sent streamStatusUpdate(%v)\n", lastEventIndex)
 	default:
 	}
 }
 
 // receiveAndUpload receives and uploads serialized events
 func (w *sliceWriter) receiveAndUpload() {
+	// on the first start, send stream status with the upload ID and negative
+	// index so that remote party can get an upload ID
+	if len(w.completedParts) == 0 {
+		w.trySendStreamStatusUpdate(-1)
+	}
+
 	for {
 		select {
 		case <-w.proto.cancelCtx.Done():
@@ -547,7 +567,7 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 				activeUpload.setError(err)
 				return
 			}
-			// retry is created on first upload error
+			// retry is created on the first upload error
 			if retry == nil {
 				var rerr error
 				retry, rerr = utils.NewLinear(utils.LinearConfig{
@@ -559,6 +579,7 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 					return
 				}
 			}
+			retry.Inc()
 			if _, err := reader.Seek(0, 0); err != nil {
 				activeUpload.setError(err)
 				return
@@ -698,7 +719,8 @@ func (s *slice) emitAuditEvent(event protoEvent) error {
 // NewProtoReader returns a new proto reader with slice pool
 func NewProtoReader(r io.Reader) *ProtoReader {
 	return &ProtoReader{
-		reader: r,
+		reader:    r,
+		lastIndex: -1,
 	}
 }
 
@@ -732,6 +754,7 @@ type ProtoReader struct {
 	state        int
 	error        error
 	paddingBytes []byte
+	lastIndex    int64
 }
 
 // Close releases reader resources
@@ -844,7 +867,18 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 			if err != nil {
 				return nil, trace.Wrap(err)
 			}
-			return FromOneOf(oneof)
+			event, err := FromOneOf(oneof)
+			if err != nil {
+				return nil, trace.Wrap(err)
+			}
+			if event.GetIndex() <= r.lastIndex {
+				fmt.Printf("DUPE IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)
+			}
+			if r.lastIndex > 0 && event.GetIndex() != r.lastIndex+1 {
+				fmt.Printf("NON CONSECUITIVE IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)
+			}
+			r.lastIndex = event.GetIndex()
+			return event, nil
 		default:
 			return nil, trace.BadParameter("unsupported reader size")
 		}

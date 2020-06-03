@@ -2,12 +2,11 @@ package events
 
 import (
 	"context"
-	"fmt"
-	"sync"
 	"time"
 
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/session"
+	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
 	"github.com/jonboulle/clockwork"
@@ -26,16 +25,18 @@ func NewAuditWriter(cfg AuditWriterConfig) (*AuditWriter, error) {
 		return nil, trace.Wrap(err)
 	}
 
+	ctx, cancel := context.WithCancel(cfg.Context)
 	writer := &AuditWriter{
-		lock:   &sync.Mutex{},
 		cfg:    cfg,
 		stream: NewCheckingStream(stream, cfg.Clock),
 		log: logrus.WithFields(logrus.Fields{
 			trace.Component: cfg.Component,
 		}),
+		cancel:   cancel,
+		closeCtx: ctx,
+		eventsCh: make(chan AuditEvent),
 	}
-	go writer.updateStreamStatus()
-
+	go writer.processEvents()
 	return writer, nil
 }
 
@@ -88,76 +89,28 @@ func (cfg *AuditWriterConfig) CheckAndSetDefaults() error {
 // AuditWriter wraps session stream
 // and writes audit events to it
 type AuditWriter struct {
-	lock           *sync.Mutex
-	isClosed       bool
 	cfg            AuditWriterConfig
 	log            *logrus.Entry
 	lastPrintEvent *SessionPrint
 	eventIndex     int64
 	buffer         []AuditEvent
+	eventsCh       chan AuditEvent
 	lastStatus     *StreamStatus
 	stream         Stream
+	cancel         context.CancelFunc
+	closeCtx       context.Context
 }
 
 // Status returns channel receiving updates about stream status
 // last event index that was uploaded and upload ID
 func (a *AuditWriter) Status() <-chan StreamStatus {
-	return a.stream.Status()
+	return nil
 }
 
 // Done returns channel closed when streamer is closed
 // should be used to detect sending errors
 func (a *AuditWriter) Done() <-chan struct{} {
-	return a.stream.Done()
-}
-
-func (a *AuditWriter) updateStatus(status StreamStatus) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-	a.lastStatus = &status
-	lastIndex := -1
-	for i := 0; i < len(a.buffer); i++ {
-		if status.LastEventIndex < a.buffer[i].GetIndex() {
-			break
-		}
-		lastIndex = i
-	}
-	if lastIndex > 0 {
-		before := len(a.buffer)
-		a.buffer = a.buffer[lastIndex+1:]
-		fmt.Printf("Dropped %v events buffer size: %v\n", before-len(a.buffer), len(a.buffer))
-	}
-}
-
-func (a *AuditWriter) updateStreamStatus() {
-	for {
-		select {
-		case status := <-a.stream.Status():
-			a.updateStatus(status)
-		case <-a.stream.Done():
-			wasClosed, lastStatus := a.getStatus()
-			if wasClosed {
-				a.log.Debugf("Audit WRITER GOT STREAM DONE WITH NO PROBLEM")
-				return
-			}
-			if lastStatus == nil {
-				a.log.Debugf("Audit WRITER GOT STREAM DONE WITH PROBLEM BUT HAVE NO STATUS, RETURNING!!!!!")
-				if err := a.closeStream(); err != nil {
-					a.log.WithError(err).Debugf("Failed to close stream.")
-				}
-				return
-			}
-			a.log.Debugf("Audit WRITER GOT STREAM DONE WITH PROBLEM!")
-			resumedStream, err := a.cfg.Streamer.ResumeAuditStream(a.cfg.Context, a.cfg.SessionID, lastStatus.UploadID)
-			if err != nil {
-				a.log.WithError(err).Errorf("Could not resume stream: %v")
-				return
-			}
-			a.log.Debugf("Could resume stream, but closing.")
-			resumedStream.Close()
-			return
-		}
-	}
+	return a.closeCtx.Done()
 }
 
 // Write takes a chunk and writes it into the audit log
@@ -195,17 +148,19 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 			return 0, trace.Wrap(err)
 		}
 	}
-
 	return len(data), nil
 }
 
 // EmitAuditEvent emits audit event
 func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
-	err := a.setupEvent(event)
-	if err != nil {
-		return trace.Wrap(err)
+	select {
+	case a.eventsCh <- event:
+		return nil
+	case <-ctx.Done():
+		return trace.ConnectionProblem(ctx.Err(), "context done")
+	case <-a.closeCtx.Done():
+		return trace.ConnectionProblem(a.closeCtx.Err(), "writer is closed")
 	}
-	return a.stream.EmitAuditEvent(ctx, event)
 }
 
 // Close closes the stream and completes it,
@@ -213,34 +168,148 @@ func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) erro
 // that aborts it, because of the way the writer is usually used
 // the interface - io.WriteCloser has only close method
 func (a *AuditWriter) Close() error {
-	return a.Complete(a.cfg.Context)
-}
-
-func (a *AuditWriter) closeStream() error {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-	a.isClosed = true
-	return a.stream.Close()
-}
-
-func (a *AuditWriter) getStatus() (bool, *StreamStatus) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-	return a.isClosed, a.lastStatus
+	a.cancel()
+	return nil
 }
 
 // Complete closes the stream and marks it finalized,
 // releases associated resources, in case of failure,
 // closes this stream on the client side
 func (a *AuditWriter) Complete(ctx context.Context) error {
-	a.lock.Lock()
-	if a.isClosed {
-		a.lock.Unlock()
-		return nil
+	a.cancel()
+	return nil
+}
+
+func (a *AuditWriter) processEvents() {
+	a.log.Infof("processEvents start")
+	defer a.log.Infof("process Events end")
+	for {
+		// From the spec:
+		//
+		// https://golang.org/ref/spec#Select_statements
+		//
+		// If one or more of the communications can proceed, a single one that can proceed is chosen via a uniform pseudo-random selection.
+		//
+		// This first drain is necessary to give status updates a priority
+		// in the event processing loop.
+		//
+		select {
+		case status := <-a.stream.Status():
+			a.updateStatus(status)
+		default:
+		}
+		select {
+		case status := <-a.stream.Status():
+			a.updateStatus(status)
+		case event := <-a.eventsCh:
+			a.setupEvent(event)
+			a.buffer = append(a.buffer, event)
+			err := a.stream.EmitAuditEvent(a.cfg.Context, event)
+			if err == nil {
+				continue
+			}
+			a.log.WithError(err).Debugf("Failed to emit audit event, attempting to recover stream.")
+			if err := a.recoverStream(); err != nil {
+				a.log.WithError(err).Warningf("Failed to recover stream.")
+				a.cancel()
+				return
+			}
+		case <-a.stream.Done():
+			a.log.Debugf("Stream was closed by the server, attempting to recover.")
+			if err := a.recoverStream(); err != nil {
+				a.log.WithError(err).Warningf("Failed to recover stream.")
+				a.cancel()
+				return
+			}
+		case <-a.closeCtx.Done():
+			a.log.Debugf("Completing stream.")
+			if err := a.stream.Complete(a.cfg.Context); err != nil {
+				a.log.WithError(err).Warningf("Failed to complete stream")
+				return
+			}
+			return
+		}
 	}
-	a.isClosed = true
-	a.lock.Unlock()
-	return a.stream.Complete(a.cfg.Context)
+}
+
+func (a *AuditWriter) recoverStream() error {
+	// if there is a previous stream, close it
+	if err := a.stream.Close(); err != nil {
+		a.log.WithError(err).Debugf("Failed to close stream.")
+	}
+	stream, err := a.tryResumeStream()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	a.stream = stream
+	// replay all non-confirmed audit events to the resumed stream
+	start := time.Now()
+	for i := range a.buffer {
+		err := a.stream.EmitAuditEvent(a.cfg.Context, a.buffer[i])
+		if err != nil {
+			if err := a.stream.Close(); err != nil {
+				a.log.WithError(err).Debugf("Failed to close stream.")
+			}
+			return trace.Wrap(err)
+		}
+	}
+	a.log.Infof("Replayed buffer of events of size %v to resumed stream in %v\n", time.Now().Sub(start))
+	return nil
+}
+
+func (a *AuditWriter) tryResumeStream() (Stream, error) {
+	if a.lastStatus == nil {
+		// have not received the status to resume the upload
+		return nil, trace.ConnectionProblem(nil, "never received stream status")
+	}
+
+	var retry utils.Retry
+	var err error
+	var resumedStream Stream
+	for i := 0; i < defaults.FastAttempts; i++ {
+		resumedStream, err = a.cfg.Streamer.ResumeAuditStream(a.cfg.Context, a.cfg.SessionID, a.lastStatus.UploadID)
+		if err == nil {
+			return resumedStream, nil
+		}
+		// retry is created on the first failure to resume
+		if retry == nil {
+			var rerr error
+			retry, rerr = utils.NewLinear(utils.LinearConfig{
+				Step: defaults.NetworkRetryDuration,
+				Max:  defaults.NetworkBackoffDuration,
+			})
+			if rerr != nil {
+				return nil, trace.Wrap(err)
+			}
+		}
+		retry.Inc()
+		select {
+		case <-retry.After():
+			a.log.WithError(err).Debugf("Retrying to resume stream after backoff.")
+		case <-a.closeCtx.Done():
+			return nil, trace.ConnectionProblem(a.closeCtx.Err(), "operation has been cancelled")
+		}
+	}
+	return nil, trace.Wrap(err)
+}
+
+func (a *AuditWriter) updateStatus(status StreamStatus) {
+	a.lastStatus = &status
+	if status.LastEventIndex < 0 {
+		return
+	}
+	lastIndex := -1
+	for i := 0; i < len(a.buffer); i++ {
+		if status.LastEventIndex < a.buffer[i].GetIndex() {
+			break
+		}
+		lastIndex = i
+	}
+	if lastIndex > 0 {
+		before := len(a.buffer)
+		a.buffer = a.buffer[lastIndex+1:]
+		a.log.Debugf("Dropped %v events, current buffer size: %v.", before-len(a.buffer), len(a.buffer))
+	}
 }
 
 func (a *AuditWriter) setupEvent(event AuditEvent) error {
@@ -255,17 +324,8 @@ func (a *AuditWriter) setupEvent(event AuditEvent) error {
 		srv.SetServerID(a.cfg.ServerID)
 	}
 
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	if a.isClosed {
-		return trace.BadParameter("write on closed writer")
-	}
-
 	event.SetIndex(a.eventIndex)
 	a.eventIndex++
-
-	a.buffer = append(a.buffer, event)
 
 	printEvent, ok := event.(*SessionPrint)
 	if !ok {

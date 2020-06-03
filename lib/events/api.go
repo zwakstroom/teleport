@@ -24,6 +24,8 @@ import (
 	"time"
 
 	"github.com/gravitational/teleport/lib/session"
+
+	"github.com/gravitational/trace"
 )
 
 const (
@@ -396,8 +398,19 @@ type StreamPart struct {
 type StreamUpload struct {
 	// ID is unique upload ID
 	ID string
-	// Key is a storage key used for upload
-	Key string
+	// SessionID is a session ID of the upload
+	SessionID session.ID
+}
+
+// CheckAndSetDefaults checks and sets default values
+func (u *StreamUpload) CheckAndSetDefaults() error {
+	if u.ID == "" {
+		return trace.BadParameter("missing parameter ID")
+	}
+	if u.SessionID == "" {
+		return trace.BadParameter("missing parameter SessionID")
+	}
+	return nil
 }
 
 // MultipartUploader handles multipart uploads and downloads for session streams
@@ -409,7 +422,7 @@ type MultipartUploader interface {
 	// UploadPart uploads part and returns the part
 	UploadPart(ctx context.Context, upload StreamUpload, partNumber int64, partBody io.ReadSeeker) (*StreamPart, error)
 	// ListParts returns all uploaded parts for the completed upload in sorted order
-	ListParts(ctx context.Context, sessionID session.ID, uploadID string) ([]StreamPart, error)
+	ListParts(ctx context.Context, upload StreamUpload) ([]StreamPart, error)
 }
 
 // Stream is a continuous stream of events

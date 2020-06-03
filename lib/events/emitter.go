@@ -174,7 +174,7 @@ func (*DiscardEmitter) CreateAuditStream(ctx context.Context, sid session.ID) (S
 }
 
 // ResumeAuditStream resumes a stream that discards all events
-func (*DiscardEmitter) ResumeAuditStream(ctx context.Context, sid session.ID) (Stream, error) {
+func (*DiscardEmitter) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error) {
 	return &DiscardStream{}, nil
 }
 
