@@ -1,5 +1,5 @@
 /*
-Copyright 2015 Gravitational, Inc.
+Copyright 2015-2020 Gravitational, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -400,6 +400,14 @@ type StreamUpload struct {
 	ID string
 	// SessionID is a session ID of the upload
 	SessionID session.ID
+	// Initiated contains the timestamp of when the upload
+	// was initiated, not always initialized
+	Initiated time.Time
+}
+
+// String returns user friendly representation of the upload
+func (u StreamUpload) String() string {
+	return fmt.Sprintf("Upload(session=%v, id=%v, initiated=%v)", u.SessionID, u.ID, u.Initiated)
 }
 
 // CheckAndSetDefaults checks and sets default values
@@ -423,6 +431,9 @@ type MultipartUploader interface {
 	UploadPart(ctx context.Context, upload StreamUpload, partNumber int64, partBody io.ReadSeeker) (*StreamPart, error)
 	// ListParts returns all uploaded parts for the completed upload in sorted order
 	ListParts(ctx context.Context, upload StreamUpload) ([]StreamPart, error)
+	// ListUploads lists uploads that have been initated but not completed with
+	// earlier uploads returned first
+	ListUploads(ctx context.Context) ([]StreamUpload, error)
 }
 
 // Stream is a continuous stream of events

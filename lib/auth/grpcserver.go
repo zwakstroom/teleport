@@ -19,7 +19,6 @@ package auth
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"io"
 	"time"
 
@@ -100,7 +99,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	g.Debugf("CreateAuditStream connection from %v.", auth.User.GetName())
 	streamStart := time.Now()
 	processed := int64(0)
-	start := time.Now()
+	//	start := time.Now()
 	counter := 0
 	forwardEvents := func(eventStream events.Stream) {
 		// FIXEVENTS: if failed to send status update,
@@ -108,7 +107,6 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 		for {
 			select {
 			case <-stream.Context().Done():
-				fmt.Printf("EXITED AS SHOULD BE!!!!!!")
 				return
 			case statusUpdate := <-eventStream.Status():
 				if err := stream.Send(&statusUpdate); err != nil {
@@ -119,10 +117,13 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	}
 
 	for {
-		if time.Now().Sub(start) >= 20*time.Second {
-			fmt.Printf("EXITING AFTER 10 SECONDS\n")
-			return nil
-		}
+		/* Failure injection was helpful to test the system
+		// consider making more agressive randomizer?
+				if time.Now().Sub(start) >= 20*time.Second {
+					//			fmt.Printf("EXITING AFTER 10 SECONDS\n")
+					//			return nil
+				}
+		*/
 		request, err := stream.Recv()
 		if err == io.EOF {
 			return nil

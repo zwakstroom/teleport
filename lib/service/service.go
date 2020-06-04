@@ -924,6 +924,7 @@ func (process *TeleportProcess) initAuthService() error {
 
 	var emitter events.Emitter
 	var streamer events.Streamer
+	var uploadHandler events.MultipartHandler
 	// create the audit log, which will be consuming (and recording) all events
 	// and recording all sessions.
 	if cfg.Auth.NoAudit {
@@ -947,7 +948,7 @@ func (process *TeleportProcess) initAuthService() error {
 		}
 
 		auditConfig := cfg.Auth.ClusterConfig.GetAuditConfig()
-		uploadHandler, err := initUploadHandler(auditConfig)
+		uploadHandler, err = initUploadHandler(auditConfig)
 		if err != nil {
 			if !trace.IsNotFound(err) {
 				return trace.Wrap(err)
@@ -991,6 +992,19 @@ func (process *TeleportProcess) initAuthService() error {
 			return trace.Wrap(err)
 		}
 		process.auditLog, err = events.NewAuditLog(auditServiceConfig)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+	}
+
+	// Upload completer is responsible for checking for initiated but abandoned
+	// session uploads and completing them
+	var uploadCompleter *events.UploadCompleter
+	if uploadHandler != nil {
+		uploadCompleter, err = events.NewUploadCompleter(events.UploadCompleterConfig{
+			Uploader:  uploadHandler,
+			Component: teleport.ComponentAuth,
+		})
 		if err != nil {
 			return trace.Wrap(err)
 		}
@@ -1248,6 +1262,9 @@ func (process *TeleportProcess) initAuthService() error {
 			log.Info("Shutting down gracefully.")
 			ctx := payloadContext(payload)
 			warnOnErr(tlsServer.Shutdown(ctx))
+		}
+		if uploadCompleter != nil {
+			warnOnErr(uploadCompleter.Close())
 		}
 		log.Info("Exited.")
 	})

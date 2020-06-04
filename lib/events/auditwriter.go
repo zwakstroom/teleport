@@ -153,6 +153,11 @@ func (a *AuditWriter) Write(data []byte) (int, error) {
 
 // EmitAuditEvent emits audit event
 func (a *AuditWriter) EmitAuditEvent(ctx context.Context, event AuditEvent) error {
+	// Without serialization, EmitAuditEvent will call grpc's method directly.
+	// When BPF callback is emitting events concurrently with session data to the grpc stream,
+	// it becomes deadlocked (not just blocked temporarily, but permanently)
+	// in flowcontrol.go, trying to get quota:
+	// https://github.com/grpc/grpc-go/blob/a906ca0441ceb1f7cd4f5c7de30b8e81ce2ff5e8/internal/transport/flowcontrol.go#L60
 	select {
 	case a.eventsCh <- event:
 		return nil

@@ -20,6 +20,7 @@ import (
 	"context"
 	"io"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -142,4 +143,45 @@ func (h *Handler) ListParts(ctx context.Context, upload events.StreamUpload) ([]
 		return parts[i].Number < parts[j].Number
 	})
 	return parts, nil
+}
+
+// ListUploads lists uploads that have been initated but not completed with
+// earlier uploads returned first
+func (h *Handler) ListUploads(ctx context.Context) ([]events.StreamUpload, error) {
+	var prefix *string
+	if h.Path != "" {
+		trimmed := strings.TrimPrefix(h.Path, "/")
+		prefix = &trimmed
+	}
+	var uploads []events.StreamUpload
+	var keyMarker *string
+	var uploadIDMarker *string
+	for i := 0; i < defaults.MaxIterationLimit; i++ {
+		input := &s3.ListMultipartUploadsInput{
+			Bucket:         aws.String(h.Bucket),
+			Prefix:         prefix,
+			KeyMarker:      keyMarker,
+			UploadIdMarker: uploadIDMarker,
+		}
+		re, err := h.client.ListMultipartUploads(input)
+		if err != nil {
+			return nil, ConvertS3Error(err)
+		}
+		for _, upload := range re.Uploads {
+			uploads = append(uploads, events.StreamUpload{
+				ID:        *upload.UploadId,
+				SessionID: h.fromPath(*upload.Key),
+				Initiated: *upload.Initiated,
+			})
+		}
+		if !*re.IsTruncated {
+			break
+		}
+		keyMarker = re.KeyMarker
+		uploadIDMarker = re.UploadIdMarker
+	}
+	sort.Slice(uploads, func(i, j int) bool {
+		return uploads[i].Initiated.Before(uploads[j].Initiated)
+	})
+	return uploads, nil
 }

@@ -340,6 +340,10 @@ var (
 
 	// NodeQueueSize is node service queue size
 	NodeQueueSize = 128
+
+	// UploadGracePeriod is a period after which non-completed
+	// upload is concidered abandoned and will be completed by the reconciler
+	UploadGracePeriod = 24 * time.Hour
 )
 
 // Default connection limits, they can be applied separately on any of the Teleport

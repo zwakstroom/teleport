@@ -136,14 +136,10 @@ func (s *ProtoStreamer) CreateAuditStream(ctx context.Context, sid session.ID) (
 
 // ResumeAuditStream resumes the stream that has not been completed yet
 func (s *ProtoStreamer) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (Stream, error) {
-	fmt.Printf("RESUME AUDIT STREAM %v %v\n", sid, uploadID)
 	// Note, that if the session ID does not match the upload ID,
 	// the request will fail
 	upload := StreamUpload{SessionID: sid, ID: uploadID}
 	parts, err := s.cfg.Uploader.ListParts(ctx, upload)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -552,7 +548,7 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 		}()
 
 		var retry utils.Retry
-		for {
+		for i := 0; i < defaults.MaxIterationLimit; i++ {
 			reader, err := slice.reader()
 			if err != nil {
 				activeUpload.setError(err)
@@ -563,7 +559,8 @@ func (w *sliceWriter) startUpload(partNumber int64, slice *slice) (*activeUpload
 				activeUpload.setPart(*part)
 				return
 			}
-			if errors.Is(trace.Unwrap(err), context.Canceled) {
+			// upload is not found is not transient error, so abort the operation
+			if errors.Is(trace.Unwrap(err), context.Canceled) || trace.IsNotFound(err) {
 				activeUpload.setError(err)
 				return
 			}

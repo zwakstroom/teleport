@@ -2081,13 +2081,11 @@ func (c *Client) createOrResumeAuditStream(ctx context.Context, request proto.Au
 	}
 	s := &auditStreamer{
 		stream:   stream,
-		eventsCh: make(chan *events.OneOf),
 		statusCh: make(chan events.StreamStatus, 1),
 		closeCtx: closeCtx,
 		cancel:   cancel,
 	}
 	go s.recv()
-	go s.send()
 	err = s.stream.Send(&request)
 	if err != nil {
 		return nil, trace.NewAggregate(s.Close(), trail.FromGRPC(err))
@@ -2096,7 +2094,6 @@ func (c *Client) createOrResumeAuditStream(ctx context.Context, request proto.Au
 }
 
 type auditStreamer struct {
-	eventsCh chan *events.OneOf
 	statusCh chan events.StreamStatus
 	sync.RWMutex
 	stream   proto.AuthService_CreateAuditStreamClient
@@ -2126,19 +2123,15 @@ func (s *auditStreamer) EmitAuditEvent(ctx context.Context, event events.AuditEv
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	// Without serialization, EmitAuditEvent will call grpc's method directly.
-	// When BPF callback is emitting events concurrently with session data to the grpc stream,
-	// it becomes deadlocked (not just blocked temporarily, but permanently)
-	// in flowcontrol.go, trying to get quota:
-	// https://github.com/grpc/grpc-go/blob/a906ca0441ceb1f7cd4f5c7de30b8e81ce2ff5e8/internal/transport/flowcontrol.go#L60
-	select {
-	case s.eventsCh <- oneof:
-		return nil
-	case <-s.closeCtx.Done():
-		return s.Error()
-	case <-ctx.Done():
-		return trace.ConnectionProblem(ctx.Err(), "context cancelled")
+	err = trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_Event{Event: oneof},
+	}))
+	if err != nil {
+		log.WithError(err).Errorf("Failed to send event.")
+		s.closeWithError(err)
+		return trace.Wrap(err)
 	}
+	return nil
 }
 
 // Done returns channel closed when streamer is closed
@@ -2152,25 +2145,6 @@ func (s *auditStreamer) Error() error {
 	s.RLock()
 	defer s.RUnlock()
 	return s.err
-}
-
-// EmitAuditEvent emits audit event
-func (s *auditStreamer) send() {
-	for {
-		select {
-		case <-s.closeCtx.Done():
-			return
-		case oneof := <-s.eventsCh:
-			err := trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
-				Request: &proto.AuditStreamRequest_Event{Event: oneof},
-			}))
-			if err != nil {
-				log.WithError(err).Errorf("Failed to send event.")
-				s.closeWithError(err)
-				return
-			}
-		}
-	}
 }
 
 // recv is necessary to receive errors from the

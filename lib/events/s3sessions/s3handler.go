@@ -285,6 +285,10 @@ func (l *Handler) path(sessionID session.ID) string {
 	return strings.TrimPrefix(filepath.Join(l.Path, string(sessionID)+".tar"), "/")
 }
 
+func (l *Handler) fromPath(path string) session.ID {
+	return session.ID(strings.TrimSuffix(filepath.Base(path), ".tar"))
+}
+
 // ensureBucket makes sure bucket exists, and if it does not, creates it
 func (h *Handler) ensureBucket() error {
 	_, err := h.client.HeadBucket(&s3.HeadBucketInput{
