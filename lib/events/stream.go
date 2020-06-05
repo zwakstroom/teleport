@@ -34,6 +34,7 @@ import (
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
+	"github.com/jonboulle/clockwork"
 	"github.com/pborman/uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -168,6 +169,12 @@ type ProtoStreamConfig struct {
 	MinUploadBytes int64
 	// CompletedParts is a lsit of completed parts, used for resuming stream
 	CompletedParts []StreamPart
+	// InactivityFlushPeriod sets inactivity period
+	// after which streamer flushes the data to the uploader
+	// to avoid data loss
+	InactivityFlushPeriod time.Duration
+	// Clock is used to override time in tests
+	Clock clockwork.Clock
 }
 
 // CheckAndSetDefaults checks and sets default values
@@ -186,6 +193,12 @@ func (cfg *ProtoStreamConfig) CheckAndSetDefaults() error {
 	}
 	if cfg.MinUploadBytes == 0 {
 		return trace.BadParameter("missing parameter MinUploadBytes")
+	}
+	if cfg.InactivityFlushPeriod == 0 {
+		cfg.InactivityFlushPeriod = defaults.InactivityFlushPeriod
+	}
+	if cfg.Clock == nil {
+		cfg.Clock = clockwork.NewRealClock()
 	}
 	return nil
 }
@@ -225,7 +238,22 @@ func NewProtoStream(cfg ProtoStreamConfig) (*ProtoStream, error) {
 		lastPartNumber:    0,
 	}
 	if len(cfg.CompletedParts) > 0 {
-		writer.lastPartNumber = cfg.CompletedParts[len(cfg.CompletedParts)-1].Number
+		// skip 2 extra parts as a protection from accidental overwrites.
+		// the following is possible between processes 1 and 2 (P1 and P2)
+		// P1: * start stream S
+		// P1: * receive some data from stream S
+		// C:  * disconnect from P1
+		// P2: * resume stream, get all commited parts (0) and start writes
+		// P2: * write part 1
+		// P1: * flush the data to part 1 before closure
+		//
+		// In this scenario stream data submitted by P1 flush will be lost
+		// unless resume will resume at part 2.
+		//
+		// On the other hand, it's ok if resume of P2 overwrites
+		// any data of P1, because it will replay non commited
+		// events, what could potentially lead to duplicate events.
+		writer.lastPartNumber = cfg.CompletedParts[len(cfg.CompletedParts)-1].Number + 1
 		writer.completedParts = cfg.CompletedParts
 	}
 	go writer.receiveAndUpload()
@@ -329,8 +357,9 @@ func (s *ProtoStream) Status() <-chan StreamStatus {
 	return s.statusCh
 }
 
-// Flush compoletes all in flight uploads but does not set the upload as completed
-func (s *ProtoStream) Flush(ctx context.Context) error {
+// FlushAndClose flushes non-uploaded flight stream data without marking
+// the stream completed and closes the stream instance
+func (s *ProtoStream) FlushAndClose(ctx context.Context) error {
 	atomic.StoreInt32(&s.completeType, completeTypeFlush)
 	s.complete()
 	select {
@@ -382,8 +411,13 @@ func (w *sliceWriter) updateCompletedParts(part StreamPart, lastEventIndex int64
 
 func (w *sliceWriter) trySendStreamStatusUpdate(lastEventIndex int64) {
 	fmt.Printf(">>>>> try send streamStatusUpdate(%v)\n", lastEventIndex)
+	status := StreamStatus{
+		UploadID:       w.proto.cfg.Upload.ID,
+		LastEventIndex: lastEventIndex,
+		LastUploadTime: w.proto.cfg.Clock.Now().UTC(),
+	}
 	select {
-	case w.proto.statusCh <- StreamStatus{UploadID: w.proto.cfg.Upload.ID, LastEventIndex: lastEventIndex}:
+	case w.proto.statusCh <- status:
 		fmt.Printf(">>>>> sent streamStatusUpdate(%v)\n", lastEventIndex)
 	default:
 	}
@@ -397,6 +431,10 @@ func (w *sliceWriter) receiveAndUpload() {
 		w.trySendStreamStatusUpdate(-1)
 	}
 
+	clock := w.proto.cfg.Clock
+
+	var lastEvent time.Time
+	var flushCh <-chan time.Time
 	for {
 		select {
 		case <-w.proto.cancelCtx.Done():
@@ -426,7 +464,36 @@ func (w *sliceWriter) receiveAndUpload() {
 			}
 			delete(w.activeUploads, part.Number)
 			w.updateCompletedParts(*part, upload.lastEventIndex)
+		case <-flushCh:
+			now := clock.Now().UTC()
+			inactivityPeriod := now.Sub(lastEvent)
+			if inactivityPeriod < 0 {
+				inactivityPeriod = 0
+			}
+			if inactivityPeriod >= w.proto.cfg.InactivityFlushPeriod {
+				// inactivity period exceeded threshold, means
+				// that there is no need to schedule a timer until next
+				// event occurs, set the timer channel to nil
+				flushCh = nil
+				if w.current != nil {
+					log.Debugf("Inactivity timer ticked at %v, inactivity period: %v exceeded threshold and have data. Flushing.", now, inactivityPeriod)
+					if err := w.startUploadCurrentSlice(); err != nil {
+						return
+					}
+				} else {
+					log.Debugf("Inactivity timer ticked at %v, inactivity period: %v exceeded threshold but have no data. Nothing to do.", now, inactivityPeriod)
+				}
+			} else {
+				log.Debugf("Inactivity timer ticked at %v, inactivity period: %v have not exceeded threshold. Set timer to tick after %v.", now, inactivityPeriod, w.proto.cfg.InactivityFlushPeriod-inactivityPeriod)
+				flushCh = clock.After(w.proto.cfg.InactivityFlushPeriod - inactivityPeriod)
+			}
 		case event := <-w.proto.eventsCh:
+			lastEvent = clock.Now().UTC()
+			// flush timer is set up only if any event was submitted
+			// after last flush or system start
+			if flushCh == nil {
+				flushCh = clock.After(w.proto.cfg.InactivityFlushPeriod)
+			}
 			if err := w.submitEvent(event); err != nil {
 				log.WithError(err).Error("Lost event.")
 				continue
@@ -869,7 +936,8 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 				return nil, trace.Wrap(err)
 			}
 			if event.GetIndex() <= r.lastIndex {
-				fmt.Printf("DUPE IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)
+				fmt.Printf("SKIPPING DUPLICATE EVENT WITH IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)
+				continue
 			}
 			if r.lastIndex > 0 && event.GetIndex() != r.lastIndex+1 {
 				fmt.Printf("NON CONSECUITIVE IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)

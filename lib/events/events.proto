@@ -473,4 +473,6 @@ message StreamStatus  {
 	string UploadID  = 1;
     // LastEventIndex updates last event index
 	int64 LastEventIndex = 2;
+	// LastUploadTime is the time of the last upload
+    google.protobuf.Timestamp LastUploadTime = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 }

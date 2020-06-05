@@ -82,7 +82,9 @@ func (cfg *AuditWriterConfig) CheckAndSetDefaults() error {
 	if cfg.Namespace == "" {
 		cfg.Namespace = defaults.Namespace
 	}
-
+	if cfg.Clock == nil {
+		cfg.Clock = clockwork.NewRealClock()
+	}
 	return nil
 }
 

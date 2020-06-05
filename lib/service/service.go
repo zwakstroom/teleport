@@ -1004,6 +1004,8 @@ func (process *TeleportProcess) initAuthService() error {
 		uploadCompleter, err = events.NewUploadCompleter(events.UploadCompleterConfig{
 			Uploader:  uploadHandler,
 			Component: teleport.ComponentAuth,
+			// FIXEVENTS: remove this in prod
+			GracePeriod: 10 * time.Minute,
 		})
 		if err != nil {
 			return trace.Wrap(err)

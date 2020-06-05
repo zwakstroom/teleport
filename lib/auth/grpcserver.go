@@ -102,8 +102,6 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	//	start := time.Now()
 	counter := 0
 	forwardEvents := func(eventStream events.Stream) {
-		// FIXEVENTS: if failed to send status update,
-		// should we return from main loop?
 		for {
 			select {
 			case <-stream.Context().Done():
@@ -112,6 +110,25 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				if err := stream.Send(&statusUpdate); err != nil {
 					g.WithError(err).Debugf("Failed to send status update.")
 				}
+			}
+		}
+	}
+
+	closeStream := func(eventStream events.Stream) {
+		flushCloser, ok := eventStream.(events.StreamFlushCloser)
+		if ok {
+			// do not use stream context to give the auth server finish the upload
+			// even if the stream's context is cancelled
+			if err := flushCloser.FlushAndClose(auth.Context()); err != nil {
+				g.WithError(err).Warningf("Failed to flush close the stream.")
+			} else {
+				g.Debugf("Flushed and closed the stream.")
+			}
+		} else {
+			if err := eventStream.Close(); err != nil {
+				g.WithError(err).Warningf("Failed to close stream with no flushing.")
+			} else {
+				g.Debugf("Closed the stream (no flusing).")
 			}
 		}
 	}
@@ -142,11 +159,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			}
 			g.Debugf("Created stream: %v.", err)
 			go forwardEvents(eventStream)
-			defer func() {
-				if err := eventStream.Close(); err != nil {
-					g.WithError(err).Warningf("Failed to close the stream.")
-				}
-			}()
+			defer closeStream(eventStream)
 		} else if resume := request.GetResumeStream(); resume != nil {
 			if eventStream != nil {
 				return trail.ToGRPC(trace.BadParameter("stream is already created or resumed"))
@@ -157,11 +170,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			}
 			g.Debugf("Resumed stream: %v.", err)
 			go forwardEvents(eventStream)
-			defer func() {
-				if err := eventStream.Close(); err != nil {
-					g.WithError(err).Warningf("Failed to close the stream.")
-				}
-			}()
+			defer closeStream(eventStream)
 		} else if complete := request.GetCompleteStream(); complete != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not complete"))
