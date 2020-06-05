@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/oxy/testutils"
@@ -71,30 +72,37 @@ type checker interface {
 	CheckAccessToApp(services.App) error
 }
 
-func (a *Handler) IsApp(r *http.Request) (services.App, reversetunnel.Server, error) {
-	clusters, err := a.ProxyClient.GetSites()
+// nameFromHeader extracts the application name from the "Host" header.
+func nameFromHeader(hostHeader string) (string, error) {
+	requestedHost, err := utils.Host(r.Host)
 	if err != nil {
-		return false, trace.Wrap(err)
+		http.Error(w, "internal server error", 500)
+		return
 	}
 
-	//for _, cluster := range clusters {
-	//
-	//}
+	parts := strings.FieldsFunc(requestedHost, func(c rune) bool {
+		return c == '.'
+	})
+	if len(parts) == 0 {
+		return "", trace.BadParameter("invalid host header: %v", requestedHost)
+	}
 
-	//// Try and extract the requested host from the host header. If not possible,
-	//// fallback to just showing the Web UI.
-	//requestedHost, err := utils.Host(r.Host)
-	//if err != nil {
-	//	h.Handler.ServeHTTP(w, r)
-	//	return
-	//}
+	return parts[0], nil
+}
 
-	//// TODO: Fix this, this is just a hack to get tsh working, this needs to be replaced with better logic.
-	//if requestedHost == "localhost" {
-	//	h.Handler.ServeHTTP(w, r)
-	//	return
-	//}
+// TODO: Add support for Trusted Clusters.
+func (a *Handler) IsApp(r *http.Request) (services.App, error) {
+	name, err := nameFromHeader(r.Host)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 
+	app, err := a.AuthClient.GetApp(r.Context(), name)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return app, nil
 }
 
 // ServeHTTP will try and find the proxied application that the caller is

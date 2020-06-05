@@ -128,12 +128,11 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// apps to figure out to discover request destination: apps handler or the
 	// Web UI.
 
-	ok, err := h.appsHandler.IsApp(r)
+	app, err := h.appsHandler.IsApp(r)
 	if err != nil {
 		log.Debugf("Failed to discover request destination: %v: %v: %v.",
 			r.Host, r.RequestURI, err)
-
-		http.Error(w, "TODO", 500)
+		http.Error(w, "internal server error", 500)
 		return
 	}
 
