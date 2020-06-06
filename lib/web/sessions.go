@@ -299,11 +299,11 @@ func (c *SessionContext) GetCertificates() (*ssh.Certificate, *x509.Certificate,
 }
 
 func (c *SessionContext) GetRoleSet() (services.RoleSet, error) {
-	clt, err := ctx.GetClient()
+	clt, err := c.GetClient()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	cert, _, err := ctx.GetCertificates()
+	cert, _, err := c.GetCertificates()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

@@ -322,7 +322,11 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 							services.NewRule(services.KindNode, services.RO()),
 							services.NewRule(services.KindAuthServer, services.RO()),
 							services.NewRule(services.KindReverseTunnel, services.RO()),
-							services.NewRule(services.KindCertAuthority, services.ReadNoSecrets()),
+
+							//services.NewRule(services.KindCertAuthority, services.ReadNoSecrets()),
+							// TODO: Should this be tightened up?
+							services.NewRule(services.KindCertAuthority, services.RO()),
+
 							services.NewRule(services.KindUser, services.RO()),
 							services.NewRule(services.KindRole, services.RO()),
 							services.NewRule(services.KindClusterAuthPreference, services.RO()),
@@ -374,7 +378,11 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 						services.NewRule(services.KindNode, services.RO()),
 						services.NewRule(services.KindAuthServer, services.RO()),
 						services.NewRule(services.KindReverseTunnel, services.RO()),
-						services.NewRule(services.KindCertAuthority, services.ReadNoSecrets()),
+
+						// TODO: Should this be tightened up?
+						//services.NewRule(services.KindCertAuthority, services.ReadNoSecrets()),
+						services.NewRule(services.KindCertAuthority, services.RO()),
+
 						services.NewRule(services.KindUser, services.RO()),
 						services.NewRule(services.KindRole, services.RO()),
 						services.NewRule(services.KindClusterAuthPreference, services.RO()),

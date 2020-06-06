@@ -17,7 +17,6 @@ limitations under the License.
 package apps
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -27,8 +26,10 @@ import (
 	"github.com/gravitational/oxy/testutils"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
@@ -72,12 +73,12 @@ type checker interface {
 	CheckAccessToApp(services.App) error
 }
 
-// nameFromHeader extracts the application name from the "Host" header.
-func nameFromHeader(hostHeader string) (string, error) {
+// nameFromRequest extracts the application name from the "Host" header of
+// the request.
+func nameFromRequest(r *http.Request) (string, error) {
 	requestedHost, err := utils.Host(r.Host)
 	if err != nil {
-		http.Error(w, "internal server error", 500)
-		return
+		return "", trace.Wrap(err)
 	}
 
 	parts := strings.FieldsFunc(requestedHost, func(c rune) bool {
@@ -92,12 +93,12 @@ func nameFromHeader(hostHeader string) (string, error) {
 
 // TODO: Add support for Trusted Clusters.
 func (a *Handler) IsApp(r *http.Request) (services.App, error) {
-	name, err := nameFromHeader(r.Host)
+	name, err := nameFromRequest(r)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	app, err := a.AuthClient.GetApp(r.Context(), name)
+	app, err := a.AuthClient.GetApp(r.Context(), defaults.Namespace, name)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -109,90 +110,89 @@ func (a *Handler) IsApp(r *http.Request) (services.App, error) {
 // requesting. If any error occurs or the application is not found, the
 // request is passed to the next handler (which would be the Web UI).
 func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// TODO: This should probably be: GetApp?
-	applist, err := a.AuthClient.GetApps(context.TODO(), defaults.Namespace)
-	if err != nil {
-		//fmt.Printf("--> Failed to get application list: %v.\n", err)
-		//a.Next.ServeHTTP(w, r)
+	// Extract the services.App the client requested.
+	app, ok := r.Context().Value("app").(services.App)
+	if !ok {
+		http.Error(w, "internal service error", 500)
 		return
 	}
 
-	var matchedApp services.App
-
-	fmt.Printf("--> attmpting to match r.Host: %v; [%v] apps found.\n", r.Host, len(applist))
-
-	for _, app := range applist {
-		//fmt.Printf("--> r.Host: %v, app.GetPublicAddr(): %v.\n", r.Host, app.GetPublicAddr())
-
-		wantHost, _, err := utils.SplitHostPort(app.GetPublicAddr())
-		if err != nil {
-			//fmt.Printf("--> Failed to parse application hostname: %v: %v.\n", app.GetPublicAddr(), err)
-			//a.Next.ServeHTTP(w, r)
-			return
-		}
-
-		gotHost, _, err := utils.SplitHostPort(r.Host)
-		if err != nil {
-			//	fmt.Printf("--> Failed to parse requested hostname: %v: %v.\n", r.Host, err)
-			//a.Next.ServeHTTP(w, r)
-			return
-		}
-
-		//	fmt.Printf("--> gotHost: %v, wantHost: %v.\n", gotHost, wantHost)
-		if gotHost == wantHost {
-			matchedApp = app
-			break
-
-		}
-	}
-	//fmt.Printf("-->didn't match.\n")
-
-	// If no matching application was found, send the request to the web ui.
-	if matchedApp == nil {
-		//fmt.Printf("--> Failed to parse requested hostname: %v: %v.\n", r.Host, err)
-		//a.Next.ServeHTTP(w, r)
-		http.Error(w, fmt.Sprintf("unknown application %v", r.Host), 404)
-		return
-	}
-
-	// TODO: Does this even work??
+	// Extract the services.RoleSet the client requested.
 	checker, ok := r.Context().Value("checker").(checker)
 	if !ok {
-		http.Error(w, "TODO", 500)
+		http.Error(w, "internal service error", 500)
 		return
 	}
-	fmt.Printf("--> GOT A CHECKER: %#v.\n", checker)
-	err = checker.CheckAccessToApp(matchedApp)
+	err := checker.CheckAccessToApp(app)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("access to app %v denied", matchedApp.GetName()), 401)
+		http.Error(w, fmt.Sprintf("access to app %v denied", app.GetName()), 401)
 		return
 	}
-	fmt.Printf("--> CHECKER RESULT: %v.\n", err)
+	fmt.Printf("--> checker.CheckAccessToApp: %v.\n", err)
 
-	//fmt.Printf("--> matchedApp: %v.\n", matchedApp)
-
-	// Extract cluster name from domain.
-	cluster, err := a.ProxyClient.GetSite("example.com")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
+	// Extract the reversetunnel.RemoteSite the client requested.
+	clusterClient, ok := r.Context().Value("clusterClient").(reversetunnel.RemoteSite)
+	if !ok {
+		fmt.Printf("--> clusterClient: %v.\n", err)
+		http.Error(w, "internal service error", 500)
 		return
 	}
 
-	//fmt.Printf("--> cluster: %v.\n", cluster)
-
-	//fmt.Printf("--> Attempting to dial: %v.\n", matchedApp.GetHostUUID()+".example.com")
-
-	conn, err := cluster.Dial(reversetunnel.DialParams{
-		ServerID: matchedApp.GetHostUUID() + ".example.com",
+	// Get a net.Conn over the reverse tunnel connection.
+	conn, err := clusterClient.Dial(reversetunnel.DialParams{
+		ServerID: strings.Join([]string{app.GetHostUUID(), clusterClient.GetName()}, "."),
 		ConnType: services.AppTunnel,
 	})
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		// TODO: This should say something else, like application not available to
+		// the user and log the actual reason the application was down for the admin.
+		// connection rejected: dial tcp 127.0.0.1:8081: connect: connection refused.
+		fmt.Printf("--> Dial: %v.\n", err)
+		http.Error(w, "internal service error", 500)
 		return
 	}
 
+	clusterName, ok := r.Context().Value("clusterName").(string)
+	if !ok {
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	ca, err := a.AuthClient.GetCertAuthority(services.CertAuthID{
+		Type:       services.HostCA,
+		DomainName: clusterName,
+	}, true)
+	if err != nil {
+		fmt.Printf("--> ca: %v.\n", err)
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	identity, ok := r.Context().Value("identity").(*tlsca.Identity)
+	if !ok {
+		fmt.Printf("--> identity: %v.\n", err)
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	token, err := ca.JWTKeyPair()
+	if err != nil {
+		fmt.Printf("--> get jwt: %v.\n", err)
+		http.Error(w, "internal service error", 500)
+		return
+	}
+	signedToken, err := token.Sign(&jwt.SignParams{
+		Email: identity.Username,
+	})
+	if err != nil {
+		fmt.Printf("--> get signed token: %v.\n", err)
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	// Forward the request over the net.Conn to the host running the application within the cluster.
 	roundTripper := forward.RoundTripper(newCustomTransport(conn))
-	fwd, _ := forward.New(roundTripper)
+	fwd, _ := forward.New(roundTripper, forward.Rewriter(&rewriter{signedToken: signedToken}))
 
 	//nu, _ := url.Parse(r.URL.String())
 	//nu.Scheme = "https"
@@ -207,6 +207,25 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	//w.Header().Set("Content-Type", "text/plain")
 	//fmt.Fprintf(w, "Welcome to %v.", matchedApp.GetName())
+}
+
+// TODO: Strip Teleport cookies.
+type rewriter struct {
+	signedToken string
+}
+
+func (r *rewriter) Rewrite(req *http.Request) {
+	req.Header.Add("x-teleport-jwt-assertion", r.signedToken)
+	req.Header.Add("Cf-access-token", r.signedToken)
+
+	// Wipe out any existing cookies and skip over any Teleport ones.
+	req.Header.Del("Cookie")
+	for _, cookie := range req.Cookies() {
+		if cookie.Name == "session" {
+			continue
+		}
+		req.AddCookie(cookie)
+	}
 }
 
 type customTransport struct {

@@ -47,6 +47,7 @@ import (
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/session"
+	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/web/ui"
 
@@ -119,106 +120,78 @@ type RewritingHandler struct {
 	http.Handler
 	handler *Handler
 
-	webHostAddr string
+	//webHostAddr string
 	appsHandler *apps.Handler
 }
 
 func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	app, err := h.appsHandler.IsApp(r)
+
 	// Check the host the client is requesting against the list of registered
 	// apps to figure out to discover request destination: apps handler or the
 	// Web UI.
-
-	app, err := h.appsHandler.IsApp(r)
-	if err != nil {
+	switch {
+	// If the error was specifically that the application was not found,
+	// then serve the Web UI.
+	case trace.IsNotFound(err):
+		h.Handler.ServeHTTP(w, r)
+	// If some other error occurred, log the error and return 404 to the caller.
+	case err != nil:
 		log.Debugf("Failed to discover request destination: %v: %v: %v.",
 			r.Host, r.RequestURI, err)
-		http.Error(w, "internal server error", 500)
-		return
-	}
-
+		http.Error(w, "not found", 404)
 	// If the caller requested a registered application, authenticate the
 	// request and then forward it to the apps handler.
-	if ok {
+	case err == nil:
 		// TODO: This is a hack, "checkBearerToken" should be true.
 		ctx, err := h.handler.AuthenticateRequest(w, r, false)
 		if err != nil {
-			http.Error(w, "TODO", 401)
+			http.Error(w, "access denied", 401)
 			return
 		}
 
-		// Extract access checker and add it to the request.
+		// Attach certificates (x509 and SSH) to *http.Request.
+		_, cert, err := ctx.GetCertificates()
+		if err != nil {
+			http.Error(w, "access denied", 401)
+			return
+		}
+		identity, err := tlsca.FromSubject(cert.Subject, cert.NotAfter)
+		if err != nil {
+			http.Error(w, "access denied", 401)
+			return
+		}
+		r := r.WithContext(context.WithValue(r.Context(), "identity", identity))
+
+		// Attach services.RoleSet to *http.Request.
 		checker, err := ctx.GetRoleSet()
 		if err != nil {
-			http.Error(w, "TODO", 401)
+			http.Error(w, "access denied", 401)
 			return
 		}
-		r := r.WithContext(context.WithValue(r.Context(), "checker", checker))
+		r = r.WithContext(context.WithValue(r.Context(), "checker", checker))
 
-		// TODO: Attach the cluster API to the request as well.
+		// Attach services.App requested to the *http.Request.
+		r = r.WithContext(context.WithValue(r.Context(), "app", app))
+
+		// Attach the cluster API to the request as well.
+		// TODO: Attach trusted cluster site if trusted cluster requested.
+		clusterName, err := h.appsHandler.AuthClient.GetDomainName()
+		if err != nil {
+			http.Error(w, "access denied", 401)
+		}
+		clusterClient, err := h.handler.cfg.Proxy.GetSite(clusterName)
+		if err != nil {
+			http.Error(w, "access denied", 401)
+			return
+		}
+		r = r.WithContext(context.WithValue(r.Context(), "clusterName", clusterName))
+		r = r.WithContext(context.WithValue(r.Context(), "clusterClient", clusterClient))
 
 		// Pass the request along to the apps handler.
 		h.appsHandler.ServeHTTP(w, r)
 		return
 	}
-
-	// Serve the Web UI.
-	h.Handler.ServeHTTP(w, r)
-
-	//// Try and extract the requested host from the host header. If not possible,
-	//// fallback to just showing the Web UI.
-	//requestedHost, err := utils.Host(r.Host)
-	//if err != nil {
-	//	h.Handler.ServeHTTP(w, r)
-	//	return
-	//}
-
-	//// TODO: Fix this, this is just a hack to get tsh working, this needs to be replaced with better logic.
-	//if requestedHost == "localhost" {
-	//	h.Handler.ServeHTTP(w, r)
-	//	return
-	//}
-
-	//// If the requested host differs from the host the Web UI is running on, the
-	//// caller is asking for AAP, otherwise the Web UI.
-	//if requestedHost != h.webHostAddr {
-	//	// TODO: checkBearerToken should be true!
-	//	ctx, err := h.handler.AuthenticateRequest(w, r, false)
-	//	if err != nil {
-	//		// Redirect to the Teleport login page.
-	//		http.Error(w, "failed to authenticate request", 401)
-	//		log.Debugf("Failed to authenticate request for application %v: %v.", requestedHost, err)
-	//		return
-	//	}
-
-	//	// Extract services.RoleSet from certificate.
-	//	clt, err := ctx.GetClient()
-	//	if err != nil {
-	//		http.Error(w, "TODO", 401)
-	//		return
-	//	}
-	//	cert, _, err := ctx.GetCertificates()
-	//	if err != nil {
-	//		http.Error(w, "TODO", 401)
-	//		return
-	//	}
-	//	roles, traits, err := services.ExtractFromCertificate(clt, cert)
-	//	if err != nil {
-	//		http.Error(w, "TODO", 401)
-	//		return
-	//	}
-	//	checker, err := services.FetchRoles(roles, clt, traits)
-	//	if err != nil {
-	//		http.Error(w, "TODO", 401)
-	//		return
-	//	}
-
-	//	// Add access checker
-	//	r := r.WithContext(context.WithValue(r.Context(), "checker", checker))
-
-	//	h.appsHandler.ServeHTTP(w, r)
-	//	return
-	//}
-	//h.Handler.ServeHTTP(w, r)
 }
 
 func (h *RewritingHandler) GetHandler() *Handler {
@@ -262,6 +235,9 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 	// and does not fetch the data that servers don't need, e.g.
 	// OIDC connectors and auth preferences
 	h.GET("/webapi/find", httplib.MakeHandler(h.find))
+
+	// Unauthenticated access to public keys.
+	h.GET("/webapi/certs", httplib.MakeHandler(h.certs))
 
 	// Web sessions
 	h.POST("/webapi/sessions", httplib.WithCSRFProtection(h.createSession))
@@ -426,10 +402,10 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 		plugin.AddHandlers(h)
 	}
 
-	webHostAddr, err := utils.Host(cfg.ProxySettings.SSH.PublicAddr)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
+	//webHostAddr, err := utils.Host(cfg.ProxySettings.SSH.PublicAddr)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
 
 	// Wrap web application handler with AAP handler. The AAP handler checks if
 	// the incoming request is for an application being proxied, if it is, it
@@ -443,7 +419,7 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 	}
 
 	return &RewritingHandler{
-		webHostAddr: webHostAddr,
+		//webHostAddr: webHostAddr,
 		appsHandler: appsHandler,
 
 		Handler: httplib.RewritePaths(h,
@@ -804,6 +780,29 @@ func (h *Handler) getWebConfig(w http.ResponseWriter, r *http.Request, p httprou
 
 	fmt.Fprintf(w, "var GRV_CONFIG = %v;", string(out))
 	return nil, nil
+}
+
+type certsResponse struct {
+	JWTKeys []services.RSAKeyPair `json:"jwt_keys"`
+}
+
+func (h *Handler) certs(w http.ResponseWriter, r *http.Request, p httprouter.Params) (interface{}, error) {
+	clusterName, err := h.cfg.ProxyClient.GetDomainName()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	// TODO: This is broken, it returns private keys! Should only return public keys.
+	ca, err := h.cfg.ProxyClient.GetCertAuthority(services.CertAuthID{
+		Type:       services.HostCA,
+		DomainName: clusterName,
+	}, true)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &certsResponse{
+		JWTKeys: ca.GetJWTKeyPairs(),
+	}, nil
 }
 
 func (h *Handler) oidcLoginWeb(w http.ResponseWriter, r *http.Request, p httprouter.Params) (interface{}, error) {
