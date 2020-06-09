@@ -17,6 +17,7 @@ limitations under the License.
 package events
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -31,7 +32,7 @@ import (
 
 // WriteForPlayback reads events from audit reader
 // and writes them to the format optimized for playback
-func WriteForPlayback(sid session.ID, reader AuditReader, dir string) error {
+func WriteForPlayback(ctx context.Context, sid session.ID, reader AuditReader, dir string) error {
 	w := &PlaybackWriter{
 		sid:        sid,
 		reader:     reader,
@@ -43,7 +44,7 @@ func WriteForPlayback(sid session.ID, reader AuditReader, dir string) error {
 			log.WithError(err).Warningf("Failed to close writer.")
 		}
 	}()
-	return w.Write()
+	return w.Write(ctx)
 }
 
 // PlaybackWriter reads messages until end of tile
@@ -88,12 +89,12 @@ func (w *PlaybackWriter) Close() error {
 }
 
 // Write writes the files in the format optimized for playback
-func (w *PlaybackWriter) Write() error {
+func (w *PlaybackWriter) Write(ctx context.Context) error {
 	if err := w.openIndexFile(); err != nil {
 		return trace.Wrap(err)
 	}
 	for {
-		event, err := w.reader.Read()
+		event, err := w.reader.Read(ctx)
 		if err != nil {
 			if err == io.EOF {
 				return nil

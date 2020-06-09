@@ -173,8 +173,10 @@ message AuditStreamRequest {
         ResumeStream ResumeStream = 2;
         // CompleteStream completes the stream
         CompleteStream CompleteStream = 3;
+        // FlushAndClose flushes and closes the stream
+        FlushAndCloseStream FlushAndCloseStream = 4;
         // Event contains the stream event
-        events.OneOf Event = 4;
+        events.OneOf Event = 5;
     }
 }
 
@@ -202,6 +204,10 @@ message ResumeStream {
 // CompleteStream completes the stream
 // and uploads it to the session server
 message CompleteStream {
+}
+
+// FlushAndCloseStream flushes the stream data and closes the stream
+message FlushAndCloseStream {
 }
 
 // AuthService is authentication/authorization service implementation

@@ -792,7 +792,7 @@ func NewProtoReader(r io.Reader) *ProtoReader {
 // audit events one by one
 type AuditReader interface {
 	// Read reads audit events
-	Read() (AuditEvent, error)
+	Read(context.Context) (AuditEvent, error)
 }
 
 const (
@@ -819,6 +819,29 @@ type ProtoReader struct {
 	error        error
 	paddingBytes []byte
 	lastIndex    int64
+	stats        ProtoReaderStats
+}
+
+// ProtoReaderStats contains some reader statistics
+type ProtoReaderStats struct {
+	// SkippedDuplicateEvents is a counter with encountered
+	// events recorded several times and skipped
+	SkippedDuplicateEvents int64
+	// OutOfOrderEvents is a counter with events
+	// received out of order
+	OutOfOrderEvents int64
+	// TotalEvents contains total amount of
+	// processed events (including duplicates)
+	TotalEvents int64
+}
+
+// ToFields returns a copy of the stats to be used as log fields
+func (p ProtoReaderStats) ToFields() log.Fields {
+	return log.Fields{
+		"skipped-duplicate-events": p.SkippedDuplicateEvents,
+		"out-of-order-events":      p.OutOfOrderEvents,
+		"total-events":             p.TotalEvents,
+	}
 }
 
 // Close releases reader resources
@@ -840,11 +863,30 @@ func (r *ProtoReader) setError(err error) error {
 	return err
 }
 
+// GetStats returns stats about processed events
+func (r *ProtoReader) GetStats() ProtoReaderStats {
+	return r.stats
+}
+
 // Read returns next event or io.EOF in case of the end of the parts
-func (r *ProtoReader) Read() (AuditEvent, error) {
-	// fixed amount of iterations is an extra precaution to avoid
+func (r *ProtoReader) Read(ctx context.Context) (AuditEvent, error) {
+	// periodic checks of context after fixed amount of iterations
+	// is an extra precaution to avoid
 	// accidental endless loop due to logic error crashing the system
-	for i := 0; i < defaults.MaxIterationLimit; i++ {
+	// and allows ctx timeout to kick in if specified
+	var checkpointIteration int64
+	for {
+		checkpointIteration++
+		if checkpointIteration%defaults.MaxIterationLimit == 0 {
+			select {
+			case <-ctx.Done():
+				if ctx.Err() != nil {
+					return nil, trace.Wrap(ctx.Err())
+				}
+				return nil, trace.LimitExceeded("context has been cancelled")
+			default:
+			}
+		}
 		switch r.state {
 		case protoReaderStateEOF:
 			return nil, io.EOF
@@ -935,12 +977,13 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 			if err != nil {
 				return nil, trace.Wrap(err)
 			}
+			r.stats.TotalEvents++
 			if event.GetIndex() <= r.lastIndex {
-				fmt.Printf("SKIPPING DUPLICATE EVENT WITH IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)
+				r.stats.SkippedDuplicateEvents++
 				continue
 			}
 			if r.lastIndex > 0 && event.GetIndex() != r.lastIndex+1 {
-				fmt.Printf("NON CONSECUITIVE IDX: %v!!!!\n", event.GetIndex(), r.lastIndex)
+				r.stats.OutOfOrderEvents++
 			}
 			r.lastIndex = event.GetIndex()
 			return event, nil
@@ -953,10 +996,10 @@ func (r *ProtoReader) Read() (AuditEvent, error) {
 }
 
 // ReadAll reads all events until EOF
-func (r *ProtoReader) ReadAll() ([]AuditEvent, error) {
+func (r *ProtoReader) ReadAll(ctx context.Context) ([]AuditEvent, error) {
 	var events []AuditEvent
 	for {
-		event, err := r.Read()
+		event, err := r.Read(ctx)
 		if err != nil {
 			if err == io.EOF {
 				return events, nil
@@ -999,7 +1042,8 @@ type MemoryUpload struct {
 // CreateUpload creates a multipart upload
 func (m *MemoryUploader) CreateUpload(ctx context.Context, sessionID session.ID) (*StreamUpload, error) {
 	upload := &StreamUpload{
-		ID: uuid.New(),
+		ID:        uuid.New(),
+		SessionID: sessionID,
 	}
 	m.uploads[upload.ID] = &MemoryUpload{
 		id:        upload.ID,
@@ -1055,8 +1099,9 @@ func (m *MemoryUploader) UploadPart(ctx context.Context, upload StreamUpload, pa
 	return &StreamPart{Number: partNumber}, nil
 }
 
-// GetUploads returns a list of upload IDs
-func (m *MemoryUploader) GetUploads() []StreamUpload {
+// ListUploads lists uploads that have been initated but not completed with
+// earlier uploads returned first
+func (m *MemoryUploader) ListUploads(ctx context.Context) ([]StreamUpload, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 	out := make([]StreamUpload, 0, len(m.uploads))
@@ -1065,7 +1110,7 @@ func (m *MemoryUploader) GetUploads() []StreamUpload {
 			ID: id,
 		})
 	}
-	return out
+	return out, nil
 }
 
 // GetParts returns upload parts uploaded up to date, sorted by part number
@@ -1088,6 +1133,30 @@ func (m *MemoryUploader) GetParts(uploadID string) ([][]byte, error) {
 	})
 	for _, partNumber := range partNumbers {
 		sortedParts = append(sortedParts, up.parts[partNumber])
+	}
+	return sortedParts, nil
+}
+
+// ListParts returns all uploaded parts for the completed upload in sorted order
+func (m *MemoryUploader) ListParts(ctx context.Context, upload StreamUpload) ([]StreamPart, error) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
+	up, ok := m.uploads[upload.ID]
+	if !ok {
+		return nil, trace.NotFound("upload %v is not found", upload.ID)
+	}
+
+	partNumbers := make([]int64, 0, len(up.parts))
+	sortedParts := make([]StreamPart, 0, len(up.parts))
+	for partNumber := range up.parts {
+		partNumbers = append(partNumbers, partNumber)
+	}
+	sort.Slice(partNumbers, func(i, j int) bool {
+		return partNumbers[i] < partNumbers[j]
+	})
+	for _, partNumber := range partNumbers {
+		sortedParts = append(sortedParts, StreamPart{Number: partNumber})
 	}
 	return sortedParts, nil
 }

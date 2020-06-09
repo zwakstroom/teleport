@@ -179,6 +179,11 @@ func (a *AuditWriter) Close() error {
 	return nil
 }
 
+// FlushAndClose is not implemented for audit writer - not needed yet
+func (a *AuditWriter) FlushAndClose(ctx context.Context) error {
+	return trace.NotImplemented("flush and close is not implemented for audit writer")
+}
+
 // Complete closes the stream and marks it finalized,
 // releases associated resources, in case of failure,
 // closes this stream on the client side
@@ -260,7 +265,7 @@ func (a *AuditWriter) recoverStream() error {
 			return trace.Wrap(err)
 		}
 	}
-	a.log.Infof("Replayed buffer of events of size %v to resumed stream in %v\n", time.Now().Sub(start))
+	a.log.Infof("Replayed buffer of events of size %v to resumed stream in %v\n", len(a.buffer), time.Now().Sub(start))
 	return nil
 }
 

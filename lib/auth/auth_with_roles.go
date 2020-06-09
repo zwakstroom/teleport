@@ -1424,6 +1424,12 @@ func (s *streamWithRoles) Close() error {
 	return s.stream.Close()
 }
 
+// FlushAndClose flushes non-uploaded flight stream data without marking
+// the stream completed and closes the stream instance
+func (s *streamWithRoles) FlushAndClose(ctx context.Context) error {
+	return s.stream.FlushAndClose(ctx)
+}
+
 func (s *streamWithRoles) EmitAuditEvent(ctx context.Context, event events.AuditEvent) error {
 	err := events.ValidateServerMetadata(event, s.serverID)
 	if err != nil {

@@ -48,7 +48,7 @@ func (s *HandlerSuite) Stream(c *check.C) {
 	c.Assert(err, check.IsNil)
 
 	reader := events.NewProtoReader(f)
-	out, err := reader.ReadAll()
+	out, err := reader.ReadAll(ctx)
 	c.Assert(err, check.IsNil)
 
 	fixtures.DeepCompareSlices(c, inEvents, out)

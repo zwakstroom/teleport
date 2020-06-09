@@ -142,6 +142,12 @@ func (*DiscardStream) Close() error {
 	return nil
 }
 
+// FlushAndClose flushes non-uploaded flight stream data without marking
+// the stream completed and closes the stream instance
+func (*DiscardStream) FlushAndClose(ctx context.Context) error {
+	return nil
+}
+
 // Complete does nothing
 func (*DiscardStream) Complete(ctx context.Context) error {
 	return nil
@@ -324,6 +330,12 @@ type CheckingStream struct {
 	uidGenerator utils.UID
 }
 
+// FlushAndClose flushes non-uploaded flight stream data without marking
+// the stream completed and closes the stream instance
+func (s *CheckingStream) FlushAndClose(ctx context.Context) error {
+	return s.stream.FlushAndClose(ctx)
+}
+
 // Done returns channel closed when streamer is closed
 // should be used to detect sending errors
 func (s *CheckingStream) Done() <-chan struct{} {
@@ -423,6 +435,12 @@ func (t *TeeStream) Done() <-chan struct{} {
 // last event index that was uploaded and upload ID
 func (t *TeeStream) Status() <-chan StreamStatus {
 	return t.stream.Status()
+}
+
+// FlushAndClose flushes non-uploaded flight stream data without marking
+// the stream completed and closes the stream instance
+func (t *TeeStream) FlushAndClose(ctx context.Context) error {
+	return t.stream.FlushAndClose(ctx)
 }
 
 // Close cancels and releases all resources associated

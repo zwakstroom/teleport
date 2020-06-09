@@ -452,15 +452,11 @@ type Stream interface {
 	// releases associated resources, in case of failure,
 	// closes this stream on the client side
 	Complete(ctx context.Context) error
-	// Emitter alows stream to emit audit event in the context of the event stream
-	Emitter
-}
-
-// StreamFlushCloser provides FlushAndClose method
-type StreamFlushCloser interface {
 	// FlushAndClose flushes non-uploaded flight stream data without marking
 	// the stream completed and closes the stream instance
 	FlushAndClose(ctx context.Context) error
+	// Emitter alows stream to emit audit event in the context of the event stream
+	Emitter
 }
 
 // StreamWriter implements io.Writer to be plugged into the multi-writer

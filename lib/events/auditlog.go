@@ -663,12 +663,15 @@ func (l *AuditLog) downloadSession(namespace string, sid session.ID) error {
 			return trace.ConvertSystemError(err)
 		}
 		l.Debugf("Converting %v to playback format.", tarballPath)
-		err = WriteForPlayback(sid, NewProtoReader(tarball), l.playbackDir)
+		protoReader := NewProtoReader(tarball)
+		err = WriteForPlayback(l.Context, sid, protoReader, l.playbackDir)
 		if err != nil {
 			l.Errorf("Failed to convert: %v\n", trace.DebugReport(err))
 			return trace.Wrap(err)
 		}
-		l.WithFields(log.Fields{"duration": time.Now().Sub(start)}).Debugf("Converted %v to %v.", tarballPath, l.playbackDir)
+		stats := protoReader.GetStats().ToFields()
+		stats["duration"] = time.Now().Sub(start)
+		l.WithFields(stats).Debugf("Converted %v to %v.", tarballPath, l.playbackDir)
 	}
 	// Extract every chunks file on disk while holding the context,
 	// otherwise parallel downloads will try to unpack the file at the same time.

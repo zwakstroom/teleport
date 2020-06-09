@@ -55,7 +55,8 @@ func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 			minUploadBytes: 1024,
 			generateEvents: func() []AuditEvent {
 				events := []AuditEvent{&sessionStart}
-				for i := 0; i < 1000; i++ {
+				i := int64(0)
+				for i = 0; i < 1000; i++ {
 					event := &SessionPrint{
 						Metadata: Metadata{
 							Index: int64(i) + 1,
@@ -65,12 +66,14 @@ func (a *EventsTestSuite) TestProtoStreamer(c *check.C) {
 						ChunkIndex:        int64(i),
 						DelayMilliseconds: int64(i),
 						Offset:            int64(i),
-						Data:              bytes.Repeat([]byte("hello"), i%177+1),
+						Data:              bytes.Repeat([]byte("hello"), int(i%177+1)),
 					}
 					event.Bytes = int64(len(event.Data))
 					event.Time = event.Time.Add(time.Duration(i) * time.Millisecond)
 					events = append(events, event)
 				}
+				i++
+				sessionEnd.Metadata.Index = i
 				events = append(events, &sessionEnd)
 				return events
 			},
@@ -120,12 +123,14 @@ testcases:
 		c.Assert(err, check.IsNil)
 
 		var outEvents []AuditEvent
-		parts, err := uploader.GetParts(uploader.GetUploads()[0].ID)
+		uploads, err := uploader.ListUploads(ctx)
+		c.Assert(err, check.IsNil)
+		parts, err := uploader.GetParts(uploads[0].ID)
 		c.Assert(err, check.IsNil)
 
 		for _, part := range parts {
 			reader := NewProtoReader(bytes.NewReader(part))
-			out, err := reader.ReadAll()
+			out, err := reader.ReadAll(ctx)
 			c.Assert(err, check.IsNil, check.Commentf("part crash %#v", part))
 			outEvents = append(outEvents, out...)
 		}

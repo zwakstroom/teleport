@@ -2102,6 +2102,17 @@ type auditStreamer struct {
 	cancel   context.CancelFunc
 }
 
+// FlushAndClose flushes non-uploaded flight stream data without marking
+// the stream completed and closes the stream instance
+func (s *auditStreamer) FlushAndClose(ctx context.Context) error {
+	defer s.closeWithError(nil)
+	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_FlushAndCloseStream{
+			FlushAndCloseStream: &proto.FlushAndCloseStream{},
+		},
+	}))
+}
+
 // Complete completes stream
 func (s *auditStreamer) Complete(ctx context.Context) error {
 	return trail.FromGRPC(s.stream.Send(&proto.AuditStreamRequest{

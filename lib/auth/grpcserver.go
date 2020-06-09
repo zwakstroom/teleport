@@ -19,6 +19,7 @@ package auth
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"io"
 	"time"
 
@@ -99,7 +100,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	g.Debugf("CreateAuditStream connection from %v.", auth.User.GetName())
 	streamStart := time.Now()
 	processed := int64(0)
-	//	start := time.Now()
+	start := time.Now()
 	counter := 0
 	forwardEvents := func(eventStream events.Stream) {
 		for {
@@ -115,32 +116,21 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	}
 
 	closeStream := func(eventStream events.Stream) {
-		flushCloser, ok := eventStream.(events.StreamFlushCloser)
-		if ok {
-			// do not use stream context to give the auth server finish the upload
-			// even if the stream's context is cancelled
-			if err := flushCloser.FlushAndClose(auth.Context()); err != nil {
-				g.WithError(err).Warningf("Failed to flush close the stream.")
-			} else {
-				g.Debugf("Flushed and closed the stream.")
-			}
+		if err := eventStream.FlushAndClose(auth.Context()); err != nil {
+			g.WithError(err).Warningf("Failed to flush close the stream.")
 		} else {
-			if err := eventStream.Close(); err != nil {
-				g.WithError(err).Warningf("Failed to close stream with no flushing.")
-			} else {
-				g.Debugf("Closed the stream (no flusing).")
-			}
+			g.Debugf("Flushed and closed the stream.")
 		}
 	}
 
 	for {
-		/* Failure injection was helpful to test the system
+		// Failure injection was helpful to test the system
 		// consider making more agressive randomizer?
-				if time.Now().Sub(start) >= 20*time.Second {
-					//			fmt.Printf("EXITING AFTER 10 SECONDS\n")
-					//			return nil
-				}
-		*/
+		if time.Now().Sub(start) >= 20*time.Second {
+			fmt.Printf("EXITING AFTER %v\n", time.Now().Sub(start))
+			//			return nil
+		}
+
 		request, err := stream.Recv()
 		if err == io.EOF {
 			return nil
@@ -183,6 +173,12 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 				return trail.ToGRPC(err)
 			}
 			return nil
+		} else if flushAndClose := request.GetFlushAndCloseStream(); flushAndClose != nil {
+			if eventStream == nil {
+				return trail.ToGRPC(trace.BadParameter("stream is not initialized yet, can not flush and close"))
+			}
+			// flush and close is always done
+			return nil
 		} else if oneof := request.GetEvent(); oneof != nil {
 			if eventStream == nil {
 				return trail.ToGRPC(
@@ -192,9 +188,6 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 			if err != nil {
 				g.WithError(err).Debugf("Failed to decode event.")
 				return trail.ToGRPC(err)
-			}
-			if time.Since(event.GetTime()) > 100*time.Millisecond && event.GetIndex()%100 == 0 {
-				log.Warningf("Received event %v older than 100ms: %v", event.GetType(), time.Since(event.GetTime()))
 			}
 			start := time.Now()
 			err = eventStream.EmitAuditEvent(stream.Context(), event)
