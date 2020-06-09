@@ -31,6 +31,7 @@ import (
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/services/local"
 	"github.com/gravitational/teleport/lib/sshca"
@@ -375,7 +376,7 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 		}
 
 		// Generate JWT kepair.
-		jwtPEM, err := utils.GenerateJWTKeypair()
+		jwtPublic, jwtPrivate, err := jwt.GenerateKeypair()
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
@@ -393,9 +394,10 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 				SigningKeys:  [][]byte{priv},
 				CheckingKeys: [][]byte{pub},
 				TLSKeyPairs:  []services.TLSKeyPair{{Cert: certPEM, Key: keyPEM}},
-				JWTKeyPairs: []services.RSAKeyPair{
-					services.RSAKeyPair{
-						PrivateKey: jwtPEM,
+				JWTKeyPairs: []services.JWTKeyPair{
+					services.JWTKeyPair{
+						PublicKey:  jwtPublic,
+						PrivateKey: jwtPrivate,
 					},
 				},
 			},
@@ -427,13 +429,14 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 	} else if len(hostCA.GetJWTKeyPairs()) == 0 {
 		log.Infof("Migrate: Adding JWT keypair to exisiting host CA.")
 
-		jwtPEM, err := utils.GenerateJWTKeypair()
+		jwtPublic, jwtPrivate, err := jwt.GenerateKeypair()
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		hostCA.SetJWTKeyPairs([]services.RSAKeyPair{
-			services.RSAKeyPair{
-				PrivateKey: jwtPEM,
+		hostCA.SetJWTKeyPairs([]services.JWTKeyPair{
+			services.JWTKeyPair{
+				PublicKey:  jwtPublic,
+				PrivateKey: jwtPrivate,
 			},
 		})
 	}

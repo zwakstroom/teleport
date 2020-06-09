@@ -219,10 +219,10 @@ type CertAuthority interface {
 
 	// JWTKeyPair return the first JWT keypair from the list of keypairs.
 	JWTKeyPair() (*jwt.Key, error)
-	// GetJWTKeyPairs gets a RSA keypair used to sign a JWT.
-	GetJWTKeyPairs() []RSAKeyPair
-	// SetJWTKeyPairs sets a RSA keypair used to sign a JWT.
-	SetJWTKeyPairs([]RSAKeyPair)
+	// GetJWTKeyPairs gets a keypair used to sign a JWT.
+	GetJWTKeyPairs() []JWTKeyPair
+	// SetJWTKeyPairs sets a keypair used to sign a JWT.
+	SetJWTKeyPairs([]JWTKeyPair)
 
 	// GetRotation returns rotation state.
 	GetRotation() Rotation
@@ -389,17 +389,17 @@ func (c *CertAuthorityV2) JWTKeyPair() (*jwt.Key, error) {
 	if len(c.Spec.JWTKeyPairs) == 0 {
 		return nil, trace.BadParameter("not JWT keypairs found")
 	}
-	return jwt.New(c.Spec.JWTKeyPairs[0].PrivateKey)
+	return jwt.New(c.Spec.JWTKeyPairs[0].PublicKey, c.Spec.JWTKeyPairs[0].PrivateKey)
 }
 
-// GetJWTKeyPairs gets a RSA keypair used to sign a JWT.
-func (c *CertAuthorityV2) GetJWTKeyPairs() []RSAKeyPair {
+// GetJWTKeyPairs gets all JWT keypairs used to sign a JWT.
+func (c *CertAuthorityV2) GetJWTKeyPairs() []JWTKeyPair {
 	return c.Spec.JWTKeyPairs
 }
 
-// SetJWTKeyPairs sets a RSA keypair used to sign a JWT.
-func (c *CertAuthorityV2) SetJWTKeyPairs(jwtKeyPairs []RSAKeyPair) {
-	c.Spec.JWTKeyPairs = jwtKeyPairs
+// SetJWTKeyPairs sets ll JWT keypairs used to sign a JWT.
+func (c *CertAuthorityV2) SetJWTKeyPairs(keyPairs []JWTKeyPair) {
+	c.Spec.JWTKeyPairs = keyPairs
 }
 
 // GetMetadata returns object metadata
@@ -626,15 +626,24 @@ func (ca *CertAuthorityV2) CheckAndSetDefaults() error {
 	return nil
 }
 
-// RemoveCASecrets removes secret values and keys
-// from the certificate authority
+// RemoveCASecrets removes secret values and keys from the certificate authority.
 func RemoveCASecrets(ca CertAuthority) {
+	// Remove SSH private keys.
 	ca.SetSigningKeys(nil)
-	keyPairs := ca.GetTLSKeyPairs()
-	for i := range keyPairs {
-		keyPairs[i].Key = nil
+
+	// Remove TLS private keys.
+	tlsKeyPairs := ca.GetTLSKeyPairs()
+	for i := range tlsKeyPairs {
+		tlsKeyPairs[i].Key = nil
 	}
-	ca.SetTLSKeyPairs(keyPairs)
+	ca.SetTLSKeyPairs(tlsKeyPairs)
+
+	// Remove JWT private keys.
+	jwtKeyPairs := ca.GetJWTKeyPairs()
+	for i := range jwtKeyPairs {
+		jwtKeyPairs[i].PrivateKey = nil
+	}
+	ca.SetJWTKeyPairs(jwtKeyPairs)
 }
 
 const (

@@ -783,7 +783,7 @@ func (h *Handler) getWebConfig(w http.ResponseWriter, r *http.Request, p httprou
 }
 
 type certsResponse struct {
-	JWTKeys []services.RSAKeyPair `json:"jwt_keys"`
+	JWTKeys []services.JWTKeyPair `json:"jwt_keys"`
 }
 
 func (h *Handler) certs(w http.ResponseWriter, r *http.Request, p httprouter.Params) (interface{}, error) {
@@ -791,11 +791,11 @@ func (h *Handler) certs(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	// TODO: This is broken, it returns private keys! Should only return public keys.
+	// Fetch the host CA public keys only.
 	ca, err := h.cfg.ProxyClient.GetCertAuthority(services.CertAuthID{
 		Type:       services.HostCA,
 		DomainName: clusterName,
-	}, true)
+	}, false)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

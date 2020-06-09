@@ -40,15 +40,36 @@ func (s *Suite) SetUpTest(c *check.C)     {}
 func (s *Suite) TearDownTest(c *check.C)  {}
 
 func (s *Suite) TestSignAndVerify(c *check.C) {
-	pem, err := utils.GenerateJWTKeypair()
+	public, private, err := GenerateKeypair()
 	c.Assert(err, check.IsNil)
 
-	key, err := New(pem)
+	key, err := New(public, private)
 	c.Assert(err, check.IsNil)
 
 	token, err := key.Sign(&SignParams{
 		Email: "foo@example.com",
 	})
+	c.Assert(err, check.IsNil)
+
+	claims, err := key.Verify(token)
+	c.Assert(err, check.IsNil)
+	c.Assert(claims.GetEmail(), check.Equals, "foo@example.com")
+}
+
+func (s *Suite) TestPublicOnlyVerify(c *check.C) {
+	public, private, err := GenerateKeypair()
+	c.Assert(err, check.IsNil)
+
+	key, err := New(public, private)
+	c.Assert(err, check.IsNil)
+
+	token, err := key.Sign(&SignParams{
+		Email: "foo@example.com",
+	})
+	c.Assert(err, check.IsNil)
+
+	// Should be able to verify with only the public key.
+	key, err = New(public, nil)
 	c.Assert(err, check.IsNil)
 
 	claims, err := key.Verify(token)

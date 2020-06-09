@@ -1,9 +1,11 @@
 package jwt
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"time"
 
 	"github.com/gravitational/trace"
@@ -15,23 +17,23 @@ import (
 )
 
 type Key struct {
+	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 }
 
-func New(privateKey []byte) (*Key, error) {
-	// TODO: Does "rest" (second return value) need to actually be used?
-	block, _ := pem.Decode(privateKey)
-	if block == nil || block.Type != "RSA PRIVATE KEY" {
-		return nil, trace.BadParameter("failed to decode PEM block containing public key")
-	}
-
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+func New(public []byte, private []byte) (*Key, error) {
+	// Parse public and private key parts. Errors are ignored when the private
+	// key is parsed because the private key is not required when the requester
+	// only has permission to validate band not sign JWT tokens.
+	publicKey, err := parsePublicKey(public)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	privateKey, _ := parsePrivateKey(private)
 
 	return &Key{
-		privateKey: key,
+		publicKey:  publicKey,
+		privateKey: privateKey,
 	}, nil
 }
 
@@ -40,6 +42,10 @@ type SignParams struct {
 }
 
 func (k *Key) Sign(p *SignParams) (string, error) {
+	if k.privateKey == nil {
+		return "", trace.BadParameter("can not sign token with non-signing key")
+	}
+
 	signingKey := jose.SigningKey{
 		Algorithm: jose.RS256,
 		Key:       k.privateKey,
@@ -50,12 +56,7 @@ func (k *Key) Sign(p *SignParams) (string, error) {
 		return "", trace.Wrap(err)
 	}
 
-	//standardClaims := josejwt.Claims{
-	//	Subject:   uuid.New(),
-	//	Issuer:    "Gravitational Teleport",
-	//	NotBefore: jwt.NewNumericDate(time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC)),
-	//}
-	rclaims := teleportClaims{
+	claims := jwtClaims{
 		Claims: josejwt.Claims{
 			Subject:   uuid.New(),
 			Issuer:    "Gravitational Teleport",
@@ -63,39 +64,87 @@ func (k *Key) Sign(p *SignParams) (string, error) {
 		},
 		Email: p.Email,
 	}
-	//claims := josejwt.Signed(sig).Claims(standardClaims).Claims(teleportClaims)
-	claims := josejwt.Signed(sig).Claims(rclaims)
-
-	raw, err := claims.CompactSerialize()
+	token, err := josejwt.Signed(sig).Claims(claims).CompactSerialize()
 	if err != nil {
 		return "", trace.Wrap(err)
 	}
-	return raw, nil
+	return token, nil
+}
+
+func (k *Key) Verify(raw string) (*jwtClaims, error) {
+	tok, err := josejwt.ParseSigned(raw)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	var out jwtClaims
+	if err := tok.Claims(k.publicKey, &out); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &out, nil
 }
 
 type Claims interface {
 	GetEmail() string
 }
 
-type teleportClaims struct {
+type jwtClaims struct {
 	josejwt.Claims
 	Email string `json:"email"`
 }
 
-func (c *teleportClaims) GetEmail() string {
+func (c *jwtClaims) GetEmail() string {
 	return c.Email
 }
 
-func (k *Key) Verify(raw string) (Claims, error) {
-	tok, err := josejwt.ParseSigned(raw)
+func GenerateKeypair() ([]byte, []byte, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	private := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	})
+
+	publicKey, ok := privateKey.Public().(*rsa.PublicKey)
+	if !ok {
+		return nil, nil, fmt.Errorf("invalid key type: %T", publicKey)
+	}
+	public := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: x509.MarshalPKCS1PublicKey(publicKey),
+	})
+
+	return public, private, nil
+}
+
+func parsePublicKey(public []byte) (*rsa.PublicKey, error) {
+	block, _ := pem.Decode(public)
+	if block == nil || block.Type != "RSA PUBLIC KEY" {
+		return nil, trace.BadParameter("failed to decode PEM block")
+	}
+
+	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	var out teleportClaims
-	if err := tok.Claims(k.privateKey.Public(), &out); err != nil {
+	return publicKey, nil
+}
+
+func parsePrivateKey(private []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(private)
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return nil, trace.BadParameter("failed to decode PEM block containing public key")
+	}
+
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	return &out, nil
+	return privateKey, nil
 }

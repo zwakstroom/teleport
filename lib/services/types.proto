@@ -217,10 +217,12 @@ message TLSKeyPair {
     bytes Key = 2 [ (gogoproto.jsontag) = "key,omitempty" ];
 }
 
-// RSAKeyPair is a PEM encoded RSA keypair.
-message RSAKeyPair {
-    // PrivateKey is a PEM encoded RSA private key.
-    bytes PrivateKey = 1 [ (gogoproto.jsontag) = "private_key,omitempty" ];
+// JWTKeyPair is a PEM encoded keypair used for signing JWT tokens.
+message JWTKeyPair {
+    // PublicKey is a PEM encoded public key.
+    bytes PublicKey = 1 [ (gogoproto.jsontag) = "public_key,omitempty" ];
+    // PrivateKey is a PEM encoded private key. Also contains public key.
+    bytes PrivateKey = 2 [ (gogoproto.jsontag) = "private_key,omitempty" ];
 }
 
 // CertAuthorityV2 is version 2 resource spec for Cert Authority
@@ -267,8 +269,8 @@ message CertAuthoritySpecV2 {
     // Rotation is a status of the certificate authority rotation
     Rotation Rotation = 8
         [ (gogoproto.nullable) = true, (gogoproto.jsontag) = "rotation,omitempty" ];
-    // JWTKeyPairs is a RSA keypair used to sign JWTs in AAP.
-    repeated RSAKeyPair JWTKeyPairs = 9
+    // JWTKeyPairs is a keypair used to sign JWT tokens.
+    repeated JWTKeyPair JWTKeyPairs = 9
         [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "jwt_key_pairs,omitempty" ];
 }
 
