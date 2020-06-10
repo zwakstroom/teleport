@@ -19,6 +19,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
@@ -1777,7 +1778,7 @@ func (set RoleSet) CheckLoginDuration(ttl time.Duration) ([]string, error) {
 // CheckAccessToApp checks if a role has access to an application. Deny rules
 // are checked first then allow rules. Access to an application is determined by
 // namespaces and labels.
-func (set RoleSet) CheckAccessToApp(app App) error {
+func (set RoleSet) CheckAccessToApp(app App, r *http.Request) error {
 	var errs []error
 
 	// Check deny rules: a matching namespace and label in the deny section
@@ -1822,6 +1823,25 @@ func (set RoleSet) CheckAccessToApp(app App) error {
 		}).Debugf("Access to app %v denied, no allow rule matched; %v", app.GetName(), errs)
 	}
 	return trace.AccessDenied("access to app denied")
+}
+
+func (set RoleSet) checkAccessToPath(method string, path string) (bool, error) {
+	ctx := RuleContext{}
+	whereParser, err := GetWhereParserFn()(ctx)
+	if err != nil {
+		return false, trace.Wrap(err)
+	}
+
+	ifn, err := whereParser.Parse(r.Where)
+	if err != nil {
+		return false, trace.Wrap(err)
+	}
+	fn, ok := ifn.(predicate.BoolPredicate)
+	if !ok {
+		return false, trace.BadParameter("unsupported type: %T", ifn)
+	}
+
+	return fn(), nil
 }
 
 // CheckAccessToServer checks if a role has access to a node. Deny rules are

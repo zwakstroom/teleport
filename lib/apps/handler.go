@@ -70,7 +70,7 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 }
 
 type checker interface {
-	CheckAccessToApp(services.App) error
+	CheckAccessToApp(services.App, *http.Request) error
 }
 
 // nameFromRequest extracts the application name from the "Host" header of
@@ -123,7 +123,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal service error", 500)
 		return
 	}
-	err := checker.CheckAccessToApp(app)
+	err := checker.CheckAccessToApp(app, r)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("access to app %v denied", app.GetName()), 401)
 		return
