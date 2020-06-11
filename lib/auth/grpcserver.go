@@ -124,12 +124,14 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	}
 
 	for {
-		// Failure injection was helpful to test the system
-		// consider making more agressive randomizer?
-		if time.Now().Sub(start) >= 20*time.Second {
-			fmt.Printf("EXITING AFTER %v\n", time.Now().Sub(start))
-			//			return nil
-		}
+		/*
+			// Failure injection was helpful to test the system
+			// consider making more agressive randomizer?
+			if time.Now().Sub(start) >= 20*time.Second {
+				fmt.Printf("EXITING AFTER %v\n", time.Now().Sub(start))
+				//			return nil
+			}
+		*/
 
 		request, err := stream.Recv()
 		if err == io.EOF {
