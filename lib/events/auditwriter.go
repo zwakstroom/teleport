@@ -265,7 +265,7 @@ func (a *AuditWriter) recoverStream() error {
 			return trace.Wrap(err)
 		}
 	}
-	a.log.Infof("Replayed buffer of events of size %v to resumed stream in %v\n", len(a.buffer), time.Now().Sub(start))
+	a.log.Debugf("Replayed buffer of events of size %v to resumed stream in %v", len(a.buffer), time.Now().Sub(start))
 	return nil
 }
 

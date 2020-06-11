@@ -805,10 +805,7 @@ func initUploadHandler(auditConfig services.AuditConfig) (events.MultipartHandle
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		// FIXEVENTS
-		//		return handler, nil
-		panic(handler)
-		return nil, nil
+		return handler, nil
 	default:
 		return nil, trace.BadParameter(
 			"unsupported scheme for audit_sesions_uri: %q, currently supported schemes are %q and %q",

@@ -1,9 +1,26 @@
+/*
+Copyright 2020 Gravitational, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package filesessions
 
 import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -122,11 +139,10 @@ func (h *Handler) CompleteUpload(ctx context.Context, upload events.StreamUpload
 		return trace.Wrap(err)
 	}
 
-	err = os.RemoveAll(h.uploadPath(upload))
+	err = os.RemoveAll(h.uploadRootPath(upload))
 	if err != nil {
 		h.WithError(err).Errorf("Failed to remove upload %v.", upload.ID)
 	}
-
 	return nil
 }
 
@@ -164,30 +180,40 @@ func (h *Handler) ListParts(ctx context.Context, upload events.StreamUpload) ([]
 // earlier uploads returned first
 func (h *Handler) ListUploads(ctx context.Context) ([]events.StreamUpload, error) {
 	var uploads []events.StreamUpload
-	err := filepath.Walk(h.uploadsPath(), func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			return nil
-		}
-		uploadID := filepath.Base(path)
-		if err := checkUploadID(uploadID); err != nil {
-			return trace.Wrap(err)
-		}
-		uploads = append(uploads, events.StreamUpload{
-			ID:        uploadID,
-			Initiated: info.Created(),
-		})
-		return nil
-	})
+
+	dirs, err := ioutil.ReadDir(h.uploadsPath())
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, trace.ConvertSystemError(err)
 	}
 
-	var prefix *string
-	if h.Path != "" {
-		trimmed := strings.TrimPrefix(h.Path, "/")
-		prefix = &trimmed
+	for _, dir := range dirs {
+		if !dir.IsDir() {
+			continue
+		}
+		uploadID := dir.Name()
+		if err := checkUploadID(uploadID); err != nil {
+			h.WithError(err).Warningf("Skipping upload %v with bad format.", uploadID)
+			continue
+		}
+		files, err := ioutil.ReadDir(filepath.Join(h.uploadsPath(), dir.Name()))
+		if err != nil {
+			return nil, trace.ConvertSystemError(err)
+		}
+		// expect just one subdirectory - session ID
+		if len(files) != 1 {
+			h.WithError(err).Warningf("Skipping upload %v, missing subdirectory.", uploadID)
+			continue
+		}
+		if !files[0].IsDir() {
+			h.WithError(err).Warningf("Skipping upload %v, not a directory.", uploadID)
+			continue
+		}
+		uploads = append(uploads, events.StreamUpload{
+			SessionID: session.ID(filepath.Base(files[0].Name())),
+			ID:        uploadID,
+			Initiated: dir.ModTime(),
+		})
 	}
-	var uploads []events.StreamUpload
 	sort.Slice(uploads, func(i, j int) bool {
 		return uploads[i].Initiated.Before(uploads[j].Initiated)
 	})
@@ -198,8 +224,12 @@ func (h *Handler) uploadsPath() string {
 	return filepath.Join(h.Directory, uploadsDir)
 }
 
+func (h *Handler) uploadRootPath(upload events.StreamUpload) string {
+	return filepath.Join(h.uploadsPath(), upload.ID)
+}
+
 func (h *Handler) uploadPath(upload events.StreamUpload) string {
-	return filepath.Join(h.uploadsPath(), upload.ID, string(upload.SessionID))
+	return filepath.Join(h.uploadRootPath(upload), string(upload.SessionID))
 }
 
 func (h *Handler) partPath(upload events.StreamUpload, partNumber int64) string {
@@ -207,7 +237,7 @@ func (h *Handler) partPath(upload events.StreamUpload, partNumber int64) string 
 }
 
 func partFileName(partNumber int64) string {
-	return fmt.Sprintf("%v.part", partNumber)
+	return fmt.Sprintf("%v%v", partNumber, partExt)
 }
 
 func partFromFileName(fileName string) (int64, error) {
@@ -215,7 +245,7 @@ func partFromFileName(fileName string) (int64, error) {
 	if filepath.Ext(base) != partExt {
 		return -1, trace.BadParameter("expected extension %v, got %v", partExt, base)
 	}
-	numberString := strings.TrimSuffix(base, "."+partExt)
+	numberString := strings.TrimSuffix(base, partExt)
 	partNumber, err := strconv.ParseInt(numberString, 10, 0)
 	if err != nil {
 		return -1, trace.Wrap(err)
@@ -250,5 +280,5 @@ const (
 	// uploadsDir is a directory with multipart uploads
 	uploadsDir = "multi"
 	// partExt is a part extension
-	partExt = "part"
+	partExt = ".part"
 )
