@@ -49,7 +49,11 @@ const (
 	// in /var/lib/teleport/logs/sessions
 	SessionLogsDir = "sessions"
 
-	// PlaybacksDir is a directory for playbacks
+	// StreamingLogsDir is a subdirectory of sessions /var/lib/teleport/logs/streaming
+	// is used in new versions of the uploader
+	StreamingLogsDir = "streaming"
+
+	// PlaybackDir is a directory for playbacks
 	PlaybackDir = "playbacks"
 
 	// LogfileExt defines the ending of the daily event log file

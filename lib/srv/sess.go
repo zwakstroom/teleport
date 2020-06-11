@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -29,6 +30,7 @@ import (
 	"github.com/gravitational/teleport/lib/bpf"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
+	"github.com/gravitational/teleport/lib/events/filesessions"
 	"github.com/gravitational/teleport/lib/services"
 	rsession "github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/sshutils"
@@ -420,7 +422,7 @@ func (s *SessionRegistry) NotifyWinChange(params rsession.TerminalParams, ctx *S
 	// If sessions are being recorded at the proxy, sessions can not be shared.
 	// In that situation, PTY size information does not need to be propagated
 	// back to all clients and we can return right away.
-	if ctx.ClusterConfig.GetSessionRecording() == services.RecordAtProxy {
+	if services.IsRecordAtProxy(ctx.ClusterConfig.GetSessionRecording()) {
 		return nil
 	}
 
@@ -653,11 +655,15 @@ func (s *session) startInteractive(ch ssh.Channel, ctx *ServerContext) error {
 	if auditLog == nil || isDiscardAuditLog(auditLog) {
 		s.recorder = &events.DiscardStream{}
 	} else {
+		streamer, err := s.newStreamer(ctx)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 		s.recorder, err = events.NewAuditWriter(events.AuditWriterConfig{
 			// Audit stream is using server context, not session context,
 			// to make sure that session is uploaded even after it is closed
 			Context:      ctx.srv.Context(),
-			Streamer:     ctx.srv,
+			Streamer:     streamer,
 			Clock:        ctx.srv.GetClock(),
 			SessionID:    s.id,
 			Namespace:    ctx.srv.GetNamespace(),
@@ -828,11 +834,15 @@ func (s *session) startExec(channel ssh.Channel, ctx *ServerContext) error {
 	if auditLog == nil || isDiscardAuditLog(auditLog) {
 		s.recorder = &events.DiscardStream{}
 	} else {
+		streamer, err := s.newStreamer(ctx)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 		s.recorder, err = events.NewAuditWriter(events.AuditWriterConfig{
 			// Audit stream is using server context, not session context,
 			// to make sure that session is uploaded even after it is closed
 			Context:      ctx.srv.Context(),
-			Streamer:     ctx.srv,
+			Streamer:     streamer,
 			SessionID:    s.id,
 			Clock:        ctx.srv.GetClock(),
 			Namespace:    ctx.srv.GetNamespace(),
@@ -982,6 +992,34 @@ func (s *session) startExec(channel ssh.Channel, ctx *ServerContext) error {
 	return nil
 }
 
+// newStreamer returns sync or async streamer based on the configuration
+// of the server and the session, sync streamer sends the events
+// directly to the auth server and blocks if the events can not be received,
+// async streamer buffers the events to disk and uploads the events later
+func (s *session) newStreamer(ctx *ServerContext) (events.Streamer, error) {
+	mode := ctx.ClusterConfig.GetSessionRecording()
+	if services.IsRecordSync(mode) {
+		s.log.Debugf("Using sync streamer for session %v.", s.id)
+		return ctx.srv, nil
+	}
+	s.log.Debugf("Using async streamer for session %v.", s.id)
+	fileStreamer, err := filesessions.NewStreamer(sessionsStreamingUploadDir(ctx))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	// TeeStreamer sends non-print and non disk events
+	// to the audit log in async mode, while buffering all
+	// events on disk for further upload at the end of the session
+	return events.NewTeeStreamer(fileStreamer, ctx.srv), nil
+}
+
+func sessionsStreamingUploadDir(ctx *ServerContext) string {
+	return filepath.Join(
+		ctx.srv.GetDataDir(), teleport.LogsDir, teleport.ComponentUpload,
+		events.StreamingLogsDir, ctx.srv.GetNamespace(),
+	)
+}
+
 func (s *session) broadcastResult(r ExecResult) {
 	for _, p := range s.parties {
 		p.ctx.SendExecResult(r)
@@ -1070,7 +1108,7 @@ func (s *session) exportParticipants() []string {
 func (s *session) heartbeat(ctx *ServerContext) {
 	// If sessions are being recorded at the proxy, an identical version of this
 	// goroutine is running in the proxy, which means it does not need to run here.
-	if ctx.ClusterConfig.GetSessionRecording() == services.RecordAtProxy &&
+	if services.IsRecordAtProxy(ctx.ClusterConfig.GetSessionRecording()) &&
 		s.registry.srv.Component() == teleport.ComponentNode {
 		return
 	}

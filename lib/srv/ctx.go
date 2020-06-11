@@ -534,7 +534,7 @@ func (c *ServerContext) reportStats(conn utils.Stater) {
 	if c.GetServer().Component() == teleport.ComponentProxy {
 		return
 	}
-	if c.ClusterConfig.GetSessionRecording() == services.RecordAtProxy &&
+	if services.IsRecordAtProxy(c.ClusterConfig.GetSessionRecording()) &&
 		c.GetServer().Component() == teleport.ComponentNode {
 		return
 	}

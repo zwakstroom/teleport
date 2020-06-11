@@ -213,7 +213,7 @@ func (s *Server) isAuditedAtProxy() bool {
 		return false
 	}
 
-	isRecordAtProxy := clusterConfig.GetSessionRecording() == services.RecordAtProxy
+	isRecordAtProxy := services.IsRecordAtProxy(clusterConfig.GetSessionRecording())
 	isTeleportNode := s.Component() == teleport.ComponentNode
 
 	if isRecordAtProxy && isTeleportNode {
@@ -1204,7 +1204,7 @@ func (s *Server) handleAgentForwardNode(req *ssh.Request, ctx *srv.ServerContext
 func (s *Server) handleAgentForwardProxy(req *ssh.Request, ctx *srv.ServerContext) error {
 	// Forwarding an agent to the proxy is only supported when the proxy is in
 	// recording mode.
-	if ctx.ClusterConfig.GetSessionRecording() != services.RecordAtProxy {
+	if !services.IsRecordAtProxy(ctx.ClusterConfig.GetSessionRecording()) {
 		return trace.BadParameter("agent forwarding to proxy only supported in recording mode")
 	}
 
@@ -1298,7 +1298,7 @@ func (s *Server) handleRecordingProxy(req *ssh.Request) {
 
 		// reply true that we were able to process the message and reply with a
 		// bool if we are in recording mode or not
-		recordingProxy = clusterConfig.GetSessionRecording() == services.RecordAtProxy
+		recordingProxy = services.IsRecordAtProxy(clusterConfig.GetSessionRecording())
 		err = req.Reply(true, []byte(strconv.FormatBool(recordingProxy)))
 		if err != nil {
 			log.Warnf("Unable to respond to global request (%v, %v): %v: %v", req.Type, req.WantReply, recordingProxy, err)
@@ -1364,7 +1364,7 @@ func (s *Server) handleProxyJump(conn net.Conn, sconn *ssh.ServerConn, identityC
 	// "out of band", before SSH client actually asks for it
 	// which is a hack, but the only way we can think of making it work,
 	// ideas are appreciated.
-	if clusterConfig.GetSessionRecording() == services.RecordAtProxy {
+	if services.IsRecordAtProxy(clusterConfig.GetSessionRecording()) {
 		err = s.handleAgentForwardProxy(&ssh.Request{}, ctx)
 		if err != nil {
 			log.Warningf("Failed to request agent in recording mode: %v", err)

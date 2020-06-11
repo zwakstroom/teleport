@@ -123,10 +123,11 @@ func NewUploader(cfg UploaderConfig) (*Uploader, error) {
 		Entry: log.WithFields(log.Fields{
 			trace.Component: teleport.ComponentAuditLog,
 		}),
-		cancel:    cancel,
-		ctx:       ctx,
-		semaphore: make(chan struct{}, cfg.ConcurrentUploads),
-		scanDir:   filepath.Join(cfg.DataDir, cfg.ServerID, SessionLogsDir, cfg.Namespace),
+		cancel:       cancel,
+		ctx:          ctx,
+		semaphore:    make(chan struct{}, cfg.ConcurrentUploads),
+		scanDir:      filepath.Join(cfg.DataDir, cfg.ServerID, SessionLogsDir, cfg.Namespace),
+		streamingDir: filepath.Join(cfg.DataDir, cfg.ServerID, StreamingLogsDir, cfg.Namespace),
 	}
 	return uploader, nil
 }
@@ -137,8 +138,9 @@ func NewUploader(cfg UploaderConfig) (*Uploader, error) {
 type Uploader struct {
 	UploaderConfig
 
-	semaphore chan struct{}
-	scanDir   string
+	semaphore    chan struct{}
+	scanDir      string
+	streamingDir string
 
 	*log.Entry
 	cancel context.CancelFunc
@@ -286,13 +288,16 @@ func (u *Uploader) Scan() error {
 	if err != nil {
 		return trace.ConvertSystemError(err)
 	}
+	u.Infof("Uploader found %v entries in dir %v.", len(entries), u.scanDir)
 	var count int
 	for i := range entries {
 		fi := entries[i]
+		u.Infof("Uploader found %v.", fi.Name())
 		if fi.IsDir() {
 			continue
 		}
 		if !strings.HasSuffix(fi.Name(), "completed") {
+			u.Infof("Uploader found %v. Is not completed, continue.", fi.Name())
 			continue
 		}
 		parts := strings.Split(fi.Name(), ".")

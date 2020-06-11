@@ -36,6 +36,19 @@ import (
 	"github.com/pborman/uuid"
 )
 
+// NewStreamer creates a streamer sending uploads to disk
+func NewStreamer(dir string) (*events.ProtoStreamer, error) {
+	handler, err := NewHandler(Config{
+		Directory: dir,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return events.NewProtoStreamer(events.ProtoStreamerConfig{
+		Uploader: handler,
+	})
+}
+
 // CreateUpload creates a multipart upload
 func (h *Handler) CreateUpload(ctx context.Context, sessionID session.ID) (*events.StreamUpload, error) {
 	start := time.Now()
