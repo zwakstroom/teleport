@@ -584,7 +584,8 @@ func (a *AuthWithRoles) filterApps(apps []services.App) ([]services.App, error) 
 	filteredApps := make([]services.App, 0, len(apps))
 NextApp:
 	for _, app := range apps {
-		err := roleset.CheckAccessToApp(app)
+		// TODO: Can we do better than passing nil here?
+		err := roleset.CheckAccessToApp(app, nil)
 		if err == nil {
 			filteredApps = append(filteredApps, app)
 			continue NextApp

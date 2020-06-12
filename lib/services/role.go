@@ -1362,7 +1362,7 @@ type AccessChecker interface {
 	CheckAccessToServer(login string, server Server) error
 
 	// CheckAccessToApp checks access to an application.
-	CheckAccessToApp(app App) error
+	CheckAccessToApp(app App, req *http.Request) error
 
 	// CheckAccessToRule checks access to a rule within a namespace.
 	CheckAccessToRule(context RuleContext, namespace string, rule string, verb string, silent bool) error
@@ -1789,8 +1789,16 @@ func (set RoleSet) CheckAccessToApp(app App, r *http.Request) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		if matchNamespace && matchLabels {
+
+		// TODO: Extract this from services.Role[Deny].
+		denyExpressions := []string{}
+		matchRequest, err := MatchRequest(denyExpressions, r)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		if matchNamespace && matchLabels && matchRequest {
 			if log.GetLevel() == log.DebugLevel {
+				// TODO: Add request.method, and request.path to error message.
 				log.WithFields(log.Fields{
 					trace.Component: teleport.ComponentRBAC,
 				}).Debugf("Access to app %v denied, deny rule in %v matched; match(namespace=%v, label=%v)",
@@ -1807,10 +1815,23 @@ func (set RoleSet) CheckAccessToApp(app App, r *http.Request) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		if matchNamespace && matchLabels {
+		// TODO: Extract this from services.Role[Allow].
+		// TODO: Maybe add favicon.ico by default?
+		allowExpressions := []string{
+			`equals(request.method, "GET") && prefix(request.path, "/webapi")`,
+			`equals(request.method, "GET") && prefix(request.path, "/favicon.ico")`,
+		}
+
+		matchRequest, err := MatchRequest(allowExpressions, r)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		fmt.Printf("--> matchRequest: %v.\n", matchRequest)
+		if matchNamespace && matchLabels && matchRequest {
 			return nil
 		}
 		if log.GetLevel() == log.DebugLevel {
+			// TODO: Add request.method, and request.path to error message.
 			deniedError := trace.AccessDenied("role=%v, match(namespace=%v, label=%v)",
 				role.GetName(), namespaceMessage, labelsMessage)
 			errs = append(errs, deniedError)
@@ -1825,14 +1846,33 @@ func (set RoleSet) CheckAccessToApp(app App, r *http.Request) error {
 	return trace.AccessDenied("access to app denied")
 }
 
-func (set RoleSet) checkAccessToPath(method string, path string) (bool, error) {
-	ctx := RuleContext{}
+func MatchRequest(expressions []string, r *http.Request) (bool, error) {
+	ctx := &Context{
+		Request: &Request{
+			Method: r.Method,
+			Path:   r.RequestURI,
+		},
+	}
+
+	for _, v := range expressions {
+		ok, err := checkAccessToPath(ctx, v)
+		if err != nil {
+			return false, trace.Wrap(err)
+		}
+		if ok {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// TODO: Change ctx to to RequestContext interface like RuleContext.
+func checkAccessToPath(ctx *Context, expression string) (bool, error) {
 	whereParser, err := GetWhereParserFn()(ctx)
 	if err != nil {
 		return false, trace.Wrap(err)
 	}
-
-	ifn, err := whereParser.Parse(r.Where)
+	ifn, err := whereParser.Parse(expression)
 	if err != nil {
 		return false, trace.Wrap(err)
 	}

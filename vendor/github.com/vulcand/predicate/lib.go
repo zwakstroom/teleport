@@ -103,6 +103,25 @@ func Contains(a interface{}, b interface{}) BoolPredicate {
 	}
 }
 
+// Prefix will return true if "a" begins with "b". A few examples:
+//
+//   * prefix("/webapi/ping", "/webapi")       -> true
+//   * prefix("/example.com/nodes", "/webapi") -> false
+//   * prefix("/example.com/nodes", "/")       -> true
+func Prefix(a interface{}, b interface{}) BoolPredicate {
+	return func() bool {
+		aval, ok := a.(string)
+		if !ok {
+			return false
+		}
+		bval, ok := b.(string)
+		if !ok {
+			return false
+		}
+		return strings.HasPrefix(aval, bval)
+	}
+}
+
 // And is a boolean predicate that calls two boolean predicates
 // and returns result of && operation on their return values
 func And(a, b BoolPredicate) BoolPredicate {

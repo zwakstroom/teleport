@@ -64,6 +64,7 @@ func NewWhereParser(ctx RuleContext) (predicate.Parser, error) {
 		Functions: map[string]interface{}{
 			"equals":   predicate.Equals,
 			"contains": predicate.Contains,
+			"prefix":   predicate.Prefix,
 			// system.catype is a function that returns cert authority type,
 			// it returns empty values for unrecognized values to
 			// pass static rule checks.
@@ -176,6 +177,8 @@ type Context struct {
 	// Resource is an optional resource, in case if the rule
 	// checks access to the resource
 	Resource Resource
+
+	Request *Request
 }
 
 // String returns user friendly representation of this context
@@ -183,11 +186,20 @@ func (ctx *Context) String() string {
 	return fmt.Sprintf("user %v, resource: %v", ctx.User, ctx.Resource)
 }
 
+// TODO
+type Request struct {
+	Method string `json:"method"`
+	Path   string `json:"path"`
+}
+
 const (
 	// UserIdentifier represents user registered identifier in the rules
 	UserIdentifier = "user"
 	// ResourceIdentifier represents resource registered identifer in the rules
 	ResourceIdentifier = "resource"
+
+	// TODO
+	RequestIdentifier = "request"
 )
 
 // GetResource returns resource specified in the context,
@@ -201,6 +213,7 @@ func (ctx *Context) GetResource() (Resource, error) {
 
 // GetIdentifier returns identifier defined in a context
 func (ctx *Context) GetIdentifier(fields []string) (interface{}, error) {
+	fmt.Printf("--> GetIdentifier: %v.\n", fields)
 	switch fields[0] {
 	case UserIdentifier:
 		var user User
@@ -218,6 +231,17 @@ func (ctx *Context) GetIdentifier(fields []string) (interface{}, error) {
 			resource = ctx.Resource
 		}
 		return predicate.GetFieldByTag(resource, "json", fields[1:])
+	case RequestIdentifier:
+		var request *Request
+		if ctx.Request == nil {
+			request = emptyRequest
+		} else {
+			request = ctx.Request
+		}
+		//fmt.Printf("--> ctx.Method: %v.\n", ctx.Method)
+		//return ctx.Method, nil
+		//return predicate.GetFieldByTag(
+		return predicate.GetFieldByTag(request, "json", fields[1:])
 	default:
 		return nil, trace.NotFound("%v is not defined", strings.Join(fields, "."))
 	}
@@ -262,11 +286,13 @@ func SetActionsParserFn(fn NewParserFn) {
 	actionsParser = fn
 }
 
+// emptyUser is used when no user is specified
+var emptyUser = &UserV2{}
+
 // emptyResource is used when no resource is specified
 var emptyResource = &EmptyResource{}
 
-// emptyUser is used when no user is specified
-var emptyUser = &UserV2{}
+var emptyRequest = &Request{}
 
 // EmptyResource is used to represent a use case when no resource
 // is specified in the rules matcher
