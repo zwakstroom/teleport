@@ -41,6 +41,9 @@ type UploadCompleterConfig struct {
 	CheckPeriod time.Duration
 	// Clock is used to override clock in tests
 	Clock clockwork.Clock
+	// Unstarted does not start automatic goroutine,
+	// is useful when completer is embedded in another function
+	Unstarted bool
 }
 
 // CheckAndSetDefaults checks and sets default values
@@ -78,7 +81,9 @@ func NewUploadCompleter(cfg UploadCompleterConfig) (*UploadCompleter, error) {
 		cancel:   cancel,
 		closeCtx: ctx,
 	}
-	go u.run()
+	if !cfg.Unstarted {
+		go u.run()
+	}
 	return u, nil
 }
 
@@ -97,7 +102,7 @@ func (u *UploadCompleter) run() {
 	for {
 		select {
 		case <-ticker.Chan():
-			if err := u.checkUploads(); err != nil {
+			if err := u.CheckUploads(u.closeCtx); err != nil {
 				u.log.WithError(err).Warningf("Failed to check uploads.")
 			}
 		case <-u.closeCtx.Done():
@@ -106,10 +111,10 @@ func (u *UploadCompleter) run() {
 	}
 }
 
-// checkUploads fetches uploads, checks if any uploads exceed grace period
+// CheckUploads fetches uploads, checks if any uploads exceed grace period
 // and completes unfinished uploads
-func (u *UploadCompleter) checkUploads() error {
-	uploads, err := u.cfg.Uploader.ListUploads(u.closeCtx)
+func (u *UploadCompleter) CheckUploads(ctx context.Context) error {
+	uploads, err := u.cfg.Uploader.ListUploads(ctx)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -119,18 +124,18 @@ func (u *UploadCompleter) checkUploads() error {
 		if !gracePoint.Before(u.cfg.Clock.Now()) {
 			return nil
 		}
-		parts, err := u.cfg.Uploader.ListParts(u.closeCtx, upload)
+		parts, err := u.cfg.Uploader.ListParts(ctx, upload)
 		if err != nil {
 			return trace.Wrap(err)
 		}
 		if len(parts) == 0 {
 			continue
 		}
-		u.log.Infof("Upload %v grace period is over. Trying complete.", upload)
-		if err := u.cfg.Uploader.CompleteUpload(u.closeCtx, upload, parts); err != nil {
+		u.log.Debugf("Upload %v grace period is over. Trying complete.", upload)
+		if err := u.cfg.Uploader.CompleteUpload(ctx, upload, parts); err != nil {
 			return trace.Wrap(err)
 		}
-		u.log.Infof("Completed upload %v.", upload)
+		u.log.Debugf("Completed upload %v.", upload)
 	}
 	return nil
 }

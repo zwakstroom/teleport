@@ -31,6 +31,7 @@ import (
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/session"
+	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
 	"github.com/pborman/uuid"
@@ -120,11 +121,16 @@ func (h *Handler) CompleteUpload(ctx context.Context, upload events.StreamUpload
 
 	uploadPath := h.path(upload.SessionID)
 
+	// Prevent other processes from accessing this file until the write is completed
 	f, err := os.OpenFile(uploadPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return trace.ConvertSystemError(err)
 	}
+	if err := utils.FSTryWriteLock(f); err != nil {
+		return trace.Wrap(err)
+	}
 	defer f.Close()
+	defer utils.FSUnlock(f)
 
 	files := make([]*os.File, 0, len(parts))
 	readers := make([]io.Reader, 0, len(parts))

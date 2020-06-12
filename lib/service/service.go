@@ -1714,26 +1714,37 @@ func (process *TeleportProcess) initUploaderService(accessPoint auth.AccessPoint
 	}
 
 	// prepare dirs for uploader
-	path := []string{process.Config.DataDir, teleport.LogsDir, teleport.ComponentUpload, events.SessionLogsDir, defaults.Namespace}
-	for i := 1; i < len(path); i++ {
-		dir := filepath.Join(path[:i+1]...)
-		log.Infof("Creating directory %v.", dir)
-		err := os.Mkdir(dir, 0755)
-		err = trace.ConvertSystemError(err)
-		if err != nil {
-			if !trace.IsAlreadyExists(err) {
-				return trace.Wrap(err)
-			}
-		}
-		if uid != nil && gid != nil {
-			log.Infof("Setting directory %v owner to %v:%v.", dir, *uid, *gid)
-			err := os.Chown(dir, *uid, *gid)
+	paths := [][]string{
+		// DELETE IN (5.1.0)
+		// this directory will no longer be used after migration to 5.1.0
+		[]string{process.Config.DataDir, teleport.LogsDir, teleport.ComponentUpload, events.SessionLogsDir, defaults.Namespace},
+		// This directory will remain to be used after migration to 5.1.0
+		[]string{process.Config.DataDir, teleport.LogsDir, teleport.ComponentUpload, events.StreamingLogsDir, defaults.Namespace},
+	}
+	for _, path := range paths {
+		for i := 1; i < len(path); i++ {
+			dir := filepath.Join(path[:i+1]...)
+			log.Infof("Creating directory %v.", dir)
+			err := os.Mkdir(dir, 0755)
+			err = trace.ConvertSystemError(err)
 			if err != nil {
-				return trace.ConvertSystemError(err)
+				if !trace.IsAlreadyExists(err) {
+					return trace.Wrap(err)
+				}
+			}
+			if uid != nil && gid != nil {
+				log.Infof("Setting directory %v owner to %v:%v.", dir, *uid, *gid)
+				err := os.Chown(dir, *uid, *gid)
+				if err != nil {
+					return trace.ConvertSystemError(err)
+				}
 			}
 		}
 	}
 
+	// DELETE IN (5.1.0)
+	// this uploader was superseeded by filesessions.Uploader,
+	// see below
 	uploader, err := events.NewUploader(events.UploaderConfig{
 		DataDir:   filepath.Join(process.Config.DataDir, teleport.LogsDir),
 		Namespace: defaults.Namespace,
@@ -1756,6 +1767,31 @@ func (process *TeleportProcess) initUploaderService(accessPoint auth.AccessPoint
 		log.Infof("Shutting down.")
 		warnOnErr(uploader.Stop())
 		log.Infof("Exited.")
+	})
+
+	// DELETE IN (5.1.0)
+	// this uploader was superseeded by filesessions.Uploader,
+	// see below
+	fileUploader, err := filesessions.NewUploader(events.UploaderConfig{
+		ScanDir:  filepath.Join(process.Config.DataDir, teleport.LogsDir, teleport.StreamingLogsDir, defaults.Namespace),
+		Streamer: auditLog,
+		EventsC:  process.Config.UploadEventsC,
+	})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	process.RegisterFunc("fileuploader.service", func() error {
+		err := fileUploader.Serve()
+		if err != nil {
+			log.WithError(err).Errorf("File uploader server exited with error.")
+		}
+		return nil
+	})
+
+	process.onExit("fileuploader.shutdown", func(payload interface{}) {
+		log.Infof("File uploader is shutting down.")
+		warnOnErr(fileUploader.Close())
+		log.Infof("File uploader has shut down.")
 	})
 	return nil
 }
