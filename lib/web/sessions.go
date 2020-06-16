@@ -629,14 +629,13 @@ func (s *sessionCache) SetSession(w http.ResponseWriter, user, sid string) error
 	if err != nil {
 		return err
 	}
-	c := &http.Cookie{
+	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
 		Value:    d,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
-	}
-	http.SetCookie(w, c)
+	})
 	return nil
 }
 

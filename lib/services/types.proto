@@ -1018,3 +1018,27 @@ message TunnelConnectionSpecV2 {
     // Type is the type of reverse tunnel, either proxy or node.
     string Type = 4 [ (gogoproto.jsontag) = "type", (gogoproto.casttype) = "TunnelType" ];
 }
+
+message AppSessionV3 {
+    option (gogoproto.goproto_stringer) = false;
+    option (gogoproto.stringer) = false;
+
+    // Kind is a resource kind.
+    string Kind = 1 [ (gogoproto.jsontag) = "kind" ];
+    // SubKind is an optional resource sub kind, used in some resources.
+    string SubKind = 2 [ (gogoproto.jsontag) = "sub_kind,omitempty" ];
+    // Version is version.
+    string Version = 3 [ (gogoproto.jsontag) = "version" ];
+    // Metadata is a resource metadata.
+    Metadata Metadata = 4 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata" ];
+    // Spec is a tunnel specification.
+    AppSessionSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
+}
+
+message AppSessionSpecV3 {
+    // Username is the Teleport username for the logged in user.
+    string Username = 1 [ (gogoproto.jsontag) = "username" ];
+
+    // Certificate is the x509 certificate for the authenticated user.
+    bytes Certificate = 2 [ (gogoproto.jsontag) = "certificate" ];
+}

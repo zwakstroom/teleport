@@ -498,6 +498,15 @@ func (g *GRPCServer) DeleteAllApps(ctx context.Context, req *proto.DeleteAllApps
 	return nil, nil
 }
 
+func (g *GRPCServer) UpsertAppSession(ctx context.Context, req *proto.UpsertAppRequest) (*proto.UpsertAppRequestResponse, error) {
+}
+
+func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppRequest) (*proto.GetAppResponse, error) {
+}
+
+func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *proto.DeleteAllAppsRequest) (*empty.Empty, error) {
+}
+
 type grpcContext struct {
 	*AuthContext
 	*AuthWithRoles

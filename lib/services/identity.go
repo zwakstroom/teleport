@@ -122,6 +122,10 @@ type Identity interface {
 	// DeleteWebSession deletes web session from the storage
 	DeleteWebSession(user, sid string) error
 
+	UpsertAppSession(context.Context, AppSession)
+	GetAppSession(context.Context, string, string) (AppSession, error)
+	DeleteAppSession(context.Context, string, string) error
+
 	// UpsertPassword upserts new password and OTP token
 	UpsertPassword(user string, password []byte) error
 

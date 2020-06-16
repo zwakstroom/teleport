@@ -246,6 +246,26 @@ message DeleteAllAppsRequest {
     string Namespace = 1 [ (gogoproto.jsontag) = "namespace" ];
 }
 
+message UpsertAppSessionRequest { string Username = 1 [ (gogoproto.jsontag) = "username" ]; }
+
+message UpsertAppRequestResponse {
+    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
+}
+
+message GetAppSessionRequest {
+    string Username = 1 [ (gogoproto.jsontag) = "username" ];
+    string ID = 2 [ (gogoproto.jsontag) = "id" ];
+}
+
+message GetAppSessionResponse {
+    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
+}
+
+message DeleteAppSessionRequest {
+    string Username = 1 [ (gogoproto.jsontag) = "username" ];
+    string ID = 2 [ (gogoproto.jsontag) = "id" ];
+}
+
 // AuthService is authentication/authorization service implementation
 service AuthService {
     // SendKeepAlives allows node to send a stream of keep alive requests
@@ -298,4 +318,8 @@ service AuthService {
     rpc DeleteApp(DeleteAppRequest) returns (google.protobuf.Empty);
     // DeleteAllApp un-registers an application.
     rpc DeleteAllApps(DeleteAllAppsRequest) returns (google.protobuf.Empty);
+
+    rpc UpsertAppSession(UpsertAppSessionRequest) returns (UpsertAppRequestResponse);
+    rpc GetAppSession(GetAppSessionRequest) returns (GetAppSessionResponse);
+    rpc DeleteAppSession(DeleteAppSessionRequest) returns (google.protobuf.Empty);
 }

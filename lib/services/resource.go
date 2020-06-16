@@ -95,6 +95,9 @@ const (
 	// KindWebSession is a web session resource
 	KindWebSession = "web_session"
 
+	// KindAppSession is a application web session resource.
+	KindAppSession = "web_session"
+
 	// KindEvent is structured audit logging event
 	KindEvent = "event"
 
