@@ -143,7 +143,9 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// If the caller requested a registered application, authenticate the
 	// request and then forward it to the apps handler.
 	case err == nil:
-		// TODO: This is a hack, "checkBearerToken" should be true.
+		// Verify with @alex-kovoy that it's okay that bearer token is false. This
+		// appears to make sense because the bearer token is injected client side
+		// and that's not possible for AAP.
 		ctx, err := h.handler.AuthenticateRequest(w, r, false)
 		if err != nil {
 			http.Error(w, "access denied", 401)

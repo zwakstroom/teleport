@@ -553,6 +553,7 @@ func (s *sessionCache) resetContext(user, sid string) error {
 }
 
 func (s *sessionCache) ValidateSession(user, sid string) (*SessionContext, error) {
+	// If the session exists on this proxy, return the context right away.
 	ctx, err := s.getContext(user, sid)
 	if err == nil {
 		return ctx, nil
@@ -612,8 +613,8 @@ func (s *sessionCache) ValidateSession(user, sid string) (*SessionContext, error
 	ttl := utils.ToTTL(clockwork.NewRealClock(), sess.GetBearerTokenExpiryTime())
 	out, err := s.insertContext(user, sid, c, ttl)
 	if err != nil {
-		// this means that someone has just inserted the context, so
-		// close our extra context and return
+		// This means that someone has just inserted the context, so close our
+		// extra context and return.
 		if trace.IsAlreadyExists(err) {
 			defer c.Close()
 			return out, nil

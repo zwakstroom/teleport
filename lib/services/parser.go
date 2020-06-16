@@ -213,7 +213,7 @@ func (ctx *Context) GetResource() (Resource, error) {
 
 // GetIdentifier returns identifier defined in a context
 func (ctx *Context) GetIdentifier(fields []string) (interface{}, error) {
-	fmt.Printf("--> GetIdentifier: %v.\n", fields)
+	//fmt.Printf("--> GetIdentifier: %v.\n", fields)
 	switch fields[0] {
 	case UserIdentifier:
 		var user User
