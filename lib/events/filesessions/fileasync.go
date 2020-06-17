@@ -19,10 +19,10 @@ package filesessions
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/gravitational/teleport"
@@ -167,7 +167,7 @@ func (u *Uploader) Scan() error {
 		if fi.IsDir() {
 			continue
 		}
-		if err := u.startUpload(filepath.Join(u.cfg.ScanDir, fi.Name())); err != nil {
+		if err := u.startUpload(fi.Name()); err != nil {
 			if trace.IsCompareFailed(err) {
 				u.log.Debugf("Uploader detected locked file %v, another process is processing it.", fi.Name())
 				continue
@@ -184,78 +184,119 @@ func (u *Uploader) Close() error {
 	return u.uploadCompleter.Close()
 }
 
-func (u *Uploader) startUpload(path string) error {
+type upload struct {
+	sessionID session.ID
+	reader    *events.ProtoReader
+	file      *os.File
+}
+
+// releaseFile releases file and associated resources
+// in a correct order
+func (u *upload) Close() error {
+	return trace.NewAggregate(
+		u.reader.Close(),
+		utils.FSUnlock(u.file),
+		u.file.Close(),
+	)
+}
+
+func (u *upload) removeFiles() error {
+	if u.file != nil {
+		return trace.ConvertSystemError(os.Remove(u.file.Name()))
+	}
+	return nil
+}
+
+func (u *Uploader) startUpload(fileName string) error {
+	sessionID, err := sessionIDFromPath(fileName)
+	if err != nil {
+		return trace.Wrap(err)
+	}
 	// Apparently, exclusive lock can be obtained only in RDWR mode on NFS
-	sessionFile, err := os.OpenFile(path, os.O_RDWR, 0)
+	sessionFilePath := filepath.Join(u.cfg.ScanDir, fileName)
+	sessionFile, err := os.OpenFile(sessionFilePath, os.O_RDWR, 0)
 	if err != nil {
 		return trace.ConvertSystemError(err)
 	}
 	if err := utils.FSTryWriteLock(sessionFile); err != nil {
 		return trace.NewAggregate(sessionFile.Close(), trace.Wrap(err))
 	}
-	reader := events.NewProtoReader(sessionFile)
-
-	// releaseFile releases file and associated resources
-	// in a correct order
-	releaseFile := func() {
-		err := trace.NewAggregate(
-			reader.Close(),
-			utils.FSUnlock(sessionFile),
-			sessionFile.Close(),
-		)
-		if err != nil {
-			u.log.WithError(err).Warningf("Failed to release file.")
-		}
+	upload := &upload{
+		sessionID: sessionID,
+		reader:    events.NewProtoReader(sessionFile),
+		file:      sessionFile,
 	}
 	if err := u.takeSemaphore(); err != nil {
-		releaseFile()
+		if err := upload.Close(); err != nil {
+			u.log.WithError(err).Warningf("Failed to close upload.")
+		}
 		return trace.Wrap(err)
 	}
 	go func() {
-		defer u.releaseSemaphore()
-		defer releaseFile()
-
-		start := u.cfg.Clock.Now().UTC()
-
-		stream, err := u.cfg.Streamer.CreateAuditStream()
-
-		err := u.AuditLog.UploadSessionRecording(SessionRecording{
-			Namespace: u.Namespace,
-			SessionID: sessionID,
-			Recording: reader,
-		})
-		if err != nil {
-			u.emitEvent(UploadEvent{
-				SessionID: string(sessionID),
-				Error:     err,
-			})
-			u.WithFields(log.Fields{"duration": time.Now().Sub(start), "session-id": sessionID}).Warningf("Session upload failed: %v", trace.DebugReport(err))
-			return
-		}
-		u.WithFields(log.Fields{"duration": time.Now().Sub(start), "session-id": sessionID}).Debugf("Session upload completed.")
-		u.emitEvent(UploadEvent{
-			SessionID: string(sessionID),
-		})
-		if err != nil {
-			u.Warningf("Failed to post upload event: %v. Will retry next time.", trace.DebugReport(err))
-			return
-		}
-		if err := u.removeFiles(sessionID); err != nil {
-			u.Warningf("Failed to remove files: %v.", err)
+		if err := u.upload(upload); err != nil {
+			u.log.WithError(err).Warningf("Upload failed.")
 		}
 	}()
 	return nil
 }
 
-func (u *Upload) uploadSessionFile(path string) error {
+func (u *Uploader) upload(up *upload) error {
+	defer u.releaseSemaphore()
+	defer func() {
+		if err := up.Close(); err != nil {
+			u.log.WithError(err).Warningf("Failed to close upload.")
+		}
+	}()
 
+	// start with naive upload, add checkpoints and resume later
+	stream, err := u.cfg.Streamer.CreateAuditStream(u.ctx, up.sessionID)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	defer func() {
+		if err := stream.Close(); err != nil {
+			u.log.WithError(err).Debugf("Failed to close stream.")
+		}
+	}()
+
+	ctx, cancel := context.WithCancel(u.ctx)
+	defer cancel()
+	go u.monitorStreamStatus(ctx, stream, cancel)
+
+	start := u.cfg.Clock.Now().UTC()
+	for {
+		event, err := up.reader.Read(ctx)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return trace.Wrap(err)
+		}
+		if err := stream.EmitAuditEvent(u.ctx, event); err != nil {
+			return trace.Wrap(err)
+		}
+	}
+	u.log.WithFields(log.Fields{"duration": u.cfg.Clock.Since(start), "session-id": up.sessionID}).Infof("Session upload completed.")
+	if err := up.removeFiles(); err != nil {
+		u.log.WithError(err).Warningf("Failed to remove session files.")
+	}
+	return nil
 }
 
-func (u *Uploader) warnIfErr(err error) {
-	if err == nil {
-		return
+// monitorStreamStatus monitors stream's status
+// and checkpoints the stream
+func (u *Uploader) monitorStreamStatus(ctx context.Context, stream events.Stream, cancel context.CancelFunc) {
+	defer cancel()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-stream.Done():
+			return
+		case status := <-stream.Status():
+			u.log.Debugf("Got stream status: %v.", status)
+		}
 	}
-	u.log.WithError(err).Warningf("Failed to perform action.")
 }
 
 var errContext = fmt.Errorf("context has closed")
@@ -278,33 +319,6 @@ func (u *Uploader) releaseSemaphore() error {
 	}
 }
 
-func (u *Uploader) removeFiles(sessionID session.ID) error {
-	df, err := os.Open(u.scanDir)
-	if err != nil {
-		return trace.ConvertSystemError(err)
-	}
-	defer df.Close()
-	entries, err := df.Readdir(-1)
-	if err != nil {
-		return trace.ConvertSystemError(err)
-	}
-	for i := range entries {
-		fi := entries[i]
-		if fi.IsDir() {
-			continue
-		}
-		if !strings.HasPrefix(fi.Name(), string(sessionID)) {
-			continue
-		}
-		path := filepath.Join(u.scanDir, fi.Name())
-		if err := os.Remove(path); err != nil {
-			u.Warningf("Failed to remove %v: %v.", path, trace.DebugReport(err))
-		}
-		u.Debugf("Removed %v.", path)
-	}
-	return nil
-}
-
 func (u *Uploader) emitEvent(e events.UploadEvent) {
 	if u.cfg.EventsC == nil {
 		return
@@ -313,6 +327,6 @@ func (u *Uploader) emitEvent(e events.UploadEvent) {
 	case u.cfg.EventsC <- &e:
 		return
 	default:
-		u.cfg.Warningf("Skip send event on a blocked channel.")
+		u.log.Warningf("Skip send event on a blocked channel.")
 	}
 }

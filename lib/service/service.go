@@ -1714,12 +1714,13 @@ func (process *TeleportProcess) initUploaderService(accessPoint auth.AccessPoint
 	}
 
 	// prepare dirs for uploader
+	streamingDir := []string{process.Config.DataDir, teleport.LogsDir, teleport.ComponentUpload, events.StreamingLogsDir, defaults.Namespace}
 	paths := [][]string{
 		// DELETE IN (5.1.0)
 		// this directory will no longer be used after migration to 5.1.0
 		[]string{process.Config.DataDir, teleport.LogsDir, teleport.ComponentUpload, events.SessionLogsDir, defaults.Namespace},
 		// This directory will remain to be used after migration to 5.1.0
-		[]string{process.Config.DataDir, teleport.LogsDir, teleport.ComponentUpload, events.StreamingLogsDir, defaults.Namespace},
+		streamingDir,
 	}
 	for _, path := range paths {
 		for i := 1; i < len(path); i++ {
@@ -1772,9 +1773,9 @@ func (process *TeleportProcess) initUploaderService(accessPoint auth.AccessPoint
 	// DELETE IN (5.1.0)
 	// this uploader was superseeded by filesessions.Uploader,
 	// see below
-	fileUploader, err := filesessions.NewUploader(events.UploaderConfig{
-		ScanDir:  filepath.Join(process.Config.DataDir, teleport.LogsDir, teleport.StreamingLogsDir, defaults.Namespace),
-		Streamer: auditLog,
+	fileUploader, err := filesessions.NewUploader(filesessions.UploaderConfig{
+		ScanDir:  filepath.Join(streamingDir...),
+		Streamer: accessPoint,
 		EventsC:  process.Config.UploadEventsC,
 	})
 	if err != nil {

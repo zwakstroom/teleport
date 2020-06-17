@@ -300,4 +300,6 @@ const (
 	uploadsDir = "multi"
 	// partExt is a part extension
 	partExt = ".part"
+	// tarExt is a suffix for file uploads
+	tarExt = ".tar"
 )
