@@ -469,6 +469,30 @@ func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) err
 	return nil
 }
 
+func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbCreate); err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbUpdate); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.UpsertAppSession(ctx, session)
+}
+
+func (a *AuthWithRoles) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return a.authServer.GetAppSession(ctx, username, id)
+}
+
+func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, username string, id string) error {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.DeleteAppSession(ctx, username, id)
+}
+
 // NewWatcher returns a new event watcher
 func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (services.Watcher, error) {
 	if len(watch.Kinds) == 0 {
