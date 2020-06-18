@@ -194,15 +194,21 @@ func (s *AuthServer) AuthenticateWebUser(req AuthenticateUserRequest) (services.
 		return nil, trace.Wrap(err)
 	}
 
-	sess, err := s.createUserWebSession(user)
+	// Create a web and application session.
+	ws, err := s.createUserWebSession(user)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	as, err := s.createUserAppSession(user)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	sess, err = services.GetWebSessionMarshaler().GenerateWebSession(sess)
+	wsess, err = services.GetWebSessionMarshaler().GenerateWebSession(sess)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	//asess, err := services.GetAppSessionMarshaler().MarshalAppSession(as)
 	return sess, nil
 }
 
@@ -368,6 +374,21 @@ func (s *AuthServer) createUserWebSession(user services.User) (services.WebSessi
 	// It's safe to extract the roles and traits directly from services.User as	this method
 	// is only used for local accounts.
 	sess, err := s.NewWebSession(user.GetName(), user.GetRoles(), user.GetTraits())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	err = s.UpsertWebSession(user.GetName(), sess)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return sess, nil
+}
+
+func (s *AuthServer) createUserAppSession(user services.User) (services.WebSession, error) {
+	// It's safe to extract the roles and traits directly from services.User as	this method
+	// is only used for local accounts.
+	sess, err := s.NewAppSession(user.GetName(), user.GetRoles(), user.GetTraits())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

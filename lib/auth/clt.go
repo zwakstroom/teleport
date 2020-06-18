@@ -2812,6 +2812,12 @@ func (c *Client) Ping(ctx context.Context) (proto.PingResponse, error) {
 	return *rsp, nil
 }
 
+type AppService interface {
+	UpsertAppSession(context.Context, services.AppSession) error
+	GetAppSession(context.Context, string, string) (AppSession, error)
+	DeleteAppSession(context.Context, string, string) error
+}
+
 // WebService implements features used by Web UI clients
 type WebService interface {
 	// GetWebSessionInfo checks if a web sesion is valid, returns session id in case if
@@ -2989,10 +2995,12 @@ type ClientI interface {
 	services.Presence
 	services.Access
 	services.DynamicAccess
-	WebService
 	session.Service
 	services.ClusterConfiguration
 	services.Events
+
+	WebService
+	AppService
 
 	// NewKeepAliver returns a new instance of keep aliver
 	NewKeepAliver(ctx context.Context) (services.KeepAliver, error)

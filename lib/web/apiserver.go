@@ -1219,6 +1219,11 @@ func (h *Handler) createSession(w http.ResponseWriter, r *http.Request, p httpro
 		return nil, trace.AccessDenied("bad auth credentials")
 	}
 
+	as, err := services.NewAppSession()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	if err := SetSession(w, req.User, webSession.GetName()); err != nil {
 		return nil, trace.Wrap(err)
 	}
