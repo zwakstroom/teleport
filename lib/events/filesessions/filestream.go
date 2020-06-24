@@ -302,4 +302,6 @@ const (
 	partExt = ".part"
 	// tarExt is a suffix for file uploads
 	tarExt = ".tar"
+	// checkpointExt is a suffix for checkpoint extensions
+	checkpointExt = ".checkpoint"
 )

@@ -18,6 +18,7 @@ package filesessions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -178,6 +179,11 @@ func (u *Uploader) Scan() error {
 	return nil
 }
 
+// checkpointFilePath  returns a path to checkpoint file for a sessoin
+func (u *Uploader) checkpointFilePath(sid session.ID) string {
+	return filepath.Join(u.cfg.ScanDir, sid.String()+checkpointExt)
+}
+
 // Close closes all operations
 func (u *Uploader) Close() error {
 	u.cancel()
@@ -185,9 +191,48 @@ func (u *Uploader) Close() error {
 }
 
 type upload struct {
-	sessionID session.ID
-	reader    *events.ProtoReader
-	file      *os.File
+	uploader       *Uploader
+	sessionID      session.ID
+	reader         *events.ProtoReader
+	file           *os.File
+	checkpointFile *os.File
+}
+
+// readStatus reads stream status
+func (u *upload) readStatus() (*events.StreamStatus, error) {
+	data, err := ioutil.ReadAll(u.checkpointFile)
+	if err != nil {
+		return nil, trace.ConvertSystemError(err)
+	}
+	if len(data) == 0 {
+		return nil, trace.NotFound("no status found")
+	}
+	var status events.StreamStatus
+	err = utils.FastUnmarshal(data, &status)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &status, nil
+}
+
+// writeStatus writes stream status
+func (u *upload) writeStatus(status events.StreamStatus) error {
+	data, err := utils.FastMarshal(status)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	_, err = u.checkpointFile.Seek(0, 0)
+	if err != nil {
+		return trace.ConvertSystemError(err)
+	}
+	n, err := u.checkpointFile.Write(data)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	if n < len(data) {
+		return trace.ConvertSystemError(io.ErrShortWrite)
+	}
+	return nil
 }
 
 // releaseFile releases file and associated resources
@@ -197,14 +242,21 @@ func (u *upload) Close() error {
 		u.reader.Close(),
 		utils.FSUnlock(u.file),
 		u.file.Close(),
+		utils.NilCloser(u.checkpointFile).Close(),
 	)
 }
 
 func (u *upload) removeFiles() error {
+	var errs []error
 	if u.file != nil {
-		return trace.ConvertSystemError(os.Remove(u.file.Name()))
+		errs = append(errs,
+			trace.ConvertSystemError(os.Remove(u.file.Name())))
 	}
-	return nil
+	if u.checkpointFile != nil {
+		errs = append(errs,
+			trace.ConvertSystemError(os.Remove(u.checkpointFile.Name())))
+	}
+	return trace.NewAggregate(errs...)
 }
 
 func (u *Uploader) startUpload(fileName string) error {
@@ -221,11 +273,20 @@ func (u *Uploader) startUpload(fileName string) error {
 	if err := utils.FSTryWriteLock(sessionFile); err != nil {
 		return trace.NewAggregate(sessionFile.Close(), trace.Wrap(err))
 	}
+
 	upload := &upload{
 		sessionID: sessionID,
 		reader:    events.NewProtoReader(sessionFile),
 		file:      sessionFile,
 	}
+	upload.checkpointFile, err = os.OpenFile(u.checkpointFilePath(sessionID), os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		if err := upload.Close(); err != nil {
+			u.log.WithError(err).Warningf("Failed to close upload.")
+		}
+		return trace.ConvertSystemError(err)
+	}
+
 	if err := u.takeSemaphore(); err != nil {
 		if err := upload.Close(); err != nil {
 			u.log.WithError(err).Warningf("Failed to close upload.")
@@ -248,20 +309,41 @@ func (u *Uploader) upload(up *upload) error {
 		}
 	}()
 
-	// start with naive upload, add checkpoints and resume later
-	stream, err := u.cfg.Streamer.CreateAuditStream(u.ctx, up.sessionID)
+	var stream events.Stream
+	status, err := up.readStatus()
 	if err != nil {
-		return trace.Wrap(err)
+		if !trace.IsNotFound(err) {
+			return trace.Wrap(err)
+		}
+		u.log.Debugf("Starting upload for session %v.", up.sessionID)
+		stream, err = u.cfg.Streamer.CreateAuditStream(u.ctx, up.sessionID)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+	} else {
+		u.log.Debugf("Resuming upload for session %v, upload ID %v.")
+		stream, err = u.cfg.Streamer.ResumeAuditStream(u.ctx, up.sessionID, status.UploadID)
+		if err != nil {
+			if !trace.IsNotFound(err) {
+				return trace.Wrap(err)
+			}
+			u.log.WithError(err).Warningf("Upload %v is not found starting a new upload from scratch.", up.sessionID, status.UploadID)
+		}
+		stream, err = u.cfg.Streamer.CreateAuditStream(u.ctx, up.sessionID)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 	}
+
 	defer func() {
 		if err := stream.Close(); err != nil {
 			u.log.WithError(err).Debugf("Failed to close stream.")
 		}
 	}()
 
-	ctx, cancel := context.WithCancel(u.ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go u.monitorStreamStatus(ctx, stream, cancel)
+	go u.monitorStreamStatus(u.ctx, up, stream, cancel)
 
 	start := u.cfg.Clock.Now().UTC()
 	for {
@@ -272,11 +354,35 @@ func (u *Uploader) upload(up *upload) error {
 			}
 			return trace.Wrap(err)
 		}
+		// skip events that have been already submitted
+		if status != nil && event.GetIndex() <= status.LastEventIndex {
+			continue
+		}
 		if err := stream.EmitAuditEvent(u.ctx, event); err != nil {
 			return trace.Wrap(err)
 		}
 	}
+
+	if err := stream.Complete(u.ctx); err != nil {
+		u.log.WithError(err).Errorf("Failed to complete upload.")
+		return trace.Wrap(err)
+	}
+
+	// make sure that checkpoint writer goroutine finishes
+	// before the files are closed to avoid async writes
+	// the timeout is a defensive measure to avoid blocking
+	// indefinitely in case of unforseen error (e.g. write taking too long)
+	wctx, wcancel := context.WithTimeout(ctx, defaults.DefaultDialTimeout)
+	defer wcancel()
+
+	<-wctx.Done()
+	if errors.Is(wctx.Err(), context.DeadlineExceeded) {
+		u.log.WithError(wctx.Err()).Warningf(
+			"Checkpoint function failed to complete the write due to timeout. Possible slow disk write.")
+	}
+
 	u.log.WithFields(log.Fields{"duration": u.cfg.Clock.Since(start), "session-id": up.sessionID}).Infof("Session upload completed.")
+	// In linux it is possible to remove a file while holding a file descriptor
 	if err := up.removeFiles(); err != nil {
 		u.log.WithError(err).Warningf("Failed to remove session files.")
 	}
@@ -285,7 +391,7 @@ func (u *Uploader) upload(up *upload) error {
 
 // monitorStreamStatus monitors stream's status
 // and checkpoints the stream
-func (u *Uploader) monitorStreamStatus(ctx context.Context, stream events.Stream, cancel context.CancelFunc) {
+func (u *Uploader) monitorStreamStatus(ctx context.Context, up *upload, stream events.Stream, cancel context.CancelFunc) {
 	defer cancel()
 	for {
 		select {
@@ -294,7 +400,11 @@ func (u *Uploader) monitorStreamStatus(ctx context.Context, stream events.Stream
 		case <-stream.Done():
 			return
 		case status := <-stream.Status():
-			u.log.Debugf("Got stream status: %v.", status)
+			if err := up.writeStatus(status); err != nil {
+				u.log.WithError(err).Debugf("Got stream status: %v.", status)
+			} else {
+				u.log.Debugf("Got stream status: %v.", status)
+			}
 		}
 	}
 }

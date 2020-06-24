@@ -2049,6 +2049,25 @@ func (c *Client) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, 
 	return &response, nil
 }
 
+// ResumeAuditStream resumes existing audit stream
+func (c *Client) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (events.Stream, error) {
+	return c.createOrResumeAuditStream(ctx, proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_ResumeStream{
+			ResumeStream: &proto.ResumeStream{
+				SessionID: string(sid),
+				UploadID:  uploadID,
+			}},
+	})
+}
+
+// CreateAuditStream creates new audit stream
+func (c *Client) CreateAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	return c.createOrResumeAuditStream(ctx, proto.AuditStreamRequest{
+		Request: &proto.AuditStreamRequest_CreateStream{
+			CreateStream: &proto.CreateStream{SessionID: string(sid)}},
+	})
+}
+
 // createOrResumeAuditStream creates or resumes audit stream
 func (c *Client) createOrResumeAuditStream(ctx context.Context, request proto.AuditStreamRequest) (events.Stream, error) {
 	clt, err := c.grpc()
