@@ -95,6 +95,7 @@ func (g *GRPCServer) CreateAuditStream(stream proto.AuthService_CreateAuditStrea
 	if err != nil {
 		return trail.ToGRPC(err)
 	}
+
 	var eventStream events.Stream
 	g.Debugf("CreateAuditStream connection from %v.", auth.User.GetName())
 	streamStart := time.Now()

@@ -46,7 +46,8 @@ func NewStreamer(dir string) (*events.ProtoStreamer, error) {
 		return nil, trace.Wrap(err)
 	}
 	return events.NewProtoStreamer(events.ProtoStreamerConfig{
-		Uploader: handler,
+		Uploader:       handler,
+		MinUploadBytes: events.MaxProtoMessageSizeBytes * 2,
 	})
 }
 

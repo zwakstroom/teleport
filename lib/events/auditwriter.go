@@ -320,7 +320,7 @@ func (a *AuditWriter) updateStatus(status StreamStatus) {
 	if lastIndex > 0 {
 		before := len(a.buffer)
 		a.buffer = a.buffer[lastIndex+1:]
-		a.log.Debugf("Dropped %v events, current buffer size: %v.", before-len(a.buffer), len(a.buffer))
+		a.log.Debugf("Removed %v saved events, current buffer size: %v.", before-len(a.buffer), len(a.buffer))
 	}
 }
 

@@ -41,6 +41,7 @@ import (
 	"github.com/gravitational/teleport/lib/limiter"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/services/local"
+	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/sshca"
 	"github.com/gravitational/teleport/lib/sshutils"
 	"github.com/gravitational/teleport/lib/tlsca"
@@ -92,6 +93,9 @@ func NewAuthServer(cfg *InitConfig, opts ...AuthServerOption) (*AuthServer, erro
 	if cfg.Emitter == nil {
 		cfg.Emitter = events.NewDiscardEmitter()
 	}
+	if cfg.Streamer == nil {
+		cfg.Streamer = events.NewDiscardEmitter()
+	}
 
 	limiter, err := limiter.NewConnectionsLimiter(limiter.LimiterConfig{
 		MaxConnections: defaults.LimiterMaxConcurrentSignatures,
@@ -112,6 +116,7 @@ func NewAuthServer(cfg *InitConfig, opts ...AuthServerOption) (*AuthServer, erro
 		cancelFunc:      cancelFunc,
 		closeCtx:        closeCtx,
 		emitter:         cfg.Emitter,
+		streamer:        cfg.Streamer,
 		AuthServices: AuthServices{
 			Trust:                cfg.Trust,
 			Presence:             cfg.Presence,
@@ -218,8 +223,12 @@ type AuthServer struct {
 
 	limiter *limiter.ConnectionsLimiter
 
-	// emitter is events streamer and emitter
-	emitter events.StreamEmitter
+	// Emitter is events emitter, used to submit discrete events
+	emitter events.Emitter
+
+	// streamer is events sessionstreamer, used to create continuous
+	// session related streams
+	streamer events.Streamer
 }
 
 // SetCache sets cache used by auth server
@@ -1531,6 +1540,41 @@ func (a *AuthServer) GetTunnelConnections(clusterName string, opts ...services.M
 // to be called periodically and always return fresh data
 func (a *AuthServer) GetAllTunnelConnections(opts ...services.MarshalOption) (conns []services.TunnelConnection, err error) {
 	return a.GetCache().GetAllTunnelConnections(opts...)
+}
+
+// modeStreamer creates streamer based on the event mode
+func (a *AuthServer) modeStreamer() (events.Streamer, error) {
+	clusterConfig, err := a.GetClusterConfig()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	mode := clusterConfig.GetSessionRecording()
+	// In sync mode, some events are fan-out to the events
+	// database and all the others are stored within a session
+	if services.IsRecordSync(mode) {
+		return events.NewTeeStreamer(a.streamer, a.emitter), nil
+	}
+	// in async mode, some events have been already submitted
+	// during the session, so submitting those events are not necessary
+	return a.streamer, nil
+}
+
+// CreateAuditStream creates audit event stream
+func (a *AuthServer) CreateAuditStream(ctx context.Context, sid session.ID) (events.Stream, error) {
+	streamer, err := a.modeStreamer()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return streamer.CreateAuditStream(ctx, sid)
+}
+
+// ResumeAuditStream resumes the stream that has been created
+func (a *AuthServer) ResumeAuditStream(ctx context.Context, sid session.ID, uploadID string) (events.Stream, error) {
+	streamer, err := a.modeStreamer()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return streamer.ResumeAuditStream(ctx, sid, uploadID)
 }
 
 // authKeepAliver is a keep aliver using auth server directly

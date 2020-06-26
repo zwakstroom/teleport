@@ -129,8 +129,12 @@ type InitConfig struct {
 	// AuditLog is used for emitting events to audit log.
 	AuditLog events.IAuditLog
 
-	// Emitter is events emitter and streamer
-	Emitter events.StreamEmitter
+	// Emitter is events emitter, used to submit discrete events
+	Emitter events.Emitter
+
+	// Streamer is events sessionstreamer, used to create continuous
+	// session related streams
+	Streamer events.Streamer
 
 	// ClusterConfig holds cluster level configuration.
 	ClusterConfig services.ClusterConfig

@@ -1360,7 +1360,7 @@ func (a *AuthWithRoles) CreateAuditStream(ctx context.Context, sid session.ID) (
 	if !ok || !role.IsServer() {
 		return nil, trace.AccessDenied("this request can be only executed by proxy, node or auth")
 	}
-	stream, err := a.authServer.emitter.CreateAuditStream(ctx, sid)
+	stream, err := a.authServer.CreateAuditStream(ctx, sid)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -1383,7 +1383,7 @@ func (a *AuthWithRoles) ResumeAuditStream(ctx context.Context, sid session.ID, u
 	if !ok || !role.IsServer() {
 		return nil, trace.AccessDenied("this request can be only executed by proxy, node or auth")
 	}
-	stream, err := a.authServer.emitter.ResumeAuditStream(ctx, sid, uploadID)
+	stream, err := a.authServer.ResumeAuditStream(ctx, sid, uploadID)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

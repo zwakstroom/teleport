@@ -363,7 +363,7 @@ func (c *ClusterConfigV3) CheckAndSetDefaults() error {
 	}
 
 	// check if the recording type is valid
-	all := []string{RecordAtNode, RecordAtProxy, RecordOff}
+	all := []string{RecordAtNode, RecordAtProxy, RecordAtNodeSync, RecordAtProxySync, RecordOff}
 	ok := utils.SliceContainsStr(all, c.Spec.SessionRecording)
 	if !ok {
 		return trace.BadParameter("session_recording must either be: %v", strings.Join(all, ","))
