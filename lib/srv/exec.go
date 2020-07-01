@@ -356,34 +356,41 @@ func (r *remoteExec) PID() int {
 	return 0
 }
 
+// emitExecAuditEvent emits the result of the exec event to the audit logger.
 func emitExecAuditEvent(ctx *ServerContext, cmd string, execErr error) {
-	// Report the result of this exec event to the audit logger.
-	auditLog := ctx.srv.GetAuditLog()
-	if auditLog == nil {
-		log.Warnf("No audit log")
-		return
+	// Create common fields for event.
+	serverMeta := events.ServerMetadata{
+		ServerID:        ctx.srv.HostUUID(),
+		ServerNamespace: ctx.srv.GetNamespace(),
 	}
 
-	var event events.Event
+	sessionMeta := events.SessionMetadata{
+		SessionID: string(ctx.session.id),
+	}
 
-	// Create common fields for event.
-	fields := events.EventFields{
-		events.EventUser:      ctx.Identity.TeleportUser,
-		events.EventLogin:     ctx.Identity.Login,
-		events.LocalAddr:      ctx.Conn.LocalAddr().String(),
-		events.RemoteAddr:     ctx.Conn.RemoteAddr().String(),
-		events.EventNamespace: ctx.srv.GetNamespace(),
+	userMeta := events.UserMetadata{
+		User:  ctx.Identity.TeleportUser,
+		Login: ctx.Identity.Login,
+	}
+
+	connectionMeta := events.ConnectionMetadata{
+		RemoteAddr: ctx.Conn.RemoteAddr().String(),
+		LocalAddr:  ctx.Conn.LocalAddr().String(),
+	}
+
+	commandMeta := events.CommandMetadata{
+		Command: cmd,
 		// Due to scp being inherently vulnerable to command injection, always
 		// make sure the full command and exit code is recorded for accountability.
 		// For more details, see the following.
 		//
 		// https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=327019
 		// https://bugzilla.mindrot.org/show_bug.cgi?id=1998
-		events.ExecEventCode:    strconv.Itoa(exitCode(execErr)),
-		events.ExecEventCommand: cmd,
+		ExitCode: strconv.Itoa(exitCode(execErr)),
 	}
+
 	if execErr != nil {
-		fields[events.ExecEventError] = execErr.Error()
+		commandMeta.Error = execErr.Error()
 	}
 
 	// Parse the exec command to find out if it was SCP or not.
@@ -394,34 +401,53 @@ func emitExecAuditEvent(ctx *ServerContext, cmd string, execErr error) {
 	}
 
 	// Update appropriate fields based off if the request was SCP or not.
-	// !!!FIXEVENTS!!!
 	if isSCP {
-		fields[events.SCPPath] = path
-		fields[events.SCPAction] = action
+		scpEvent := &events.SCP{
+			Metadata: events.Metadata{
+				Type: events.SCPEvent,
+			},
+			ServerMetadata:     serverMeta,
+			SessionMetadata:    sessionMeta,
+			UserMetadata:       userMeta,
+			ConnectionMetadata: connectionMeta,
+			CommandMetadata:    commandMeta,
+			Path:               path,
+			Action:             action,
+		}
+
 		switch action {
 		case events.SCPActionUpload:
 			if execErr != nil {
-				event = events.SCPUploadFailureE
+				scpEvent.Code = events.SCPUploadFailureCode
 			} else {
-				event = events.SCPUploadE
+				scpEvent.Code = events.SCPUploadCode
 			}
 		case events.SCPActionDownload:
 			if execErr != nil {
-				event = events.SCPDownloadFailureE
+				scpEvent.Code = events.SCPDownloadFailureCode
 			} else {
-				event = events.SCPDownloadE
+				scpEvent.Code = events.SCPDownloadCode
 			}
 		}
+		ctx.srv.EmitAuditEvent(ctx.srv.Context(), scpEvent)
 	} else {
-		if execErr != nil {
-			event = events.ExecFailureE
-		} else {
-			event = events.ExecE
+		execEvent := &events.SCP{
+			Metadata: events.Metadata{
+				Type: events.ExecEvent,
+			},
+			ServerMetadata:     serverMeta,
+			SessionMetadata:    sessionMeta,
+			UserMetadata:       userMeta,
+			ConnectionMetadata: connectionMeta,
+			CommandMetadata:    commandMeta,
 		}
+		if execErr != nil {
+			execEvent.Code = events.ExecFailureCode
+		} else {
+			execEvent.Code = events.ExecCode
+		}
+		ctx.srv.EmitAuditEvent(ctx.srv.Context(), execEvent)
 	}
-
-	// Emit the event.
-	auditLog.EmitAuditEventLegacy(event, fields)
 }
 
 // getDefaultEnvPath returns the default value of PATH environment variable for

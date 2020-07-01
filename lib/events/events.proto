@@ -392,6 +392,64 @@ message PortForward {
 	string Addr = 5 [(gogoproto.jsontag) = "addr"];
 }
 
+// CommandMetadata specifies common command fields
+message CommandMetadata {
+    // Command is the executed command name
+    string Command = 1 [(gogoproto.jsontag) = "command"];
+    // ExitCode specifies command exit code
+	string ExitCode = 2 [(gogoproto.jsontag) = "exitCode,omitempty"];
+    // Error is an optional exit error, set if command has failed
+	string Error = 3 [(gogoproto.jsontag) = "exitError,omitempty"];
+}
+
+// Exec specifies command exec event
+message Exec {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event session metadata
+    SessionMetadata Session = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 5 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];        
+
+    // CommandMetadata is a common command metadata
+    CommandMetadata Command = 6 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];        
+}
+
+// SCP is emitted when data transfer has occurred between server and client
+message SCP {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
+    // ConnectionMetadata holds information about the connection
+    ConnectionMetadata Connection = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // SessionMetadata is a common event session metadata
+    SessionMetadata Session = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 5 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
+    // CommandMetadata is a common command metadata
+    CommandMetadata Command = 6 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];        
+
+    // Path is a copy path
+	string Path = 7 [(gogoproto.jsontag) = "path"];
+
+    // Action is upload or download
+	string Action = 8 [(gogoproto.jsontag) = "action"];
+}
+
 // Subsystem is emitted when a user requests a new subsystem.
 message Subsystem {
     // Metadata is a common event metadata
