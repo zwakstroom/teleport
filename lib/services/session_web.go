@@ -95,6 +95,7 @@ type WebSessionV2 struct {
 	Spec WebSessionSpecV2 `json:"spec"`
 }
 
+// TODO: Add Type (web or app to this??)
 // WebSessionSpecV2 is a spec for V2 session
 type WebSessionSpecV2 struct {
 	// User is a user this web session belongs to

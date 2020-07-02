@@ -47,7 +47,6 @@ import (
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/session"
-	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/web/ui"
 
@@ -143,56 +142,59 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// If the caller requested a registered application, authenticate the
 	// request and then forward it to the apps handler.
 	case err == nil:
-		// Verify with @alex-kovoy that it's okay that bearer token is false. This
-		// appears to make sense because the bearer token is injected client side
-		// and that's not possible for AAP.
-		ctx, err := h.handler.AuthenticateRequest(w, r, false)
-		if err != nil {
-			http.Error(w, "access denied", 401)
-			return
-		}
-
-		// Attach certificates (x509 and SSH) to *http.Request.
-		_, cert, err := ctx.GetCertificates()
-		if err != nil {
-			http.Error(w, "access denied", 401)
-			return
-		}
-		identity, err := tlsca.FromSubject(cert.Subject, cert.NotAfter)
-		if err != nil {
-			http.Error(w, "access denied", 401)
-			return
-		}
-		r := r.WithContext(context.WithValue(r.Context(), "identity", identity))
-
-		// Attach services.RoleSet to *http.Request.
-		checker, err := ctx.GetRoleSet()
-		if err != nil {
-			http.Error(w, "access denied", 401)
-			return
-		}
-		r = r.WithContext(context.WithValue(r.Context(), "checker", checker))
-
-		// Attach services.App requested to the *http.Request.
-		r = r.WithContext(context.WithValue(r.Context(), "app", app))
-
-		// Attach the cluster API to the request as well.
-		// TODO: Attach trusted cluster site if trusted cluster requested.
-		clusterName, err := h.appsHandler.AuthClient.GetDomainName()
-		if err != nil {
-			http.Error(w, "access denied", 401)
-		}
-		clusterClient, err := h.handler.cfg.Proxy.GetSite(clusterName)
-		if err != nil {
-			http.Error(w, "access denied", 401)
-			return
-		}
-		r = r.WithContext(context.WithValue(r.Context(), "clusterName", clusterName))
-		r = r.WithContext(context.WithValue(r.Context(), "clusterClient", clusterClient))
-
-		// Pass the request along to the apps handler.
 		h.appsHandler.ServeHTTP(w, r)
 		return
+
+		//// Verify with @alex-kovoy that it's okay that bearer token is false. This
+		//// appears to make sense because the bearer token is injected client side
+		//// and that's not possible for AAP.
+		//ctx, err := h.handler.AuthenticateRequest(w, r, false)
+		//if err != nil {
+		//	http.Error(w, "access denied", 401)
+		//	return
+		//}
+
+		//// Attach certificates (x509 and SSH) to *http.Request.
+		//_, cert, err := ctx.GetCertificates()
+		//if err != nil {
+		//	http.Error(w, "access denied", 401)
+		//	return
+		//}
+		//identity, err := tlsca.FromSubject(cert.Subject, cert.NotAfter)
+		//if err != nil {
+		//	http.Error(w, "access denied", 401)
+		//	return
+		//}
+		//r := r.WithContext(context.WithValue(r.Context(), "identity", identity))
+
+		//// Attach services.RoleSet to *http.Request.
+		//checker, err := ctx.GetRoleSet()
+		//if err != nil {
+		//	http.Error(w, "access denied", 401)
+		//	return
+		//}
+		//r = r.WithContext(context.WithValue(r.Context(), "checker", checker))
+
+		//// Attach services.App requested to the *http.Request.
+		//r = r.WithContext(context.WithValue(r.Context(), "app", app))
+
+		//// Attach the cluster API to the request as well.
+		//// TODO: Attach trusted cluster site if trusted cluster requested.
+		//clusterName, err := h.appsHandler.AuthClient.GetDomainName()
+		//if err != nil {
+		//	http.Error(w, "access denied", 401)
+		//}
+		//clusterClient, err := h.handler.cfg.Proxy.GetSite(clusterName)
+		//if err != nil {
+		//	http.Error(w, "access denied", 401)
+		//	return
+		//}
+		//r = r.WithContext(context.WithValue(r.Context(), "clusterName", clusterName))
+		//r = r.WithContext(context.WithValue(r.Context(), "clusterClient", clusterClient))
+
+		//// Pass the request along to the apps handler.
+		//h.appsHandler.ServeHTTP(w, r)
+		//return
 	}
 }
 

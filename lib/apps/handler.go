@@ -98,7 +98,7 @@ func (a *Handler) IsApp(r *http.Request) (services.App, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	app, err := a.AuthClient.GetApp(r.Context(), defaults.Namespace, name)
+	app, err := h.AuthClient.GetApp(r.Context(), defaults.Namespace, name)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -106,10 +106,123 @@ func (a *Handler) IsApp(r *http.Request) (services.App, error) {
 	return app, nil
 }
 
+type session struct {
+}
+
+func (s *session) Identity() (*tlsca.Identity, error) {
+}
+
+func (s *session) RoleSet() (services.RoleSet, error) {
+}
+
+func (s *session) ClusterName() (string, error) {
+}
+
+func (s *session) ClusterClient(reversetunnel.RemoteSite, error) {
+
+}
+
+func extractSessionCookie(r *http.Request) (*SessionCookie, error) {
+	cookie, err := r.Cookie("app_session")
+	if err != nil || (cookie != nil && cookie.Value == "") {
+		if err != nil {
+			logger.Warn(err)
+		}
+		return nil, trace.AccessDenied(missingCookieMsg)
+	}
+
+	d, err := DecodeCookie(cookie.Value)
+	if err != nil {
+		logger.Warningf("failed to decode cookie: %v", err)
+		return nil, trace.AccessDenied("failed to decode cookie")
+	}
+
+}
+
+func (h *Handler) ValidateSession(w http.ResponseWriter, r *http.Request) (*appContext, error) {
+	cookie, err := exactSessionCookie(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Try and find a matching app session (services.WebSession) for this user
+	// in the backend, if a session is not found, re-direct the user to the login
+	// screen with a re-direct back to this application.
+	s, err := h.AuthClient.GetSession(&services.SessionRequest{
+		Type:       services.AppSession,
+		User:       cookie.User,
+		ParentHash: cookie.ParentHash,
+		SessionID:  cookie.SessionID,
+	})
+	if err != nil {
+		// TODO!
+		http.Redirect(w, r, "/login&redir=https://appName", 302)
+		return
+	}
+
+	//// Verify with @alex-kovoy that it's okay that bearer token is false. This
+	//// appears to make sense because the bearer token is injected client side
+	//// and that's not possible for AAP.
+	//ctx, err := h.handler.AuthenticateRequest(w, r, false)
+	//if err != nil {
+	//	http.Error(w, "access denied", 401)
+	//	return
+	//}
+
+	//// Attach certificates (x509 and SSH) to *http.Request.
+	//_, cert, err := ctx.GetCertificates()
+	//if err != nil {
+	//	http.Error(w, "access denied", 401)
+	//	return
+	//}
+	//identity, err := tlsca.FromSubject(cert.Subject, cert.NotAfter)
+	//if err != nil {
+	//	http.Error(w, "access denied", 401)
+	//	return
+	//}
+	//r := r.WithContext(context.WithValue(r.Context(), "identity", identity))
+
+	//// Attach services.RoleSet to *http.Request.
+	//checker, err := ctx.GetRoleSet()
+	//if err != nil {
+	//	http.Error(w, "access denied", 401)
+	//	return
+	//}
+	//r = r.WithContext(context.WithValue(r.Context(), "checker", checker))
+
+	//// Attach services.App requested to the *http.Request.
+	//r = r.WithContext(context.WithValue(r.Context(), "app", app))
+
+	//// Attach the cluster API to the request as well.
+	//// TODO: Attach trusted cluster site if trusted cluster requested.
+	//clusterName, err := h.appsHandler.AuthClient.GetDomainName()
+	//if err != nil {
+	//	http.Error(w, "access denied", 401)
+	//}
+	//clusterClient, err := h.handler.cfg.Proxy.GetSite(clusterName)
+	//if err != nil {
+	//	http.Error(w, "access denied", 401)
+	//	return
+	//}
+	//r = r.WithContext(context.WithValue(r.Context(), "clusterName", clusterName))
+	//r = r.WithContext(context.WithValue(r.Context(), "clusterClient", clusterClient))
+
+	//// Pass the request along to the apps handler.
+	//h.appsHandler.ServeHTTP(w, r)
+	//return
+
+}
+
 // ServeHTTP will try and find the proxied application that the caller is
 // requesting. If any error occurs or the application is not found, the
 // request is passed to the next handler (which would be the Web UI).
-func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, err := h.ValidateSession(w, r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
 	// Extract the services.App the client requested.
 	app, ok := r.Context().Value("app").(services.App)
 	if !ok {
@@ -158,7 +271,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ca, err := a.AuthClient.GetCertAuthority(services.CertAuthID{
+	ca, err := h.AuthClient.GetCertAuthority(services.CertAuthID{
 		Type:       services.HostCA,
 		DomainName: clusterName,
 	}, true)
