@@ -2370,7 +2370,6 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 				Client:          conn.Client,
 				DataDir:         cfg.DataDir,
 				AccessPoint:     accessPoint,
-				AuditLog:        conn.Client,
 				ServerID:        cfg.HostUUID,
 				ClusterOverride: cfg.Proxy.Kube.ClusterOverride,
 				KubeconfigPath:  cfg.Proxy.Kube.KubeconfigPath,

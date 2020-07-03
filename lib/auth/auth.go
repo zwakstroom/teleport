@@ -1403,12 +1403,17 @@ func (a *AuthServer) CreateAccessRequest(ctx context.Context, req services.Acces
 	if err := a.DynamicAccess.CreateAccessRequest(ctx, req); err != nil {
 		return trace.Wrap(err)
 	}
-	// !!!FIXEVENTS!!!
-	err = a.EmitAuditEventLegacy(events.AccessRequestCreatedE, events.EventFields{
-		events.AccessRequestID:    req.GetName(),
-		events.EventUser:          req.GetUser(),
-		events.UserRoles:          req.GetRoles(),
-		events.AccessRequestState: req.GetState().String(),
+	err = a.emitter.EmitAuditEvent(a.closeCtx, &events.AccessRequestCreated{
+		Metadata: events.Metadata{
+			Type: events.AccessRequestCreateEvent,
+			Code: events.AccessRequestCreateCode,
+		},
+		UserMetadata: events.UserMetadata{
+			User: req.GetUser(),
+		},
+		Roles:        req.GetRoles(),
+		RequestID:    req.GetName(),
+		RequestState: req.GetState().String(),
 	})
 	return trace.Wrap(err)
 }
@@ -1421,11 +1426,14 @@ func (a *AuthServer) SetAccessRequestState(ctx context.Context, reqID string, st
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	// !!!FIXEVENTS!!!
-	err = a.EmitAuditEventLegacy(events.AccessRequestUpdatedE, events.EventFields{
-		events.AccessRequestID:       reqID,
-		events.AccessRequestState:    state.String(),
-		events.AccessRequestUpdateBy: updateBy,
+	err = a.emitter.EmitAuditEvent(a.closeCtx, &events.AccessRequestUpdated{
+		Metadata: events.Metadata{
+			Type: events.AccessRequestUpdateEvent,
+			Code: events.AccessRequestUpdateCode,
+		},
+		RequestID:    reqID,
+		RequestState: state.String(),
+		UpdatedBy:    updateBy,
 	})
 	return trace.Wrap(err)
 }

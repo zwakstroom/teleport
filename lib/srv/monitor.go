@@ -71,8 +71,8 @@ type MonitorConfig struct {
 	TeleportUser string
 	// ServerID is a session server ID
 	ServerID string
-	// Audit is audit log
-	Audit events.IAuditLog
+	// Emitter is events emitter
+	Emitter events.Emitter
 	// Entry is a logging entry
 	Entry *log.Entry
 }
@@ -94,8 +94,8 @@ func (m *MonitorConfig) CheckAndSetDefaults() error {
 	if m.Tracker == nil {
 		return trace.BadParameter("missing parameter Tracker")
 	}
-	if m.Audit == nil {
-		return trace.BadParameter("missing parameter Audit")
+	if m.Emitter == nil {
+		return trace.BadParameter("missing parameter Emitter")
 	}
 	if m.Clock == nil {
 		m.Clock = clockwork.NewRealClock()
@@ -141,40 +141,57 @@ func (w *Monitor) Start() {
 		select {
 		// certificate has expired, disconnect
 		case <-certTime:
-			event := events.EventFields{
-				events.EventType:       events.ClientDisconnectEvent,
-				events.EventLogin:      w.Login,
-				events.EventUser:       w.TeleportUser,
-				events.LocalAddr:       w.Conn.LocalAddr().String(),
-				events.RemoteAddr:      w.Conn.RemoteAddr().String(),
-				events.SessionServerID: w.ServerID,
-				events.Reason:          fmt.Sprintf("client certificate expired at %v", w.Clock.Now().UTC()),
+			event := &events.ClientDisconnect{
+				Metadata: events.Metadata{
+					Type: events.ClientDisconnectEvent,
+					Code: events.ClientDisconnectCode,
+				},
+				UserMetadata: events.UserMetadata{
+					Login: w.Login,
+					User:  w.TeleportUser,
+				},
+				ConnectionMetadata: events.ConnectionMetadata{
+					LocalAddr:  w.Conn.LocalAddr().String(),
+					RemoteAddr: w.Conn.RemoteAddr().String(),
+				},
+				ServerMetadata: events.ServerMetadata{
+					ServerID: w.ServerID,
+				},
+				Reason: fmt.Sprintf("client certificate expired at %v", w.Clock.Now().UTC()),
 			}
-			// !!!FIXEVENTS!!!
-			w.Audit.EmitAuditEventLegacy(events.ClientDisconnectE, event)
-			w.Entry.Debugf("Disconnecting client: %v", event[events.Reason])
+			w.Emitter.EmitAuditEvent(w.Context, event)
+			w.Entry.Debugf("Disconnecting client: %v", event.Reason)
 			w.Conn.Close()
 			return
 		case <-idleTime:
 			now := w.Clock.Now().UTC()
 			clientLastActive := w.Tracker.GetClientLastActive()
 			if now.Sub(clientLastActive) >= w.ClientIdleTimeout {
-				event := events.EventFields{
-					events.EventLogin:      w.Login,
-					events.EventUser:       w.TeleportUser,
-					events.LocalAddr:       w.Conn.LocalAddr().String(),
-					events.RemoteAddr:      w.Conn.RemoteAddr().String(),
-					events.SessionServerID: w.ServerID,
+				event := &events.ClientDisconnect{
+					Metadata: events.Metadata{
+						Type: events.ClientDisconnectEvent,
+						Code: events.ClientDisconnectCode,
+					},
+					UserMetadata: events.UserMetadata{
+						Login: w.Login,
+						User:  w.TeleportUser,
+					},
+					ConnectionMetadata: events.ConnectionMetadata{
+						LocalAddr:  w.Conn.LocalAddr().String(),
+						RemoteAddr: w.Conn.RemoteAddr().String(),
+					},
+					ServerMetadata: events.ServerMetadata{
+						ServerID: w.ServerID,
+					},
 				}
 				if clientLastActive.IsZero() {
-					event[events.Reason] = "client reported no activity"
+					event.Reason = "client reported no activity"
 				} else {
-					event[events.Reason] = fmt.Sprintf("client is idle for %v, exceeded idle timeout of %v",
+					event.Reason = fmt.Sprintf("client is idle for %v, exceeded idle timeout of %v",
 						now.Sub(clientLastActive), w.ClientIdleTimeout)
 				}
-				w.Entry.Debugf("Disconnecting client: %v", event[events.Reason])
-				// !!!FIXEVENTS!!!
-				w.Audit.EmitAuditEventLegacy(events.ClientDisconnectE, event)
+				w.Entry.Debugf("Disconnecting client: %v", event.Reason)
+				w.Emitter.EmitAuditEvent(w.Context, event)
 				w.Conn.Close()
 				return
 			}

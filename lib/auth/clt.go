@@ -2986,6 +2986,7 @@ type ClientI interface {
 	services.Trust
 	events.IAuditLog
 	events.Streamer
+	events.Emitter
 	services.Presence
 	services.Access
 	services.DynamicAccess

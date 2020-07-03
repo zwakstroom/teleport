@@ -41,6 +41,19 @@ func EncodeMap(msg map[string]interface{}) (*Struct, error) {
 	return &Struct{Struct: pbs}, nil
 }
 
+// EncodeMapStrings encodes map[string][]string to map<string, Value>
+func EncodeMapStrings(msg map[string][]string) (*Struct, error) {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	pbs := types.Struct{}
+	if err = jsonpb.Unmarshal(bytes.NewReader(data), &pbs); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &Struct{Struct: pbs}, nil
+}
+
 // MustEncodeMap panics if EncodeMap returns error
 func MustEncodeMap(msg map[string]interface{}) *Struct {
 	m, err := EncodeMap(msg)
@@ -221,6 +234,10 @@ func ToOneOf(in AuditEvent) (*OneOf, error) {
 		out.Event = &OneOf_UserUpdate{
 			UserUpdate: e,
 		}
+	case *UserDelete:
+		out.Event = &OneOf_UserDelete{
+			UserDelete: e,
+		}
 	case *SessionStart:
 		out.Event = &OneOf_SessionStart{
 			SessionStart: e,
@@ -269,6 +286,14 @@ func ToOneOf(in AuditEvent) (*OneOf, error) {
 		out.Event = &OneOf_Subsystem{
 			Subsystem: e,
 		}
+	case *SCP:
+		out.Event = &OneOf_SCP{
+			SCP: e,
+		}
+	case *Exec:
+		out.Event = &OneOf_Exec{
+			Exec: e,
+		}
 	case *ClientDisconnect:
 		out.Event = &OneOf_ClientDisconnect{
 			ClientDisconnect: e,
@@ -276,6 +301,14 @@ func ToOneOf(in AuditEvent) (*OneOf, error) {
 	case *AuthAttempt:
 		out.Event = &OneOf_AuthAttempt{
 			AuthAttempt: e,
+		}
+	case *AccessRequestCreated:
+		out.Event = &OneOf_AccessRequestCreated{
+			AccessRequestCreated: e,
+		}
+	case *AccessRequestUpdated:
+		out.Event = &OneOf_AccessRequestUpdated{
+			AccessRequestUpdated: e,
 		}
 	default:
 		return nil, trace.BadParameter("event type %T is not supported", in)
@@ -288,6 +321,8 @@ func FromOneOf(in OneOf) (AuditEvent, error) {
 	if e := in.GetUserLogin(); e != nil {
 		return e, nil
 	} else if e := in.GetUserUpdate(); e != nil {
+		return e, nil
+	} else if e := in.GetUserDelete(); e != nil {
 		return e, nil
 	} else if e := in.GetSessionStart(); e != nil {
 		return e, nil
@@ -311,11 +346,19 @@ func FromOneOf(in OneOf) (AuditEvent, error) {
 		return e, nil
 	} else if e := in.GetPortForward(); e != nil {
 		return e, nil
+	} else if e := in.GetSCP(); e != nil {
+		return e, nil
+	} else if e := in.GetExec(); e != nil {
+		return e, nil
 	} else if e := in.GetSubsystem(); e != nil {
 		return e, nil
 	} else if e := in.GetClientDisconnect(); e != nil {
 		return e, nil
 	} else if e := in.GetAuthAttempt(); e != nil {
+		return e, nil
+	} else if e := in.GetAccessRequestCreated(); e != nil {
+		return e, nil
+	} else if e := in.GetAccessRequestUpdated(); e != nil {
 		return e, nil
 	} else {
 		return nil, trace.BadParameter("received unsupported event %T", in.Event)

@@ -621,11 +621,12 @@ func (a *AuthServer) newGsuiteClient(config *jwt.Config, issuerURL string, userE
 
 	return &gsuiteClient{
 		domain:    domain,
-		client:    config.Client(context.TODO()),
+		client:    config.Client(a.closeCtx),
 		url:       *u,
 		userEmail: userEmail,
 		config:    config,
-		auditLog:  a,
+		emitter:   a.emitter,
+		ctx:       a.closeCtx,
 	}, nil
 }
 
@@ -635,7 +636,8 @@ type gsuiteClient struct {
 	userEmail string
 	domain    string
 	config    *jwt.Config
-	auditLog  events.IAuditLog
+	emitter   events.Emitter
+	ctx       context.Context
 }
 
 // fetchGroups fetches GSuite groups a user belongs to and returns
@@ -652,10 +654,16 @@ collect:
 
 			// Print warning to Teleport logs as well as the Audit Log.
 			log.Warnf(warningMessage)
-			// !!!FIXEVENTS!!!
-			g.auditLog.EmitAuditEventLegacy(events.UserSSOLoginFailureE, events.EventFields{
-				events.LoginMethod:        events.LoginMethodOIDC,
-				events.AuthAttemptMessage: warningMessage,
+			g.emitter.EmitAuditEvent(g.ctx, &events.UserLogin{
+				Metadata: events.Metadata{
+					Type: events.UserLoginEvent,
+					Code: events.UserSSOLoginFailureCode,
+				},
+				Method: events.LoginMethodOIDC,
+				Status: events.Status{
+					Success: false,
+					Error:   warningMessage,
+				},
 			})
 			break collect
 		}

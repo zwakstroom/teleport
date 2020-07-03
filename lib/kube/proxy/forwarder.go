@@ -38,6 +38,7 @@ import (
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
+	"github.com/gravitational/teleport/lib/events/filesessions"
 	"github.com/gravitational/teleport/lib/httplib"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
@@ -82,8 +83,6 @@ type ForwarderConfig struct {
 	// AccessPoint is a caching access point to auth server
 	// for caching common requests to the backend
 	AccessPoint auth.AccessPoint
-	// AuditLog is audit log to send events to
-	AuditLog events.IAuditLog
 	// ServerID is a unique ID of a proxy server
 	ServerID string
 	// ClusterOverride if set, routes all requests
@@ -436,6 +435,31 @@ func (f *Forwarder) setupContext(ctx auth.AuthContext, req *http.Request, isRemo
 	return authCtx, nil
 }
 
+// newStreamer returns sync or async streamer based on the configuration
+// of the server and the session, sync streamer sends the events
+// directly to the auth server and blocks if the events can not be received,
+// async streamer buffers the events to disk and uploads the events later
+func (f *Forwarder) newStreamer(ctx *authContext) (events.Streamer, error) {
+	mode := ctx.clusterConfig.GetSessionRecording()
+	if services.IsRecordSync(mode) {
+		f.Debugf("Using sync streamer for session")
+		return f.Client, nil
+	}
+	f.Debugf("Using async streamer for session.")
+	dir := filepath.Join(
+		f.DataDir, teleport.LogsDir, teleport.ComponentUpload,
+		events.StreamingLogsDir, defaults.Namespace,
+	)
+	fileStreamer, err := filesessions.NewStreamer(dir)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	// TeeStreamer sends non-print and non disk events
+	// to the audit log in async mode, while buffering all
+	// events on disk for further upload at the end of the session
+	return events.NewTeeStreamer(fileStreamer, f.Client), nil
+}
+
 // exec forwards all exec requests to the target server, captures
 // all output from the session
 func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Request, p httprouter.Params) (interface{}, error) {
@@ -456,24 +480,34 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 	}
 
 	var recorder events.SessionRecorder
+	var emitter events.Emitter
 	sessionID := session.NewID()
 	var err error
 	if request.tty {
+		streamer, err := f.newStreamer(ctx)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
 		// create session recorder
 		// get the audit log from the server and create a session recorder. this will
 		// be a discard audit log if the proxy is in recording mode and a teleport
 		// node so we don't create double recordings.
-		recorder, err = events.NewForwardRecorder(events.ForwardRecorderConfig{
-			DataDir:        filepath.Join(f.DataDir, teleport.LogsDir),
-			SessionID:      sessionID,
-			Namespace:      f.Namespace,
-			RecordSessions: ctx.clusterConfig.GetSessionRecording() != services.RecordOff,
-			Component:      teleport.Component(teleport.ComponentSession, teleport.ComponentKube),
-			ForwardTo:      f.AuditLog,
+		recorder, err = events.NewAuditWriter(events.AuditWriterConfig{
+			// Audit stream is using server context, not session context,
+			// to make sure that session is uploaded even after it is closed
+			Context:      f.Context,
+			Streamer:     streamer,
+			Clock:        f.Clock,
+			SessionID:    sessionID,
+			ServerID:     f.ServerID,
+			Namespace:    f.Namespace,
+			RecordOutput: ctx.clusterConfig.GetSessionRecording() != services.RecordOff,
+			Component:    teleport.Component(teleport.ComponentSession, teleport.ComponentKube),
 		})
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
+		emitter = recorder
 		defer recorder.Close()
 		request.onResize = func(resize remotecommand.TerminalSize) {
 			params := session.TerminalParams{
@@ -481,21 +515,34 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 				H: int(resize.Height),
 			}
 			// Build the resize event.
-			resizeEvent := events.EventFields{
-				events.EventProtocol:  events.EventProtocolKube,
-				events.EventType:      events.ResizeEvent,
-				events.EventNamespace: f.Namespace,
-				events.SessionEventID: sessionID,
-				events.EventLogin:     ctx.User.GetName(),
-				events.EventUser:      ctx.User.GetName(),
-				events.TerminalSize:   params.Serialize(),
+			resizeEvent := &events.Resize{
+				Metadata: events.Metadata{
+					Type: events.ResizeEvent,
+					Code: events.TerminalResizeCode,
+				},
+				ConnectionMetadata: events.ConnectionMetadata{
+					RemoteAddr: req.RemoteAddr,
+					Protocol:   events.EventProtocolKube,
+				},
+				ServerMetadata: events.ServerMetadata{
+					ServerNamespace: f.Namespace,
+				},
+				SessionMetadata: events.SessionMetadata{
+					SessionID: string(sessionID),
+				},
+				UserMetadata: events.UserMetadata{
+					User:  ctx.User.GetName(),
+					Login: ctx.User.GetName(),
+				},
+				TerminalSize: params.Serialize(),
 			}
 
 			// Report the updated window size to the event log (this is so the sessions
 			// can be replayed correctly).
-			// !!!FIXEVENTS!!!
-			recorder.GetAuditLog().EmitAuditEventLegacy(events.TerminalResizeE, resizeEvent)
+			recorder.EmitAuditEvent(f.Context, resizeEvent)
 		}
+	} else {
+		emitter = f.Client
 	}
 
 	sess, err := f.getOrCreateClusterSession(*ctx)
@@ -513,18 +560,30 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 			W: 100,
 			H: 100,
 		}
-		// !!!FIXEVENTS!!!
-		recorder.GetAuditLog().EmitAuditEventLegacy(events.SessionStartE, events.EventFields{
-			events.EventProtocol:   events.EventProtocolKube,
-			events.EventNamespace:  f.Namespace,
-			events.SessionEventID:  string(sessionID),
-			events.SessionServerID: f.ServerID,
-			events.EventLogin:      ctx.User.GetName(),
-			events.EventUser:       ctx.User.GetName(),
-			events.LocalAddr:       sess.cluster.targetAddr,
-			events.RemoteAddr:      req.RemoteAddr,
-			events.TerminalSize:    termParams.Serialize(),
-		})
+		sessionStartEvent := &events.SessionStart{
+			Metadata: events.Metadata{
+				Type: events.SessionStartEvent,
+				Code: events.SessionStartCode,
+			},
+			ServerMetadata: events.ServerMetadata{
+				ServerID:        f.ServerID,
+				ServerNamespace: f.Namespace,
+			},
+			SessionMetadata: events.SessionMetadata{
+				SessionID: string(sessionID),
+			},
+			UserMetadata: events.UserMetadata{
+				User:  ctx.User.GetName(),
+				Login: ctx.User.GetName(),
+			},
+			ConnectionMetadata: events.ConnectionMetadata{
+				RemoteAddr: req.RemoteAddr,
+				LocalAddr:  sess.cluster.targetAddr,
+				Protocol:   events.EventProtocolKube,
+			},
+			TerminalSize: termParams.Serialize(),
+		}
+		emitter.EmitAuditEvent(f.Context, sessionStartEvent)
 	}
 
 	if err := f.setupForwardingHeaders(ctx, sess, req); err != nil {
@@ -559,35 +618,66 @@ func (f *Forwarder) exec(ctx *authContext, w http.ResponseWriter, req *http.Requ
 
 	if request.tty {
 		// send an event indicating that this session has ended
-		// !!!FIXEVENTS!!!
-		recorder.GetAuditLog().EmitAuditEventLegacy(events.SessionEndE, events.EventFields{
-			events.EventProtocol:  events.EventProtocolKube,
-			events.SessionEventID: sessionID,
-			events.EventUser:      ctx.User.GetName(),
-			events.EventNamespace: f.Namespace,
-		})
+		sessionEndEvent := &events.SessionEnd{
+			Metadata: events.Metadata{
+				Type: events.SessionEndEvent,
+				Code: events.SessionEndCode,
+			},
+			ServerMetadata: events.ServerMetadata{
+				ServerID:        f.ServerID,
+				ServerNamespace: f.Namespace,
+			},
+			SessionMetadata: events.SessionMetadata{
+				SessionID: string(sessionID),
+			},
+			UserMetadata: events.UserMetadata{
+				User:  ctx.User.GetName(),
+				Login: ctx.User.GetName(),
+			},
+			ConnectionMetadata: events.ConnectionMetadata{
+				RemoteAddr: req.RemoteAddr,
+				LocalAddr:  sess.cluster.targetAddr,
+				Protocol:   events.EventProtocolKube,
+			},
+			Interactive: true,
+		}
+		emitter.EmitAuditEvent(f.Context, sessionEndEvent)
 	} else {
-		f.Debugf("No tty, sending exec event.")
 		// send an exec event
-		// !!!FIXEVENTS!!!
-		fields := events.EventFields{
-			events.EventProtocol:    events.EventProtocolKube,
-			events.ExecEventCommand: strings.Join(request.cmd, " "),
-			events.EventLogin:       ctx.User.GetName(),
-			events.EventUser:        ctx.User.GetName(),
-			events.LocalAddr:        sess.cluster.targetAddr,
-			events.RemoteAddr:       req.RemoteAddr,
-			events.EventNamespace:   f.Namespace,
+		execEvent := &events.Exec{
+			Metadata: events.Metadata{
+				Type: events.ExecEvent,
+			},
+			ServerMetadata: events.ServerMetadata{
+				ServerID:        f.ServerID,
+				ServerNamespace: f.Namespace,
+			},
+			SessionMetadata: events.SessionMetadata{
+				SessionID: string(sessionID),
+			},
+			UserMetadata: events.UserMetadata{
+				User:  ctx.User.GetName(),
+				Login: ctx.User.GetName(),
+			},
+			ConnectionMetadata: events.ConnectionMetadata{
+				RemoteAddr: req.RemoteAddr,
+				LocalAddr:  sess.cluster.targetAddr,
+				Protocol:   events.EventProtocolKube,
+			},
+			CommandMetadata: events.CommandMetadata{
+				Command: strings.Join(request.cmd, " "),
+			},
 		}
 		if err != nil {
-			fields[events.ExecEventError] = err.Error()
+			execEvent.Code = events.ExecFailureCode
+			execEvent.Error = err.Error()
 			if exitErr, ok := err.(utilexec.ExitError); ok && exitErr.Exited() {
-				fields[events.ExecEventCode] = fmt.Sprintf("%d", exitErr.ExitStatus())
+				execEvent.ExitCode = fmt.Sprintf("%d", exitErr.ExitStatus())
 			}
-			f.AuditLog.EmitAuditEventLegacy(events.ExecFailureE, fields)
 		} else {
-			f.AuditLog.EmitAuditEventLegacy(events.ExecE, fields)
+			execEvent.Code = events.ExecCode
 		}
+		emitter.EmitAuditEvent(f.Context, execEvent)
 	}
 
 	f.Debugf("Exited successfully.")
@@ -616,20 +706,29 @@ func (f *Forwarder) portForward(ctx *authContext, w http.ResponseWriter, req *ht
 	}
 
 	onPortForward := func(addr string, success bool) {
-		// !!!FIXEVENTS!!!
-		event := events.PortForwardE
-		if !success {
-			event = events.PortForwardFailureE
+		portForward := &events.PortForward{
+			Metadata: events.Metadata{
+				Type: events.PortForwardEvent,
+				Code: events.PortForwardCode,
+			},
+			UserMetadata: events.UserMetadata{
+				Login: ctx.User.GetName(),
+				User:  ctx.User.GetName(),
+			},
+			ConnectionMetadata: events.ConnectionMetadata{
+				LocalAddr:  sess.cluster.targetAddr,
+				RemoteAddr: req.RemoteAddr,
+				Protocol:   events.EventProtocolKube,
+			},
+			Addr: addr,
+			Status: events.Status{
+				Success: success,
+			},
 		}
-		f.AuditLog.EmitAuditEventLegacy(event, events.EventFields{
-			events.EventProtocol:      events.EventProtocolKube,
-			events.PortForwardAddr:    addr,
-			events.PortForwardSuccess: success,
-			events.EventLogin:         ctx.User.GetName(),
-			events.EventUser:          ctx.User.GetName(),
-			events.LocalAddr:          sess.cluster.targetAddr,
-			events.RemoteAddr:         req.RemoteAddr,
-		})
+		if !success {
+			portForward.Code = events.PortForwardFailureCode
+		}
+		f.Client.EmitAuditEvent(f.Context, portForward)
 	}
 
 	q := req.URL.Query()
@@ -848,7 +947,7 @@ func (s *clusterSession) monitorConn(conn net.Conn, err error) (net.Conn, error)
 		Context:               ctx,
 		TeleportUser:          s.User.GetName(),
 		ServerID:              s.parent.ServerID,
-		Audit:                 s.parent.AuditLog,
+		Emitter:               s.parent.Client,
 		Entry:                 s.parent.Entry,
 	})
 	if err != nil {

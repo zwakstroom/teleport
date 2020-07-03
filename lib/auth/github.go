@@ -83,29 +83,31 @@ type GithubAuthResponse struct {
 // ValidateGithubAuthCallback validates Github auth callback redirect
 func (a *AuthServer) ValidateGithubAuthCallback(q url.Values) (*GithubAuthResponse, error) {
 	re, err := a.validateGithubAuthCallback(q)
+	event := &events.UserLogin{
+		Metadata: events.Metadata{
+			Type: events.UserLoginEvent,
+		},
+		Method: events.LoginMethodGithub,
+	}
+	if re != nil && re.claims != nil {
+		attributes, err := events.EncodeMapStrings(re.claims)
+		if err != nil {
+			log.WithError(err).Debugf("Failed to encode identity attributes.")
+		} else {
+			event.IdentityAttributes = attributes
+		}
+	}
 	if err != nil {
-		fields := events.EventFields{
-			events.LoginMethod:        events.LoginMethodGithub,
-			events.AuthAttemptSuccess: false,
-			events.AuthAttemptErr:     err.Error(),
-		}
-		if re != nil && re.claims != nil {
-			fields[events.IdentityAttributes] = re.claims
-		}
-		// !!!FIXEVENTS!!!
-		a.EmitAuditEventLegacy(events.UserSSOLoginFailureE, fields)
+		event.Code = events.UserSSOLoginFailureCode
+		event.Status.Success = false
+		event.Status.Error = err.Error()
+		a.emitter.EmitAuditEvent(a.closeCtx, event)
 		return nil, trace.Wrap(err)
 	}
-	fields := events.EventFields{
-		events.EventUser:          re.auth.Username,
-		events.AuthAttemptSuccess: true,
-		events.LoginMethod:        events.LoginMethodGithub,
-	}
-	if re.claims != nil {
-		fields[events.IdentityAttributes] = re.claims
-	}
-	// !!!FIXEVENTS!!!
-	a.EmitAuditEventLegacy(events.UserSSOLoginE, fields)
+	event.Code = events.UserSSOLoginFailureCode
+	event.Status.Success = true
+	event.User = re.auth.Username
+	a.emitter.EmitAuditEvent(a.closeCtx, event)
 	return &re.auth, nil
 }
 
@@ -536,12 +538,17 @@ func (c *githubAPIClient) getTeams() ([]teamResponse, error) {
 
 			// Print warning to Teleport logs as well as the Audit Log.
 			log.Warnf(warningMessage)
-			// !!!FIXEVENTS!!!
-			c.authServer.EmitAuditEventLegacy(events.UserSSOLoginFailureE, events.EventFields{
-				events.LoginMethod:        events.LoginMethodGithub,
-				events.AuthAttemptMessage: warningMessage,
+			c.authServer.emitter.EmitAuditEvent(c.authServer.closeCtx, &events.UserLogin{
+				Metadata: events.Metadata{
+					Type: events.UserLoginEvent,
+					Code: events.UserSSOLoginFailureCode,
+				},
+				Method: events.LoginMethodGithub,
+				Status: events.Status{
+					Success: false,
+					Error:   warningMessage,
+				},
 			})
-
 			return result, nil
 		}
 

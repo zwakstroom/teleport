@@ -352,7 +352,7 @@ func NewServerContext(srv Server, conn *ssh.ServerConn, identityContext Identity
 			TeleportUser:          ctx.Identity.TeleportUser,
 			Login:                 ctx.Identity.Login,
 			ServerID:              ctx.srv.ID(),
-			Audit:                 ctx.srv.GetAuditLog(),
+			Emitter:               ctx.srv,
 			Entry:                 ctx.Entry,
 		})
 		if err != nil {

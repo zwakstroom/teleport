@@ -277,30 +277,33 @@ type SAMLAuthResponse struct {
 
 // ValidateSAMLResponse consumes attribute statements from SAML identity provider
 func (a *AuthServer) ValidateSAMLResponse(samlResponse string) (*SAMLAuthResponse, error) {
+	event := &events.UserLogin{
+		Metadata: events.Metadata{
+			Type: events.UserLoginEvent,
+		},
+		Method: events.LoginMethodSAML,
+	}
 	re, err := a.validateSAMLResponse(samlResponse)
+	if re != nil && re.attributeStatements != nil {
+		attributes, err := events.EncodeMapStrings(re.attributeStatements)
+		if err != nil {
+			log.WithError(err).Debugf("Failed to encode identity attributes.")
+		} else {
+			event.IdentityAttributes = attributes
+		}
+	}
 	if err != nil {
-		fields := events.EventFields{
-			events.LoginMethod:        events.LoginMethodSAML,
-			events.AuthAttemptSuccess: false,
-			events.AuthAttemptErr:     err.Error(),
-		}
-		if re != nil && re.attributeStatements != nil {
-			fields[events.IdentityAttributes] = re.attributeStatements
-		}
-		// !!!FIXEVENTS!!!
-		a.EmitAuditEventLegacy(events.UserSSOLoginFailureE, fields)
+		event.Code = events.UserSSOLoginFailureCode
+		event.Status.Success = false
+		event.Status.Error = trace.Unwrap(err).Error()
+		event.Status.UserMessage = err.Error()
+		a.emitter.EmitAuditEvent(a.closeCtx, event)
 		return nil, trace.Wrap(err)
 	}
-	fields := events.EventFields{
-		events.EventUser:          re.auth.Username,
-		events.AuthAttemptSuccess: true,
-		events.LoginMethod:        events.LoginMethodSAML,
-	}
-	if re != nil && re.attributeStatements != nil {
-		fields[events.IdentityAttributes] = re.attributeStatements
-	}
-	// !!!FIXEVENTS!!!
-	a.EmitAuditEventLegacy(events.UserSSOLoginE, fields)
+	event.Status.Success = true
+	event.User = re.auth.Username
+	event.Code = events.UserSSOLoginCode
+	a.emitter.EmitAuditEvent(a.closeCtx, event)
 	return &re.auth, nil
 }
 

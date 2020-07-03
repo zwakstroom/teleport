@@ -893,12 +893,17 @@ func (a *AuthWithRoles) GetUsers(withSecrets bool) ([]services.User, error) {
 		if !a.hasBuiltinRole(string(teleport.RoleAdmin)) {
 			err := trace.AccessDenied("user %q requested access to all users with secrets", a.context.User.GetName())
 			log.Warning(err)
-			// !!!FIXEVENTS!!!
-			a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
-				events.LoginMethod:        events.LoginMethodClientCert,
-				events.AuthAttemptSuccess: false,
-				// log the original internal error in audit log
-				events.AuthAttemptErr: trace.Unwrap(err).Error(),
+			a.authServer.emitter.EmitAuditEvent(a.authServer.closeCtx, &events.UserLogin{
+				Metadata: events.Metadata{
+					Type: events.UserLoginEvent,
+					Code: events.UserLocalLoginFailureCode,
+				},
+				Method: events.LoginMethodClientCert,
+				Status: events.Status{
+					Success:     false,
+					Error:       trace.Unwrap(err).Error(),
+					UserMessage: err.Error(),
+				},
 			})
 			return nil, trace.AccessDenied("this request can be only executed by an admin")
 		}
@@ -920,12 +925,17 @@ func (a *AuthWithRoles) GetUser(name string, withSecrets bool) (services.User, e
 		if !a.hasBuiltinRole(string(teleport.RoleAdmin)) {
 			err := trace.AccessDenied("user %q requested access to user %q with secrets", a.context.User.GetName(), name)
 			log.Warning(err)
-			// !!!FIXEVENTS!!!
-			a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
-				events.LoginMethod:        events.LoginMethodClientCert,
-				events.AuthAttemptSuccess: false,
-				// log the original internal error in audit log
-				events.AuthAttemptErr: trace.Unwrap(err).Error(),
+			a.authServer.emitter.EmitAuditEvent(a.authServer.closeCtx, &events.UserLogin{
+				Metadata: events.Metadata{
+					Type: events.UserLoginEvent,
+					Code: events.UserLocalLoginFailureCode,
+				},
+				Method: events.LoginMethodClientCert,
+				Status: events.Status{
+					Success:     false,
+					Error:       trace.Unwrap(err).Error(),
+					UserMessage: err.Error(),
+				},
 			})
 			return nil, trace.AccessDenied("this request can be only executed by an admin")
 		}
@@ -1008,12 +1018,17 @@ func (a *AuthWithRoles) GenerateUserCerts(ctx context.Context, req proto.UserCer
 	default:
 		err := trace.AccessDenied("user %q has requested to generate certs for %q.", a.context.User.GetName(), req.Username)
 		log.Warning(err)
-		// !!!FIXEVENTS!!!
-		a.authServer.EmitAuditEventLegacy(events.UserLocalLoginFailureE, events.EventFields{
-			events.LoginMethod:        events.LoginMethodClientCert,
-			events.AuthAttemptSuccess: false,
-			// log the original internal error in audit log
-			events.AuthAttemptErr: trace.Unwrap(err).Error(),
+		a.authServer.emitter.EmitAuditEvent(ctx, &events.UserLogin{
+			Metadata: events.Metadata{
+				Type: events.UserLoginEvent,
+				Code: events.UserLocalLoginFailureCode,
+			},
+			Method: events.LoginMethodClientCert,
+			Status: events.Status{
+				Success:     false,
+				Error:       trace.Unwrap(err).Error(),
+				UserMessage: err.Error(),
+			},
 		})
 		// this error is vague on purpose, it should not happen unless someone is trying something out of loop
 		return nil, trace.AccessDenied("this request can be only executed by an admin")

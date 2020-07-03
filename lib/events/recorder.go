@@ -34,8 +34,7 @@ import (
 type SessionRecorder interface {
 	io.Writer
 	io.Closer
-	// GetAuditLog returns audit log associated with this log
-	GetAuditLog() IAuditLog
+	Emitter
 }
 
 // DiscardRecorder discards all writes

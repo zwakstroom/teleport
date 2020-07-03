@@ -65,6 +65,9 @@ message ConnectionMetadata {
         
 	// RemoteAddr is a client (user's) address
 	string RemoteAddr = 2 [(gogoproto.jsontag) = "addr.remote,omitempty"];
+
+    // Protocol specifies protocol that was captured
+	string Protocol = 3 [(gogoproto.jsontag) = "proto,omitempty"];        
 }
 
 // SessionStart is a session start event
@@ -150,7 +153,6 @@ message Resize {
     // TerminalSize is expressed as 'W:H'
 	string TerminalSize = 6 [(gogoproto.jsontag) = "size,omitempty"];
 }
-
 
 // SessionEnd is a session end event
 message SessionEnd {
@@ -374,6 +376,54 @@ message UserUpdate {
     google.protobuf.Timestamp Expires = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "expires"];
 }
 
+// UserDelete is emitted when a user gets deleted
+message UserDelete {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+}
+
+// AccessRequestCreated is emitted when access request has been created
+message AccessRequestCreated {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+	// Roles is a list of roles for the user.
+	repeated string Roles = 3 [(gogoproto.jsontag) = "roles"];
+
+	// RequestID is access request ID
+	string RequestID = 4 [(gogoproto.jsontag) = "id"];
+
+	// RequestState is access request state
+	string RequestState = 5 [(gogoproto.jsontag) = "state"];
+}
+
+// AccessRequestUpdated is emitted when access request was updated
+message AccessRequestUpdated {
+    // Metadata is a common event metadata
+    Metadata Metadata = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+    // User is a common user event metadata
+    UserMetadata User = 2 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
+
+	// Roles is a list of roles for the user.
+	repeated string Roles = 3 [(gogoproto.jsontag) = "roles"];
+
+	// RequestID is access request ID
+	string RequestID = 4 [(gogoproto.jsontag) = "id"];
+
+	// RequestState is access request state
+	string RequestState = 5 [(gogoproto.jsontag) = "state"];
+
+	// RequestUpdatedBy specifies 
+	string UpdatedBy = 6 [(gogoproto.jsontag) = "updated_by"];
+}
+
 // PortForward is emitted when a user requests port forwarding.
 message PortForward {
     // Metadata is a common event metadata
@@ -480,9 +530,12 @@ message ClientDisconnect {
     // ConnectionMetadata holds information about the connection
     ConnectionMetadata Connection = 3 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];
 
+    // ServerMetadata is a common server metadata
+    ServerMetadata Server = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
+
 	// Reason is a field that specifies reason for event, e.g. in disconnect
 	// event it explains why server disconnected the client
-	string Reason = 4 [(gogoproto.jsontag) = "reason"];
+	string Reason = 5 [(gogoproto.jsontag) = "reason"];
 }
 
 // AuthAttempt is emitted upon a failed or successfull authentication attempt.
@@ -500,30 +553,33 @@ message AuthAttempt {
     Status Status = 4 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.jsontag) = ""];    
 }
 
-
 // OneOf is a union of one of audit events submitted to the auth service
 message OneOf {
     // Event is one of the audit events
     oneof Event {
         events.UserLogin UserLogin = 1;
         events.UserUpdate UserUpdate = 2;
-        events.SessionStart SessionStart = 3;
-        events.SessionJoin SessionJoin = 4;
-        events.SessionPrint SessionPrint = 5;
-        events.Resize Resize = 6;
-        events.SessionEnd SessionEnd = 7;
-        events.SessionCommand SessionCommand = 8;
-        events.SessionDisk SessionDisk = 9;
-        events.SessionNetwork SessionNetwork = 10;
-        events.SessionData SessionData = 11;
-        events.SessionLeave SessionLeave = 12;
-        events.PortForward PortForward = 13;
-        events.Subsystem Subsystem = 14;
-        events.ClientDisconnect ClientDisconnect = 15;
-        events.AuthAttempt AuthAttempt = 16;
+        events.UserDelete UserDelete = 3;
+        events.SessionStart SessionStart = 4;
+        events.SessionJoin SessionJoin = 5;
+        events.SessionPrint SessionPrint = 6;
+        events.Resize Resize = 7;
+        events.SessionEnd SessionEnd = 8;
+        events.SessionCommand SessionCommand = 9;
+        events.SessionDisk SessionDisk = 10;
+        events.SessionNetwork SessionNetwork = 11;
+        events.SessionData SessionData = 12;
+        events.SessionLeave SessionLeave = 13;
+        events.PortForward PortForward = 14;
+        events.SCP SCP = 15;
+        events.Exec Exec = 16;
+        events.Subsystem Subsystem = 17;
+        events.ClientDisconnect ClientDisconnect = 18;
+        events.AuthAttempt AuthAttempt = 19;
+        events.AccessRequestCreated AccessRequestCreated = 20;
+        events.AccessRequestUpdated AccessRequestUpdated = 21;        
     }
 }
-
 
 // StreamStatus reflects stream status
 message StreamStatus  {

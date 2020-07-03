@@ -431,7 +431,7 @@ func emitExecAuditEvent(ctx *ServerContext, cmd string, execErr error) {
 		}
 		ctx.srv.EmitAuditEvent(ctx.srv.Context(), scpEvent)
 	} else {
-		execEvent := &events.SCP{
+		execEvent := &events.Exec{
 			Metadata: events.Metadata{
 				Type: events.ExecEvent,
 			},

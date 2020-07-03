@@ -464,9 +464,14 @@ func (a *AuthServer) DeleteUser(user string) error {
 	}
 
 	// If the user was successfully deleted, emit an event.
-	// !!!FIXEVENTS!!!
-	a.EmitAuditEventLegacy(events.UserDeleteE, events.EventFields{
-		events.EventUser: user,
+	a.emitter.EmitAuditEvent(a.closeCtx, &events.UserDelete{
+		Metadata: events.Metadata{
+			Type: events.UserDeleteEvent,
+			Code: events.UserDeleteCode,
+		},
+		UserMetadata: events.UserMetadata{
+			User: user,
+		},
 	})
 
 	return nil
