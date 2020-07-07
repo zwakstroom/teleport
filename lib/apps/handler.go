@@ -17,6 +17,8 @@ limitations under the License.
 package apps
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -92,7 +94,7 @@ func nameFromRequest(r *http.Request) (string, error) {
 }
 
 // TODO: Add support for Trusted Clusters.
-func (a *Handler) IsApp(r *http.Request) (services.App, error) {
+func (h *Handler) IsApp(r *http.Request) (services.App, error) {
 	name, err := nameFromRequest(r)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -106,59 +108,117 @@ func (a *Handler) IsApp(r *http.Request) (services.App, error) {
 	return app, nil
 }
 
-type session struct {
-}
-
-func (s *session) Identity() (*tlsca.Identity, error) {
-}
-
-func (s *session) RoleSet() (services.RoleSet, error) {
-}
-
-func (s *session) ClusterName() (string, error) {
-}
-
-func (s *session) ClusterClient(reversetunnel.RemoteSite, error) {
-
-}
-
-func extractSessionCookie(r *http.Request) (*SessionCookie, error) {
-	cookie, err := r.Cookie("app_session")
-	if err != nil || (cookie != nil && cookie.Value == "") {
-		if err != nil {
-			logger.Warn(err)
-		}
-		return nil, trace.AccessDenied(missingCookieMsg)
+// TODO: Cache this!
+func (h *Handler) newSession(r *http.Request, cookie *sessionCookie, s services.WebSession) (*session, error) {
+	// Extract services.App and reversetunnel.RemoteSite that were attached to
+	// this request when checking if the request is for a valid application in
+	// the root (or leaf) cluster.
+	app, ok := r.Context().Value("app").(services.App)
+	if !ok {
+		return nil, trace.BadParameter("invalid session: no app attached")
+	}
+	clusterClient, ok := r.Context().Value("clusterClient").(reversetunnel.RemoteSite)
+	if !ok {
+		return nil, trace.BadParameter("invalid session: no cluster client")
 	}
 
-	d, err := DecodeCookie(cookie.Value)
+	// TODO: Does this work for trusted clusters? If not, the request may need
+	// to be signed later.
+	ca, err := h.AuthClient.GetCertAuthority(services.CertAuthID{
+		Type:       services.HostCA,
+		DomainName: cookie.ClusterName,
+	}, true)
 	if err != nil {
-		logger.Warningf("failed to decode cookie: %v", err)
-		return nil, trace.AccessDenied("failed to decode cookie")
+		return nil, trace.Wrap(err)
 	}
-
-}
-
-func (h *Handler) ValidateSession(w http.ResponseWriter, r *http.Request) (*appContext, error) {
-	cookie, err := exactSessionCookie(r)
+	jwtKey, err := ca.JWTKeyPair()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	// Try and find a matching app session (services.WebSession) for this user
-	// in the backend, if a session is not found, re-direct the user to the login
-	// screen with a re-direct back to this application.
-	s, err := h.AuthClient.GetSession(&services.SessionRequest{
-		Type:       services.AppSession,
-		User:       cookie.User,
-		ParentHash: cookie.ParentHash,
-		SessionID:  cookie.SessionID,
-	})
+	// Extract the identity of the signed in user.
+	cert, err := utils.ParseCertificatePEM(s.GetTLSCert())
 	if err != nil {
-		// TODO!
-		http.Redirect(w, r, "/login&redir=https://appName", 302)
-		return
+		return nil, trace.Wrap(err)
 	}
+	identity, err := tlsca.FromSubject(cert.Subject, cert.NotAfter)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Extract the roles to get an access checker.
+	roles, traits, err := services.ExtractFromIdentity(h.AuthClient, identity)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	checker, err := services.FetchRoles(roles, h.AuthClient, traits)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &session{
+		clusterName:   cookie.ClusterName,
+		checker:       checker,
+		app:           app,
+		authClient:    h.AuthClient,
+		identity:      identity,
+		jwtKey:        jwtKey,
+		clusterClient: clusterClient,
+	}, nil
+}
+
+type session struct {
+	clusterName   string
+	checker       checker
+	app           services.App
+	authClient    auth.ClientI
+	identity      *tlsca.Identity
+	jwtKey        *jwt.Key
+	clusterClient reversetunnel.RemoteSite
+}
+
+func extractSessionCookie(r *http.Request) (*sessionCookie, error) {
+	cookie, err := r.Cookie("app_session")
+	if err != nil || (cookie != nil && cookie.Value == "") {
+		if err != nil {
+			log.Warnf("No (app) session cookie found: %v.", err)
+		}
+		return nil, trace.AccessDenied("missingCookieMsg")
+	}
+
+	d, err := decodeCookie(cookie.Value)
+	if err != nil {
+		log.Warnf("Failed to decode cookie: %v.", err)
+		return nil, trace.AccessDenied("failed to decode cookie")
+	}
+
+	return d, nil
+}
+
+func (h *Handler) ValidateSession(w http.ResponseWriter, r *http.Request) (*session, error) {
+	cookie, err := extractSessionCookie(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	//// Try and find a matching app session for this user in the backend.
+	//s, err := h.AuthClient.GetSession(&services.SessionRequest{
+	//	Type:       services.AppSession,
+	//	User:       cookie.User,
+	//	ParentHash: cookie.ParentHash,
+	//	SessionID:  cookie.SessionID,
+	//})
+	//if err != nil {
+	//	return nil, trace.NotFound("session not found")
+	//}
+	s := &services.WebSessionV2{}
+
+	// Wrap services.WebSession into session that has convenience functions.
+	session, err := h.newSession(r, cookie, s)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return session, nil
 
 	//// Verify with @alex-kovoy that it's okay that bearer token is false. This
 	//// appears to make sense because the bearer token is injected client side
@@ -210,50 +270,32 @@ func (h *Handler) ValidateSession(w http.ResponseWriter, r *http.Request) (*appC
 	//// Pass the request along to the apps handler.
 	//h.appsHandler.ServeHTTP(w, r)
 	//return
-
 }
 
 // ServeHTTP will try and find the proxied application that the caller is
 // requesting. If any error occurs or the application is not found, the
 // request is passed to the next handler (which would be the Web UI).
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, err := h.ValidateSession(w, r)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
+	s, err := h.ValidateSession(w, r)
+	if trace.IsNotFound(err) {
+		http.Redirect(w, r, "/login&redir=https://appName", 302)
 		return
 	}
-
-	// Extract the services.App the client requested.
-	app, ok := r.Context().Value("app").(services.App)
-	if !ok {
+	if err != nil {
 		http.Error(w, "internal service error", 500)
 		return
 	}
 
-	// Extract the services.RoleSet the client requested.
-	checker, ok := r.Context().Value("checker").(checker)
-	if !ok {
-		http.Error(w, "internal service error", 500)
-		return
-	}
-	err := checker.CheckAccessToApp(app, r)
+	err = s.checker.CheckAccessToApp(s.app, r)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("access to app %v denied", app.GetName()), 401)
+		http.Error(w, fmt.Sprintf("access to app %v denied", s.app.GetName()), 401)
 		return
 	}
 	fmt.Printf("--> checker.CheckAccessToApp: %v.\n", err)
 
-	// Extract the reversetunnel.RemoteSite the client requested.
-	clusterClient, ok := r.Context().Value("clusterClient").(reversetunnel.RemoteSite)
-	if !ok {
-		fmt.Printf("--> clusterClient: %v.\n", err)
-		http.Error(w, "internal service error", 500)
-		return
-	}
-
 	// Get a net.Conn over the reverse tunnel connection.
-	conn, err := clusterClient.Dial(reversetunnel.DialParams{
-		ServerID: strings.Join([]string{app.GetHostUUID(), clusterClient.GetName()}, "."),
+	conn, err := s.clusterClient.Dial(reversetunnel.DialParams{
+		ServerID: strings.Join([]string{s.app.GetHostUUID(), s.clusterClient.GetName()}, "."),
 		ConnType: services.AppTunnel,
 	})
 	if err != nil {
@@ -265,37 +307,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clusterName, ok := r.Context().Value("clusterName").(string)
-	if !ok {
-		http.Error(w, "internal service error", 500)
-		return
-	}
-
-	ca, err := h.AuthClient.GetCertAuthority(services.CertAuthID{
-		Type:       services.HostCA,
-		DomainName: clusterName,
-	}, true)
-	if err != nil {
-		fmt.Printf("--> ca: %v.\n", err)
-		http.Error(w, "internal service error", 500)
-		return
-	}
-
-	identity, ok := r.Context().Value("identity").(*tlsca.Identity)
-	if !ok {
-		fmt.Printf("--> identity: %v.\n", err)
-		http.Error(w, "internal service error", 500)
-		return
-	}
-
-	token, err := ca.JWTKeyPair()
-	if err != nil {
-		fmt.Printf("--> get jwt: %v.\n", err)
-		http.Error(w, "internal service error", 500)
-		return
-	}
-	signedToken, err := token.Sign(&jwt.SignParams{
-		Email: identity.Username,
+	signedToken, err := s.jwtKey.Sign(&jwt.SignParams{
+		Email: s.identity.Username,
 	})
 	if err != nil {
 		fmt.Printf("--> get signed token: %v.\n", err)
@@ -389,4 +402,39 @@ func (t *customTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	//}
 
 	return resp, nil
+}
+
+type sessionCookie struct {
+	// User is the identity of the user for whom this session belongs.
+	User string `json:"user"`
+
+	// SID  is the ID of this session.
+	SID string `json:"sid"`
+
+	// ParentHash is the hash of the parents session ID. This is only used by AAP.
+	ParentHash string `json:"parent_hash,omitempty"`
+
+	// ClusterName is the name of the cluster this request is targetting. This
+	// is only used by AAP.
+	ClusterName string `json:"cluster_name,omitempty"`
+}
+
+func encodeCookie(user string, sid string) (string, error) {
+	bytes, err := json.Marshal(sessionCookie{User: user, SID: sid})
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
+func decodeCookie(b string) (*sessionCookie, error) {
+	bytes, err := hex.DecodeString(b)
+	if err != nil {
+		return nil, err
+	}
+	var c *sessionCookie
+	if err := json.Unmarshal(bytes, &c); err != nil {
+		return nil, err
+	}
+	return c, nil
 }

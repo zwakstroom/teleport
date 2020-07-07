@@ -142,6 +142,16 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// If the caller requested a registered application, authenticate the
 	// request and then forward it to the apps handler.
 	case err == nil:
+		// TODO: This client needs to be the cluster within which the application
+		// is running.
+		clusterClient, err := h.handler.cfg.Proxy.GetSite("example.com")
+		if err != nil {
+			http.Error(w, "access denied", 401)
+			return
+		}
+		r := r.WithContext(context.WithValue(r.Context(), "clusterClient", clusterClient))
+
+		r = r.WithContext(context.WithValue(r.Context(), "app", app))
 		h.appsHandler.ServeHTTP(w, r)
 		return
 
@@ -1221,17 +1231,13 @@ func (h *Handler) createSession(w http.ResponseWriter, r *http.Request, p httpro
 		return nil, trace.AccessDenied("bad auth credentials")
 	}
 
-	as, err := services.NewAppSession()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
 	if err := SetSession(w, req.User, webSession.GetName()); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	ctx, err := h.auth.ValidateSession(req.User, webSession.GetName())
 	if err != nil {
+		log.Warningf("access attempt denied for user %q: %v", req.User, err)
 		return nil, trace.AccessDenied("need auth")
 	}
 

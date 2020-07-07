@@ -246,22 +246,35 @@ message DeleteAllAppsRequest {
     string Namespace = 1 [ (gogoproto.jsontag) = "namespace" ];
 }
 
-message UpsertAppSessionRequest {
-    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
+// message UpsertAppSessionRequest {
+//    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
+//}
+//
+// message GetAppSessionRequest {
+//    string Username = 1 [ (gogoproto.jsontag) = "username" ];
+//    string ID = 2 [ (gogoproto.jsontag) = "id" ];
+//}
+//
+// message GetAppSessionResponse {
+//    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
+//}
+//
+// message DeleteAppSessionRequest {
+//    string Username = 1 [ (gogoproto.jsontag) = "username" ];
+//    string ID = 2 [ (gogoproto.jsontag) = "id" ];
+//}
+
+
+
+message GetWebSessionRequest {
+    string Type = 1 [ (gogoproto.jsontag) = "type" ];
+    string Username = 2 [ (gogoproto.jsontag) = "user" ];
+    string ParentHash = 3 [ (gogoproto.jsontag) = "parent_hash" ];
+    string SessionID = 4 [ (gogoproto.jsontag) = "session_id" ];
 }
 
-message GetAppSessionRequest {
-    string Username = 1 [ (gogoproto.jsontag) = "username" ];
-    string ID = 2 [ (gogoproto.jsontag) = "id" ];
-}
-
-message GetAppSessionResponse {
-    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
-}
-
-message DeleteAppSessionRequest {
-    string Username = 1 [ (gogoproto.jsontag) = "username" ];
-    string ID = 2 [ (gogoproto.jsontag) = "id" ];
+message GetWebSessionResponse {
+    services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
 }
 
 // AuthService is authentication/authorization service implementation
@@ -317,7 +330,10 @@ service AuthService {
     // DeleteAllApp un-registers an application.
     rpc DeleteAllApps(DeleteAllAppsRequest) returns (google.protobuf.Empty);
 
-    rpc UpsertAppSession(UpsertAppSessionRequest) returns (google.protobuf.Empty);
-    rpc GetAppSession(GetAppSessionRequest) returns (GetAppSessionResponse);
-    rpc DeleteAppSession(DeleteAppSessionRequest) returns (google.protobuf.Empty);
+    // GetWebSession returns a services.WebSession. Can be an web or app session.
+    rpc GetWebSession(GetWebSessionRequest) returns (GetWebSessionResponse);
+
+    // rpc UpsertAppSession(UpsertAppSessionRequest) returns (google.protobuf.Empty);
+    // rpc GetAppSession(GetAppSessionRequest) returns (GetAppSessionResponse);
+    // rpc DeleteAppSession(DeleteAppSessionRequest) returns (google.protobuf.Empty);
 }

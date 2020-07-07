@@ -1019,7 +1019,57 @@ message TunnelConnectionSpecV2 {
     string Type = 4 [ (gogoproto.jsontag) = "type", (gogoproto.casttype) = "TunnelType" ];
 }
 
-//message AppSessionV3 {
+message WebSessionV3 {
+    option (gogoproto.goproto_stringer) = false;
+    option (gogoproto.stringer) = false;
+
+    // Kind is a resource kind.
+    string Kind = 1 [ (gogoproto.jsontag) = "kind" ];
+    // SubKind is an optional resource sub kind, used in some resources.
+    string SubKind = 2 [ (gogoproto.jsontag) = "sub_kind,omitempty" ];
+    // Version is version.
+    string Version = 3 [ (gogoproto.jsontag) = "version" ];
+    // Metadata is a resource metadata.
+    Metadata Metadata = 4 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata" ];
+    // Spec is a tunnel specification.
+    WebSessionSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
+}
+
+message WebSessionSpecV3 {
+    string User = 1 [ (gogoproto.jsontag) = "user" ];
+    bytes Pub = 2 [ (gogoproto.jsontag) = "pub" ];
+    bytes Priv = 3 [ (gogoproto.jsontag) = "priv,omitempty" ];
+    bytes TLSCert = 4 [ (gogoproto.jsontag) = "tls_cert,omitempty" ];
+    string BearerToken = 5 [ (gogoproto.jsontag) = "bearer_token" ];
+    google.protobuf.Timestamp BearerTokenExpires = 3 [
+        (gogoproto.stdtime) = true,
+        (gogoproto.nullable) = false,
+        (gogoproto.jsontag) = "bearer_token_expires"
+    ];
+    google.protobuf.Timestamp Expires = 6 [
+        (gogoproto.stdtime) = true,
+        (gogoproto.nullable) = false,
+        (gogoproto.jsontag) = "expires"
+    ];
+}
+
+	//// User is a user this web session belongs to
+	//User string `json:"user"`
+	//// Pub is a public certificate signed by auth server
+	//Pub []byte `json:"pub"`
+	//// Priv is a private OpenSSH key used to auth with SSH nodes
+	//Priv []byte `json:"priv,omitempty"`
+	//// TLSCert is a TLS certificate used to auth with auth server
+	//TLSCert []byte `json:"tls_cert,omitempty"`
+	//// BearerToken is a special bearer token used for additional
+	//// bearer authentication
+	//BearerToken string `json:"bearer_token"`
+	//// BearerTokenExpires - absolute time when token expires
+	//BearerTokenExpires time.Time `json:"bearer_token_expires"`
+	//// Expires - absolute time when session expires
+	//Expires time.Time `json:"expires"`
+
+// message AppSessionV3 {
 //    option (gogoproto.goproto_stringer) = false;
 //    option (gogoproto.stringer) = false;
 //
@@ -1035,7 +1085,7 @@ message TunnelConnectionSpecV2 {
 //    AppSessionSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
 //}
 //
-//message AppSessionSpecV3 {
+// message AppSessionSpecV3 {
 //    // Username is the Teleport username for the logged in user.
 //    string Username = 1 [ (gogoproto.jsontag) = "username" ];
 //
