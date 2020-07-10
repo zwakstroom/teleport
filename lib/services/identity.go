@@ -114,7 +114,8 @@ type Identity interface {
 	DeleteUsedTOTPToken(user string) error
 
 	// UpsertWebSession updates or inserts a web session for a user and session
-	UpsertWebSession(user, sid string, session WebSession) error
+	//UpsertWebSession(user, sid string, session WebSession) error
+	UpsertWebSession(context.Context, *UpsertWebSessionRequest) error
 
 	// GetWebSession returns a web session state for a given user and session id
 	GetWebSession(user, sid string) (WebSession, error)
@@ -122,9 +123,10 @@ type Identity interface {
 	// DeleteWebSession deletes web session from the storage
 	DeleteWebSession(user, sid string) error
 
-	UpsertAppSession(context.Context, AppSession) error
-	GetAppSession(context.Context, string, string) (AppSession, error)
-	DeleteAppSession(context.Context, string, string) error
+	GetAppSession(context.Context, string, string, string) (WebSession, error)
+	//UpsertAppSession(context.Context, AppSession) error
+	//GetAppSession(context.Context, string, string) (AppSession, error)
+	//DeleteAppSession(context.Context, string, string) error
 
 	// UpsertPassword upserts new password and OTP token
 	UpsertPassword(user string, password []byte) error

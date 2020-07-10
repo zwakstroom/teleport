@@ -461,7 +461,6 @@ func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) err
 	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
-
 	if err := a.authServer.DeleteAllApps(ctx, namespace); err != nil {
 		return trace.Wrap(err)
 	}
@@ -469,28 +468,15 @@ func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) err
 	return nil
 }
 
-func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.AppSession) error {
-	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbCreate); err != nil {
-		return trace.Wrap(err)
-	}
-	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbUpdate); err != nil {
-		return trace.Wrap(err)
-	}
-	return a.authServer.UpsertAppSession(ctx, session)
-}
+func (a *AuthWithRoles) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.WebSession, error) {
+	// TODO: Add access control here!!
 
-func (a *AuthWithRoles) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
-	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
+	session, err := a.authServer.ExchangeWebSession(ctx, username, sessionID)
+	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	return a.authServer.GetAppSession(ctx, username, id)
-}
 
-func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, username string, id string) error {
-	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
-		return trace.Wrap(err)
-	}
-	return a.authServer.DeleteAppSession(ctx, username, id)
+	return session, nil
 }
 
 // NewWatcher returns a new event watcher
@@ -903,6 +889,11 @@ func (a *AuthWithRoles) ExtendWebSession(user, prevSessionID string) (services.W
 		return nil, trace.Wrap(err)
 	}
 	return a.authServer.ExtendWebSession(user, prevSessionID, &a.identity)
+}
+
+func (a *AuthWithRoles) GetWebSession(ctx context.Context, r *WebSessionRequest) (services.WebSession, error) {
+	// TODO: Only proxy should be able to get this??
+	return a.authServer.GetWebSession(ctx, r)
 }
 
 func (a *AuthWithRoles) GetWebSessionInfo(user string, sid string) (services.WebSession, error) {

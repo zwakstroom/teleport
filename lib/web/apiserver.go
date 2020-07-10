@@ -253,6 +253,8 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 	// Unauthenticated access to public keys.
 	h.GET("/webapi/certs", httplib.MakeHandler(h.certs))
 
+	h.GET("/webapi/tmplogin", httplib.MakeHandler(h.tmplogin))
+
 	// Web sessions
 	h.POST("/webapi/sessions", httplib.WithCSRFProtection(h.createSession))
 	h.DELETE("/webapi/sessions", h.WithAuth(h.deleteSession))
@@ -817,6 +819,49 @@ func (h *Handler) certs(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	return &certsResponse{
 		JWTKeys: ca.GetJWTKeyPairs(),
 	}, nil
+}
+
+func (h *Handler) tmplogin(w http.ResponseWriter, r *http.Request, p httprouter.Params) (interface{}, error) {
+	//// TODO: Should we check the bearerToken here?
+	//ctx, err := h.AuthenticateRequest(w, r, false)
+	//if err != nil {
+	//	fmt.Printf("--> bad situation!")
+	//	return nil, trace.Wrap(err)
+	//}
+
+	rawCookie, err := r.Cookie("session")
+	fmt.Printf("--> rawCookie: %v.\n", rawCookie)
+	if err != nil || (rawCookie != nil && rawCookie.Value == "") {
+		return nil, trace.AccessDenied("tmplogin: missing cookie")
+	}
+	parentCookie, err := DecodeCookie(rawCookie.Value)
+	if err != nil {
+		return nil, trace.AccessDenied("failed to decode cookie")
+	}
+
+	fmt.Printf("--> parentCookie.User: %v, parentCookie.SID: %v.\n", parentCookie.User, parentCookie.SID)
+
+	session, err := h.auth.proxyClient.ExchangeWebSession(r.Context(), parentCookie.User, parentCookie.SID)
+	if err != nil {
+		fmt.Printf("--> Failed to ExtendWebSession: %v.\n", err)
+		http.Redirect(w, r, "https://proxy.example.com:3080/web/login", http.StatusFound)
+		return nil, nil
+	}
+
+	// If the user was able to successfully exchange an existing web session
+	// token for a app session token, create a cookie from it and set it on the
+	// response.
+	cookie, err := apps.CookieFromSession(parentCookie.User, parentCookie.SID, session)
+	if err != nil {
+		// TODO: What should happen here, show an error to the user?
+		return nil, trace.Wrap(err)
+	}
+	http.SetCookie(w, cookie)
+
+	// Re-direct the user back to calling application.
+	http.Redirect(w, r, "https://dumper.proxy.example.com:3080", http.StatusFound)
+
+	return nil, nil
 }
 
 func (h *Handler) oidcLoginWeb(w http.ResponseWriter, r *http.Request, p httprouter.Params) (interface{}, error) {

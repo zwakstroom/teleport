@@ -18,6 +18,7 @@ package local
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/services"
@@ -27,21 +28,44 @@ import (
 // UpsertWebSession updates or inserts a web session for a user and session ID
 // the session will be created with bearer token expiry time TTL, because
 // it is expected to be extended by the client before then.
-func (s *IdentityService) UpsertWebSession(user, sid string, session services.WebSession) error {
-	session.SetUser(user)
-	session.SetName(sid)
-	value, err := services.GetWebSessionMarshaler().MarshalWebSession(session)
+//func (s *IdentityService) UpsertWebSession(user, sid string, session services.WebSession) error {
+func (s *IdentityService) UpsertWebSession(ctx context.Context, r *services.UpsertWebSessionRequest) error {
+	r.Session.SetUser(r.Username)
+	r.Session.SetName(r.SessionID)
+	value, err := services.GetWebSessionMarshaler().MarshalWebSession(r.Session)
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	sessionMetadata := session.GetMetadata()
-	item := backend.Item{
-		Key:     backend.Key(webPrefix, usersPrefix, user, sessionsPrefix, sid),
-		Value:   value,
-		Expires: backend.EarliestExpiry(session.GetBearerTokenExpiryTime(), sessionMetadata.Expiry()),
+
+	// Adjust the key based off if the request is to create an application or web session.
+	key := backend.Key(webPrefix, usersPrefix, r.Username, sessionsPrefix, r.SessionID)
+	if r.Type == services.AppSessionType {
+		key = backend.Key(webPrefix, usersPrefix, r.Username, sessionsPrefix, r.ParentHash, r.SessionID)
 	}
-	_, err = s.Put(context.TODO(), item)
+	fmt.Printf("--> UpsertWebSession: key %v.\n", string(key))
+
+	sessionMetadata := r.Session.GetMetadata()
+	item := backend.Item{
+		Key:     key,
+		Value:   value,
+		Expires: backend.EarliestExpiry(r.Session.GetBearerTokenExpiryTime(), sessionMetadata.Expiry()),
+	}
+	_, err = s.Put(ctx, item)
 	return trace.Wrap(err)
+}
+
+func (s *IdentityService) GetAppSession(ctx context.Context, username string, sessionID string, parentHash string) (services.WebSession, error) {
+	item, err := s.Get(ctx, backend.Key(webPrefix, usersPrefix, username, sessionsPrefix, parentHash, sessionID))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return session, nil
 }
 
 // GetWebSession returns a web session state for a given user and session ID.
@@ -78,59 +102,4 @@ func (s *IdentityService) DeleteWebSession(user, sid string) error {
 	}
 	err := s.Delete(context.TODO(), backend.Key(webPrefix, usersPrefix, user, sessionsPrefix, sid))
 	return trace.Wrap(err)
-}
-
-func (s *IdentityService) UpsertAppSession(ctx context.Context, session services.AppSession) error {
-	value, err := services.GetAppSessionMarshaler().MarshalAppSession(session)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	item := backend.Item{
-		Key:     backend.Key(webPrefix, usersPrefix, session.GetUsername(), appSessionsPrefix, session.GetName()),
-		Value:   value,
-		Expires: *session.GetMetadata().Expires,
-	}
-	_, err = s.Put(ctx, item)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	return nil
-}
-
-func (s *IdentityService) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
-	if username == "" {
-		return nil, trace.BadParameter("missing username")
-	}
-	if id == "" {
-		return nil, trace.BadParameter("missing session id")
-	}
-
-	item, err := s.Get(ctx, backend.Key(webPrefix, usersPrefix, username, appSessionsPrefix, id))
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	return session, nil
-}
-
-func (s *IdentityService) DeleteAppSession(ctx context.Context, username string, id string) error {
-	if username == "" {
-		return trace.BadParameter("missing username")
-	}
-	if id == "" {
-		return trace.BadParameter("missing session id")
-	}
-
-	err := s.Delete(ctx, backend.Key(webPrefix, usersPrefix, username, appSessionsPrefix, id))
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	return nil
 }

@@ -498,53 +498,49 @@ func (g *GRPCServer) DeleteAllApps(ctx context.Context, req *proto.DeleteAllApps
 	return nil, nil
 }
 
-func (g *GRPCServer) UpsertAppSession(ctx context.Context, req *proto.UpsertAppSessionRequest) (*empty.Empty, error) {
+func (g *GRPCServer) GetWebSession(ctx context.Context, req *proto.GetWebSessionRequest) (*proto.GetWebSessionResponse, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
-	err = auth.UpsertAppSession(ctx, req.Session)
+	sess, err := auth.GetWebSession(ctx, &WebSessionRequest{
+		Type:       services.SessionType(req.GetType()),
+		Username:   req.GetUsername(),
+		SessionID:  req.GetSessionID(),
+		ParentHash: req.GetParentHash(),
+	})
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
-
-	return nil, nil
-}
-
-func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSessionRequest) (*proto.GetAppSessionResponse, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	session, err := auth.GetAppSession(ctx, req.GetUsername(), req.GetID())
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	sess, ok := session.(*services.AppSessionV3)
+	session, ok := sess.(*services.WebSessionV2)
 	if !ok {
-		return nil, trail.ToGRPC(trace.BadParameter("unexpected session type %T", sess))
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", sess))
 	}
 
-	return &proto.GetAppSessionResponse{
-		Session: sess,
+	return &proto.GetWebSessionResponse{
+		Session: session,
 	}, nil
 }
 
-func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *proto.DeleteAppSessionRequest) (*empty.Empty, error) {
+func (g *GRPCServer) ExchangeWebSession(ctx context.Context, r *proto.ExchangeWebSessionRequest) (*proto.ExchangeWebSessionResponse, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
-	err = auth.DeleteAppSession(ctx, req.GetUsername(), req.GetID())
+	sess, err := auth.ExchangeWebSession(ctx, r.Username, r.SessionID)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
+	session, ok := sess.(*services.WebSessionV2)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", sess))
+	}
 
-	return nil, nil
+	return &proto.ExchangeWebSessionResponse{
+		Session: session,
+	}, nil
 }
 
 type grpcContext struct {

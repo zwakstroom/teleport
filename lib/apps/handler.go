@@ -183,13 +183,13 @@ func extractSessionCookie(r *http.Request) (*sessionCookie, error) {
 		if err != nil {
 			log.Warnf("No (app) session cookie found: %v.", err)
 		}
-		return nil, trace.AccessDenied("missingCookieMsg")
+		return nil, trace.NotFound("missingCookieMsg")
 	}
 
 	d, err := decodeCookie(cookie.Value)
 	if err != nil {
 		log.Warnf("Failed to decode cookie: %v.", err)
-		return nil, trace.AccessDenied("failed to decode cookie")
+		return nil, trace.NotFound("failed to decode cookie")
 	}
 
 	return d, nil
@@ -201,17 +201,18 @@ func (h *Handler) ValidateSession(w http.ResponseWriter, r *http.Request) (*sess
 		return nil, trace.Wrap(err)
 	}
 
-	//// Try and find a matching app session for this user in the backend.
-	//s, err := h.AuthClient.GetSession(&services.SessionRequest{
-	//	Type:       services.AppSession,
-	//	User:       cookie.User,
-	//	ParentHash: cookie.ParentHash,
-	//	SessionID:  cookie.SessionID,
-	//})
-	//if err != nil {
-	//	return nil, trace.NotFound("session not found")
-	//}
-	s := &services.WebSessionV2{}
+	fmt.Printf("--> cookie: %#v.\n", cookie)
+
+	// Try and find a matching app session for this user in the backend.
+	s, err := h.AuthClient.GetWebSession(r.Context(), &auth.WebSessionRequest{
+		Type:       services.AppSessionType,
+		Username:   cookie.Username,
+		ParentHash: cookie.ParentHash,
+		SessionID:  cookie.SessionID,
+	})
+	if err != nil {
+		return nil, trace.NotFound("session not found")
+	}
 
 	// Wrap services.WebSession into session that has convenience functions.
 	session, err := h.newSession(r, cookie, s)
@@ -278,7 +279,9 @@ func (h *Handler) ValidateSession(w http.ResponseWriter, r *http.Request) (*sess
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s, err := h.ValidateSession(w, r)
 	if trace.IsNotFound(err) {
-		http.Redirect(w, r, "/login&redir=https://appName", 302)
+		// https://proxy.example.com:3080/web/login?redirect_uri=https://proxy.example.com:3080/web/cluster/example.com/nodes
+		//http.Redirect(w, r, "/login&redir=https://appName", 302)
+		http.Redirect(w, r, "https://proxy.example.com:3080/webapi/tmplogin", 302)
 		return
 	}
 	if err != nil {
@@ -406,10 +409,10 @@ func (t *customTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 type sessionCookie struct {
 	// User is the identity of the user for whom this session belongs.
-	User string `json:"user"`
+	Username string `json:"username"`
 
-	// SID  is the ID of this session.
-	SID string `json:"sid"`
+	// SessionID is the ID of this session.
+	SessionID string `json:"sid"`
 
 	// ParentHash is the hash of the parents session ID. This is only used by AAP.
 	ParentHash string `json:"parent_hash,omitempty"`
@@ -419,10 +422,15 @@ type sessionCookie struct {
 	ClusterName string `json:"cluster_name,omitempty"`
 }
 
-func encodeCookie(user string, sid string) (string, error) {
-	bytes, err := json.Marshal(sessionCookie{User: user, SID: sid})
+func encodeCookie(username string, parentHash string, sessionID string, clusterName string) (string, error) {
+	bytes, err := json.Marshal(sessionCookie{
+		Username:    username,
+		ParentHash:  parentHash,
+		SessionID:   sessionID,
+		ClusterName: clusterName,
+	})
 	if err != nil {
-		return "", err
+		return "", trace.Wrap(err)
 	}
 	return hex.EncodeToString(bytes), nil
 }
@@ -430,11 +438,23 @@ func encodeCookie(user string, sid string) (string, error) {
 func decodeCookie(b string) (*sessionCookie, error) {
 	bytes, err := hex.DecodeString(b)
 	if err != nil {
-		return nil, err
+		return nil, trace.Wrap(err)
 	}
 	var c *sessionCookie
 	if err := json.Unmarshal(bytes, &c); err != nil {
-		return nil, err
+		return nil, trace.Wrap(err)
 	}
 	return c, nil
+}
+
+func CookieFromSession(parentUsername string, parentSessionID string, session services.WebSession) (*http.Cookie, error) {
+	cookieValue, err := encodeCookie(parentUsername, parentSessionID, session.GetName(), "example.com")
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &http.Cookie{
+		Name:  "app_session",
+		Value: cookieValue,
+	}, nil
 }

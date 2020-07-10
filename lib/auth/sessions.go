@@ -18,6 +18,8 @@ package auth
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/services"
@@ -28,12 +30,83 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func (s *AuthServer) UpsertWebSession(user string, sess services.WebSession) error {
-	return s.Identity.UpsertWebSession(user, sess.GetName(), sess)
+func (s *AuthServer) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.WebSession, error) {
+	session, err := s.Identity.GetWebSession(username, sessionID)
+	if err != nil {
+		return nil, trace.BadParameter("failed to find existing web session")
+	}
+
+	appSessionID, err := utils.CryptoRandomHex(TokenLenBytes)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	session.SetName(appSessionID)
+	// TODO: Need to set the below fields?
+	//	Expires:            s.clock.Now().UTC().Add(sessionTTL),
+	//	BearerToken:        bearerToken,
+	//	BearerTokenExpires: s.clock.Now().UTC().Add(bearerTokenTTL),
+
+	h := sha256.New()
+	h.Write([]byte(sessionID))
+	parentHash := hex.EncodeToString(h.Sum(nil))
+
+	err = s.Identity.UpsertWebSession(ctx, &services.UpsertWebSessionRequest{
+		Type:       services.AppSessionType,
+		Username:   username,
+		SessionID:  appSessionID,
+		ParentHash: parentHash,
+		Session:    session,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return session, nil
 }
 
-func (s *AuthServer) GetWebSession(userName string, id string) (services.WebSession, error) {
-	return s.Identity.GetWebSession(userName, id)
+func (s *AuthServer) UpsertWebSession(user string, sess services.WebSession) error {
+	return s.Identity.UpsertWebSession(context.TODO(), &services.UpsertWebSessionRequest{
+		Type:      services.WebSessionType,
+		Username:  user,
+		SessionID: sess.GetName(),
+		Session:   sess,
+	})
+}
+
+type WebSessionRequest struct {
+	Type       services.SessionType
+	Username   string
+	SessionID  string
+	ParentHash string
+}
+
+func (r *WebSessionRequest) CheckAndSetDefaults() error {
+	switch r.Type {
+	case services.WebSessionType:
+		if r.Username == "" || r.SessionID == "" {
+			return trace.BadParameter("invalid web session request")
+		}
+	case services.AppSessionType:
+		if r.Username == "" || r.SessionID == "" || r.ParentHash == "" {
+			return trace.BadParameter("invalid app session request")
+		}
+	default:
+		return trace.BadParameter("invalid session type: %v", r.Type)
+	}
+	return nil
+}
+
+//func (s *AuthServer) GetWebSession(userName string, id string) (services.WebSession, error) {
+func (s *AuthServer) GetWebSession(ctx context.Context, r *WebSessionRequest) (services.WebSession, error) {
+	err := r.CheckAndSetDefaults()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if r.Type == services.WebSessionType {
+		return s.Identity.GetWebSession(r.Username, r.SessionID)
+	}
+	return s.Identity.GetAppSession(ctx, r.Username, r.SessionID, r.ParentHash)
 }
 
 func (s *AuthServer) GetWebSessionInfo(userName string, id string) (services.WebSession, error) {
@@ -96,7 +169,11 @@ func (s *AuthServer) NewWebSession(username string, roles []string, traits wrapp
 // ExtendWebSession creates a new web session for a user based on a valid
 // previous sessionID, method is used to renew the web session for a user
 func (s *AuthServer) ExtendWebSession(user string, prevSessionID string, identity *tlsca.Identity) (services.WebSession, error) {
-	prevSession, err := s.GetWebSession(user, prevSessionID)
+	prevSession, err := s.GetWebSession(context.TODO(), &WebSessionRequest{
+		Type:      services.WebSessionType,
+		Username:  user,
+		SessionID: prevSessionID,
+	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -152,14 +229,14 @@ func (s *AuthServer) CreateWebSession(user string) (services.WebSession, error) 
 	return sess, nil
 }
 
-func (s *AuthServer) UpsertAppSession(ctx context.Context, session services.AppSession) error {
-	return s.Identity.UpsertAppSession(ctx, session)
-}
-
-func (s *AuthServer) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
-	return s.Identity.GetAppSession(ctx, username, id)
-}
-
-func (s *AuthServer) DeleteAppSession(ctx context.Context, username string, id string) error {
-	return s.Identity.DeleteAppSession(ctx, username, id)
-}
+//func (s *AuthServer) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+//	return s.Identity.UpsertAppSession(ctx, session)
+//}
+//
+//func (s *AuthServer) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
+//	return s.Identity.GetAppSession(ctx, username, id)
+//}
+//
+//func (s *AuthServer) DeleteAppSession(ctx context.Context, username string, id string) error {
+//	return s.Identity.DeleteAppSession(ctx, username, id)
+//}

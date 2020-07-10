@@ -17,6 +17,7 @@ limitations under the License.
 package auth
 
 import (
+	"context"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -178,7 +179,12 @@ func (s *AuthServer) AuthenticateWebUser(req AuthenticateUserRequest) (services.
 	}
 
 	if req.Session != nil {
-		session, err := s.GetWebSession(req.Username, req.Session.ID)
+		//session, err := s.GetWebSession(req.Username, req.Session.ID)
+		session, err := s.GetWebSession(context.TODO(), &WebSessionRequest{
+			Type:      services.WebSessionType,
+			Username:  req.Username,
+			SessionID: req.Session.ID,
+		})
 		if err != nil {
 			return nil, trace.AccessDenied("session is invalid or has expired")
 		}

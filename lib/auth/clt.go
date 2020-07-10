@@ -835,58 +835,58 @@ func (c *Client) DeleteAllApps(ctx context.Context, namespace string) error {
 	return nil
 }
 
-func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
-	clt, err := c.grpc()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	sess, ok := session.(*services.AppSessionV3)
-	if !ok {
-		return trace.BadParameter("invalid type for session: %T", sess)
-	}
-
-	_, err = clt.UpsertAppSession(ctx, &proto.UpsertAppSessionRequest{
-		Session: sess,
-	})
-	if err != nil {
-		return trail.FromGRPC(err)
-	}
-	return nil
-}
-
-func (c *Client) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
-	clt, err := c.grpc()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	resp, err := clt.GetAppSession(ctx, &proto.GetAppSessionRequest{
-		Username: username,
-		ID:       id,
-	})
-	if err != nil {
-		return nil, trail.FromGRPC(err)
-	}
-
-	return resp.GetSession(), nil
-}
-
-func (c *Client) DeleteAppSession(ctx context.Context, username string, id string) error {
-	clt, err := c.grpc()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	_, err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
-		Username: username,
-		ID:       id,
-	})
-	if err != nil {
-		return trail.FromGRPC(err)
-	}
-	return nil
-}
+//func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return trace.Wrap(err)
+//	}
+//
+//	sess, ok := session.(*services.AppSessionV3)
+//	if !ok {
+//		return trace.BadParameter("invalid type for session: %T", sess)
+//	}
+//
+//	_, err = clt.UpsertAppSession(ctx, &proto.UpsertAppSessionRequest{
+//		Session: sess,
+//	})
+//	if err != nil {
+//		return trail.FromGRPC(err)
+//	}
+//	return nil
+//}
+//
+//func (c *Client) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	resp, err := clt.GetAppSession(ctx, &proto.GetAppSessionRequest{
+//		Username: username,
+//		ID:       id,
+//	})
+//	if err != nil {
+//		return nil, trail.FromGRPC(err)
+//	}
+//
+//	return resp.GetSession(), nil
+//}
+//
+//func (c *Client) DeleteAppSession(ctx context.Context, username string, id string) error {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return trace.Wrap(err)
+//	}
+//
+//	_, err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
+//		Username: username,
+//		ID:       id,
+//	})
+//	if err != nil {
+//		return trail.FromGRPC(err)
+//	}
+//	return nil
+//}
 
 // NewKeepAliver returns a new instance of keep aliver
 func (c *Client) NewKeepAliver(ctx context.Context) (services.KeepAliver, error) {
@@ -1595,7 +1595,44 @@ func (c *Client) AuthenticateSSHUser(req AuthenticateSSHRequest) (*SSHLoginRespo
 	return &re, nil
 }
 
-// GetWebSessionInfo checks if a web sesion is valid, returns session id in case if
+func (c *Client) GetWebSession(ctx context.Context, r *WebSessionRequest) (services.WebSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetWebSession(ctx, &proto.GetWebSessionRequest{
+		Type:       string(r.Type),
+		Username:   r.Username,
+		SessionID:  r.SessionID,
+		ParentHash: r.ParentHash,
+	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetSession(), nil
+	//return services.GetWebSessionMarshaler().UnmarshalWebSession(out.Bytes())
+}
+
+func (c *Client) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.WebSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.ExchangeWebSession(ctx, &proto.ExchangeWebSessionRequest{
+		Username:  username,
+		SessionID: sessionID,
+	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetSession(), nil
+}
+
+// GetWebSessionInfo checks if a web session is valid, returns session id in case if
 // it is valid, or error otherwise.
 func (c *Client) GetWebSessionInfo(user string, sid string) (services.WebSession, error) {
 	out, err := c.Get(
@@ -2820,7 +2857,10 @@ func (c *Client) Ping(ctx context.Context) (proto.PingResponse, error) {
 
 // WebService implements features used by Web UI clients
 type WebService interface {
-	// GetWebSessionInfo checks if a web sesion is valid, returns session id in case if
+	GetWebSession(context.Context, *WebSessionRequest) (services.WebSession, error)
+	ExchangeWebSession(context.Context, string, string) (services.WebSession, error)
+
+	// GetWebSessionInfo checks if a web session is valid, returns session id in case if
 	// it is valid, or error otherwise.
 	GetWebSessionInfo(user string, sid string) (services.WebSession, error)
 	// ExtendWebSession creates a new web session for a user based on another
