@@ -1110,6 +1110,7 @@ func (s *IdentityService) GetGithubAuthRequest(stateToken string) (*services.Git
 const (
 	webPrefix                    = "web"
 	usersPrefix                  = "users"
+	noncesPrefix                 = "nonces"
 	sessionsPrefix               = "sessions"
 	appSessionsPrefix            = "app_sessions"
 	attemptsPrefix               = "attempts"

@@ -229,14 +229,10 @@ func (s *AuthServer) CreateWebSession(user string) (services.WebSession, error) 
 	return sess, nil
 }
 
-//func (s *AuthServer) UpsertAppSession(ctx context.Context, session services.AppSession) error {
-//	return s.Identity.UpsertAppSession(ctx, session)
-//}
-//
-//func (s *AuthServer) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
-//	return s.Identity.GetAppSession(ctx, username, id)
-//}
-//
-//func (s *AuthServer) DeleteAppSession(ctx context.Context, username string, id string) error {
-//	return s.Identity.DeleteAppSession(ctx, username, id)
-//}
+func (s *AuthServer) CreateNonce(ctx context.Context) (services.Nonce, error) {
+	return s.Identity.CreateNonce(ctx)
+}
+
+func (s *AuthServer) DeleteNonce(ctx context.Context, nonce string) error {
+	return s.Identity.DeleteNonce(ctx, nonce)
+}

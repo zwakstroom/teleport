@@ -479,6 +479,14 @@ func (a *AuthWithRoles) ExchangeWebSession(ctx context.Context, username string,
 	return session, nil
 }
 
+func (a *AuthWithRoles) CreateNonce(ctx context.Context) (services.Nonce, error) {
+	return a.authServer.Identity.CreateNonce(ctx)
+}
+
+func (a *AuthWithRoles) DeleteNonce(ctx context.Context, nonce string) error {
+	return a.authServer.Identity.DeleteNonce(ctx, nonce)
+}
+
 // NewWatcher returns a new event watcher
 func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (services.Watcher, error) {
 	if len(watch.Kinds) == 0 {

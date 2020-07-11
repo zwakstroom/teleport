@@ -25,6 +25,39 @@ import (
 	"github.com/gravitational/trace"
 )
 
+func (s *IdentityService) CreateNonce(ctx context.Context) (services.Nonce, error) {
+	nonce, err := services.NewNonce()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	value, err := services.GetNonceMarshaler().MarshalNonce(nonce)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	expires := nonce.GetMetadata().Expires
+	item := backend.Item{
+		// TODO: Place this under the session for which this nonce belongs?
+		Key:     backend.Key(webPrefix, noncesPrefix, nonce.GetName()),
+		Value:   value,
+		Expires: *expires,
+	}
+	_, err = s.Put(ctx, item)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return nonce, nil
+}
+
+func (s *IdentityService) DeleteNonce(ctx context.Context, nonce string) error {
+	err := s.Delete(ctx, backend.Key(webPrefix, noncesPrefix, nonce))
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
 // UpsertWebSession updates or inserts a web session for a user and session ID
 // the session will be created with bearer token expiry time TTL, because
 // it is expected to be extended by the client before then.

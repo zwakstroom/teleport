@@ -848,15 +848,15 @@ func (h *Handler) tmplogin(w http.ResponseWriter, r *http.Request, p httprouter.
 		return nil, nil
 	}
 
-	// If the user was able to successfully exchange an existing web session
-	// token for a app session token, create a cookie from it and set it on the
-	// response.
-	cookie, err := apps.CookieFromSession(parentCookie.User, parentCookie.SID, session)
-	if err != nil {
-		// TODO: What should happen here, show an error to the user?
-		return nil, trace.Wrap(err)
-	}
-	http.SetCookie(w, cookie)
+	//// If the user was able to successfully exchange an existing web session
+	//// token for a app session token, create a cookie from it and set it on the
+	//// response.
+	//cookie, err := apps.CookieFromSession(parentCookie.User, parentCookie.SID, session)
+	//if err != nil {
+	//	// TODO: What should happen here, show an error to the user?
+	//	return nil, trace.Wrap(err)
+	//}
+	//http.SetCookie(w, cookie)
 
 	// Re-direct the user back to calling application.
 	http.Redirect(w, r, "https://dumper.proxy.example.com:3080", http.StatusFound)

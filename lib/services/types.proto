@@ -1053,6 +1053,24 @@ message WebSessionSpecV2 {
     ];
 }
 
+message NonceV3 {
+    option (gogoproto.goproto_stringer) = false;
+    option (gogoproto.stringer) = false;
+
+    // Kind is a resource kind
+    string Kind = 1 [ (gogoproto.jsontag) = "kind" ];
+    // SubKind is an optional resource sub kind, used in some resources
+    string SubKind = 2 [ (gogoproto.jsontag) = "sub_kind,omitempty" ];
+    // Version is version
+    string Version = 3 [ (gogoproto.jsontag) = "version" ];
+    // Metadata is User metadata
+    Metadata Metadata = 4 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata" ];
+    // Spec is a role specification
+    NonceSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
+}
+
+message NonceSpecV3 {}
+
 //// User is a user this web session belongs to
 // User string `json:"user"`
 //// Pub is a public certificate signed by auth server

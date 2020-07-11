@@ -835,58 +835,35 @@ func (c *Client) DeleteAllApps(ctx context.Context, namespace string) error {
 	return nil
 }
 
-//func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
-//	clt, err := c.grpc()
-//	if err != nil {
-//		return trace.Wrap(err)
-//	}
-//
-//	sess, ok := session.(*services.AppSessionV3)
-//	if !ok {
-//		return trace.BadParameter("invalid type for session: %T", sess)
-//	}
-//
-//	_, err = clt.UpsertAppSession(ctx, &proto.UpsertAppSessionRequest{
-//		Session: sess,
-//	})
-//	if err != nil {
-//		return trail.FromGRPC(err)
-//	}
-//	return nil
-//}
-//
-//func (c *Client) GetAppSession(ctx context.Context, username string, id string) (services.AppSession, error) {
-//	clt, err := c.grpc()
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	resp, err := clt.GetAppSession(ctx, &proto.GetAppSessionRequest{
-//		Username: username,
-//		ID:       id,
-//	})
-//	if err != nil {
-//		return nil, trail.FromGRPC(err)
-//	}
-//
-//	return resp.GetSession(), nil
-//}
-//
-//func (c *Client) DeleteAppSession(ctx context.Context, username string, id string) error {
-//	clt, err := c.grpc()
-//	if err != nil {
-//		return trace.Wrap(err)
-//	}
-//
-//	_, err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
-//		Username: username,
-//		ID:       id,
-//	})
-//	if err != nil {
-//		return trail.FromGRPC(err)
-//	}
-//	return nil
-//}
+func (c *Client) CreateNonce(ctx context.Context) (services.Nonce, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.CreateNonce(ctx, &empty.Empty{})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.Nonce, nil
+}
+
+func (c *Client) DeleteNonce(ctx context.Context, nonce string) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	_, err = clt.DeleteNonce(ctx, &proto.DeleteNonceRequest{
+		Nonce: nonce,
+	})
+	if err != nil {
+		return trail.FromGRPC(err)
+	}
+
+	return nil
+}
 
 // NewKeepAliver returns a new instance of keep aliver
 func (c *Client) NewKeepAliver(ctx context.Context) (services.KeepAliver, error) {
