@@ -468,10 +468,21 @@ func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) err
 	return nil
 }
 
-func (a *AuthWithRoles) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.WebSession, error) {
+func (a *AuthWithRoles) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
 	// TODO: Add access control here!!
 
-	session, err := a.authServer.ExchangeWebSession(ctx, username, sessionID)
+	nonce, err := a.authServer.ExchangeWebSession(ctx, username, sessionID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return nonce, nil
+}
+
+func (a *AuthWithRoles) ExchangeNonce(ctx context.Context, nonceID string) (services.WebSession, error) {
+	// TODO: Add access control here!!
+
+	session, err := a.authServer.ExchangeNonce(ctx, nonceID)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -479,8 +490,8 @@ func (a *AuthWithRoles) ExchangeWebSession(ctx context.Context, username string,
 	return session, nil
 }
 
-func (a *AuthWithRoles) CreateNonce(ctx context.Context) (services.Nonce, error) {
-	return a.authServer.Identity.CreateNonce(ctx)
+func (a *AuthWithRoles) CreateNonce(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
+	return a.authServer.Identity.CreateNonce(ctx, username, sessionID)
 }
 
 func (a *AuthWithRoles) DeleteNonce(ctx context.Context, nonce string) error {

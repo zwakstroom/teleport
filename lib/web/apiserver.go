@@ -142,6 +142,32 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// If the caller requested a registered application, authenticate the
 	// request and then forward it to the apps handler.
 	case err == nil:
+		// Exchange nonce for a session.
+		nonce := r.URL.Query().Get("nonce")
+		if nonce != "" {
+			session, err := h.appsHandler.AuthClient.ExchangeNonce(r.Context(), nonce)
+			if err != nil {
+				fmt.Printf("--> ExchangeNonce failed: %.v\n", err)
+				http.Error(w, "access denied", 401)
+				return
+			}
+
+			fmt.Printf("--> ExchangeNonce: session.GetName(): %v.\n", session.GetName())
+
+			// If the user was able to successfully exchange an existing web session
+			// token for a app session token, create a cookie from it and set it on the
+			// response.
+			cookie, err := apps.CookieFromSession(session)
+			if err != nil {
+				// TODO: What should happen here, show an error to the user?
+				http.Error(w, "apps.CookieFromSession failed", 401)
+				return
+			}
+			http.SetCookie(w, cookie)
+			http.Redirect(w, r, "https://dumper.proxy.example.com:3080", 302)
+			return
+		}
+
 		// TODO: This client needs to be the cluster within which the application
 		// is running.
 		clusterClient, err := h.handler.cfg.Proxy.GetSite("example.com")
@@ -841,7 +867,7 @@ func (h *Handler) tmplogin(w http.ResponseWriter, r *http.Request, p httprouter.
 
 	fmt.Printf("--> parentCookie.User: %v, parentCookie.SID: %v.\n", parentCookie.User, parentCookie.SID)
 
-	session, err := h.auth.proxyClient.ExchangeWebSession(r.Context(), parentCookie.User, parentCookie.SID)
+	nonce, err := h.auth.proxyClient.ExchangeWebSession(r.Context(), parentCookie.User, parentCookie.SID)
 	if err != nil {
 		fmt.Printf("--> Failed to ExtendWebSession: %v.\n", err)
 		http.Redirect(w, r, "https://proxy.example.com:3080/web/login", http.StatusFound)
@@ -859,7 +885,8 @@ func (h *Handler) tmplogin(w http.ResponseWriter, r *http.Request, p httprouter.
 	//http.SetCookie(w, cookie)
 
 	// Re-direct the user back to calling application.
-	http.Redirect(w, r, "https://dumper.proxy.example.com:3080", http.StatusFound)
+	endpoint := fmt.Sprintf("https://dumper.proxy.example.com:3080?nonce=%v", nonce.GetName())
+	http.Redirect(w, r, endpoint, http.StatusFound)
 
 	return nil, nil
 }

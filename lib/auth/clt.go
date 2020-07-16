@@ -835,35 +835,35 @@ func (c *Client) DeleteAllApps(ctx context.Context, namespace string) error {
 	return nil
 }
 
-func (c *Client) CreateNonce(ctx context.Context) (services.Nonce, error) {
-	clt, err := c.grpc()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	resp, err := clt.CreateNonce(ctx, &empty.Empty{})
-	if err != nil {
-		return nil, trail.FromGRPC(err)
-	}
-
-	return resp.Nonce, nil
-}
-
-func (c *Client) DeleteNonce(ctx context.Context, nonce string) error {
-	clt, err := c.grpc()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	_, err = clt.DeleteNonce(ctx, &proto.DeleteNonceRequest{
-		Nonce: nonce,
-	})
-	if err != nil {
-		return trail.FromGRPC(err)
-	}
-
-	return nil
-}
+//func (c *Client) CreateNonce(ctx context.Context) (services.Nonce, error) {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	resp, err := clt.CreateNonce(ctx, &empty.Empty{})
+//	if err != nil {
+//		return nil, trail.FromGRPC(err)
+//	}
+//
+//	return resp.Nonce, nil
+//}
+//
+//func (c *Client) DeleteNonce(ctx context.Context, nonce string) error {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return trace.Wrap(err)
+//	}
+//
+//	_, err = clt.DeleteNonce(ctx, &proto.DeleteNonceRequest{
+//		Nonce: nonce,
+//	})
+//	if err != nil {
+//		return trail.FromGRPC(err)
+//	}
+//
+//	return nil
+//}
 
 // NewKeepAliver returns a new instance of keep aliver
 func (c *Client) NewKeepAliver(ctx context.Context) (services.KeepAliver, error) {
@@ -1592,7 +1592,7 @@ func (c *Client) GetWebSession(ctx context.Context, r *WebSessionRequest) (servi
 	//return services.GetWebSessionMarshaler().UnmarshalWebSession(out.Bytes())
 }
 
-func (c *Client) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.WebSession, error) {
+func (c *Client) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -1601,6 +1601,22 @@ func (c *Client) ExchangeWebSession(ctx context.Context, username string, sessio
 	resp, err := clt.ExchangeWebSession(ctx, &proto.ExchangeWebSessionRequest{
 		Username:  username,
 		SessionID: sessionID,
+	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetNonce(), nil
+}
+
+func (c *Client) ExchangeNonce(ctx context.Context, nonceID string) (services.WebSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.ExchangeNonce(ctx, &proto.ExchangeNonceRequest{
+		Nonce: nonceID,
 	})
 	if err != nil {
 		return nil, trail.FromGRPC(err)
@@ -2835,7 +2851,8 @@ func (c *Client) Ping(ctx context.Context) (proto.PingResponse, error) {
 // WebService implements features used by Web UI clients
 type WebService interface {
 	GetWebSession(context.Context, *WebSessionRequest) (services.WebSession, error)
-	ExchangeWebSession(context.Context, string, string) (services.WebSession, error)
+	ExchangeWebSession(context.Context, string, string) (services.Nonce, error)
+	ExchangeNonce(context.Context, string) (services.WebSession, error)
 
 	// GetWebSessionInfo checks if a web session is valid, returns session id in case if
 	// it is valid, or error otherwise.

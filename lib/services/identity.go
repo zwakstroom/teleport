@@ -123,7 +123,8 @@ type Identity interface {
 	// DeleteWebSession deletes web session from the storage
 	DeleteWebSession(user, sid string) error
 
-	CreateNonce(context.Context) (Nonce, error)
+	GetNonce(context.Context, string) (Nonce, error)
+	CreateNonce(context.Context, string, string) (Nonce, error)
 	DeleteNonce(context.Context, string) error
 
 	GetAppSession(context.Context, string, string, string) (WebSession, error)

@@ -262,13 +262,13 @@ message ExchangeWebSessionRequest {
     string SessionID = 2 [ (gogoproto.jsontag) = "session_id" ];
 }
 
-message ExchangeWebSessionResponse {
+message ExchangeWebSessionResponse { services.NonceV3 Nonce = 1 [ (gogoproto.jsontag) = "nonce" ]; }
+
+message ExchangeNonceRequest { string Nonce = 1 [ (gogoproto.jsontag) = "nonce" ]; }
+
+message ExchangeNonceResponse {
     services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
 }
-
-message CreateNonceResponse { services.NonceV3 Nonce = 1 [ (gogoproto.jsontag) = "nonce" ]; }
-
-message DeleteNonceRequest { string Nonce = 1 [ (gogoproto.jsontag) = "nonce" ]; }
 
 // AuthService is authentication/authorization service implementation
 service AuthService {
@@ -325,10 +325,14 @@ service AuthService {
 
     // GetWebSession returns a services.WebSession.
     rpc GetWebSession(GetWebSessionRequest) returns (GetWebSessionResponse);
-    // ExchangeWebSession exchanges an existing services.WebSession for an
-    // application specific services.WebSession.
+    // ExchangeWebSession will exchange a valid web session for a nonce. The nonce
+    // will be passed to the caller who can then exchange it for an
+    // application session.
+    //
+    // This is to work around web security not allowing one origin to set
+    // cookies for another origin.
     rpc ExchangeWebSession(ExchangeWebSessionRequest) returns (ExchangeWebSessionResponse);
-
-    rpc CreateNonce(google.protobuf.Empty) returns (CreateNonceResponse);
-    rpc DeleteNonce(DeleteNonceRequest) returns (google.protobuf.Empty);
+    // ExchangeNonce exchanges a nonce created by "ExchangeWebSession" for an
+    // app specific services.WebSession.
+    rpc ExchangeNonce(ExchangeNonceRequest) returns (ExchangeNonceResponse);
 }

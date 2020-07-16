@@ -30,10 +30,35 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func (s *AuthServer) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.WebSession, error) {
+func (s *AuthServer) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
 	session, err := s.Identity.GetWebSession(username, sessionID)
 	if err != nil {
 		return nil, trace.BadParameter("failed to find existing web session")
+	}
+
+	nonce, err := s.Identity.CreateNonce(ctx, session.GetUser(), session.GetName())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return nonce, nil
+}
+
+func (s *AuthServer) ExchangeNonce(ctx context.Context, nonceID string) (services.WebSession, error) {
+	// TODO: Check that trace.NotFound is being returned here for an invalid
+	// nonce value.
+	nonce, err := s.Identity.GetNonce(ctx, nonceID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	err = s.Identity.DeleteNonce(ctx, nonce.GetName())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	session, err := s.Identity.GetWebSession(nonce.GetUsername(), nonce.GetSessionID())
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 
 	appSessionID, err := utils.CryptoRandomHex(TokenLenBytes)
@@ -47,12 +72,13 @@ func (s *AuthServer) ExchangeWebSession(ctx context.Context, username string, se
 	//	BearerTokenExpires: s.clock.Now().UTC().Add(bearerTokenTTL),
 
 	h := sha256.New()
-	h.Write([]byte(sessionID))
+	h.Write([]byte(session.GetName()))
 	parentHash := hex.EncodeToString(h.Sum(nil))
+	session.SetParentHash(parentHash)
 
 	err = s.Identity.UpsertWebSession(ctx, &services.UpsertWebSessionRequest{
 		Type:       services.AppSessionType,
-		Username:   username,
+		Username:   session.GetUser(),
 		SessionID:  appSessionID,
 		ParentHash: parentHash,
 		Session:    session,
@@ -229,8 +255,12 @@ func (s *AuthServer) CreateWebSession(user string) (services.WebSession, error) 
 	return sess, nil
 }
 
-func (s *AuthServer) CreateNonce(ctx context.Context) (services.Nonce, error) {
-	return s.Identity.CreateNonce(ctx)
+func (s *AuthServer) GetNonce(ctx context.Context, nonceID string) (services.Nonce, error) {
+	return s.Identity.GetNonce(ctx, nonceID)
+}
+
+func (s *AuthServer) CreateNonce(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
+	return s.Identity.CreateNonce(ctx, username, sessionID)
 }
 
 func (s *AuthServer) DeleteNonce(ctx context.Context, nonce string) error {

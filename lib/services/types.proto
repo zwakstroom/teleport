@@ -1051,6 +1051,7 @@ message WebSessionSpecV2 {
         (gogoproto.nullable) = false,
         (gogoproto.jsontag) = "expires"
     ];
+    string ParentHash = 8 [ (gogoproto.jsontag) = "parent_hash,omitempty" ];
 }
 
 message NonceV3 {
@@ -1069,44 +1070,7 @@ message NonceV3 {
     NonceSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
 }
 
-message NonceSpecV3 {}
-
-//// User is a user this web session belongs to
-// User string `json:"user"`
-//// Pub is a public certificate signed by auth server
-// Pub []byte `json:"pub"`
-//// Priv is a private OpenSSH key used to auth with SSH nodes
-// Priv []byte `json:"priv,omitempty"`
-//// TLSCert is a TLS certificate used to auth with auth server
-// TLSCert []byte `json:"tls_cert,omitempty"`
-//// BearerToken is a special bearer token used for additional
-//// bearer authentication
-// BearerToken string `json:"bearer_token"`
-//// BearerTokenExpires - absolute time when token expires
-// BearerTokenExpires time.Time `json:"bearer_token_expires"`
-//// Expires - absolute time when session expires
-// Expires time.Time `json:"expires"`
-
-// message AppSessionV3 {
-//    option (gogoproto.goproto_stringer) = false;
-//    option (gogoproto.stringer) = false;
-//
-//    // Kind is a resource kind.
-//    string Kind = 1 [ (gogoproto.jsontag) = "kind" ];
-//    // SubKind is an optional resource sub kind, used in some resources.
-//    string SubKind = 2 [ (gogoproto.jsontag) = "sub_kind,omitempty" ];
-//    // Version is version.
-//    string Version = 3 [ (gogoproto.jsontag) = "version" ];
-//    // Metadata is a resource metadata.
-//    Metadata Metadata = 4 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata" ];
-//    // Spec is a tunnel specification.
-//    AppSessionSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
-//}
-//
-// message AppSessionSpecV3 {
-//    // Username is the Teleport username for the logged in user.
-//    string Username = 1 [ (gogoproto.jsontag) = "username" ];
-//
-//    // Certificate is the x509 certificate for the authenticated user.
-//    bytes Certificate = 2 [ (gogoproto.jsontag) = "certificate" ];
-//}
+message NonceSpecV3 {
+    string Username = 1 [ (gogoproto.jsontag) = "username" ];
+    string SessionID = 2 [ (gogoproto.jsontag) = "session_id" ];
+}

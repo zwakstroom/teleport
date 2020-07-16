@@ -49,6 +49,10 @@ type WebSession interface {
 	SetPriv([]byte)
 	// GetTLSCert returns PEM encoded TLS certificate associated with session
 	GetTLSCert() []byte
+
+	GetParentHash() string
+	SetParentHash(string)
+
 	// BearerToken is a special bearer token used for additional
 	// bearer authentication
 	GetBearerToken() string
@@ -174,6 +178,14 @@ func (ws *WebSessionV2) GetName() string {
 // GetTLSCert returns PEM encoded TLS certificate associated with session
 func (ws *WebSessionV2) GetTLSCert() []byte {
 	return ws.Spec.TLSCert
+}
+
+func (ws *WebSessionV2) GetParentHash() string {
+	return ws.Spec.ParentHash
+}
+
+func (ws *WebSessionV2) SetParentHash(parentHash string) {
+	ws.Spec.ParentHash = parentHash
 }
 
 // GetPub is returns public certificate signed by auth server

@@ -1815,17 +1815,19 @@ func (set RoleSet) CheckAccessToApp(app App, r *http.Request) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		// TODO: Extract this from services.Role[Allow].
-		// TODO: Maybe add favicon.ico by default?
-		allowExpressions := []string{
-			`equals(request.method, "GET") && prefix(request.path, "/webapi")`,
-			`equals(request.method, "GET") && prefix(request.path, "/favicon.ico")`,
-		}
+		//// TODO: Extract this from services.Role[Allow].
+		//// TODO: Maybe add favicon.ico by default?
+		//allowExpressions := []string{
+		//	`equals(request.method, "GET") && prefix(request.path, "/webapi")`,
+		//	`equals(request.method, "GET") && prefix(request.path, "/favicon.ico")`,
+		//}
 
-		matchRequest, err := MatchRequest(allowExpressions, r)
-		if err != nil {
-			return trace.Wrap(err)
-		}
+		matchRequest := true
+		//matchRequest, err := MatchRequest(allowExpressions, r)
+		//if err != nil {
+		//	return trace.Wrap(err)
+		//}
+
 		fmt.Printf("--> matchRequest: %v.\n", matchRequest)
 		if matchNamespace && matchLabels && matchRequest {
 			return nil

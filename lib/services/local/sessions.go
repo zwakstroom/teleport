@@ -19,14 +19,37 @@ package local
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/trace"
 )
 
-func (s *IdentityService) CreateNonce(ctx context.Context) (services.Nonce, error) {
-	nonce, err := services.NewNonce()
+func (s *IdentityService) GetNonce(ctx context.Context, nonceID string) (services.Nonce, error) {
+	item, err := s.Get(ctx, backend.Key(webPrefix, noncesPrefix, nonceID))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	nonce, err := services.GetNonceMarshaler().UnmarshalNonce(item.Value, services.KindNonce)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return nonce, nil
+}
+
+func (s *IdentityService) CreateNonce(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
+	randomID, err := utils.CryptoRandomHex(16)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	nonce, err := services.NewNonce(randomID, services.NonceSpecV3{
+		Username:  username,
+		SessionID: sessionID,
+	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -36,12 +59,13 @@ func (s *IdentityService) CreateNonce(ctx context.Context) (services.Nonce, erro
 		return nil, trace.Wrap(err)
 	}
 
-	expires := nonce.GetMetadata().Expires
+	// TODO: Set shorter TTL? Get TTL from object?
+	//expires := nonce.GetMetadata().Expires
 	item := backend.Item{
 		// TODO: Place this under the session for which this nonce belongs?
 		Key:     backend.Key(webPrefix, noncesPrefix, nonce.GetName()),
 		Value:   value,
-		Expires: *expires,
+		Expires: time.Now().Add(1 * time.Minute),
 	}
 	_, err = s.Put(ctx, item)
 	if err != nil {

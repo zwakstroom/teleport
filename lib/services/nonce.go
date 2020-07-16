@@ -32,6 +32,12 @@ type Nonce interface {
 	// Resource provides common resource headers.
 	Resource
 
+	GetUsername() string
+	SetUsername(string)
+
+	GetSessionID() string
+	SetSessionID(string)
+
 	// String returns string representation of the application.
 	String() string
 
@@ -39,19 +45,15 @@ type Nonce interface {
 	CheckAndSetDefaults() error
 }
 
-func NewNonce() (*NonceV3, error) {
-	nonce, err := utils.CryptoRandomHex(16)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
+func NewNonce(name string, spec NonceSpecV3) (*NonceV3, error) {
 	return &NonceV3{
 		Kind:    KindNonce,
 		Version: V3,
 		Metadata: Metadata{
-			Name:      nonce,
+			Name:      name,
 			Namespace: defaults.Namespace,
 		},
+		Spec: spec,
 	}, nil
 }
 
@@ -115,6 +117,22 @@ func (s *NonceV3) SetResourceID(id int64) {
 	s.Metadata.ID = id
 }
 
+func (s *NonceV3) GetUsername() string {
+	return s.Spec.Username
+}
+
+func (s *NonceV3) SetUsername(username string) {
+	s.Spec.Username = username
+}
+
+func (s *NonceV3) GetSessionID() string {
+	return s.Spec.SessionID
+}
+
+func (s *NonceV3) SetSessionID(sessionID string) {
+	s.Spec.SessionID = sessionID
+}
+
 // String returns string representation of the application.
 func (s *NonceV3) String() string {
 	return fmt.Sprintf("Nonce(%v)", s.Metadata.Name)
@@ -134,7 +152,10 @@ func (s *NonceV3) CheckAndSetDefaults() error {
 const NonceSpecV3Schema = `{
   "type": "object",
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "username": { "type": "string" },
+    "session_id": { "type": "string" }
+  }
 }`
 
 // GetNonceSchema returns role schema with optionally injected schema for

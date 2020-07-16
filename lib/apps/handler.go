@@ -422,11 +422,11 @@ type sessionCookie struct {
 	ClusterName string `json:"cluster_name,omitempty"`
 }
 
-func encodeCookie(username string, parentHash string, sessionID string, clusterName string) (string, error) {
+func encodeCookie(username string, sessionID string, parentHash string, clusterName string) (string, error) {
 	bytes, err := json.Marshal(sessionCookie{
 		Username:    username,
-		ParentHash:  parentHash,
 		SessionID:   sessionID,
+		ParentHash:  parentHash,
 		ClusterName: clusterName,
 	})
 	if err != nil {
@@ -447,8 +447,8 @@ func decodeCookie(b string) (*sessionCookie, error) {
 	return c, nil
 }
 
-func CookieFromSession(parentUsername string, parentSessionID string, session services.WebSession) (*http.Cookie, error) {
-	cookieValue, err := encodeCookie(parentUsername, parentSessionID, session.GetName(), "example.com")
+func CookieFromSession(session services.WebSession) (*http.Cookie, error) {
+	cookieValue, err := encodeCookie(session.GetUser(), session.GetName(), session.GetParentHash(), "example.com")
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

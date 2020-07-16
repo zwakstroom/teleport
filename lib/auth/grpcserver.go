@@ -529,27 +529,7 @@ func (g *GRPCServer) ExchangeWebSession(ctx context.Context, r *proto.ExchangeWe
 		return nil, trail.ToGRPC(err)
 	}
 
-	sess, err := auth.ExchangeWebSession(ctx, r.Username, r.SessionID)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-	session, ok := sess.(*services.WebSessionV2)
-	if !ok {
-		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", sess))
-	}
-
-	return &proto.ExchangeWebSessionResponse{
-		Session: session,
-	}, nil
-}
-
-func (g *GRPCServer) CreateNonce(ctx context.Context, _ *empty.Empty) (*proto.CreateNonceResponse, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	n, err := auth.CreateNonce(ctx)
+	n, err := auth.ExchangeWebSession(ctx, r.Username, r.SessionID)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
@@ -558,24 +538,64 @@ func (g *GRPCServer) CreateNonce(ctx context.Context, _ *empty.Empty) (*proto.Cr
 		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", n))
 	}
 
-	return &proto.CreateNonceResponse{
+	return &proto.ExchangeWebSessionResponse{
 		Nonce: nonce,
 	}, nil
 }
 
-func (g *GRPCServer) DeleteNonce(ctx context.Context, r *proto.DeleteNonceRequest) (*empty.Empty, error) {
+func (g *GRPCServer) ExchangeNonce(ctx context.Context, r *proto.ExchangeNonceRequest) (*proto.ExchangeNonceResponse, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
-	err = auth.DeleteNonce(ctx, r.GetNonce())
+	sess, err := auth.ExchangeNonce(ctx, r.Nonce)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
+	session, ok := sess.(*services.WebSessionV2)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", sess))
+	}
 
-	return nil, nil
+	return &proto.ExchangeNonceResponse{
+		Session: session,
+	}, nil
 }
+
+//func (g *GRPCServer) CreateNonce(ctx context.Context, _ *empty.Empty) (*proto.CreateNonceResponse, error) {
+//	auth, err := g.authenticate(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	n, err := auth.CreateNonce(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//	nonce, ok := n.(*services.NonceV3)
+//	if !ok {
+//		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", n))
+//	}
+//
+//	return &proto.CreateNonceResponse{
+//		Nonce: nonce,
+//	}, nil
+//}
+//
+//func (g *GRPCServer) DeleteNonce(ctx context.Context, r *proto.DeleteNonceRequest) (*empty.Empty, error) {
+//	auth, err := g.authenticate(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	err = auth.DeleteNonce(ctx, r.GetNonce())
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	return nil, nil
+//}
 
 type grpcContext struct {
 	*AuthContext
