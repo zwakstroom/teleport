@@ -463,6 +463,10 @@ func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (s
 					return nil, trace.Wrap(err)
 				}
 			}
+		case services.KindApp:
+			if err := a.action(defaults.Namespace, services.KindApp, services.VerbRead); err != nil {
+				return nil, trace.Wrap(err)
+			}
 		default:
 			return nil, trace.AccessDenied("not authorized to watch %v events", kind.Kind)
 		}
@@ -517,6 +521,36 @@ NextNode:
 	}
 
 	return filteredNodes, nil
+}
+
+// filterApps filters apps based off the role of the identity of the caller.
+func (a *AuthWithRoles) filterApps(apps []services.App) ([]services.App, error) {
+	// For certain built-in roles, continue to allow full access and return
+	// the full set of apps. For example, proxy (and remote proxy) to access all
+	// apps so it can resolve connection requests.
+	if a.hasBuiltinRole(string(teleport.RoleAdmin)) ||
+		a.hasBuiltinRole(string(teleport.RoleProxy)) ||
+		a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
+		return apps, nil
+	}
+
+	roleset, err := services.FetchRoles(a.user.GetRoles(), a.authServer, a.user.GetTraits())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Loop over all apps and check if the caller has access.
+	filteredApps := make([]services.App, 0, len(apps))
+NextApp:
+	for _, app := range apps {
+		err := roleset.CheckAccessToApp(app)
+		if err == nil {
+			filteredApps = append(filteredApps, app)
+			continue NextApp
+		}
+	}
+
+	return filteredApps, nil
 }
 
 // DeleteAllNodes deletes all nodes in a given namespace
@@ -1788,6 +1822,91 @@ func (a *AuthWithRoles) ProcessKubeCSR(req KubeCSR) (*KubeCSRResponse, error) {
 		return nil, trace.AccessDenied("this request can be only executed by a proxy")
 	}
 	return a.authServer.ProcessKubeCSR(req)
+}
+
+// GetApp fetches a single application.
+func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	app, err := a.authServer.GetApp(ctx, namespace, name, opts...)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return app, nil
+}
+
+// GetApps returns all registered applications.
+func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+	if err := a.action(namespace, services.KindApp, services.VerbList); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Fetch full list of apps from the backend.
+	startFetch := time.Now()
+	apps, err := a.authServer.GetApps(ctx, namespace, opts...)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	elapsedFetch := time.Since(startFetch)
+
+	// Filter apps to return the ones for the connected identity.
+	startFilter := time.Now()
+	filteredApps, err := a.filterApps(apps)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	elapsedFilter := time.Since(startFilter)
+
+	log.WithFields(logrus.Fields{
+		"user":           a.user.GetName(),
+		"elapsed_fetch":  elapsedFetch,
+		"elapsed_filter": elapsedFilter,
+	}).Debugf(
+		"GetApps(%v->%v) in %v.",
+		len(apps), len(filteredApps), elapsedFetch+elapsedFilter)
+
+	return filteredApps, nil
+}
+
+// UpsertApp registers an application in the backend.
+func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbCreate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbUpdate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return a.authServer.UpsertApp(ctx, app)
+}
+
+// DeleteApp un-registers an application.
+func (a *AuthWithRoles) DeleteApp(ctx context.Context, namespace string, name string) error {
+	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.authServer.DeleteApp(ctx, namespace, name); err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+// DeleteAllApps removes all applications from a namespace.
+func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) error {
+	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.authServer.DeleteAllApps(ctx, namespace); err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
 }
 
 func (a *AuthWithRoles) Close() error {

@@ -49,6 +49,7 @@ func ForAuth(cfg Config) Config {
 		{Kind: services.KindReverseTunnel},
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindAccessRequest},
+		{Kind: services.KindApp},
 	}
 	cfg.QueueSize = defaults.AuthQueueSize
 	return cfg
@@ -68,6 +69,7 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindAuthServer},
 		{Kind: services.KindReverseTunnel},
 		{Kind: services.KindTunnelConnection},
+		{Kind: services.KindApp},
 	}
 	cfg.QueueSize = defaults.ProxyQueueSize
 	return cfg
@@ -660,4 +662,18 @@ func (c *Cache) GetTunnelConnections(clusterName string, opts ...services.Marsha
 // to be called periodically and always return fresh data
 func (c *Cache) GetAllTunnelConnections(opts ...services.MarshalOption) (conns []services.TunnelConnection, err error) {
 	return c.presenceCache.GetAllTunnelConnections(opts...)
+}
+
+// GetApp returns a specific application.
+func (c *Cache) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+	app, err := c.presenceCache.GetApp(ctx, namespace, name, opts...)
+	if trace.IsNotFound(err) {
+		return c.Presence.GetApp(ctx, namespace, name, opts...)
+	}
+	return app, err
+}
+
+// GetApps returns all applications.
+func (c *Cache) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+	return c.presenceCache.GetApps(ctx, namespace, opts...)
 }

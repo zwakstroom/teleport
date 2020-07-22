@@ -661,3 +661,6 @@ const (
 
 // UserSystem defines a user as system.
 const UserSystem = "system"
+
+// WebAppProtocol is the protocol used for AAP.
+const WebAppProtocol = "https"

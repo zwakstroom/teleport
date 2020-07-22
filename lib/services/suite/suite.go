@@ -356,6 +356,47 @@ func (s *ServicesTestSuite) ServerCRUD(c *check.C) {
 	c.Assert(out, check.DeepEquals, []services.Server{auth})
 }
 
+// NewApp creates a new server resource
+func NewApp(name string, internalAddr string, publicAddr string) *services.AppV3 {
+	return &services.AppV3{
+		Kind:    services.KindApp,
+		Version: services.V3,
+		Metadata: services.Metadata{
+			Name:      name,
+			Namespace: defaults.Namespace,
+		},
+		Spec: services.AppSpecV3{
+			Protocol:     teleport.WebAppProtocol,
+			InternalAddr: internalAddr,
+			PublicAddr:   publicAddr,
+		},
+	}
+}
+
+// AppCRUD tests CRUD functionality for services.App.
+func (s *ServicesTestSuite) AppCRUD(c *check.C) {
+	out, err := s.PresenceS.GetApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(len(out), check.Equals, 0)
+
+	app := NewApp("foo", "127.0.0.1:8080", "foo.example.com")
+	_, err = s.PresenceS.UpsertApp(context.Background(), app)
+	c.Assert(err, check.IsNil)
+
+	out, err = s.PresenceS.GetApps(context.Background(), app.Metadata.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 1)
+	app.SetResourceID(out[0].GetResourceID())
+	fixtures.DeepCompare(c, out, []services.App{app})
+
+	err = s.PresenceS.DeleteApp(context.Background(), app.Metadata.Namespace, app.GetName())
+	c.Assert(err, check.IsNil)
+
+	out, err = s.PresenceS.GetApps(context.Background(), app.Metadata.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 0)
+}
+
 func newReverseTunnel(clusterName string, dialAddrs []string) *services.ReverseTunnelV2 {
 	return &services.ReverseTunnelV2{
 		Kind:    services.KindReverseTunnel,
@@ -543,6 +584,7 @@ func (s *ServicesTestSuite) RolesCRUD(c *check.C) {
 			Allow: services.RoleConditions{
 				Logins:     []string{"root", "bob"},
 				NodeLabels: services.Labels{services.Wildcard: []string{services.Wildcard}},
+				AppLabels:  services.Labels{services.Wildcard: []string{services.Wildcard}},
 				Namespaces: []string{defaults.Namespace},
 				Rules: []services.Rule{
 					services.NewRule(services.KindRole, services.RO()),

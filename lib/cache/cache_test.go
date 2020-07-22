@@ -1192,6 +1192,86 @@ func (s *CacheSuite) TestAuthServers(c *check.C) {
 	c.Assert(out, check.HasLen, 0)
 }
 
+// TestApps tests that CRUD operations are replicated from the backend to
+// the cache.
+func (s *CacheSuite) TestApps(c *check.C) {
+	p := s.newPackForProxy(c)
+	defer p.Close()
+
+	// Upsert application into backend.
+	application := suite.NewApp("foo", "127.0.0.1:8080", "foo.example.com")
+	_, err := p.presenceS.UpsertApp(context.Background(), application)
+	c.Assert(err, check.IsNil)
+
+	// Check that the application is now in the backend.
+	out, err := p.presenceS.GetApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 1)
+	app := out[0]
+
+	// Check that information has been replicated to the cache and the
+	// cache now has a single application in it.
+	select {
+	case event := <-p.eventsC:
+		c.Assert(event.Type, check.Equals, EventProcessed)
+	case <-time.After(time.Second):
+		c.Fatalf("timeout waiting for event")
+	}
+	out, err = p.cache.GetApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 1)
+
+	// Check that the value in the cache and value in the backend have an
+	// exact match.
+	app.SetResourceID(out[0].GetResourceID())
+	fixtures.DeepCompare(c, app, out[0])
+
+	// Update the application and upsert it into the backend again.
+	app.SetExpiry(time.Now().Add(30 * time.Minute).UTC())
+	app.SetInternalAddr("127.0.0.2:8081")
+	_, err = p.presenceS.UpsertApp(context.Background(), app)
+	c.Assert(err, check.IsNil)
+
+	// Check that the application is in the backend and only one exists (so an
+	// update occurred).
+	out, err = p.presenceS.GetApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 1)
+	app = out[0]
+
+	// Check that information has been replicated to the cache and the
+	// cache now has a single application in it.
+	select {
+	case event := <-p.eventsC:
+		c.Assert(event.Type, check.Equals, EventProcessed)
+	case <-time.After(time.Second):
+		c.Fatalf("timeout waiting for event")
+	}
+	out, err = p.cache.GetApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 1)
+
+	// Check that the value in the cache and value in the backend have an
+	// exact match.
+	app.SetResourceID(out[0].GetResourceID())
+	fixtures.DeepCompare(c, app, out[0])
+
+	// Remove all applications from the backend.
+	err = p.presenceS.DeleteAllApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+
+	// Check that information has been replicated to the cache and the cache is
+	// now empty.
+	select {
+	case <-p.eventsC:
+	case <-time.After(time.Second):
+		c.Fatalf("timeout waiting for event")
+	}
+	out, err = p.cache.GetApps(context.Background(), defaults.Namespace)
+	c.Assert(err, check.IsNil)
+	c.Assert(out, check.HasLen, 0)
+}
+
 type proxyEvents struct {
 	sync.Mutex
 	watchers []services.Watcher

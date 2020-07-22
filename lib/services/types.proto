@@ -10,18 +10,20 @@ option (gogoproto.unmarshaler_all) = true;
 option (gogoproto.goproto_getters_all) = false;
 
 message KeepAlive {
-    // ServerName is a server name to keep alive
+    // ServerName is the name of the server to keep alive.
     string ServerName = 1 [ (gogoproto.jsontag) = "server_name" ];
-    // Namespace is a server namespace
+    // Namespace is the namespace of the resource.
     string Namespace = 2 [ (gogoproto.jsontag) = "namespace" ];
-    // LeaseID is ID of the lease
+    // LeaseID is ID of the lease.
     int64 LeaseID = 3 [ (gogoproto.jsontag) = "lease_id" ];
-    // Expires is set to update expiry time
+    // Expires is set to update expiry time of the resource.
     google.protobuf.Timestamp Expires = 4 [
         (gogoproto.stdtime) = true,
         (gogoproto.nullable) = false,
         (gogoproto.jsontag) = "expires"
     ];
+    // AppName is the name of the application to keep alive.
+    string AppName = 5 [ (gogoproto.jsontag) = "app_name" ];
 }
 
 // Metadata is resource metadata
@@ -733,6 +735,13 @@ message RoleConditions {
 
     // KubeUsers is an optional kubernetes users to impersonate
     repeated string KubeUsers = 7 [ (gogoproto.jsontag) = "kubernetes_users,omitempty" ];
+
+    // AppLabels is a map of labels used as part of the RBAC system.
+    wrappers.LabelValues AppLabels = 8 [
+        (gogoproto.nullable) = false,
+        (gogoproto.jsontag) = "app_labels,omitempty",
+        (gogoproto.customtype) = "Labels"
+    ];
 }
 
 // AccessRequestConditions is a matcher for allow/deny restrictions on
@@ -974,4 +983,42 @@ message TunnelConnectionSpecV2 {
     ];
     // Type is the type of reverse tunnel, either proxy or node.
     string Type = 4 [ (gogoproto.jsontag) = "type", (gogoproto.casttype) = "TunnelType" ];
+}
+
+// AppV3 represents an application within a Teleport cluster.
+message AppV3 {
+    option (gogoproto.goproto_stringer) = false;
+    option (gogoproto.stringer) = false;
+
+    // Kind is a resource kind
+    string Kind = 1 [ (gogoproto.jsontag) = "kind" ];
+    // SubKind is an optional resource sub kind, used in some resources
+    string SubKind = 2 [ (gogoproto.jsontag) = "sub_kind,omitempty" ];
+    // Version is version
+    string Version = 3 [ (gogoproto.jsontag) = "version" ];
+    // Metadata is User metadata
+    Metadata Metadata = 4 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata" ];
+    // Spec is the application specification.
+    AppSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
+}
+
+// AppSpecV3 is a specification for V3 applications.
+message AppSpecV3 {
+    // Protocol used to proxy this application. At the moment only HTTPS is
+    // supported.
+    string Protocol = 1 [ (gogoproto.jsontag) = "protocol" ];
+    // InternalAddr is the internal address of the application.
+    string InternalAddr = 2 [ (gogoproto.jsontag) = "internal_addr" ];
+    // PublicAddr is the address users will access the application at.
+    string PublicAddr = 3 [ (gogoproto.jsontag) = "public_addr" ];
+    // Rotation specifies server rotation state.
+    Rotation Rotation = 4
+        [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "rotation,omitempty" ];
+    // Commands is a list of dynamic labels to apply to this application.
+    map<string, CommandLabelV2> Commands = 5
+        [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "commands,omitempty" ];
+    // HostUUID is UUID of host the application proxy is running on.
+    string HostUUID = 6 [ (gogoproto.jsontag) = "uuid" ];
+    // TeleportVersion is the Teleport version of the application proxy.
+    string Version = 7 [ (gogoproto.jsontag) = "version" ];
 }
