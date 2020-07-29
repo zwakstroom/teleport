@@ -94,6 +94,10 @@ const (
 	// with the Auth Server.
 	SSHIdentityEvent = "SSHIdentity"
 
+	// AppsIdentityEvent is generated when the identity of the application proxy
+	// service has been registered with the Auth Server.
+	AppsIdentityEvent = "AppsIdentity"
+
 	// AuthTLSReady is generated when the Auth Server has initialized the
 	// TLS Mutual Auth endpoint and is ready to start accepting connections.
 	AuthTLSReady = "AuthTLSReady"
@@ -118,6 +122,10 @@ const (
 	// NodeSSHReady is generated when the Teleport node has initialized a SSH server
 	// and is ready to start accepting SSH connections.
 	NodeSSHReady = "NodeReady"
+
+	// AppsReady is generated when the Teleport app proxy service is ready to
+	// start accepting connections.
+	AppsReady = "AppsReady"
 
 	// TeleportExitEvent is generated when the Teleport process begins closing
 	// all listening sockets and exiting.
@@ -645,6 +653,9 @@ func NewTeleport(cfg *Config) (*TeleportProcess, error) {
 	if cfg.Proxy.Enabled {
 		eventMapping.In = append(eventMapping.In, ProxySSHReady)
 	}
+	if cfg.Apps.Enabled {
+		eventMapping.In = append(eventMapping.In, AppsReady)
+	}
 	process.RegisterEventMapping(eventMapping)
 
 	if cfg.Auth.Enabled {
@@ -666,13 +677,23 @@ func NewTeleport(cfg *Config) (*TeleportProcess, error) {
 	}
 
 	if cfg.Proxy.Enabled {
-		eventMapping.In = append(eventMapping.In, ProxySSHReady)
+		//eventMapping.In = append(eventMapping.In, ProxySSHReady)
 		if err := process.initProxy(); err != nil {
 			return nil, err
 		}
 		serviceStarted = true
 	} else {
 		warnOnErr(process.closeImportedDescriptors(teleport.ComponentProxy))
+	}
+
+	// If this process is proxying applications, start AAP.
+	if cfg.Apps.Enabled {
+		if err := process.initApps(); err != nil {
+			return nil, err
+		}
+		serviceStarted = true
+	} else {
+		warnOnErr(process.closeImportedDescriptors(teleport.ComponentApps))
 	}
 
 	process.RegisterFunc("common.rotate", process.periodicSyncRotationState)
@@ -2330,6 +2351,116 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 	if err := process.initUploaderService(accessPoint, conn.Client); err != nil {
 		return trace.Wrap(err)
 	}
+	return nil
+}
+
+func (process *TeleportProcess) initApps() error {
+	// Connect to the Auth Server, a client connected to the Auth Server will
+	// be returned. For this to be successful, credentials to connect to the
+	// Auth Server need to exist on disk or a registration token should be
+	// provided.
+	process.registerWithAuthServer(teleport.RoleApps, AppsIdentityEvent)
+	eventsCh := make(chan Event)
+	process.WaitForEvent(process.ExitContext(), AppsIdentityEvent, eventsCh)
+
+	// Define logger to prefix log lines with the name of the component and PID.
+	log := logrus.WithFields(logrus.Fields{
+		trace.Component: teleport.Component(teleport.ComponentApps, process.id),
+	})
+
+	var agentPool *reversetunnel.AgentPool
+
+	process.RegisterCriticalFunc("apps.service", func() error {
+		var ok bool
+		var event Event
+
+		// Block until registration is complete and a client (with an identity) has
+		// been returned.
+		select {
+		case event = <-eventsCh:
+			log.Debugf("Received event %q.", event.Name)
+		case <-process.ExitContext().Done():
+			log.Debugf("Process is exiting.")
+			return nil
+		}
+		conn, ok = (event.Payload).(*Connector)
+		if !ok {
+			return trace.BadParameter("unsupported connector type: %T", event.Payload)
+		}
+		//cfg := process.Config
+
+		// Create a caching client to the Auth Server. Is is to reduce load on
+		// the Auth Server.
+		authClient, err := process.newLocalCache(conn.Client, cache.ForApps, []string{teleport.ComponentApps})
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		server, err := apps.New(&apps.Config{
+			AccessPoint:  authClient,
+			Storage:      process.storage,
+			Apps:         appSlice,
+			CloseContext: process.ExitContext(),
+		})
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		// Start the apps server. This starts the server, heartbeat (services.App),
+		// and (dynamic) label update.
+		if err := server.Start(); err != nil {
+			return trace.Wrap(err)
+		}
+
+		// Create and start an agent pool for the reverse tunnel.
+		agentPool, err = reversetunnel.NewAgentPool(reversetunnel.AgentPoolConfig{
+			Component:   teleport.ComponentNode,
+			HostUUID:    conn.ServerIdentity.ID.HostUUID,
+			ProxyAddr:   conn.TunnelProxy(),
+			Client:      conn.Client,
+			AccessPoint: conn.Client,
+			HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
+			Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
+			AppsServer:  server,
+		})
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		err = agentPool.Start()
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		log.Infof("Started reverse tunnel.")
+
+		// Broadcast that the apps proxy is ready.
+		process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
+
+		// Block and wait while the server and agent pool are running.
+		s.Wait()
+		agentPool.Wait()
+
+		log.Infof("Exited.")
+		return nil
+	})
+
+	// Execute this when process is asked to exit.
+	process.onExit("apps.service.shutdown", func(payload interface{}) {
+		if payload == nil {
+			log.Infof("Shutting down immediately.")
+			if s != nil {
+				warnOnErr(s.Close())
+			}
+		} else {
+			log.Infof("Shutting down gracefully.")
+			if s != nil {
+				warnOnErr(s.Shutdown(payloadContext(payload)))
+			}
+		}
+		agentPool.Stop()
+
+		log.Infof("Exited.")
+	})
+
 	return nil
 }
 

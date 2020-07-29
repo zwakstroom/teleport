@@ -340,3 +340,7 @@ func (r *EmptyResource) GetName() string {
 func (r *EmptyResource) GetMetadata() Metadata {
 	return r.Metadata
 }
+
+func (r *EmptyResource) CheckAndSetDefaults() error {
+	return nil
+}

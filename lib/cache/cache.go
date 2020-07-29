@@ -92,6 +92,23 @@ func ForNode(cfg Config) Config {
 	return cfg
 }
 
+// ForApps sets up watch configuration for apps.
+func ForApps(cfg Config) Config {
+	cfg.Watches = []services.WatchKind{
+		{Kind: services.KindCertAuthority, LoadSecrets: false},
+		{Kind: services.KindClusterName},
+		{Kind: services.KindClusterConfig},
+		{Kind: services.KindUser},
+		{Kind: services.KindRole},
+		// Node only needs to "know" about default
+		// namespace events to avoid matching too much
+		// data about other namespaces or node events
+		{Kind: services.KindNamespace, Name: defaults.Namespace},
+	}
+	cfg.QueueSize = defaults.AppsQueueSize
+	return cfg
+}
+
 // SetupConfigFn is a function that sets up configuration
 // for cache
 type SetupConfigFn func(c Config) Config

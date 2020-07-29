@@ -208,8 +208,11 @@ type Heartbeat struct {
 	cancelCtx context.Context
 	cancel    context.CancelFunc
 	*log.Entry
-	state     KeepAliveState
-	current   services.Server
+	state KeepAliveState
+
+	//current   services.Server
+	current services.Resource
+
 	keepAlive *services.KeepAlive
 	// nextAnnounce holds time of the next scheduled announce attempt
 	nextAnnounce time.Time

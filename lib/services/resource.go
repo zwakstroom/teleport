@@ -541,6 +541,10 @@ const baseMetadataSchema = `{
 // DefaultDefinitions the default list of JSON schema definitions which is none.
 const DefaultDefinitions = ``
 
+func (m *ResourceHeader) CheckAndSetDefaults() error {
+	return nil
+}
+
 // UnknownResource is used to detect resources
 type UnknownResource struct {
 	ResourceHeader
@@ -620,6 +624,10 @@ func (u *UnknownResource) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
+func (u *UnknownResource) CheckAndSetDefaults() error {
+	return nil
+}
+
 // Resource represents common properties for resources
 type Resource interface {
 	// GetKind returns resource kind
@@ -646,6 +654,8 @@ type Resource interface {
 	GetResourceID() int64
 	// SetResourceID sets resource ID
 	SetResourceID(int64)
+
+	CheckAndSetDefaults() error
 }
 
 // ResourceWithSecrets includes additional properties which must
