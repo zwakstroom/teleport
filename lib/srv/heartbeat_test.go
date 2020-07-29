@@ -79,10 +79,15 @@ func (s *HeartbeatSuite) TestHeartbeatKeepAlive(c *check.C) {
 		KeepAlivePeriod: 10 * time.Second,
 		ServerTTL:       600 * time.Second,
 		Clock:           clock,
-		GetServerInfo: func() (services.Server, error) {
+		GetServerInfo: func() (services.Resource, error) {
 			srv.SetTTL(clock, defaults.ServerAnnounceTTL)
 			return srv, nil
 		},
+
+		//GetServerInfo: func() (services.Server, error) {
+		//	srv.SetTTL(clock, defaults.ServerAnnounceTTL)
+		//	return srv, nil
+		//},
 	})
 	c.Assert(err, check.IsNil)
 	c.Assert(hb.state, check.Equals, HeartbeatStateInit)
@@ -178,7 +183,7 @@ func (s *HeartbeatSuite) heartbeatAnnounce(c *check.C, mode HeartbeatMode, kind 
 		KeepAlivePeriod: 10 * time.Second,
 		ServerTTL:       600 * time.Second,
 		Clock:           clock,
-		GetServerInfo: func() (services.Server, error) {
+		GetServerInfo: func() (services.Resource, error) {
 			srv := &services.ServerV2{
 				Kind:    kind,
 				Version: services.V2,
@@ -194,6 +199,23 @@ func (s *HeartbeatSuite) heartbeatAnnounce(c *check.C, mode HeartbeatMode, kind 
 			srv.SetTTL(clock, defaults.ServerAnnounceTTL)
 			return srv, nil
 		},
+
+		//GetServerInfo: func() (services.Server, error) {
+		//	srv := &services.ServerV2{
+		//		Kind:    kind,
+		//		Version: services.V2,
+		//		Metadata: services.Metadata{
+		//			Namespace: defaults.Namespace,
+		//			Name:      "1",
+		//		},
+		//		Spec: services.ServerSpecV2{
+		//			Addr:     "127.0.0.1:1234",
+		//			Hostname: "2",
+		//		},
+		//	}
+		//	srv.SetTTL(clock, defaults.ServerAnnounceTTL)
+		//	return srv, nil
+		//},
 	})
 	c.Assert(err, check.IsNil)
 	c.Assert(hb.state, check.Equals, HeartbeatStateInit)
@@ -280,6 +302,11 @@ func (f *fakeAnnouncer) UpsertProxy(s services.Server) error {
 
 func (f *fakeAnnouncer) UpsertAuthServer(s services.Server) error {
 	f.upsertCalls[HeartbeatModeAuth] += 1
+	return f.err
+}
+
+func (f *fakeAnnouncer) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	f.upsertCalls[HeartbeatModeApp] += 1
 	return f.err
 }
 

@@ -41,6 +41,9 @@ type Announcer interface {
 
 	// NewKeepAliver returns a new instance of keep aliver
 	NewKeepAliver(ctx context.Context) (services.KeepAliver, error)
+
+	// UpsertApp is used by applications to report their presence to the backend.
+	UpsertApp(context.Context, services.App) (*services.KeepAlive, error)
 }
 
 // ReadAccessPoint is an API interface implemented by a certificate authority (CA)
@@ -184,6 +187,11 @@ func (w *Wrapper) NewKeepAliver(ctx context.Context) (services.KeepAliver, error
 // UpsertProxy is part of auth.AccessPoint implementation
 func (w *Wrapper) UpsertProxy(s services.Server) error {
 	return w.Write.UpsertProxy(s)
+}
+
+// UpsertApp is part of the auth.AccessPoint implementation.
+func (w *Wrapper) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+	return w.Write.UpsertApp(ctx, app)
 }
 
 // UpsertTunnelConnection is a part of auth.AccessPoint implementation
