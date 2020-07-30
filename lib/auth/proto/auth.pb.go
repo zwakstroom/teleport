@@ -60,7 +60,11 @@ func (x Operation) String() string {
 	return proto.EnumName(Operation_name, int32(x))
 }
 func (Operation) EnumDescriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{0}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{0}
+>>>>>>> 657d58b88... Fix.
 }
 
 // Event returns cluster event
@@ -93,7 +97,11 @@ func (m *Event) Reset()         { *m = Event{} }
 func (m *Event) String() string { return proto.CompactTextString(m) }
 func (*Event) ProtoMessage()    {}
 func (*Event) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{0}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{0}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *Event) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -583,7 +591,11 @@ func (m *Watch) Reset()         { *m = Watch{} }
 func (m *Watch) String() string { return proto.CompactTextString(m) }
 func (*Watch) ProtoMessage()    {}
 func (*Watch) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{1}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{1}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *Watch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -641,7 +653,11 @@ func (m *WatchKind) Reset()         { *m = WatchKind{} }
 func (m *WatchKind) String() string { return proto.CompactTextString(m) }
 func (*WatchKind) ProtoMessage()    {}
 func (*WatchKind) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{2}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{2}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *WatchKind) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -713,7 +729,11 @@ func (m *Certs) Reset()         { *m = Certs{} }
 func (m *Certs) String() string { return proto.CompactTextString(m) }
 func (*Certs) ProtoMessage()    {}
 func (*Certs) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{3}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{3}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *Certs) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -787,7 +807,11 @@ func (m *UserCertsRequest) Reset()         { *m = UserCertsRequest{} }
 func (m *UserCertsRequest) String() string { return proto.CompactTextString(m) }
 func (*UserCertsRequest) ProtoMessage()    {}
 func (*UserCertsRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{4}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{4}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *UserCertsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -873,7 +897,11 @@ func (m *GetUserRequest) Reset()         { *m = GetUserRequest{} }
 func (m *GetUserRequest) String() string { return proto.CompactTextString(m) }
 func (*GetUserRequest) ProtoMessage()    {}
 func (*GetUserRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{5}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{5}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetUserRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -929,7 +957,11 @@ func (m *GetUsersRequest) Reset()         { *m = GetUsersRequest{} }
 func (m *GetUsersRequest) String() string { return proto.CompactTextString(m) }
 func (*GetUsersRequest) ProtoMessage()    {}
 func (*GetUsersRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{6}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{6}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetUsersRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -977,7 +1009,11 @@ func (m *AccessRequests) Reset()         { *m = AccessRequests{} }
 func (m *AccessRequests) String() string { return proto.CompactTextString(m) }
 func (*AccessRequests) ProtoMessage()    {}
 func (*AccessRequests) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{7}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{7}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *AccessRequests) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1025,7 +1061,11 @@ func (m *PluginDataSeq) Reset()         { *m = PluginDataSeq{} }
 func (m *PluginDataSeq) String() string { return proto.CompactTextString(m) }
 func (*PluginDataSeq) ProtoMessage()    {}
 func (*PluginDataSeq) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{8}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{8}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *PluginDataSeq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1081,7 +1121,11 @@ func (m *RequestStateSetter) Reset()         { *m = RequestStateSetter{} }
 func (m *RequestStateSetter) String() string { return proto.CompactTextString(m) }
 func (*RequestStateSetter) ProtoMessage()    {}
 func (*RequestStateSetter) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{9}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{9}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *RequestStateSetter) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1143,7 +1187,11 @@ func (m *RequestID) Reset()         { *m = RequestID{} }
 func (m *RequestID) String() string { return proto.CompactTextString(m) }
 func (*RequestID) ProtoMessage()    {}
 func (*RequestID) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{10}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{10}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *RequestID) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1193,7 +1241,11 @@ func (m *RotateResetPasswordTokenSecretsRequest) Reset() {
 func (m *RotateResetPasswordTokenSecretsRequest) String() string { return proto.CompactTextString(m) }
 func (*RotateResetPasswordTokenSecretsRequest) ProtoMessage()    {}
 func (*RotateResetPasswordTokenSecretsRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{11}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{11}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *RotateResetPasswordTokenSecretsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1241,7 +1293,11 @@ func (m *GetResetPasswordTokenRequest) Reset()         { *m = GetResetPasswordTo
 func (m *GetResetPasswordTokenRequest) String() string { return proto.CompactTextString(m) }
 func (*GetResetPasswordTokenRequest) ProtoMessage()    {}
 func (*GetResetPasswordTokenRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{12}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{12}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetResetPasswordTokenRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1295,7 +1351,11 @@ func (m *CreateResetPasswordTokenRequest) Reset()         { *m = CreateResetPass
 func (m *CreateResetPasswordTokenRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateResetPasswordTokenRequest) ProtoMessage()    {}
 func (*CreateResetPasswordTokenRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{13}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{13}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *CreateResetPasswordTokenRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1356,7 +1416,11 @@ func (m *PingRequest) Reset()         { *m = PingRequest{} }
 func (m *PingRequest) String() string { return proto.CompactTextString(m) }
 func (*PingRequest) ProtoMessage()    {}
 func (*PingRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{14}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{14}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *PingRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1400,7 +1464,11 @@ func (m *PingResponse) Reset()         { *m = PingResponse{} }
 func (m *PingResponse) String() string { return proto.CompactTextString(m) }
 func (*PingResponse) ProtoMessage()    {}
 func (*PingResponse) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{15}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{15}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *PingResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1456,7 +1524,11 @@ func (m *DeleteUserRequest) Reset()         { *m = DeleteUserRequest{} }
 func (m *DeleteUserRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteUserRequest) ProtoMessage()    {}
 func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{16}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{16}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *DeleteUserRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1510,7 +1582,11 @@ func (m *GetAppRequest) Reset()         { *m = GetAppRequest{} }
 func (m *GetAppRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAppRequest) ProtoMessage()    {}
 func (*GetAppRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{17}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{17}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetAppRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1562,7 +1638,11 @@ func (m *GetAppRequest) GetSkipValidation() bool {
 
 // GetAppResponse is the response message to fetch a single application.
 type GetAppResponse struct {
+<<<<<<< HEAD
 	// App is an application.
+=======
+	// App is an services.Server that represents an application.
+>>>>>>> 657d58b88... Fix.
 	App                  *services.ServerV2 `protobuf:"bytes,1,opt,name=App" json:"app"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`
@@ -1573,7 +1653,11 @@ func (m *GetAppResponse) Reset()         { *m = GetAppResponse{} }
 func (m *GetAppResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAppResponse) ProtoMessage()    {}
 func (*GetAppResponse) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{18}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{18}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetAppResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1625,7 +1709,11 @@ func (m *GetAppsRequest) Reset()         { *m = GetAppsRequest{} }
 func (m *GetAppsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAppsRequest) ProtoMessage()    {}
 func (*GetAppsRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{19}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{19}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetAppsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1670,7 +1758,11 @@ func (m *GetAppsRequest) GetSkipValidation() bool {
 
 // GetAppsResponse is the response message for all registered applications.
 type GetAppsResponse struct {
+<<<<<<< HEAD
 	// Apps is a slice of applications.
+=======
+	// Apps is a slice of services.Server that represent applications.
+>>>>>>> 657d58b88... Fix.
 	Apps                 []*services.ServerV2 `protobuf:"bytes,1,rep,name=Apps" json:"apps"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
@@ -1681,7 +1773,11 @@ func (m *GetAppsResponse) Reset()         { *m = GetAppsResponse{} }
 func (m *GetAppsResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAppsResponse) ProtoMessage()    {}
 func (*GetAppsResponse) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{20}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{20}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *GetAppsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1729,7 +1825,11 @@ func (m *UpsertAppRequest) Reset()         { *m = UpsertAppRequest{} }
 func (m *UpsertAppRequest) String() string { return proto.CompactTextString(m) }
 func (*UpsertAppRequest) ProtoMessage()    {}
 func (*UpsertAppRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{21}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{21}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *UpsertAppRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1780,7 +1880,11 @@ func (m *DeleteAppRequest) Reset()         { *m = DeleteAppRequest{} }
 func (m *DeleteAppRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteAppRequest) ProtoMessage()    {}
 func (*DeleteAppRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{22}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{22}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *DeleteAppRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1836,7 +1940,11 @@ func (m *DeleteAllAppsRequest) Reset()         { *m = DeleteAllAppsRequest{} }
 func (m *DeleteAllAppsRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteAllAppsRequest) ProtoMessage()    {}
 func (*DeleteAllAppsRequest) Descriptor() ([]byte, []int) {
+<<<<<<< HEAD
 	return fileDescriptor_auth_55c2a49deb8c39e6, []int{23}
+=======
+	return fileDescriptor_auth_e02df4a36033d12b, []int{23}
+>>>>>>> 657d58b88... Fix.
 }
 func (m *DeleteAllAppsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -7421,9 +7529,15 @@ var (
 	ErrIntOverflowAuth   = fmt.Errorf("proto: integer overflow")
 )
 
+<<<<<<< HEAD
 func init() { proto.RegisterFile("auth.proto", fileDescriptor_auth_55c2a49deb8c39e6) }
 
 var fileDescriptor_auth_55c2a49deb8c39e6 = []byte{
+=======
+func init() { proto.RegisterFile("auth.proto", fileDescriptor_auth_e02df4a36033d12b) }
+
+var fileDescriptor_auth_e02df4a36033d12b = []byte{
+>>>>>>> 657d58b88... Fix.
 	// 1978 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xcd, 0x6f, 0xdb, 0xc8,
 	0x15, 0x0f, 0x25, 0x7f, 0x48, 0x4f, 0xb6, 0x56, 0x19, 0x3b, 0x0e, 0xa3, 0x38, 0x66, 0xc0, 0x60,

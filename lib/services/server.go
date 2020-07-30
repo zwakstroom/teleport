@@ -272,7 +272,7 @@ func (s *ServerV2) SetCmdLabels(cmdLabels map[string]CommandLabel) {
 // GetProtocol gets the protocol supported by this server.
 func (s *ServerV2) GetProtocol() string {
 	if s.Spec.Protocol == "" {
-		return teleport.SSHProtocol
+		return teleport.ServerProtocolSSH
 	}
 	return s.Spec.Protocol
 }

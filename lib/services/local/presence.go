@@ -257,17 +257,20 @@ func (s *PresenceService) UpsertNode(server services.Server) (*services.KeepAliv
 }
 
 // DELETE IN: 5.1.0.
-//// KeepAliveNode updates node expiry
-//func (s *PresenceService) KeepAliveNode(ctx context.Context, h services.KeepAlive) error {
-//	if err := h.CheckAndSetDefaults(); err != nil {
-//		return trace.Wrap(err)
-//	}
-//	err := s.KeepAlive(ctx, backend.Lease{
-//		ID:  h.LeaseID,
-//		Key: backend.Key(nodesPrefix, h.Namespace, h.ServerName),
-//	}, h.Expires)
-//	return trace.Wrap(err)
-//}
+//
+// This logic has been moved to KeepAliveResource.
+//
+// KeepAliveNode updates node expiry
+func (s *PresenceService) KeepAliveNode(ctx context.Context, h services.KeepAlive) error {
+	if err := h.CheckAndSetDefaults(); err != nil {
+		return trace.Wrap(err)
+	}
+	err := s.KeepAlive(ctx, backend.Lease{
+		ID:  h.LeaseID,
+		Key: backend.Key(nodesPrefix, h.Namespace, h.ServerName),
+	}, h.Expires)
+	return trace.Wrap(err)
+}
 
 // UpsertNodes is used for bulk insertion of nodes. Schema validation is
 // always skipped during bulk insertion.
@@ -666,7 +669,10 @@ func (s *PresenceService) DeleteAllRemoteClusters() error {
 // GetApp returns a specific application.
 func (s *PresenceService) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
 	if namespace == "" {
-		return nil, trace.BadParameter("missing namespace value")
+		return nil, trace.BadParameter("missing namespace")
+	}
+	if name == "" {
+		return nil, trace.BadParameter("missing application name")
 	}
 
 	// Fetch the item from the backend.
@@ -692,7 +698,7 @@ func (s *PresenceService) GetApp(ctx context.Context, namespace string, name str
 // GetApps returns the list of registered applications.
 func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	if namespace == "" {
-		return nil, trace.BadParameter("missing namespace value")
+		return nil, trace.BadParameter("missing namespace")
 	}
 
 	// Get all items in the bucket.
@@ -723,9 +729,10 @@ func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ..
 // UpsertApp registers an application with a TTL. A services.KeepAlive is
 // returned that can be used to extend the TTL.
 func (s *PresenceService) UpsertApp(ctx context.Context, app services.Server) (*services.KeepAlive, error) {
-	if app.GetNamespace() == "" {
-		return nil, trace.BadParameter("missing node namespace")
+	if err := app.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
 	}
+
 	value, err := services.GetServerMarshaler().MarshalServer(app)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -768,7 +775,7 @@ func (s *PresenceService) KeepAliveResource(ctx context.Context, h services.Keep
 		return trace.Wrap(err)
 	}
 
-	// Update the prefix based off the type of keep alive.
+	// Update the prefix off the type information in the keep alive.
 	prefix := nodesPrefix
 	if h.GetType() == teleport.KeepAliveApp {
 		prefix = appsPrefix

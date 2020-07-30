@@ -54,6 +54,8 @@ const (
 	RoleNop Role = "Nop"
 	// RoleRemoteProxy is a role for remote SSH proxy in the cluster
 	RoleRemoteProxy Role = "RemoteProxy"
+	// RoleApp is a role for a app proxy in the cluster.
+	RoleApp Role = "App"
 )
 
 // this constant exists for backwards compatibility reasons, needed to upgrade to 2.3

@@ -22,6 +22,7 @@ import (
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/defaults"
+
 	"github.com/gravitational/trace"
 )
 
@@ -208,6 +209,7 @@ func (s *KeepAlive) IsEmpty() bool {
 	return s.LeaseID == 0 && s.Name == ""
 }
 
+// GetType return the type of keep alive: either application or server.
 func (s *KeepAlive) GetType() string {
 	if s.Type == "" {
 		return teleport.KeepAliveServer
@@ -239,7 +241,4 @@ type KeepAliver interface {
 
 	// Error returns error associated with keep aliver if any
 	Error() error
-
-	// GetType return the type of keep alive.
-	GetType() string
 }

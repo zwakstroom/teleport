@@ -99,6 +99,10 @@ func (s *CacheSuite) newPackForNode(c *check.C) *testPack {
 	return s.newPack(c, ForNode)
 }
 
+func (s *CacheSuite) newPackForApp(c *check.C) *testPack {
+	return s.newPack(c, ForApps)
+}
+
 // newPackWithoutCache returns a new test pack without creating cache
 func (s *CacheSuite) newPackWithoutCache(c *check.C, setupConfig SetupConfigFn) *testPack {
 	p := &testPack{
@@ -1195,7 +1199,7 @@ func (s *CacheSuite) TestAuthServers(c *check.C) {
 // TestApps tests that CRUD operations are replicated from the backend to
 // the cache.
 func (s *CacheSuite) TestApps(c *check.C) {
-	p := s.newPackForProxy(c)
+	p := s.newPackForApp(c)
 	defer p.Close()
 
 	// Upsert application into backend.

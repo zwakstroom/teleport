@@ -669,16 +669,15 @@ const (
 const UserSystem = "system"
 
 const (
-	// SSHProtocol is the protocol used for Auth, Node, and Proxy servers.
-	SSHProtocol = "ssh"
-	// WebAppProtocol is the protocol used for AAP servers.
-	WebAppProtocol = "https"
+	// ServerProtocolSSH is the protocol used by auth, node, and proxy servers.
+	ServerProtocolSSH = "ssh"
+	// ServerProtocolWeb is the protocol used for application proxy server.
+	ServerProtocolWeb = "https"
 )
 
 const (
-	// KeepAliveServer is the type for the keep alive.
+	// KeepAliveServer is the keep alive type for auth, node, and proxy servers.
 	KeepAliveServer = "server"
-
-	// KeepAliveApp is the type for the keep alive.
+	// KeepAliveApp is the keep alive type for application proxy server.
 	KeepAliveApp = "app"
 )

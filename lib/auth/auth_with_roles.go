@@ -367,27 +367,29 @@ func (a *AuthWithRoles) UpsertNode(s services.Server) (*services.KeepAlive, erro
 	return a.authServer.UpsertNode(s)
 }
 
-//// DELETE IN: 5.1.0
-//func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepAlive) error {
-//	if !a.hasBuiltinRole(string(teleport.RoleNode)) {
-//		return trace.AccessDenied("[10] access denied")
-//	}
-//	clusterName, err := a.GetDomainName()
-//	if err != nil {
-//		return trace.Wrap(err)
-//	}
-//	serverName, err := ExtractHostID(a.user.GetName(), clusterName)
-//	if err != nil {
-//		return trace.AccessDenied("[10] access denied")
-//	}
-//	if serverName != handle.ServerName {
-//		return trace.AccessDenied("[10] access denied")
-//	}
-//	if err := a.action(defaults.Namespace, services.KindNode, services.VerbUpdate); err != nil {
-//		return trace.Wrap(err)
-//	}
-//	return a.authServer.KeepAliveNode(ctx, handle)
-//}
+// DELETE IN: 5.1.0
+//
+// This logic has moved to KeepAliveResource.
+func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepAlive) error {
+	if !a.hasBuiltinRole(string(teleport.RoleNode)) {
+		return trace.AccessDenied("[10] access denied")
+	}
+	clusterName, err := a.GetDomainName()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	serverName, err := ExtractHostID(a.user.GetName(), clusterName)
+	if err != nil {
+		return trace.AccessDenied("[10] access denied")
+	}
+	if serverName != handle.ServerName {
+		return trace.AccessDenied("[10] access denied")
+	}
+	if err := a.action(defaults.Namespace, services.KindNode, services.VerbUpdate); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.KeepAliveNode(ctx, handle)
+}
 
 func (a *AuthWithRoles) KeepAliveResource(ctx context.Context, handle services.KeepAlive) error {
 	switch handle.GetType() {
@@ -564,6 +566,7 @@ func (a *AuthWithRoles) filterApps(apps []services.Server) ([]services.Server, e
 	// the full set of apps. For example, proxy (and remote proxy) to access all
 	// apps so it can resolve connection requests.
 	if a.hasBuiltinRole(string(teleport.RoleAdmin)) ||
+		a.hasBuiltinRole(string(teleport.RoleApp)) ||
 		a.hasBuiltinRole(string(teleport.RoleProxy)) ||
 		a.hasBuiltinRole(string(teleport.RoleApp)) ||
 		a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
@@ -577,13 +580,16 @@ func (a *AuthWithRoles) filterApps(apps []services.Server) ([]services.Server, e
 
 	// Loop over all apps and check if the caller has access.
 	filteredApps := make([]services.Server, 0, len(apps))
-NextApp:
 	for _, app := range apps {
 		err := roleset.CheckAccessToApp(app)
-		if err == nil {
-			filteredApps = append(filteredApps, app)
-			continue NextApp
+		if err != nil {
+			if trace.IsAccessDenied(err) {
+				continue
+			}
+			return nil, trace.Wrap(err)
 		}
+
+		filteredApps = append(filteredApps, app)
 	}
 
 	return filteredApps, nil
@@ -1866,11 +1872,18 @@ func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name strin
 		return nil, trace.Wrap(err)
 	}
 
+	// Only allow machine roles to access this endpoint.
+	if !a.hasBuiltinRole(string(teleport.RoleAdmin)) &&
+		!a.hasBuiltinRole(string(teleport.RoleApp)) &&
+		!a.hasBuiltinRole(string(teleport.RoleProxy)) &&
+		!a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
+		return nil, trace.AccessDenied("identity does not have access to apps")
+	}
+
 	app, err := a.authServer.GetApp(ctx, namespace, name, opts...)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-
 	return app, nil
 }
 
@@ -1891,7 +1904,8 @@ func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...s
 	}
 	elapsedFetch := time.Since(startFetch)
 
-	// Filter apps to return the ones for the connected identity.
+	// Filter apps to return the ones for the connected identity or return all
+	// for machine identities.
 	startFilter := time.Now()
 	filteredApps, err := a.filterApps(apps)
 	if err != nil {
@@ -1918,6 +1932,14 @@ func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.Server) (*se
 	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbUpdate); err != nil {
 		return nil, trace.Wrap(err)
 	}
+
+	// Only allow machine roles to access this endpoint.
+	if !a.hasBuiltinRole(string(teleport.RoleAdmin)) &&
+		!a.hasBuiltinRole(string(teleport.RoleApp)) &&
+		!a.hasBuiltinRole(string(teleport.RoleProxy)) &&
+		!a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
+		return nil, trace.AccessDenied("identity does not have access to apps")
+	}
 	return a.authServer.UpsertApp(ctx, app)
 }
 
@@ -1926,10 +1948,18 @@ func (a *AuthWithRoles) DeleteApp(ctx context.Context, namespace string, name st
 	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
+
+	// Only allow machine roles to access this endpoint.
+	if !a.hasBuiltinRole(string(teleport.RoleAdmin)) &&
+		!a.hasBuiltinRole(string(teleport.RoleApp)) &&
+		!a.hasBuiltinRole(string(teleport.RoleProxy)) &&
+		!a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
+		return trace.AccessDenied("identity does not have access to apps")
+	}
+
 	if err := a.authServer.DeleteApp(ctx, namespace, name); err != nil {
 		return trace.Wrap(err)
 	}
-
 	return nil
 }
 
@@ -1938,10 +1968,17 @@ func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) err
 	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
+
+	// Only allow machine roles to access this endpoint.
+	if !a.hasBuiltinRole(string(teleport.RoleApp)) &&
+		!a.hasBuiltinRole(string(teleport.RoleProxy)) &&
+		!a.hasBuiltinRole(string(teleport.RoleRemoteProxy)) {
+		return trace.AccessDenied("identity does not have access to apps")
+	}
+
 	if err := a.authServer.DeleteAllApps(ctx, namespace); err != nil {
 		return trace.Wrap(err)
 	}
-
 	return nil
 }
 

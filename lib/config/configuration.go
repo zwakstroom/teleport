@@ -668,10 +668,8 @@ func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
 
 		// Parse the static labels of the application.
 		labels := make(map[string]string)
-		if application.Labels != nil {
-			for k, v := range application.Labels {
-				labels[k] = v
-			}
+		if app.Labels != nil {
+			labels = app.Labels
 		}
 
 		// Parse the dynamic labels of the application.

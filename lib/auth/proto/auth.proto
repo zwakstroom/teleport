@@ -216,7 +216,7 @@ message GetAppRequest {
 
 // GetAppResponse is the response message to fetch a single application.
 message GetAppResponse {
-    // App is an application.
+    // App is an services.Server that represents an application.
     services.ServerV2 App = 1 [ (gogoproto.jsontag) = "app" ];
 }
 
@@ -231,7 +231,7 @@ message GetAppsRequest {
 
 // GetAppsResponse is the response message for all registered applications.
 message GetAppsResponse {
-    // Apps is a slice of applications.
+    // Apps is a slice of services.Server that represent applications.
     repeated services.ServerV2 Apps = 1 [ (gogoproto.jsontag) = "apps" ];
 }
 

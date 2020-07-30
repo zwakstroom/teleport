@@ -366,7 +366,7 @@ func NewApp(name string, internalAddr string, publicAddr string) *services.Serve
 			Namespace: defaults.Namespace,
 		},
 		Spec: services.ServerSpecV2{
-			Protocol:     teleport.WebAppProtocol,
+			Protocol:     teleport.ServerProtocolWeb,
 			InternalAddr: internalAddr,
 			PublicAddr:   publicAddr,
 		},
@@ -375,26 +375,44 @@ func NewApp(name string, internalAddr string, publicAddr string) *services.Serve
 
 // AppCRUD tests CRUD functionality for services.App.
 func (s *ServicesTestSuite) AppCRUD(c *check.C) {
+	// Create application.
+	app := NewApp("foo", "127.0.0.1:8080", "foo.example.com")
+
+	// Expect not to be returned any applications and trace.NotFound.
 	out, err := s.PresenceS.GetApps(context.Background(), defaults.Namespace)
 	c.Assert(err, check.IsNil)
 	c.Assert(len(out), check.Equals, 0)
 
-	app := NewApp("foo", "127.0.0.1:8080", "foo.example.com")
+	_, err = s.PresenceS.GetApp(context.Background(), app.GetNamespace(), app.GetName())
+	fixtures.ExpectNotFound(c, err)
+
+	// Upsert application.
 	_, err = s.PresenceS.UpsertApp(context.Background(), app)
 	c.Assert(err, check.IsNil)
 
-	out, err = s.PresenceS.GetApps(context.Background(), app.Metadata.Namespace)
+	// Check again, expect a single application to be found.
+	out, err = s.PresenceS.GetApps(context.Background(), app.GetNamespace())
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 1)
 	app.SetResourceID(out[0].GetResourceID())
 	fixtures.DeepCompare(c, out, []services.Server{app})
 
+	sout, err := s.PresenceS.GetApp(context.Background(), app.GetNamespace(), app.GetName())
+	c.Assert(err, check.IsNil)
+	app.SetResourceID(sout.GetResourceID())
+	fixtures.DeepCompare(c, sout, app)
+
+	// Remove the application.
 	err = s.PresenceS.DeleteApp(context.Background(), app.Metadata.Namespace, app.GetName())
 	c.Assert(err, check.IsNil)
 
+	// Now expect no applications to be returned.
 	out, err = s.PresenceS.GetApps(context.Background(), app.Metadata.Namespace)
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 0)
+
+	_, err = s.PresenceS.GetApp(context.Background(), app.GetNamespace(), app.GetName())
+	fixtures.ExpectNotFound(c, err)
 }
 
 func newReverseTunnel(clusterName string, dialAddrs []string) *services.ReverseTunnelV2 {
