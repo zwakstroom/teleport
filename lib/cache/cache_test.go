@@ -1209,22 +1209,31 @@ func (s *CacheSuite) TestApps(c *check.C) {
 	c.Assert(out, check.HasLen, 1)
 	app := out[0]
 
-	// Check that information has been replicated to the cache and the
-	// cache now has a single application in it.
+	// Wait until the information has been replicated to the cache.
 	select {
 	case event := <-p.eventsC:
 		c.Assert(event.Type, check.Equals, EventProcessed)
 	case <-time.After(time.Second):
 		c.Fatalf("timeout waiting for event")
 	}
+
+	// Make sure the cache has a single application in it.
 	out, err = p.cache.GetApps(context.Background(), defaults.Namespace)
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 1)
 
-	// Check that the value in the cache and value in the backend have an
-	// exact match.
+	// Check that the single application matches what is expected.
+	single, err := p.cache.GetApp(context.Background(), defaults.Namespace, "foo")
+	c.Assert(err, check.IsNil)
+
+	// Check that the value in the cache, value in the backend, and original
+	// services.App all exactly match.
 	app.SetResourceID(out[0].GetResourceID())
+	application.SetResourceID(out[0].GetResourceID())
+	single.SetResourceID(application.GetResourceID())
 	fixtures.DeepCompare(c, app, out[0])
+	fixtures.DeepCompare(c, application, out[0])
+	fixtures.DeepCompare(c, application, single)
 
 	// Update the application and upsert it into the backend again.
 	app.SetExpiry(time.Now().Add(30 * time.Minute).UTC())
@@ -1239,37 +1248,48 @@ func (s *CacheSuite) TestApps(c *check.C) {
 	c.Assert(out, check.HasLen, 1)
 	app = out[0]
 
-	// Check that information has been replicated to the cache and the
-	// cache now has a single application in it.
+	// Check that information has been replicated to the cache.
 	select {
 	case event := <-p.eventsC:
 		c.Assert(event.Type, check.Equals, EventProcessed)
 	case <-time.After(time.Second):
 		c.Fatalf("timeout waiting for event")
 	}
+
+	// Make sure the cache has a single application in it.
 	out, err = p.cache.GetApps(context.Background(), defaults.Namespace)
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 1)
 
-	// Check that the value in the cache and value in the backend have an
-	// exact match.
+	// Check that the single application matches what is expected.
+	single, err = p.cache.GetApp(context.Background(), defaults.Namespace, "foo")
+	c.Assert(err, check.IsNil)
+
+	// Check that the value in the cache, value in the backend, and original
+	// services.App all exactly match.
 	app.SetResourceID(out[0].GetResourceID())
+	single.SetResourceID(out[0].GetResourceID())
 	fixtures.DeepCompare(c, app, out[0])
+	fixtures.DeepCompare(c, app, single)
 
 	// Remove all applications from the backend.
 	err = p.presenceS.DeleteAllApps(context.Background(), defaults.Namespace)
 	c.Assert(err, check.IsNil)
 
-	// Check that information has been replicated to the cache and the cache is
-	// now empty.
+	// Check that information has been replicated to the cache.
 	select {
-	case <-p.eventsC:
+	case event := <-p.eventsC:
+		c.Assert(event.Type, check.Equals, EventProcessed)
 	case <-time.After(time.Second):
 		c.Fatalf("timeout waiting for event")
 	}
+
+	// Check that the cache is now empty.
 	out, err = p.cache.GetApps(context.Background(), defaults.Namespace)
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 0)
+	_, err = p.cache.GetApp(context.Background(), defaults.Namespace, "foo")
+	fixtures.ExpectNotFound(c, err)
 }
 
 type proxyEvents struct {

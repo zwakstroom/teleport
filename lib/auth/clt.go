@@ -2696,7 +2696,7 @@ func (c *Client) Ping(ctx context.Context) (proto.PingResponse, error) {
 }
 
 // GetApp fetches a single application.
-func (c *Client) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+func (c *Client) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -2720,7 +2720,7 @@ func (c *Client) GetApp(ctx context.Context, namespace string, name string, opts
 }
 
 // GetApps returns all registered applications.
-func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -2739,7 +2739,7 @@ func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services
 		return nil, trail.FromGRPC(err)
 	}
 
-	var apps []services.App
+	var apps []services.Server
 	for _, app := range resp.GetApps() {
 		apps = append(apps, app)
 	}
@@ -2748,17 +2748,13 @@ func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services
 }
 
 // UpsertApp is used by applications to report their presence to the backend.
-func (c *Client) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+func (c *Client) UpsertApp(ctx context.Context, app services.Server) (*services.KeepAlive, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	// Validate request.
-	if app.GetNamespace() == "" {
-		return nil, trace.BadParameter("missing app namespace")
-	}
-	protoApp, ok := app.(*services.AppV3)
+	protoApp, ok := app.(*services.ServerV2)
 	if !ok {
 		return nil, trace.BadParameter("invalid type for app: %T", app)
 	}

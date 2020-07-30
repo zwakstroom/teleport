@@ -641,7 +641,7 @@ func parseApp(event backend.Event, kind string) (services.Resource, error) {
 	case backend.OpDelete:
 		return resourceHeader(event, kind, services.V3, 0)
 	case backend.OpPut:
-		resource, err := services.GetAppMarshaler().UnmarshalApp(event.Item.Value,
+		resource, err := services.GetServerMarshaler().UnmarshalServer(event.Item.Value,
 			kind,
 			services.WithResourceID(event.Item.ID),
 			services.WithExpires(event.Item.Expires),

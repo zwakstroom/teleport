@@ -536,7 +536,7 @@ NextNode:
 }
 
 // filterApps filters apps based off the role of the identity of the caller.
-func (a *AuthWithRoles) filterApps(apps []services.App) ([]services.App, error) {
+func (a *AuthWithRoles) filterApps(apps []services.Server) ([]services.Server, error) {
 	// For certain built-in roles, continue to allow full access and return
 	// the full set of apps. For example, proxy (and remote proxy) to access all
 	// apps so it can resolve connection requests.
@@ -553,7 +553,7 @@ func (a *AuthWithRoles) filterApps(apps []services.App) ([]services.App, error) 
 	}
 
 	// Loop over all apps and check if the caller has access.
-	filteredApps := make([]services.App, 0, len(apps))
+	filteredApps := make([]services.Server, 0, len(apps))
 NextApp:
 	for _, app := range apps {
 		err := roleset.CheckAccessToApp(app)
@@ -1838,7 +1838,7 @@ func (a *AuthWithRoles) ProcessKubeCSR(req KubeCSR) (*KubeCSRResponse, error) {
 }
 
 // GetApp fetches a single application.
-func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
 	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -1852,7 +1852,7 @@ func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name strin
 }
 
 // GetApps returns all registered applications.
-func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	if err := a.action(namespace, services.KindApp, services.VerbList); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -1888,7 +1888,7 @@ func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...s
 }
 
 // UpsertApp registers an application in the backend.
-func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.Server) (*services.KeepAlive, error) {
 	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbCreate); err != nil {
 		return nil, trace.Wrap(err)
 	}

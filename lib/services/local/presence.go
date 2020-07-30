@@ -661,7 +661,7 @@ func (s *PresenceService) DeleteAllRemoteClusters() error {
 }
 
 // GetApp returns a specific application.
-func (s *PresenceService) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.App, error) {
+func (s *PresenceService) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
 	if namespace == "" {
 		return nil, trace.BadParameter("missing namespace value")
 	}
@@ -672,8 +672,8 @@ func (s *PresenceService) GetApp(ctx context.Context, namespace string, name str
 		return nil, trace.Wrap(err)
 	}
 
-	// Marshal and services.App that can be returned to the client.
-	app, err := services.GetAppMarshaler().UnmarshalApp(
+	// Marshal and services.Server that can be returned to the client.
+	app, err := services.GetServerMarshaler().UnmarshalServer(
 		item.Value,
 		services.KindApp,
 		services.AddOptions(opts,
@@ -687,7 +687,7 @@ func (s *PresenceService) GetApp(ctx context.Context, namespace string, name str
 }
 
 // GetApps returns the list of registered applications.
-func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.App, error) {
+func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	if namespace == "" {
 		return nil, trace.BadParameter("missing namespace value")
 	}
@@ -699,10 +699,10 @@ func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ..
 		return nil, trace.Wrap(err)
 	}
 
-	// Marshal values into a []services.App slice.
-	apps := make([]services.App, len(result.Items))
+	// Marshal values into a []services.Server slice.
+	apps := make([]services.Server, len(result.Items))
 	for i, item := range result.Items {
-		app, err := services.GetAppMarshaler().UnmarshalApp(
+		app, err := services.GetServerMarshaler().UnmarshalServer(
 			item.Value,
 			services.KindApp,
 			services.AddOptions(opts,
@@ -719,11 +719,11 @@ func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ..
 
 // UpsertApp registers an application with a TTL. A services.KeepAlive is
 // returned that can be used to extend the TTL.
-func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
+func (s *PresenceService) UpsertApp(ctx context.Context, app services.Server) (*services.KeepAlive, error) {
 	if app.GetNamespace() == "" {
 		return nil, trace.BadParameter("missing node namespace")
 	}
-	value, err := services.GetAppMarshaler().MarshalApp(app)
+	value, err := services.GetServerMarshaler().MarshalServer(app)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -741,6 +741,7 @@ func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*ser
 	}
 	return &services.KeepAlive{
 		LeaseID: lease.ID,
+		// TODO: Figure this out.
 		AppName: app.GetName(),
 	}, nil
 }

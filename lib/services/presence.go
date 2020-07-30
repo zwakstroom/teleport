@@ -161,13 +161,13 @@ type Presence interface {
 	DeleteAllRemoteClusters() error
 
 	// GetApps returns all applications.
-	GetApps(context.Context, string, ...MarshalOption) ([]App, error)
+	GetApps(context.Context, string, ...MarshalOption) ([]Server, error)
 
 	// GetApp returns a specific application.
-	GetApp(context.Context, string, string, ...MarshalOption) (App, error)
+	GetApp(context.Context, string, string, ...MarshalOption) (Server, error)
 
 	// UpsertApp registers an application with a TTL.
-	UpsertApp(context.Context, App) (*KeepAlive, error)
+	UpsertApp(context.Context, Server) (*KeepAlive, error)
 
 	// DeleteAllApps deletes all applications within a namespace.
 	DeleteAllApps(context.Context, string) error

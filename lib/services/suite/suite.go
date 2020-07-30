@@ -356,16 +356,16 @@ func (s *ServicesTestSuite) ServerCRUD(c *check.C) {
 	c.Assert(out, check.DeepEquals, []services.Server{auth})
 }
 
-// NewApp creates a new server resource
-func NewApp(name string, internalAddr string, publicAddr string) *services.AppV3 {
-	return &services.AppV3{
+// NewApp creates a new server resource.
+func NewApp(name string, internalAddr string, publicAddr string) *services.ServerV2 {
+	return &services.ServerV2{
 		Kind:    services.KindApp,
-		Version: services.V3,
+		Version: services.V2,
 		Metadata: services.Metadata{
 			Name:      name,
 			Namespace: defaults.Namespace,
 		},
-		Spec: services.AppSpecV3{
+		Spec: services.ServerSpecV2{
 			Protocol:     teleport.WebAppProtocol,
 			InternalAddr: internalAddr,
 			PublicAddr:   publicAddr,
@@ -387,7 +387,7 @@ func (s *ServicesTestSuite) AppCRUD(c *check.C) {
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 1)
 	app.SetResourceID(out[0].GetResourceID())
-	fixtures.DeepCompare(c, out, []services.App{app})
+	fixtures.DeepCompare(c, out, []services.Server{app})
 
 	err = s.PresenceS.DeleteApp(context.Background(), app.Metadata.Namespace, app.GetName())
 	c.Assert(err, check.IsNil)

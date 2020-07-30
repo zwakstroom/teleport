@@ -218,8 +218,8 @@ message GetAppRequest {
 
 // GetAppResponse is the response message to fetch a single application.
 message GetAppResponse {
-    // App is a slice of applications.
-    services.AppV3 App = 1 [ (gogoproto.jsontag) = "app" ];
+    // App is an application.
+    services.ServerV2 App = 1 [ (gogoproto.jsontag) = "app" ];
 }
 
 // GetAppsRequest is the request message for all registered applications.
@@ -234,11 +234,11 @@ message GetAppsRequest {
 // GetAppsResponse is the response message for all registered applications.
 message GetAppsResponse {
     // Apps is a slice of applications.
-    repeated services.AppV3 Apps = 1 [ (gogoproto.jsontag) = "apps" ];
+    repeated services.ServerV2 Apps = 1 [ (gogoproto.jsontag) = "apps" ];
 }
 
 // UpsertAppRequest is the request message to registered and application.
-message UpsertAppRequest { services.AppV3 App = 1 [ (gogoproto.jsontag) = "app" ]; }
+message UpsertAppRequest { services.ServerV2 App = 1 [ (gogoproto.jsontag) = "app" ]; }
 
 // DeleteAppRequest is the request message to delete an application.
 message DeleteAppRequest {

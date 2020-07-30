@@ -665,5 +665,9 @@ const (
 // UserSystem defines a user as system.
 const UserSystem = "system"
 
-// WebAppProtocol is the protocol used for AAP.
-const WebAppProtocol = "https"
+const (
+	// SSHProtocol is the protocol used for Auth, Node, and Proxy servers.
+	SSHProtocol = "ssh"
+	// WebAppProtocol is the protocol used for AAP servers.
+	WebAppProtocol = "https"
+)

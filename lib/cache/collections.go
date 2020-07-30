@@ -1102,7 +1102,7 @@ func (a *app) processEvent(ctx context.Context, event services.Event) error {
 			}
 		}
 	case backend.OpPut:
-		resource, ok := event.Resource.(services.App)
+		resource, ok := event.Resource.(services.Server)
 		if !ok {
 			return trace.BadParameter("unexpected type %T", event.Resource)
 		}

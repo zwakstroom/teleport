@@ -1408,7 +1408,7 @@ type AccessChecker interface {
 	EnhancedRecordingSet() map[string]bool
 
 	// CheckAccessToApp checks access to an application.
-	CheckAccessToApp(app App) error
+	CheckAccessToApp(app Server) error
 }
 
 // FromSpec returns new RoleSet created from spec
@@ -1838,7 +1838,7 @@ func (set RoleSet) CheckAccessToServer(login string, s Server) error {
 // CheckAccessToApp checks if a role has access to an application. Deny rules
 // are checked first then allow rules. Access to an application is determined by
 // namespaces and labels.
-func (set RoleSet) CheckAccessToApp(app App) error {
+func (set RoleSet) CheckAccessToApp(app Server) error {
 	var errs []error
 
 	// Check deny rules: a matching namespace and label in the deny section

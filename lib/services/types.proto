@@ -122,7 +122,7 @@ message ResourceHeader {
         [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata,omitempty" ];
 }
 
-// ServerV2 represents a Node, Proxy or Auth server in a Teleport cluster
+// ServerV2 represents a Node, App, Proxy or Auth server in a Teleport cluster.
 message ServerV2 {
     option (gogoproto.goproto_stringer) = false;
     option (gogoproto.stringer) = false;
@@ -158,6 +158,11 @@ message ServerSpecV2 {
     bool UseTunnel = 6 [ (gogoproto.jsontag) = "use_tunnel,omitempty" ];
     // TeleportVersion is the teleport version that the server is running on
     string Version = 7 [ (gogoproto.jsontag) = "version" ];
+    // Protocol used to proxy this application. At the moment only HTTPS is
+    // supported.
+    string Protocol = 8 [ (gogoproto.jsontag) = "protocol,omitempty" ];
+    // InternalAddr is the internal address of the application.
+    string InternalAddr = 9 [ (gogoproto.jsontag) = "internal_addr" ];
 }
 
 // CommandLabelV2 is a label that has a value as a result of the
@@ -983,42 +988,4 @@ message TunnelConnectionSpecV2 {
     ];
     // Type is the type of reverse tunnel, either proxy or node.
     string Type = 4 [ (gogoproto.jsontag) = "type", (gogoproto.casttype) = "TunnelType" ];
-}
-
-// AppV3 represents an application within a Teleport cluster.
-message AppV3 {
-    option (gogoproto.goproto_stringer) = false;
-    option (gogoproto.stringer) = false;
-
-    // Kind is a resource kind
-    string Kind = 1 [ (gogoproto.jsontag) = "kind" ];
-    // SubKind is an optional resource sub kind, used in some resources
-    string SubKind = 2 [ (gogoproto.jsontag) = "sub_kind,omitempty" ];
-    // Version is version
-    string Version = 3 [ (gogoproto.jsontag) = "version" ];
-    // Metadata is User metadata
-    Metadata Metadata = 4 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "metadata" ];
-    // Spec is the application specification.
-    AppSpecV3 Spec = 5 [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "spec" ];
-}
-
-// AppSpecV3 is a specification for V3 applications.
-message AppSpecV3 {
-    // Protocol used to proxy this application. At the moment only HTTPS is
-    // supported.
-    string Protocol = 1 [ (gogoproto.jsontag) = "protocol" ];
-    // InternalAddr is the internal address of the application.
-    string InternalAddr = 2 [ (gogoproto.jsontag) = "internal_addr" ];
-    // PublicAddr is the address users will access the application at.
-    string PublicAddr = 3 [ (gogoproto.jsontag) = "public_addr" ];
-    // Rotation specifies server rotation state.
-    Rotation Rotation = 4
-        [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "rotation,omitempty" ];
-    // Commands is a list of dynamic labels to apply to this application.
-    map<string, CommandLabelV2> Commands = 5
-        [ (gogoproto.nullable) = false, (gogoproto.jsontag) = "commands,omitempty" ];
-    // HostUUID is UUID of host the application proxy is running on.
-    string HostUUID = 6 [ (gogoproto.jsontag) = "uuid" ];
-    // TeleportVersion is the Teleport version of the application proxy.
-    string Version = 7 [ (gogoproto.jsontag) = "version" ];
 }

@@ -456,7 +456,7 @@ func (g *GRPCServer) GetApp(ctx context.Context, req *proto.GetAppRequest) (*pro
 		return nil, trail.ToGRPC(err)
 	}
 
-	app, ok := application.(*services.AppV3)
+	app, ok := application.(*services.ServerV2)
 	if !ok {
 		return nil, trail.ToGRPC(trace.BadParameter("unexpected app type %T", app))
 	}
@@ -483,9 +483,9 @@ func (g *GRPCServer) GetApps(ctx context.Context, req *proto.GetAppsRequest) (*p
 		return nil, trail.ToGRPC(err)
 	}
 
-	var apps []*services.AppV3
+	var apps []*services.ServerV2
 	for _, application := range applications {
-		app, ok := application.(*services.AppV3)
+		app, ok := application.(*services.ServerV2)
 		if !ok {
 			return nil, trail.ToGRPC(trace.BadParameter("unexpected app type %T", app))
 		}
