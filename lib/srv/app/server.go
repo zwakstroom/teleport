@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apps
+package app
 
-/*
 import (
 	"context"
+	"net"
+	"net/http"
+	"time"
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
-	"github.com/gravitational/teleport/lib/presence"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/srv"
 	"github.com/gravitational/teleport/lib/utils"
@@ -56,31 +57,42 @@ func (c *Config) CheckAndSetDefaults() error {
 	return nil
 }
 
-type Service struct {
+type Server struct {
 	*Config
+
+	httpServer *http.Server
 
 	// heartbeat sends updates about this server
 	// back to auth server
 	heartbeats []*srv.Heartbeat
 }
 
-func New(config *Config) (*Service, error) {
+func New(config *Config) (*Server, error) {
 	err := config.CheckAndSetDefaults()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	var heartbeats []*presence.Heartbeat
+	server := &Server{
+		Config: config,
+	}
+
+	server.httpServer = &http.Server{
+		//Addr:           ":8080",
+		Handler: server,
+		// TODO: Set timeouts.
+	}
+
+	var heartbeats []*srv.Heartbeat
 
 	for i := range config.Apps {
 		appThisOne := config.Apps[i]
-		heartbeat, err := presence.NewHeartbeat(presence.HeartbeatConfig{
-			Mode:      presence.HeartbeatModeApp,
+		heartbeat, err := srv.NewHeartbeat(srv.HeartbeatConfig{
+			Mode:      srv.HeartbeatModeApp,
 			Context:   config.CloseContext,
 			Component: teleport.ComponentApps,
 			Announcer: config.AccessPoint,
-			//GetApp:    getApp,
-			GetApp: func() (services.App, error) {
+			GetServerInfo: func() (services.Resource, error) {
 				return appThisOne, nil
 				//app := services.AppV3{
 				//	Kind:    services.KindApp,
@@ -120,13 +132,12 @@ func New(config *Config) (*Service, error) {
 		heartbeats = append(heartbeats, heartbeat)
 	}
 
-	return &Service{
-		Config:     config,
-		heartbeats: heartbeats,
-	}, nil
+	return server, nil
 }
 
-func (s *Service) Start() error {
+// Start starts heart beating the presence of service.Apps that this
+// server is proxying along with any dynamic labels.
+func (s *Server) Start() error {
 	for _, heartbeat := range s.heartbeats {
 		go heartbeat.Run()
 	}
@@ -134,8 +145,22 @@ func (s *Service) Start() error {
 	return nil
 }
 
+// Serve accepts incoming connections on the Listener and calls the handler.
+// Since this code is called from the reverse tunnel agent, the listener will
+// be a single connection app.Listener.
+func (s *Server) Serve(l net.Listener) error {
+	if err := s.httpServer.Serve(l); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "not implemented", http.StatusNotImplemented)
+}
+
 // TODO: It should be safe to call Close() (or Shutdown() below) twice.
-func (s *Service) Close() error {
+func (s *Server) Close() error {
 	for _, heartbeat := range s.heartbeats {
 		if heartbeat != nil {
 			if err := heartbeat.Close(); err != nil {
@@ -148,7 +173,13 @@ func (s *Service) Close() error {
 	return nil
 }
 
-func (s *Service) Shutdown() error {
+// TODO.
+func (s *Server) Wait() error {
+	time.Sleep(20 * time.Minute)
+	return nil
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
 	for _, heartbeat := range s.heartbeats {
 		if heartbeat != nil {
 			if err := heartbeat.Close(); err != nil {
@@ -160,4 +191,3 @@ func (s *Service) Shutdown() error {
 
 	return nil
 }
-*/

@@ -64,6 +64,7 @@ import (
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/srv"
+	"github.com/gravitational/teleport/lib/srv/app"
 	"github.com/gravitational/teleport/lib/srv/regular"
 	"github.com/gravitational/teleport/lib/system"
 	"github.com/gravitational/teleport/lib/utils"
@@ -1178,7 +1179,8 @@ func (process *TeleportProcess) initAuthService() error {
 		Context:   process.ExitContext(),
 		Component: teleport.ComponentAuth,
 		Announcer: authServer,
-		GetServerInfo: func() (services.Server, error) {
+		//GetServerInfo: func() (services.Server, error) {
+		GetServerInfo: func() (services.Resource, error) {
 			srv := services.ServerV2{
 				Kind:    services.KindAuthServer,
 				Version: services.V2,
@@ -2368,7 +2370,8 @@ func (process *TeleportProcess) initApps() error {
 		trace.Component: teleport.Component(teleport.ComponentApps, process.id),
 	})
 
-	var agentPool *reversetunnel.AgentPool
+	var server *app.Server
+	//var agentPool *reversetunnel.AgentPool
 
 	process.RegisterCriticalFunc("apps.service", func() error {
 		var ok bool
@@ -2383,11 +2386,10 @@ func (process *TeleportProcess) initApps() error {
 			log.Debugf("Process is exiting.")
 			return nil
 		}
-		conn, ok = (event.Payload).(*Connector)
+		conn, ok := (event.Payload).(*Connector)
 		if !ok {
 			return trace.BadParameter("unsupported connector type: %T", event.Payload)
 		}
-		//cfg := process.Config
 
 		// Create a caching client to the Auth Server. Is is to reduce load on
 		// the Auth Server.
@@ -2396,10 +2398,11 @@ func (process *TeleportProcess) initApps() error {
 			return trace.Wrap(err)
 		}
 
-		server, err := apps.New(&apps.Config{
-			AccessPoint:  authClient,
-			Storage:      process.storage,
-			Apps:         appSlice,
+		server, err = app.New(&app.Config{
+			AccessPoint: authClient,
+			Storage:     process.storage,
+			// TODO.
+			//Apps:         process.cfg.Apps,
 			CloseContext: process.ExitContext(),
 		})
 		if err != nil {
@@ -2412,32 +2415,34 @@ func (process *TeleportProcess) initApps() error {
 			return trace.Wrap(err)
 		}
 
-		// Create and start an agent pool for the reverse tunnel.
-		agentPool, err = reversetunnel.NewAgentPool(reversetunnel.AgentPoolConfig{
-			Component:   teleport.ComponentNode,
-			HostUUID:    conn.ServerIdentity.ID.HostUUID,
-			ProxyAddr:   conn.TunnelProxy(),
-			Client:      conn.Client,
-			AccessPoint: conn.Client,
-			HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
-			Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
-			AppsServer:  server,
-		})
-		if err != nil {
-			return trace.Wrap(err)
-		}
-		err = agentPool.Start()
-		if err != nil {
-			return trace.Wrap(err)
-		}
-		log.Infof("Started reverse tunnel.")
+		//// Create and start an agent pool for the reverse tunnel.
+		//agentPool, err = reversetunnel.NewAgentPool(reversetunnel.AgentPoolConfig{
+		//	Component:   teleport.ComponentNode,
+		//	HostUUID:    conn.ServerIdentity.ID.HostUUID,
+		//	ProxyAddr:   conn.TunnelProxy(),
+		//	Client:      conn.Client,
+		//	AccessPoint: conn.Client,
+		//	HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
+		//	Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
+		//	AppsServer:  server,
+		//})
+		//if err != nil {
+		//	return trace.Wrap(err)
+		//}
+		//err = agentPool.Start()
+		//if err != nil {
+		//	return trace.Wrap(err)
+		//}
+		//log.Infof("Started reverse tunnel.")
 
 		// Broadcast that the apps proxy is ready.
 		process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
 
 		// Block and wait while the server and agent pool are running.
-		s.Wait()
-		agentPool.Wait()
+		if err := server.Wait(); err != nil {
+			log.Infof("Failed to wait on server: %v.", err)
+		}
+		//agentPool.Wait()
 
 		log.Infof("Exited.")
 		return nil
@@ -2447,16 +2452,18 @@ func (process *TeleportProcess) initApps() error {
 	process.onExit("apps.service.shutdown", func(payload interface{}) {
 		if payload == nil {
 			log.Infof("Shutting down immediately.")
-			if s != nil {
-				warnOnErr(s.Close())
+			if server != nil {
+				warnOnErr(server.Close())
 			}
 		} else {
 			log.Infof("Shutting down gracefully.")
-			if s != nil {
-				warnOnErr(s.Shutdown(payloadContext(payload)))
+			if server != nil {
+				warnOnErr(server.Shutdown(payloadContext(payload)))
 			}
 		}
-		agentPool.Stop()
+
+		//// Shut down the agent pool.
+		//agentPool.Stop()
 
 		log.Infof("Exited.")
 	})

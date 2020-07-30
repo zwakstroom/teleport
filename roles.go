@@ -37,6 +37,8 @@ const (
 	RoleWeb Role = "Web"
 	// RoleNode is a role for SSH node in the cluster
 	RoleNode Role = "Node"
+	// RoleApps is a role for a app proxy in the cluster.
+	RoleApps Role = "Apps"
 	// RoleProxy is a role for SSH proxy in the cluster
 	RoleProxy Role = "Proxy"
 	// RoleAdmin is admin role
@@ -156,7 +158,7 @@ func (r *Role) String() string {
 // if it's ok, false otherwise
 func (r *Role) Check() error {
 	switch *r {
-	case RoleAuth, RoleWeb, RoleNode,
+	case RoleAuth, RoleWeb, RoleNode, RoleApps,
 		RoleAdmin, RoleProvisionToken,
 		RoleTrustedCluster, LegacyClusterTokenType,
 		RoleSignup, RoleProxy, RoleNop:
