@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
@@ -66,10 +67,13 @@ type App interface {
 	// SetRotation sets the state of certificate authority rotation.
 	SetRotation(Rotation)
 
+	// GetCommandLabels gets all of an applications dynamic labels.
+	GetCommandLabels() map[string]CommandLabel
+	// SetCommandLabels sets all of an applications dynamic labels.
+	SetCommandLabels(map[string]CommandLabel)
+
 	// GetStaticLabels returns all of an applications static labels.
 	GetStaticLabels() map[string]string
-	// GetCommandLabels returns all of an applications dynamic labels.
-	GetCommandLabels() map[string]CommandLabel
 	// GetAllLabels returns all of an applications static and dynamic labels.
 	GetAllLabels() map[string]string
 
@@ -81,6 +85,25 @@ type App interface {
 
 	// CheckAndSetDefaults checks and set default values for any missing fields.
 	CheckAndSetDefaults() error
+}
+
+// NewApp creates a new application.
+func NewApp(name string, labels map[string]string, spec AppSpecV3) (App, error) {
+	app := AppV3{
+		Kind:    KindApp,
+		Version: V3,
+		Metadata: Metadata{
+			Name:      name,
+			Namespace: defaults.Namespace,
+			Labels:    labels,
+		},
+		Spec: spec,
+	}
+	if err := app.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &app, nil
 }
 
 // GetKind returns resource kind.
@@ -205,12 +228,7 @@ func (s *AppV3) SetRotation(r Rotation) {
 	s.Spec.Rotation = r
 }
 
-// GetStaticLabels returns all of an applications static labels.
-func (s *AppV3) GetStaticLabels() map[string]string {
-	return s.Metadata.Labels
-}
-
-// GetCommandLabels returns all of an applications dynamic labels.
+// GetCommandLabels gets all of an applications dynamic labels.
 func (s *AppV3) GetCommandLabels() map[string]CommandLabel {
 	if s.Spec.Commands == nil {
 		return nil
@@ -221,6 +239,16 @@ func (s *AppV3) GetCommandLabels() map[string]CommandLabel {
 		out[key] = &val
 	}
 	return out
+}
+
+// SetCommandLabels sets all of an applications dynamic labels.
+func (s *AppV3) SetCommandLabels(commands map[string]CommandLabel) {
+	s.Spec.Commands = LabelsToV2(commands)
+}
+
+// GetStaticLabels returns all of an applications static labels.
+func (s *AppV3) GetStaticLabels() map[string]string {
+	return s.Metadata.Labels
 }
 
 // GetAllLabels returns all of an applications static and dynamic labels.

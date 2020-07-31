@@ -388,6 +388,28 @@ func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepA
 	return a.authServer.KeepAliveNode(ctx, handle)
 }
 
+func (a *AuthWithRoles) KeepAliveApp(ctx context.Context, handle services.KeepAlive) error {
+	if !a.hasBuiltinRole(string(teleport.RoleApp)) {
+		return trace.AccessDenied("[11] access denied")
+	}
+	// TODO: Add back in?
+	//clusterName, err := a.GetDomainName()
+	//if err != nil {
+	//	return trace.Wrap(err)
+	//}
+	//serverName, err := ExtractHostID(a.user.GetName(), clusterName)
+	//if err != nil {
+	//	return trace.AccessDenied("[10] access denied")
+	//}
+	//if serverName != handle.ServerName {
+	//	return trace.AccessDenied("[10] access denied")
+	//}
+	if err := a.action(defaults.Namespace, services.KindApp, services.VerbUpdate); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.KeepAliveApp(ctx, handle)
+}
+
 // NewWatcher returns a new event watcher
 func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (services.Watcher, error) {
 	if len(watch.Kinds) == 0 {
@@ -530,6 +552,7 @@ func (a *AuthWithRoles) filterApps(apps []services.App) ([]services.App, error) 
 	// apps so it can resolve connection requests.
 	if a.hasBuiltinRole(string(teleport.RoleAdmin)) ||
 		a.hasBuiltinRole(string(teleport.RoleProxy)) ||
+		a.hasBuiltinRole(string(teleport.RoleApp)) ||
 		a.hasRemoteBuiltinRole(string(teleport.RoleRemoteProxy)) {
 		return apps, nil
 	}

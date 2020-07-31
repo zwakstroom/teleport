@@ -69,7 +69,6 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindAuthServer},
 		{Kind: services.KindReverseTunnel},
 		{Kind: services.KindTunnelConnection},
-		{Kind: services.KindApp},
 	}
 	cfg.QueueSize = defaults.ProxyQueueSize
 	return cfg
@@ -104,6 +103,7 @@ func ForApps(cfg Config) Config {
 		// namespace events to avoid matching too much
 		// data about other namespaces or node events
 		{Kind: services.KindNamespace, Name: defaults.Namespace},
+		{Kind: services.KindApp},
 	}
 	cfg.QueueSize = defaults.AppsQueueSize
 	return cfg

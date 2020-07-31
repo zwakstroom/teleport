@@ -248,7 +248,10 @@ func (s *PresenceService) UpsertNode(server services.Server) (*services.KeepAliv
 	if server.Expiry().IsZero() {
 		return &services.KeepAlive{}, nil
 	}
-	return &services.KeepAlive{LeaseID: lease.ID, ServerName: server.GetName()}, nil
+	return &services.KeepAlive{
+		LeaseID:    lease.ID,
+		ServerName: server.GetName(),
+	}, nil
 }
 
 // KeepAliveNode updates node expiry
@@ -736,10 +739,11 @@ func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*ser
 	if app.Expiry().IsZero() {
 		return &services.KeepAlive{}, nil
 	}
-	return &services.KeepAlive{
+	ll := &services.KeepAlive{
 		LeaseID: lease.ID,
 		AppName: app.GetName(),
-	}, nil
+	}
+	return ll, nil
 }
 
 // DeleteAllApps deletes all applications in a namespace.

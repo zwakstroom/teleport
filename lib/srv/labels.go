@@ -18,7 +18,6 @@ package srv
 
 import (
 	"context"
-	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
@@ -92,6 +91,7 @@ func (l *DynamicLabels) Get() map[string]services.CommandLabel {
 	for name, label := range l.Labels {
 		out[name] = label.Clone()
 	}
+
 	return out
 }
 
@@ -134,7 +134,6 @@ func (l *DynamicLabels) updateLabel(name string, label services.CommandLabel) {
 
 	// Perform the actual label update under a lock.
 	l.setCommandLabel(name, label)
-	fmt.Printf("--> updateLabel: %v: %v.\n", name, label)
 }
 
 func (l *DynamicLabels) setCommandLabel(name string, value services.CommandLabel) {

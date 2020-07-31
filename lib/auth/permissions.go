@@ -254,7 +254,7 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 					},
 				},
 			})
-	case teleport.RoleApps:
+	case teleport.RoleApp:
 		return services.FromSpec(
 			role.String(),
 			services.RoleSpecV3{

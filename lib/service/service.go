@@ -689,12 +689,10 @@ func NewTeleport(cfg *Config) (*TeleportProcess, error) {
 
 	// If this process is proxying applications, start AAP.
 	if cfg.Apps.Enabled {
-		if err := process.initApps(); err != nil {
-			return nil, err
-		}
+		process.initApps()
 		serviceStarted = true
 	} else {
-		warnOnErr(process.closeImportedDescriptors(teleport.ComponentApps))
+		warnOnErr(process.closeImportedDescriptors(teleport.ComponentApp))
 	}
 
 	process.RegisterFunc("common.rotate", process.periodicSyncRotationState)
@@ -2356,24 +2354,21 @@ func (process *TeleportProcess) initProxyEndpoint(conn *Connector) error {
 	return nil
 }
 
-func (process *TeleportProcess) initApps() error {
+func (process *TeleportProcess) initApps() {
 	// Connect to the Auth Server, a client connected to the Auth Server will
 	// be returned. For this to be successful, credentials to connect to the
 	// Auth Server need to exist on disk or a registration token should be
 	// provided.
-	process.registerWithAuthServer(teleport.RoleApps, AppsIdentityEvent)
+	process.registerWithAuthServer(teleport.RoleApp, AppsIdentityEvent)
 	eventsCh := make(chan Event)
 	process.WaitForEvent(process.ExitContext(), AppsIdentityEvent, eventsCh)
 
 	// Define logger to prefix log lines with the name of the component and PID.
 	log := logrus.WithFields(logrus.Fields{
-		trace.Component: teleport.Component(teleport.ComponentApps, process.id),
+		trace.Component: teleport.Component(teleport.ComponentApp, process.id),
 	})
 
-	var server *app.Server
-	//var agentPool *reversetunnel.AgentPool
-
-	process.RegisterCriticalFunc("apps.service", func() error {
+	process.RegisterCriticalFunc("connect.apps", func() error {
 		var ok bool
 		var event Event
 
@@ -2393,17 +2388,44 @@ func (process *TeleportProcess) initApps() error {
 
 		// Create a caching client to the Auth Server. Is is to reduce load on
 		// the Auth Server.
-		authClient, err := process.newLocalCache(conn.Client, cache.ForApps, []string{teleport.ComponentApps})
+		authClient, err := process.newLocalCache(conn.Client, cache.ForApps, []string{teleport.ComponentApp})
 		if err != nil {
 			return trace.Wrap(err)
 		}
 
-		server, err = app.New(&app.Config{
-			AccessPoint: authClient,
-			Storage:     process.storage,
-			// TODO.
-			//Apps:         process.cfg.Apps,
+		// Loop over each application and start it.
+		for i := range process.Config.Apps.Apps {
+			app := process.Config.Apps.Apps[i]
+			application, err := services.NewApp(app.Name, app.StaticLabels, services.AppSpecV3{
+				Protocol:     app.Protocol,
+				InternalAddr: app.InternalAddr.String(),
+				PublicAddr:   app.PublicAddr.String(),
+				Commands:     services.LabelsToV2(app.DynamicLabels),
+				Version:      teleport.Version,
+			})
+			if err != nil {
+				return trace.Wrap(err)
+			}
+
+			process.initApp(application, authClient)
+		}
+		return nil
+	})
+}
+
+func (process *TeleportProcess) initApp(application services.App, authClient auth.AccessPoint) {
+	servicePrefix := fmt.Sprintf("app.%v", application.GetName())
+
+	var server *app.Server
+	//var agentPool *reversetunnel.AgentPool
+
+	process.RegisterCriticalFunc(servicePrefix+".run", func() error {
+		server, err := app.New(&app.Config{
+			App:          application,
+			AccessPoint:  authClient,
+			Storage:      process.storage,
 			CloseContext: process.ExitContext(),
+			GetRotation:  process.getRotation,
 		})
 		if err != nil {
 			return trace.Wrap(err)
@@ -2435,8 +2457,8 @@ func (process *TeleportProcess) initApps() error {
 		//}
 		//log.Infof("Started reverse tunnel.")
 
-		// Broadcast that the apps proxy is ready.
-		process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
+		//// Broadcast that the apps proxy is ready.
+		//process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
 
 		// Block and wait while the server and agent pool are running.
 		if err := server.Wait(); err != nil {
@@ -2449,7 +2471,7 @@ func (process *TeleportProcess) initApps() error {
 	})
 
 	// Execute this when process is asked to exit.
-	process.onExit("apps.service.shutdown", func(payload interface{}) {
+	process.onExit(servicePrefix+".shutdown", func(payload interface{}) {
 		if payload == nil {
 			log.Infof("Shutting down immediately.")
 			if server != nil {
@@ -2467,8 +2489,6 @@ func (process *TeleportProcess) initApps() error {
 
 		log.Infof("Exited.")
 	})
-
-	return nil
 }
 
 func warnOnErr(err error) {

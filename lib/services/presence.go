@@ -174,6 +174,9 @@ type Presence interface {
 
 	// DeleteApp deletes a specific application within a namespace.
 	DeleteApp(context.Context, string, string) error
+
+	// KeepAliveNode updates node TTL in the storage.
+	KeepAliveApp(ctx context.Context, h KeepAlive) error
 }
 
 // NewNamespace returns new namespace
@@ -201,12 +204,12 @@ type Site struct {
 // IsEmpty returns true if keepalive is empty,
 // used to indicate that keepalive is not supported
 func (s *KeepAlive) IsEmpty() bool {
-	return s.LeaseID == 0 && s.ServerName == ""
+	return s.LeaseID == 0 && s.ServerName == "" && s.AppName == ""
 }
 
 func (s *KeepAlive) CheckAndSetDefaults() error {
 	if s.IsEmpty() {
-		return trace.BadParameter("no lease ID or server name is specified")
+		return trace.BadParameter("invalid keep alive, missing lease ID and resource name")
 	}
 	if s.Namespace == "" {
 		s.Namespace = defaults.Namespace

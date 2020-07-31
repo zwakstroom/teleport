@@ -781,11 +781,8 @@ func (s *SrvSuite) TestProxyReverseTunnel(c *C) {
 	}()
 
 	// to make sure  labels have the right output
-	fmt.Printf("--> 1.\n")
 	s.srv.syncUpdateLabels()
-	fmt.Printf("--> 2.\n")
 	srv2.syncUpdateLabels()
-	fmt.Printf("--> Attempting to force send.\n")
 	c.Assert(s.srv.heartbeat.ForceSend(time.Second), IsNil)
 	c.Assert(srv2.heartbeat.ForceSend(time.Second), IsNil)
 	// request "list of sites":

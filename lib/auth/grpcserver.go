@@ -65,9 +65,20 @@ func (g *GRPCServer) SendKeepAlives(stream proto.AuthService_SendKeepAlivesServe
 			g.Debugf("Failed to receive heartbeat: %v", err)
 			return trail.ToGRPC(err)
 		}
-		err = auth.KeepAliveNode(stream.Context(), *keepAlive)
-		if err != nil {
-			return trail.ToGRPC(err)
+
+		switch {
+		case (*keepAlive).ServerName != "":
+			err = auth.KeepAliveNode(stream.Context(), *keepAlive)
+			if err != nil {
+				return trail.ToGRPC(err)
+			}
+		case (*keepAlive).AppName != "":
+			err = auth.KeepAliveApp(stream.Context(), *keepAlive)
+			if err != nil {
+				return trail.ToGRPC(err)
+			}
+		default:
+			return trail.ToGRPC(trace.BadParameter("no server or app name given"))
 		}
 	}
 }
@@ -654,6 +665,10 @@ func eventToGRPC(in services.Event) (*proto.Event, error) {
 		out.Resource = &proto.Event_AccessRequest{
 			AccessRequest: r,
 		}
+	case *services.AppV3:
+		out.Resource = &proto.Event_App{
+			App: r,
+		}
 	default:
 		return nil, trace.BadParameter("resource type %T is not supported", in.Resource)
 	}
@@ -721,6 +736,9 @@ func eventFromGRPC(in proto.Event) (*services.Event, error) {
 		out.Resource = r
 		return &out, nil
 	} else if r := in.GetAccessRequest(); r != nil {
+		out.Resource = r
+		return &out, nil
+	} else if r := in.GetApp(); r != nil {
 		out.Resource = r
 		return &out, nil
 	} else {

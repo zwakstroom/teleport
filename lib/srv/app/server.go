@@ -18,6 +18,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -35,9 +36,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.WithFields(logrus.Fields{
-	trace.Component: teleport.ComponentApps,
-})
+// RotationGetter returns rotation state.
+type RotationGetter func(role teleport.Role) (*services.Rotation, error)
 
 type Config struct {
 	Clock clockwork.Clock
@@ -45,8 +45,9 @@ type Config struct {
 	AccessPoint  auth.AccessPoint
 	Storage      *auth.ProcessStorage
 	CloseContext context.Context
+	GetRotation  RotationGetter
 
-	Apps []services.App
+	App services.App
 }
 
 func (c *Config) CheckAndSetDefaults() error {
@@ -54,93 +55,102 @@ func (c *Config) CheckAndSetDefaults() error {
 		c.Clock = clockwork.NewRealClock()
 	}
 
+	if c.AccessPoint == nil {
+		return trace.BadParameter("access point is missing")
+	}
+	if c.Storage == nil {
+		return trace.BadParameter("process storage is missing")
+	}
+	if c.GetRotation == nil {
+		return trace.BadParameter("rotation getter is missing")
+	}
 	return nil
 }
 
 type Server struct {
 	*Config
 
-	httpServer *http.Server
+	log *logrus.Entry
 
-	// heartbeat sends updates about this server
-	// back to auth server
-	heartbeats []*srv.Heartbeat
+	dynamicLabels *srv.DynamicLabels
+	httpServer    *http.Server
+	heartbeat     *srv.Heartbeat
 }
 
 func New(config *Config) (*Server, error) {
+	componentName := fmt.Sprintf("%v.%v", teleport.ComponentApp, config.App.GetName())
+
 	err := config.CheckAndSetDefaults()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	server := &Server{
+	s := &Server{
 		Config: config,
+		log: logrus.WithFields(logrus.Fields{
+			trace.Component: componentName,
+		}),
 	}
 
-	server.httpServer = &http.Server{
-		//Addr:           ":8080",
-		Handler: server,
-		// TODO: Set timeouts.
+	// Create HTTP server that will be forwarding requests to target application.
+	// TODO: Set timeouts and possibly host:port in "Addr".
+	s.httpServer = &http.Server{}
+	s.httpServer.Handler = s
+
+	// Create dynamic labels looper that will keep dynamic labels updated.
+	s.dynamicLabels, err = srv.NewDynamicLabels(&srv.DynamicLabelsConfig{
+		Labels:        config.App.GetCommandLabels(),
+		CloseContext:  config.CloseContext,
+		ComponentName: componentName,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 
-	var heartbeats []*srv.Heartbeat
+	// Create heartbeat loop so applications keep heartbeating presence to backend.
+	s.heartbeat, err = srv.NewHeartbeat(srv.HeartbeatConfig{
+		Mode:            srv.HeartbeatModeApp,
+		Context:         config.CloseContext,
+		Component:       componentName,
+		Announcer:       config.AccessPoint,
+		GetServerInfo:   s.GetServerInfo,
+		KeepAlivePeriod: defaults.ServerKeepAliveTTL,
+		AnnouncePeriod:  defaults.ServerAnnounceTTL/2 + utils.RandomDuration(defaults.ServerAnnounceTTL/10),
+		CheckPeriod:     defaults.HeartbeatCheckPeriod,
+		ServerTTL:       defaults.ServerAnnounceTTL,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 
-	for i := range config.Apps {
-		appThisOne := config.Apps[i]
-		heartbeat, err := srv.NewHeartbeat(srv.HeartbeatConfig{
-			Mode:      srv.HeartbeatModeApp,
-			Context:   config.CloseContext,
-			Component: teleport.ComponentApps,
-			Announcer: config.AccessPoint,
-			GetServerInfo: func() (services.Resource, error) {
-				return appThisOne, nil
-				//app := services.AppV3{
-				//	Kind:    services.KindApp,
-				//	Version: services.V3,
-				//	Metadata: services.Metadata{
-				//		Namespace: defaults.Namespace,
-				//		Name:      "jenkins",
-				//	},
-				//	Spec: services.AppSpecV3{
-				//		HostUUID:   "00000000-0000-0000-0000-000000000000",
-				//		Protocol:   "https",
-				//		URI:        "localhost:8080",
-				//		PublicAddr: "jenkins.example.com",
-				//		Version:    teleport.Version,
-				//	},
-				//}
-				//state, err := config.Storage.GetState(teleport.RoleAdmin)
-				//if err != nil {
-				//	if !trace.IsNotFound(err) {
-				//		log.Warningf("Failed to get rotation state: %v.", err)
-				//		return nil, trace.Wrap(err)
-				//	}
-				//} else {
-				//	app.Spec.Rotation = state.Spec.Rotation
-				//}
-				//app.SetTTL(config.Clock, defaults.ServerAnnounceTTL)
-				//return &app, nil
-			},
-			KeepAlivePeriod: defaults.ServerKeepAliveTTL,
-			AnnouncePeriod:  defaults.ServerAnnounceTTL/2 + utils.RandomDuration(defaults.ServerAnnounceTTL/10),
-			CheckPeriod:     defaults.HeartbeatCheckPeriod,
-			ServerTTL:       defaults.ServerAnnounceTTL,
-		})
-		if err != nil {
-			return nil, trace.Wrap(err)
+	return s, nil
+}
+
+func (s *Server) GetServerInfo() (services.Resource, error) {
+	// Return a updated list of dynamic labels.
+	s.App.SetCommandLabels(s.dynamicLabels.Get())
+
+	// Update the TTL.
+	s.App.SetTTL(s.Clock, defaults.ServerAnnounceTTL)
+
+	// Update rotation state.
+	rotation, err := s.GetRotation(teleport.RoleApp)
+	if err != nil {
+		if !trace.IsNotFound(err) {
+			s.log.Warningf("Failed to get rotation state: %v.", err)
 		}
-		heartbeats = append(heartbeats, heartbeat)
+	} else {
+		s.App.SetRotation(*rotation)
 	}
 
-	return server, nil
+	return s.App, nil
 }
 
 // Start starts heart beating the presence of service.Apps that this
 // server is proxying along with any dynamic labels.
 func (s *Server) Start() error {
-	for _, heartbeat := range s.heartbeats {
-		go heartbeat.Run()
-	}
+	s.dynamicLabels.Async()
+	go s.heartbeat.Run()
 
 	return nil
 }
@@ -161,13 +171,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // TODO: It should be safe to call Close() (or Shutdown() below) twice.
 func (s *Server) Close() error {
-	for _, heartbeat := range s.heartbeats {
-		if heartbeat != nil {
-			if err := heartbeat.Close(); err != nil {
-				log.Warnf("Failed to close heartbeat: %v.", err)
-			}
-			heartbeat = nil
-		}
+	if err := s.heartbeat.Close(); err != nil {
+		s.log.Warnf("Failed to close heartbeat: %v.", err)
 	}
 
 	return nil
@@ -180,13 +185,8 @@ func (s *Server) Wait() error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	for _, heartbeat := range s.heartbeats {
-		if heartbeat != nil {
-			if err := heartbeat.Close(); err != nil {
-				log.Warnf("Failed to close heartbeat: %v.", err)
-			}
-			heartbeat = nil
-		}
+	if err := s.heartbeat.Close(); err != nil {
+		s.log.Warnf("Failed to close heartbeat: %v.", err)
 	}
 
 	return nil

@@ -653,31 +653,31 @@ func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
 	cfg.Apps.Enabled = true
 
 	// Loop over all apps and load app configuration.
-	for _, app := range fc.Apps.Apps {
+	for _, application := range fc.Apps.Apps {
 		// Parse the internal address of the application.
-		uriAddr, err := utils.ParseHostPortAddr(app.URI, -1)
+		uriAddr, err := utils.ParseHostPortAddr(application.URI, -1)
 		if err != nil {
 			return trace.Wrap(err)
 		}
 
 		// Parse the external address of the application.
-		publicAddr, err := utils.ParseHostPortAddr(app.PublicAddr, -1)
+		publicAddr, err := utils.ParseHostPortAddr(application.PublicAddr, -1)
 		if err != nil {
 			return trace.Wrap(err)
 		}
 
 		// Parse the static labels of the application.
 		labels := make(map[string]string)
-		if app.Labels != nil {
-			for k, v := range app.Labels {
+		if application.Labels != nil {
+			for k, v := range application.Labels {
 				labels[k] = v
 			}
 		}
 
 		// Parse the dynamic labels of the application.
 		commands := make(services.CommandLabels)
-		if app.Commands != nil {
-			for _, v := range app.Commands {
+		if application.Commands != nil {
+			for _, v := range application.Commands {
 				commands[v.Name] = &services.CommandLabelV2{
 					Period:  services.NewDuration(v.Period),
 					Command: v.Command,
@@ -688,8 +688,8 @@ func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
 
 		// Add the application to the list of proxied applications.
 		cfg.Apps.Apps = append(cfg.Apps.Apps, service.App{
-			Name:          app.Name,
-			Protocol:      app.Protocol,
+			Name:          application.Name,
+			Protocol:      application.Protocol,
 			InternalAddr:  *uriAddr,
 			PublicAddr:    *publicAddr,
 			StaticLabels:  labels,

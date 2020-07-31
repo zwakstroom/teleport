@@ -1612,9 +1612,21 @@ func (k *authKeepAliver) forwardKeepAlives() {
 		case <-k.ctx.Done():
 			return
 		case keepAlive := <-k.keepAlivesC:
-			err := k.a.KeepAliveNode(k.ctx, keepAlive)
-			if err != nil {
-				k.closeWithError(err)
+			switch {
+			case keepAlive.ServerName != "":
+				err := k.a.KeepAliveNode(k.ctx, keepAlive)
+				if err != nil {
+					k.closeWithError(err)
+					return
+				}
+			case keepAlive.AppName != "":
+				err := k.a.KeepAliveApp(k.ctx, keepAlive)
+				if err != nil {
+					k.closeWithError(err)
+					return
+				}
+			default:
+				k.closeWithError(trace.BadParameter("missing server and app name"))
 				return
 			}
 		}
