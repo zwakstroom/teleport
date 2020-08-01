@@ -59,10 +59,9 @@ func (l *Listener) Accept() (net.Conn, error) {
 	}
 }
 
-// TODO: This needs to be filled out.
 func (l *Listener) Close() error {
 	l.closeFunc()
-	return nil
+	return l.closeContext.Err()
 }
 
 func (l *Listener) Addr() net.Addr {

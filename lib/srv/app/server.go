@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"time"
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
@@ -36,14 +35,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// RotationGetter returns rotation state.
 type RotationGetter func(role teleport.Role) (*services.Rotation, error)
 
 type Config struct {
 	Clock clockwork.Clock
 
 	AccessPoint  auth.AccessPoint
-	Storage      *auth.ProcessStorage
 	CloseContext context.Context
 	GetRotation  RotationGetter
 
@@ -58,9 +55,6 @@ func (c *Config) CheckAndSetDefaults() error {
 	if c.AccessPoint == nil {
 		return trace.BadParameter("access point is missing")
 	}
-	if c.Storage == nil {
-		return trace.BadParameter("process storage is missing")
-	}
 	if c.GetRotation == nil {
 		return trace.BadParameter("rotation getter is missing")
 	}
@@ -70,7 +64,9 @@ func (c *Config) CheckAndSetDefaults() error {
 type Server struct {
 	*Config
 
-	log *logrus.Entry
+	log          *logrus.Entry
+	closeContext context.Context
+	closeFunc    context.CancelFunc
 
 	dynamicLabels *srv.DynamicLabels
 	httpServer    *http.Server
@@ -92,12 +88,15 @@ func New(config *Config) (*Server, error) {
 		}),
 	}
 
+	s.closeContext, s.closeFunc = context.WithCancel(config.CloseContext)
+
 	// Create HTTP server that will be forwarding requests to target application.
 	// TODO: Set timeouts and possibly host:port in "Addr".
 	s.httpServer = &http.Server{}
 	s.httpServer.Handler = s
 
-	// Create dynamic labels looper that will keep dynamic labels updated.
+	// Create dynamic labels and sync them right away. This makes sure that the
+	// first heartbeat has correct dynamic labels.
 	s.dynamicLabels, err = srv.NewDynamicLabels(&srv.DynamicLabelsConfig{
 		Labels:        config.App.GetCommandLabels(),
 		CloseContext:  config.CloseContext,
@@ -106,6 +105,7 @@ func New(config *Config) (*Server, error) {
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	s.dynamicLabels.Sync()
 
 	// Create heartbeat loop so applications keep heartbeating presence to backend.
 	s.heartbeat, err = srv.NewHeartbeat(srv.HeartbeatConfig{
@@ -169,25 +169,33 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "not implemented", http.StatusNotImplemented)
 }
 
-// TODO: It should be safe to call Close() (or Shutdown() below) twice.
 func (s *Server) Close() error {
 	if err := s.heartbeat.Close(); err != nil {
-		s.log.Warnf("Failed to close heartbeat: %v.", err)
+		return trace.Wrap(err)
 	}
+	if err := s.httpServer.Close(); err != nil {
+		return trace.Wrap(err)
+	}
+
+	s.closeFunc()
 
 	return nil
 }
 
-// TODO.
 func (s *Server) Wait() error {
-	time.Sleep(20 * time.Minute)
-	return nil
+	<-s.closeContext.Done()
+	return s.closeContext.Err()
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	if err := s.heartbeat.Close(); err != nil {
-		s.log.Warnf("Failed to close heartbeat: %v.", err)
+		return trace.Wrap(err)
 	}
+	if err := s.httpServer.Shutdown(ctx); err != nil {
+		return trace.Wrap(err)
+	}
+
+	s.closeFunc()
 
 	return nil
 }

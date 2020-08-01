@@ -2401,6 +2401,7 @@ func (process *TeleportProcess) initApps() {
 				InternalAddr: app.InternalAddr.String(),
 				PublicAddr:   app.PublicAddr.String(),
 				Commands:     services.LabelsToV2(app.DynamicLabels),
+				HostUUID:     process.Config.HostUUID,
 				Version:      teleport.Version,
 			})
 			if err != nil {

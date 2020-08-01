@@ -307,7 +307,7 @@ func (f *fakeAnnouncer) UpsertAuthServer(s services.Server) error {
 
 func (f *fakeAnnouncer) UpsertApp(ctx context.Context, app services.App) (*services.KeepAlive, error) {
 	f.upsertCalls[HeartbeatModeApp] += 1
-	return f.err
+	return &services.KeepAlive{}, f.err
 }
 
 func (f *fakeAnnouncer) NewKeepAliver(ctx context.Context) (services.KeepAliver, error) {
