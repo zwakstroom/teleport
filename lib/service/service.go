@@ -2424,7 +2424,6 @@ func (process *TeleportProcess) initApp(application services.App, authClient aut
 		server, err := app.New(&app.Config{
 			App:          application,
 			AccessPoint:  authClient,
-			Storage:      process.storage,
 			CloseContext: process.ExitContext(),
 			GetRotation:  process.getRotation,
 		})
