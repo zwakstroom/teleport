@@ -542,6 +542,17 @@ const baseMetadataSchema = `{
 const DefaultDefinitions = ``
 
 func (m *ResourceHeader) CheckAndSetDefaults() error {
+	if m.Kind == "" {
+		return trace.BadParameter("resource kind missing")
+	}
+	if m.Version == "" {
+		return trace.BadParameter("resource version missing")
+	}
+
+	if err := m.Metadata.CheckAndSetDefaults(); err != nil {
+		return trace.Wrap(err)
+	}
+
 	return nil
 }
 
@@ -625,10 +636,13 @@ func (u *UnknownResource) UnmarshalJSON(raw []byte) error {
 }
 
 func (u *UnknownResource) CheckAndSetDefaults() error {
+	if err := u.ResourceHeader.CheckAndSetDefaults(); err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
 }
 
-// Resource represents common properties for resources
+// Resource represents common properties for all resources.
 type Resource interface {
 	// GetKind returns resource kind
 	GetKind() string
@@ -654,7 +668,7 @@ type Resource interface {
 	GetResourceID() int64
 	// SetResourceID sets resource ID
 	SetResourceID(int64)
-
+	// CheckAndSetDefaults checks and sets default values.
 	CheckAndSetDefaults() error
 }
 

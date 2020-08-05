@@ -389,24 +389,14 @@ func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepA
 }
 
 func (a *AuthWithRoles) KeepAliveApp(ctx context.Context, handle services.KeepAlive) error {
+	// Only allow machine role "RoleApp" to submit keep alive messages.
 	if !a.hasBuiltinRole(string(teleport.RoleApp)) {
-		return trace.AccessDenied("[11] access denied")
+		return trace.AccessDenied("invalid role")
 	}
-	// TODO: Add back in?
-	//clusterName, err := a.GetDomainName()
-	//if err != nil {
-	//	return trace.Wrap(err)
-	//}
-	//serverName, err := ExtractHostID(a.user.GetName(), clusterName)
-	//if err != nil {
-	//	return trace.AccessDenied("[10] access denied")
-	//}
-	//if serverName != handle.ServerName {
-	//	return trace.AccessDenied("[10] access denied")
-	//}
 	if err := a.action(defaults.Namespace, services.KindApp, services.VerbUpdate); err != nil {
 		return trace.Wrap(err)
 	}
+
 	return a.authServer.KeepAliveApp(ctx, handle)
 }
 

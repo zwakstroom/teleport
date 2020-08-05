@@ -739,11 +739,10 @@ func (s *PresenceService) UpsertApp(ctx context.Context, app services.App) (*ser
 	if app.Expiry().IsZero() {
 		return &services.KeepAlive{}, nil
 	}
-	ll := &services.KeepAlive{
+	return &services.KeepAlive{
 		LeaseID: lease.ID,
 		AppName: app.GetName(),
-	}
-	return ll, nil
+	}, nil
 }
 
 // DeleteAllApps deletes all applications in a namespace.

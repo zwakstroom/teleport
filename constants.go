@@ -118,7 +118,7 @@ const (
 	// ComponentProxy is SSH proxy (SSH server forwarding connections)
 	ComponentProxy = "proxy"
 
-	// ComponentApps is the application proxy service (AAP).
+	// ComponentApp is the application proxy service (AAP).
 	ComponentApp = "app"
 
 	// ComponentDiagnostic is a diagnostic service

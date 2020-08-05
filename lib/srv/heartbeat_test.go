@@ -83,11 +83,6 @@ func (s *HeartbeatSuite) TestHeartbeatKeepAlive(c *check.C) {
 			srv.SetTTL(clock, defaults.ServerAnnounceTTL)
 			return srv, nil
 		},
-
-		//GetServerInfo: func() (services.Server, error) {
-		//	srv.SetTTL(clock, defaults.ServerAnnounceTTL)
-		//	return srv, nil
-		//},
 	})
 	c.Assert(err, check.IsNil)
 	c.Assert(hb.state, check.Equals, HeartbeatStateInit)
@@ -199,23 +194,6 @@ func (s *HeartbeatSuite) heartbeatAnnounce(c *check.C, mode HeartbeatMode, kind 
 			srv.SetTTL(clock, defaults.ServerAnnounceTTL)
 			return srv, nil
 		},
-
-		//GetServerInfo: func() (services.Server, error) {
-		//	srv := &services.ServerV2{
-		//		Kind:    kind,
-		//		Version: services.V2,
-		//		Metadata: services.Metadata{
-		//			Namespace: defaults.Namespace,
-		//			Name:      "1",
-		//		},
-		//		Spec: services.ServerSpecV2{
-		//			Addr:     "127.0.0.1:1234",
-		//			Hostname: "2",
-		//		},
-		//	}
-		//	srv.SetTTL(clock, defaults.ServerAnnounceTTL)
-		//	return srv, nil
-		//},
 	})
 	c.Assert(err, check.IsNil)
 	c.Assert(hb.state, check.Equals, HeartbeatStateInit)

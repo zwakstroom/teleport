@@ -91,9 +91,10 @@ func New(config *Config) (*Server, error) {
 	s.closeContext, s.closeFunc = context.WithCancel(config.CloseContext)
 
 	// Create HTTP server that will be forwarding requests to target application.
-	// TODO: Set timeouts and possibly host:port in "Addr".
-	s.httpServer = &http.Server{}
-	s.httpServer.Handler = s
+	s.httpServer = &http.Server{
+		Handler:           s,
+		ReadHeaderTimeout: defaults.DefaultDialTimeout,
+	}
 
 	// Create dynamic labels and sync them right away. This makes sure that the
 	// first heartbeat has correct dynamic labels.

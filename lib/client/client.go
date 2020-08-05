@@ -296,6 +296,7 @@ func (proxy *ProxyClient) FindServersByLabels(ctx context.Context, namespace str
 	return nodes, nil
 }
 
+// GetApps returns a list of applications registered in this cluster.
 func (c *ProxyClient) GetApps(ctx context.Context, namespace string) ([]services.App, error) {
 	if namespace == "" {
 		return nil, trace.BadParameter(auth.MissingNamespaceError)

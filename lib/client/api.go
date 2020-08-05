@@ -1449,6 +1449,8 @@ func (tc *TeleportClient) ListNodes(ctx context.Context) ([]services.Server, err
 	return proxyClient.FindServersByLabels(ctx, tc.Namespace, tc.Labels)
 }
 
+// ListApps returns a list of applications available. Applications returned
+// depends on the role of the caller.
 func (c *TeleportClient) ListApps(ctx context.Context) ([]services.App, error) {
 	proxyClient, err := c.ConnectToProxy(ctx)
 	if err != nil {

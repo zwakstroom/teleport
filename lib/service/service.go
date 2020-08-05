@@ -1177,7 +1177,6 @@ func (process *TeleportProcess) initAuthService() error {
 		Context:   process.ExitContext(),
 		Component: teleport.ComponentAuth,
 		Announcer: authServer,
-		//GetServerInfo: func() (services.Server, error) {
 		GetServerInfo: func() (services.Resource, error) {
 			srv := services.ServerV2{
 				Kind:    services.KindAuthServer,
@@ -2418,7 +2417,6 @@ func (process *TeleportProcess) initApp(application services.App, authClient aut
 	servicePrefix := fmt.Sprintf("app.%v", application.GetName())
 
 	var server *app.Server
-	//var agentPool *reversetunnel.AgentPool
 
 	process.RegisterCriticalFunc(servicePrefix+".run", func() error {
 		server, err := app.New(&app.Config{
@@ -2437,26 +2435,6 @@ func (process *TeleportProcess) initApp(application services.App, authClient aut
 			return trace.Wrap(err)
 		}
 
-		//// Create and start an agent pool for the reverse tunnel.
-		//agentPool, err = reversetunnel.NewAgentPool(reversetunnel.AgentPoolConfig{
-		//	Component:   teleport.ComponentNode,
-		//	HostUUID:    conn.ServerIdentity.ID.HostUUID,
-		//	ProxyAddr:   conn.TunnelProxy(),
-		//	Client:      conn.Client,
-		//	AccessPoint: conn.Client,
-		//	HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
-		//	Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
-		//	AppsServer:  server,
-		//})
-		//if err != nil {
-		//	return trace.Wrap(err)
-		//}
-		//err = agentPool.Start()
-		//if err != nil {
-		//	return trace.Wrap(err)
-		//}
-		//log.Infof("Started reverse tunnel.")
-
 		//// Broadcast that the apps proxy is ready.
 		//process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
 
@@ -2464,7 +2442,6 @@ func (process *TeleportProcess) initApp(application services.App, authClient aut
 		if err := server.Wait(); err != nil {
 			log.Infof("Failed to wait on server: %v.", err)
 		}
-		//agentPool.Wait()
 
 		log.Infof("Exited.")
 		return nil
@@ -2483,9 +2460,6 @@ func (process *TeleportProcess) initApp(application services.App, authClient aut
 				warnOnErr(server.Shutdown(payloadContext(payload)))
 			}
 		}
-
-		//// Shut down the agent pool.
-		//agentPool.Stop()
 
 		log.Infof("Exited.")
 	})

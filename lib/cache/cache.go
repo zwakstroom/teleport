@@ -99,9 +99,8 @@ func ForApps(cfg Config) Config {
 		{Kind: services.KindClusterConfig},
 		{Kind: services.KindUser},
 		{Kind: services.KindRole},
-		// Node only needs to "know" about default
-		// namespace events to avoid matching too much
-		// data about other namespaces or node events
+		// Applications only need to "know" about default namespace events to avoid
+		// matching too much data about other namespaces or events.
 		{Kind: services.KindNamespace, Name: defaults.Namespace},
 		{Kind: services.KindApp},
 	}

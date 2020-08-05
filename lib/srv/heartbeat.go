@@ -290,6 +290,9 @@ func (h *Heartbeat) reset(state KeepAliveState) {
 	}
 }
 
+// compare compares two resources. When heartbeat is running in "auth", "proxy",
+// or "node" mode it compares services.Server resources, with in "app" mode it
+// compares services.App.
 func (h *Heartbeat) compare(server services.Resource) (int, error) {
 	switch h.Mode {
 	case HeartbeatModeAuth, HeartbeatModeProxy, HeartbeatModeNode:
@@ -311,6 +314,7 @@ func (h *Heartbeat) compare(server services.Resource) (int, error) {
 	}
 }
 
+// currentServer returns the current services.Server.
 func (h *Heartbeat) currentServer() (services.Server, error) {
 	s, ok := h.current.(services.Server)
 	if !ok {
@@ -319,6 +323,7 @@ func (h *Heartbeat) currentServer() (services.Server, error) {
 	return s, nil
 }
 
+// currentApp returns the current services.App.
 func (h *Heartbeat) currentApp() (services.App, error) {
 	a, ok := h.current.(services.App)
 	if !ok {
@@ -353,7 +358,6 @@ func (h *Heartbeat) fetch() error {
 			h.reset(HeartbeatStateAnnounce)
 			return nil
 		}
-		//result := services.CompareServers(h.current, server)
 		result, err := h.compare(server)
 		if err != nil {
 			return trace.Wrap(err)
@@ -375,7 +379,6 @@ func (h *Heartbeat) fetch() error {
 			h.setState(HeartbeatStateKeepAlive)
 			return nil
 		}
-		//result := services.CompareServers(h.current, server)
 		result, err := h.compare(server)
 		if err != nil {
 			return trace.Wrap(err)
