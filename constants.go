@@ -121,6 +121,9 @@ const (
 	// ComponentApp is the application proxy service (AAP).
 	ComponentApp = "app"
 
+	// ComponentService is the supervisor service that starts all components.
+	ComponentService = "service"
+
 	// ComponentDiagnostic is a diagnostic service
 	ComponentDiagnostic = "diag"
 

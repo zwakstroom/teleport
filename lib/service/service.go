@@ -678,7 +678,6 @@ func NewTeleport(cfg *Config) (*TeleportProcess, error) {
 	}
 
 	if cfg.Proxy.Enabled {
-		//eventMapping.In = append(eventMapping.In, ProxySSHReady)
 		if err := process.initProxy(); err != nil {
 			return nil, err
 		}
@@ -2363,8 +2362,9 @@ func (process *TeleportProcess) initApps() {
 	process.WaitForEvent(process.ExitContext(), AppsIdentityEvent, eventsCh)
 
 	// Define logger to prefix log lines with the name of the component and PID.
+	component := teleport.Component(teleport.ComponentApp, process.id)
 	log := logrus.WithFields(logrus.Fields{
-		trace.Component: teleport.Component(teleport.ComponentApp, process.id),
+		trace.Component: component,
 	})
 
 	process.RegisterCriticalFunc("connect.apps", func() error {
@@ -2387,10 +2387,13 @@ func (process *TeleportProcess) initApps() {
 
 		// Create a caching client to the Auth Server. Is is to reduce load on
 		// the Auth Server.
-		authClient, err := process.newLocalCache(conn.Client, cache.ForApps, []string{teleport.ComponentApp})
+		authClient, err := process.newLocalCache(conn.Client, cache.ForApps, []string{component})
 		if err != nil {
 			return trace.Wrap(err)
 		}
+
+		n := len(process.Config.Apps.Apps)
+		startCh := make(chan string, n)
 
 		// Loop over each application and start it.
 		for i := range process.Config.Apps.Apps {
@@ -2405,7 +2408,6 @@ func (process *TeleportProcess) initApps() {
 					Labels:    app.StaticLabels,
 				},
 				Spec: services.ServerSpecV2{
-					// TODO: process.Config.HostUUID
 					Protocol:     app.Protocol,
 					InternalAddr: app.InternalAddr.String(),
 					PublicAddr:   app.PublicAddr.String(),
@@ -2413,13 +2415,36 @@ func (process *TeleportProcess) initApps() {
 					Version:      teleport.Version,
 				},
 			}
-			process.initApp(application, authClient)
+			process.initApp(application, authClient, startCh)
 		}
+
+		timer := time.NewTimer(defaults.AppsStartTimeout)
+		defer timer.Stop()
+
+		// Wait for all applications to start.
+		for {
+			select {
+			case appName := <-startCh:
+				n -= 1
+				log.Infof("Application %v started.", appName)
+
+				// Once all events have been received, broadcast that the apps
+				//proxy is ready.
+				if n == 0 {
+					process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
+					log.Infof("All applications successfully started.")
+					return nil
+				}
+			case <-timer.C:
+				return trace.BadParameter("timed out waiting for apps to start")
+			}
+		}
+
 		return nil
 	})
 }
 
-func (process *TeleportProcess) initApp(application services.Server, authClient auth.AccessPoint) {
+func (process *TeleportProcess) initApp(application services.Server, authClient auth.AccessPoint, startCh chan string) {
 	servicePrefix := fmt.Sprintf("app.%v", application.GetName())
 
 	var server *app.Server
@@ -2441,8 +2466,8 @@ func (process *TeleportProcess) initApp(application services.Server, authClient 
 			return trace.Wrap(err)
 		}
 
-		//// Broadcast that the apps proxy is ready.
-		//process.BroadcastEvent(Event{Name: AppsReady, Payload: nil})
+		// Notify parent that this app has started.
+		startCh <- application.GetName()
 
 		// Block and wait while the server and agent pool are running.
 		if err := server.Wait(); err != nil {
