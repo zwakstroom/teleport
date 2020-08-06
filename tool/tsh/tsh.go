@@ -753,14 +753,14 @@ func showNodes(nodes []services.Server, verbose bool) {
 	}
 }
 
-func showApps(apps []services.App, verbose bool) {
+func showApps(apps []services.Server, verbose bool) {
 	switch verbose {
 	// In verbose mode, print everything on a single line and include host UUID.
 	case true:
 		t := asciitable.MakeTable([]string{"Application", "Host UUID", "Internal Address", "Public Address", "Labels"})
 		for _, app := range apps {
 			t.AddRow([]string{
-				app.GetName(), app.GetHostUUID(), app.GetInternalAddr(), app.GetPublicAddr(), services.FlattenLabels(app),
+				app.GetName(), "TODO", app.GetInternalAddr(), app.GetPublicAddr(), app.LabelsString(),
 			})
 		}
 		fmt.Println(t.AsBuffer().String())
@@ -1415,7 +1415,7 @@ func onApps(cf *CLIConf) {
 	}
 
 	// Get a list of all applications.
-	var apps []services.App
+	var apps []services.Server
 	err = client.RetryWithRelogin(cf.Context, tc, func() error {
 		apps, err = tc.ListApps(cf.Context)
 		return err

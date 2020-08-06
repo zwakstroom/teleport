@@ -1177,7 +1177,7 @@ func (process *TeleportProcess) initAuthService() error {
 		Context:   process.ExitContext(),
 		Component: teleport.ComponentAuth,
 		Announcer: authServer,
-		GetServerInfo: func() (services.Resource, error) {
+		GetServerInfo: func() (services.Server, error) {
 			srv := services.ServerV2{
 				Kind:    services.KindAuthServer,
 				Version: services.V2,
@@ -2395,25 +2395,31 @@ func (process *TeleportProcess) initApps() {
 		// Loop over each application and start it.
 		for i := range process.Config.Apps.Apps {
 			app := process.Config.Apps.Apps[i]
-			application, err := services.NewApp(app.Name, app.StaticLabels, services.AppSpecV3{
-				Protocol:     app.Protocol,
-				InternalAddr: app.InternalAddr.String(),
-				PublicAddr:   app.PublicAddr.String(),
-				Commands:     services.LabelsToV2(app.DynamicLabels),
-				HostUUID:     process.Config.HostUUID,
-				Version:      teleport.Version,
-			})
-			if err != nil {
-				return trace.Wrap(err)
-			}
 
+			application := &services.ServerV2{
+				Kind:    services.KindApp,
+				Version: services.V2,
+				Metadata: services.Metadata{
+					Namespace: defaults.Namespace,
+					Name:      app.Name,
+					Labels:    app.StaticLabels,
+				},
+				Spec: services.ServerSpecV2{
+					// TODO: process.Config.HostUUID
+					Protocol:     app.Protocol,
+					InternalAddr: app.InternalAddr.String(),
+					PublicAddr:   app.PublicAddr.String(),
+					CmdLabels:    services.LabelsToV2(app.DynamicLabels),
+					Version:      teleport.Version,
+				},
+			}
 			process.initApp(application, authClient)
 		}
 		return nil
 	})
 }
 
-func (process *TeleportProcess) initApp(application services.App, authClient auth.AccessPoint) {
+func (process *TeleportProcess) initApp(application services.Server, authClient auth.AccessPoint) {
 	servicePrefix := fmt.Sprintf("app.%v", application.GetName())
 
 	var server *app.Server

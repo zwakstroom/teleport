@@ -644,7 +644,7 @@ func (c *remoteClusterCollection) writeYAML(w io.Writer) error {
 }
 
 type appCollection struct {
-	apps []services.App
+	apps []services.Server
 }
 
 func (a *appCollection) resources() (r []services.Resource) {
@@ -658,7 +658,7 @@ func (a *appCollection) writeText(w io.Writer) error {
 	t := asciitable.MakeTable([]string{"Application", "Internal Address", "Public Address", "Labels"})
 	for _, app := range a.apps {
 		t.AddRow([]string{
-			app.GetName(), app.GetInternalAddr(), app.GetPublicAddr(), services.FlattenLabels(app),
+			app.GetName(), app.GetInternalAddr(), app.GetPublicAddr(), app.LabelsString(),
 		})
 	}
 	_, err := t.AsBuffer().WriteTo(w)

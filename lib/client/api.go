@@ -1451,7 +1451,7 @@ func (tc *TeleportClient) ListNodes(ctx context.Context) ([]services.Server, err
 
 // ListApps returns a list of applications available. Applications returned
 // depends on the role of the caller.
-func (c *TeleportClient) ListApps(ctx context.Context) ([]services.App, error) {
+func (c *TeleportClient) ListApps(ctx context.Context) ([]services.Server, error) {
 	proxyClient, err := c.ConnectToProxy(ctx)
 	if err != nil {
 		return nil, trace.Wrap(err)

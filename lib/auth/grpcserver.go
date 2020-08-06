@@ -665,10 +665,6 @@ func eventToGRPC(in services.Event) (*proto.Event, error) {
 		out.Resource = &proto.Event_AccessRequest{
 			AccessRequest: r,
 		}
-	case *services.AppV3:
-		out.Resource = &proto.Event_App{
-			App: r,
-		}
 	default:
 		return nil, trace.BadParameter("resource type %T is not supported", in.Resource)
 	}
@@ -736,9 +732,6 @@ func eventFromGRPC(in proto.Event) (*services.Event, error) {
 		out.Resource = r
 		return &out, nil
 	} else if r := in.GetAccessRequest(); r != nil {
-		out.Resource = r
-		return &out, nil
-	} else if r := in.GetApp(); r != nil {
 		out.Resource = r
 		return &out, nil
 	} else {

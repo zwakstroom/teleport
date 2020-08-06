@@ -44,7 +44,7 @@ type Config struct {
 	CloseContext context.Context
 	GetRotation  RotationGetter
 
-	App services.App
+	App services.Server
 }
 
 func (c *Config) CheckAndSetDefaults() error {
@@ -99,7 +99,7 @@ func New(config *Config) (*Server, error) {
 	// Create dynamic labels and sync them right away. This makes sure that the
 	// first heartbeat has correct dynamic labels.
 	s.dynamicLabels, err = srv.NewDynamicLabels(&srv.DynamicLabelsConfig{
-		Labels:        config.App.GetCommandLabels(),
+		Labels:        config.App.GetCmdLabels(),
 		CloseContext:  config.CloseContext,
 		ComponentName: componentName,
 	})
@@ -110,7 +110,6 @@ func New(config *Config) (*Server, error) {
 
 	// Create heartbeat loop so applications keep heartbeating presence to backend.
 	s.heartbeat, err = srv.NewHeartbeat(srv.HeartbeatConfig{
-		Mode:            srv.HeartbeatModeApp,
 		Context:         config.CloseContext,
 		Component:       componentName,
 		Announcer:       config.AccessPoint,
@@ -127,9 +126,9 @@ func New(config *Config) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) GetServerInfo() (services.Resource, error) {
+func (s *Server) GetServerInfo() (services.Server, error) {
 	// Return a updated list of dynamic labels.
-	s.App.SetCommandLabels(s.dynamicLabels.Get())
+	s.App.SetCmdLabels(s.dynamicLabels.Get())
 
 	// Update the TTL.
 	s.App.SetTTL(s.Clock, defaults.ServerAnnounceTTL)
