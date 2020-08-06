@@ -63,8 +63,6 @@ message Event {
         // AccessRequest is a resource for access requests
         services.AccessRequestV3 AccessRequest = 14
             [ (gogoproto.jsontag) = "access_request,omitempty" ];
-        // App is a application resource.
-        services.AppV3 App = 15 [ (gogoproto.jsontag) = "app,omitempty" ];
     }
 }
 
