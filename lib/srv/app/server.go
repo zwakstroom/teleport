@@ -110,6 +110,7 @@ func New(config *Config) (*Server, error) {
 
 	// Create heartbeat loop so applications keep heartbeating presence to backend.
 	s.heartbeat, err = srv.NewHeartbeat(srv.HeartbeatConfig{
+		Mode:            srv.HeartbeatModeApp,
 		Context:         config.CloseContext,
 		Component:       componentName,
 		Announcer:       config.AccessPoint,

@@ -367,37 +367,60 @@ func (a *AuthWithRoles) UpsertNode(s services.Server) (*services.KeepAlive, erro
 	return a.authServer.UpsertNode(s)
 }
 
-func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepAlive) error {
-	if !a.hasBuiltinRole(string(teleport.RoleNode)) {
-		return trace.AccessDenied("[10] access denied")
-	}
-	clusterName, err := a.GetDomainName()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	serverName, err := ExtractHostID(a.user.GetName(), clusterName)
-	if err != nil {
-		return trace.AccessDenied("[10] access denied")
-	}
-	if serverName != handle.ServerName {
-		return trace.AccessDenied("[10] access denied")
-	}
-	if err := a.action(defaults.Namespace, services.KindNode, services.VerbUpdate); err != nil {
-		return trace.Wrap(err)
-	}
-	return a.authServer.KeepAliveNode(ctx, handle)
-}
+//// DELETE IN: 5.1.0
+//func (a *AuthWithRoles) KeepAliveNode(ctx context.Context, handle services.KeepAlive) error {
+//	if !a.hasBuiltinRole(string(teleport.RoleNode)) {
+//		return trace.AccessDenied("[10] access denied")
+//	}
+//	clusterName, err := a.GetDomainName()
+//	if err != nil {
+//		return trace.Wrap(err)
+//	}
+//	serverName, err := ExtractHostID(a.user.GetName(), clusterName)
+//	if err != nil {
+//		return trace.AccessDenied("[10] access denied")
+//	}
+//	if serverName != handle.ServerName {
+//		return trace.AccessDenied("[10] access denied")
+//	}
+//	if err := a.action(defaults.Namespace, services.KindNode, services.VerbUpdate); err != nil {
+//		return trace.Wrap(err)
+//	}
+//	return a.authServer.KeepAliveNode(ctx, handle)
+//}
 
-func (a *AuthWithRoles) KeepAliveApp(ctx context.Context, handle services.KeepAlive) error {
-	// Only allow machine role "RoleApp" to submit keep alive messages.
-	if !a.hasBuiltinRole(string(teleport.RoleApp)) {
-		return trace.AccessDenied("invalid role")
-	}
-	if err := a.action(defaults.Namespace, services.KindApp, services.VerbUpdate); err != nil {
-		return trace.Wrap(err)
+func (a *AuthWithRoles) KeepAliveResource(ctx context.Context, handle services.KeepAlive) error {
+	switch handle.GetType() {
+	case teleport.KeepAliveServer:
+		if !a.hasBuiltinRole(string(teleport.RoleNode)) {
+			return trace.AccessDenied("[10] access denied")
+		}
+		clusterName, err := a.GetDomainName()
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		serverName, err := ExtractHostID(a.user.GetName(), clusterName)
+		if err != nil {
+			return trace.AccessDenied("[10] access denied")
+		}
+		if serverName != handle.Name {
+			return trace.AccessDenied("[10] access denied")
+		}
+		if err := a.action(defaults.Namespace, services.KindNode, services.VerbUpdate); err != nil {
+			return trace.Wrap(err)
+		}
+	case teleport.KeepAliveApp:
+		if !a.hasBuiltinRole(string(teleport.RoleApp)) {
+			return trace.AccessDenied("invalid role")
+		}
+		if err := a.action(defaults.Namespace, services.KindApp, services.VerbUpdate); err != nil {
+			return trace.Wrap(err)
+		}
+	default:
+		return trace.BadParameter("unknown keep alive type: %q", handle.Type)
 	}
 
-	return a.authServer.KeepAliveApp(ctx, handle)
+	return a.authServer.KeepAliveResource(ctx, handle)
 }
 
 // NewWatcher returns a new event watcher

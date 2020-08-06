@@ -50,11 +50,13 @@ type GRPCServer struct {
 // SendKeepAlives allows node to send a stream of keep alive requests
 func (g *GRPCServer) SendKeepAlives(stream proto.AuthService_SendKeepAlivesServer) error {
 	defer stream.SendAndClose(&empty.Empty{})
+
 	auth, err := g.authenticate(stream.Context())
 	if err != nil {
 		return trail.ToGRPC(err)
 	}
 	g.Debugf("Got heartbeat connection from %v.", auth.User.GetName())
+
 	for {
 		keepAlive, err := stream.Recv()
 		if err == io.EOF {
@@ -66,19 +68,9 @@ func (g *GRPCServer) SendKeepAlives(stream proto.AuthService_SendKeepAlivesServe
 			return trail.ToGRPC(err)
 		}
 
-		switch {
-		case (*keepAlive).ServerName != "":
-			err = auth.KeepAliveNode(stream.Context(), *keepAlive)
-			if err != nil {
-				return trail.ToGRPC(err)
-			}
-		case (*keepAlive).AppName != "":
-			err = auth.KeepAliveApp(stream.Context(), *keepAlive)
-			if err != nil {
-				return trail.ToGRPC(err)
-			}
-		default:
-			return trail.ToGRPC(trace.BadParameter("no server or app name given"))
+		err = auth.KeepAliveResource(stream.Context(), *keepAlive)
+		if err != nil {
+			return trail.ToGRPC(err)
 		}
 	}
 }

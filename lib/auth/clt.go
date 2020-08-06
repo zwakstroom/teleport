@@ -720,13 +720,14 @@ func (c *Client) UpsertNode(s services.Server) (*services.KeepAlive, error) {
 	return keepAlive, nil
 }
 
-// KeepAliveNode updates node keep alive information.
-func (c *Client) KeepAliveNode(ctx context.Context, keepAlive services.KeepAlive) error {
-	return trace.BadParameter("not implemented, use StreamKeepAlives instead")
-}
+// DELETE IN: 5.1.0
+//// KeepAliveNode updates node keep alive information.
+//func (c *Client) KeepAliveNode(ctx context.Context, keepAlive services.KeepAlive) error {
+//	return trace.BadParameter("not implemented, use StreamKeepAlives instead")
+//}
 
-// KeepAliveApp updates app keep alive information.
-func (c *Client) KeepAliveApp(ctx context.Context, keepAlive services.KeepAlive) error {
+// KeepAliveResource is not implemented.
+func (c *Client) KeepAliveResource(ctx context.Context, keepAlive services.KeepAlive) error {
 	return trace.BadParameter("not implemented, use StreamKeepAlives instead")
 }
 
@@ -789,6 +790,10 @@ func (k *streamKeepAliver) Error() error {
 
 func (k *streamKeepAliver) Done() <-chan struct{} {
 	return k.ctx.Done()
+}
+
+func (k *streamKeepAliver) GetType() string {
+	return ""
 }
 
 // recv is necessary to receive errors from the

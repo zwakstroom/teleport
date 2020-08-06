@@ -671,3 +671,11 @@ const (
 	// WebAppProtocol is the protocol used for AAP servers.
 	WebAppProtocol = "https"
 )
+
+const (
+	// KeepAliveServer is the type for the keep alive.
+	KeepAliveServer = "server"
+
+	// KeepAliveApp is the type for the keep alive.
+	KeepAliveApp = "app"
+)

@@ -20,6 +20,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/trace"
 )
@@ -57,7 +58,7 @@ type Presence interface {
 	UpsertNodes(namespace string, servers []Server) error
 
 	// KeepAliveNode updates node TTL in the storage
-	KeepAliveNode(ctx context.Context, h KeepAlive) error
+	//KeepAliveNode(ctx context.Context, h KeepAlive) error
 
 	// GetAuthServers returns a list of registered servers
 	GetAuthServers() ([]Server, error)
@@ -175,8 +176,8 @@ type Presence interface {
 	// DeleteApp deletes a specific application within a namespace.
 	DeleteApp(context.Context, string, string) error
 
-	// KeepAliveNode updates node TTL in the storage.
-	KeepAliveApp(ctx context.Context, h KeepAlive) error
+	// KeepAliveResource updates TTL of the resource in the backend.
+	KeepAliveResource(ctx context.Context, h KeepAlive) error
 }
 
 // NewNamespace returns new namespace
@@ -204,7 +205,14 @@ type Site struct {
 // IsEmpty returns true if keepalive is empty,
 // used to indicate that keepalive is not supported
 func (s *KeepAlive) IsEmpty() bool {
-	return s.LeaseID == 0 && s.ServerName == "" && s.AppName == ""
+	return s.LeaseID == 0 && s.Name == ""
+}
+
+func (s *KeepAlive) GetType() string {
+	if s.Type == "" {
+		return teleport.KeepAliveServer
+	}
+	return s.Type
 }
 
 func (s *KeepAlive) CheckAndSetDefaults() error {
@@ -231,4 +239,7 @@ type KeepAliver interface {
 
 	// Error returns error associated with keep aliver if any
 	Error() error
+
+	// GetType return the type of keep alive.
+	GetType() string
 }

@@ -23,6 +23,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/services"
 
@@ -249,22 +250,24 @@ func (s *PresenceService) UpsertNode(server services.Server) (*services.KeepAliv
 		return &services.KeepAlive{}, nil
 	}
 	return &services.KeepAlive{
-		LeaseID:    lease.ID,
-		ServerName: server.GetName(),
+		Type:    teleport.KeepAliveServer,
+		LeaseID: lease.ID,
+		Name:    server.GetName(),
 	}, nil
 }
 
-// KeepAliveNode updates node expiry
-func (s *PresenceService) KeepAliveNode(ctx context.Context, h services.KeepAlive) error {
-	if err := h.CheckAndSetDefaults(); err != nil {
-		return trace.Wrap(err)
-	}
-	err := s.KeepAlive(ctx, backend.Lease{
-		ID:  h.LeaseID,
-		Key: backend.Key(nodesPrefix, h.Namespace, h.ServerName),
-	}, h.Expires)
-	return trace.Wrap(err)
-}
+// DELETE IN: 5.1.0.
+//// KeepAliveNode updates node expiry
+//func (s *PresenceService) KeepAliveNode(ctx context.Context, h services.KeepAlive) error {
+//	if err := h.CheckAndSetDefaults(); err != nil {
+//		return trace.Wrap(err)
+//	}
+//	err := s.KeepAlive(ctx, backend.Lease{
+//		ID:  h.LeaseID,
+//		Key: backend.Key(nodesPrefix, h.Namespace, h.ServerName),
+//	}, h.Expires)
+//	return trace.Wrap(err)
+//}
 
 // UpsertNodes is used for bulk insertion of nodes. Schema validation is
 // always skipped during bulk insertion.
@@ -740,9 +743,9 @@ func (s *PresenceService) UpsertApp(ctx context.Context, app services.Server) (*
 		return &services.KeepAlive{}, nil
 	}
 	return &services.KeepAlive{
+		Type:    teleport.KeepAliveApp,
 		LeaseID: lease.ID,
-		// TODO: Figure this out.
-		AppName: app.GetName(),
+		Name:    app.GetName(),
 	}, nil
 }
 
@@ -759,14 +762,21 @@ func (s *PresenceService) DeleteApp(ctx context.Context, namespace string, name 
 	return s.Delete(ctx, key)
 }
 
-// KeepAliveApp updates the expiry services.App.
-func (s *PresenceService) KeepAliveApp(ctx context.Context, h services.KeepAlive) error {
+// KeepAliveResource updates expiry time of the resource.
+func (s *PresenceService) KeepAliveResource(ctx context.Context, h services.KeepAlive) error {
 	if err := h.CheckAndSetDefaults(); err != nil {
 		return trace.Wrap(err)
 	}
+
+	// Update the prefix based off the type of keep alive.
+	prefix := nodesPrefix
+	if h.GetType() == teleport.KeepAliveApp {
+		prefix = appsPrefix
+	}
+
 	err := s.KeepAlive(ctx, backend.Lease{
 		ID:  h.LeaseID,
-		Key: backend.Key(appsPrefix, h.Namespace, h.AppName),
+		Key: backend.Key(prefix, h.Namespace, h.Name),
 	}, h.Expires)
 	return trace.Wrap(err)
 }
