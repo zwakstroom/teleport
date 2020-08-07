@@ -1817,6 +1817,37 @@ func (s *WebSuite) TestUIGetUsers(c *C) {
 	c.Assert(users[2].Name, Equals, "user3")
 }
 
+func (s *WebSuite) TestUIUpdateUser(c *C) {
+	s.createUser(c, "mimi", "mimi", "password", "", false)
+
+	// update user
+	pack := s.authPack(c, "lulu", true)
+	res, err := pack.clt.PutJSON(context.Background(), pack.clt.Endpoint("webapi", "sites", s.server.ClusterName(), "namespaces", "default", "users"), requestUser{
+		Name:  "mimi",
+		Roles: []string{"updated-role"},
+	})
+	c.Assert(err, IsNil)
+
+	var u responseUpdateUser
+	c.Assert(json.Unmarshal(res.Bytes(), &u), IsNil)
+
+	c.Assert(u.User.Name, Equals, "mimi")
+	c.Assert(u.User.Roles, DeepEquals, []string{"updated-role"})
+}
+
+func (s *WebSuite) TestUIDeleteUser(c *C) {
+	s.createUser(c, "mimi", "mimi", "password", "", false)
+
+	// delete user
+	pack := s.authPack(c, "lulu", true)
+	res, err := pack.clt.Delete(context.Background(), pack.clt.Endpoint("webapi", "sites", s.server.ClusterName(), "namespaces", "default", "users", "mimi"))
+	c.Assert(err, IsNil)
+
+	var m struct{ Message string }
+	c.Assert(json.Unmarshal(res.Bytes(), &m), IsNil)
+	c.Assert(m.Message, Equals, "ok")
+}
+
 type authProviderMock struct {
 	server services.ServerV2
 }

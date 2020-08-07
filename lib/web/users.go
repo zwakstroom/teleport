@@ -50,6 +50,11 @@ type responseGetUsers struct {
 	Users []ui.User `json:"users"`
 }
 
+// responseUpdateUser is used to send back an updated user.
+type responseUpdateUser struct {
+	User ui.User `json:"user"`
+}
+
 // createUser allows a UI user to create a new user.
 //
 // POST /webapi/sites/:site/namespaces/:namespace/users
@@ -149,6 +154,72 @@ func (h *Handler) getUsers(w http.ResponseWriter, r *http.Request, p httprouter.
 	}
 
 	return &responseGetUsers{Users: users}, nil
+}
+
+// updateUser allows a UI user to update a existing user.
+//
+// PUT /webapi/sites/:site/namespaces/:namespace/users
+//
+// Request:
+// {
+//		"username": "foo",
+//		"roles": ["role1", "role2"]
+// }
+//
+// Response:
+// {
+//		"user": {...}
+// }
+func (h *Handler) updateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx *SessionContext, site reversetunnel.RemoteSite) (interface{}, error) {
+	// Pull out request data.
+	var req *requestUser
+	if err := httplib.ReadJSON(r, &req); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := req.checkAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	user, err := ctx.clt.GetUser(req.Name, false)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Update user fields.
+	user.SetRoles(req.Roles)
+	if err := ctx.clt.UpdateUser(r.Context(), user); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &responseUpdateUser{
+		User: ui.User{
+			Name:    user.GetName(),
+			Roles:   user.GetRoles(),
+			Created: user.GetCreatedBy().Time,
+		},
+	}, nil
+}
+
+// deleteUser allows a UI user to delete a existing user.
+//
+// DELETE /webapi/sites/:site/namespaces/:namespace/users/:username
+//
+// Response:
+// {
+//		"message": "ok"
+// }
+func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx *SessionContext, site reversetunnel.RemoteSite) (interface{}, error) {
+	username := p.ByName("username")
+	if username == "" {
+		return nil, trace.BadParameter("missing user name")
+	}
+
+	if err := ctx.clt.DeleteUser(r.Context(), username); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return ok(), nil
 }
 
 // checkAndSetDefaults checks validity of a user request.
