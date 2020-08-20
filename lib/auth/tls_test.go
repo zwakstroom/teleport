@@ -689,6 +689,137 @@ func (s *TLSSuite) TestRollback(c *check.C) {
 	c.Assert(err, check.IsNil)
 }
 
+// TestJWTRotation checks that JWT tokens can be rotated and tokens can or
+// can not be validated at the appropriate phase.
+func (s *TLSSuite) TestJWTRotation(c *check.C) {
+	clock := clockwork.NewFakeClockAt(time.Now().Add(-2 * time.Hour))
+	s.server.Auth().SetClock(clock)
+
+	client, err := s.server.NewClient(TestBuiltin(teleport.RoleWeb))
+	c.Assert(err, check.IsNil)
+
+	// Create a JWT using the current CA, this will become the "old" CA during
+	// rotation.
+	oldJWT, err := client.GenerateJWT(context.Background(),
+		defaults.Namespace, services.JWTParams{
+			Username: "foo",
+			Roles:    []string{"bar", "baz"},
+			Expiry:   1 * time.Minute,
+		})
+	c.Assert(err, check.IsNil)
+
+	// Check that the "old" CA can be used to verify tokens.
+	oldCA, err := s.server.Auth().GetCertAuthority(services.CertAuthID{
+		DomainName: s.server.ClusterName(),
+		Type:       services.JWT,
+	}, true)
+	c.Assert(err, check.IsNil)
+	c.Assert(oldCA.GetJWTKeyPairs(), check.HasLen, 1)
+	oldKey, err := oldCA.JWTKey()
+	c.Assert(err, check.IsNil)
+	_, err = oldKey.Verify(oldJWT)
+	c.Assert(err, check.IsNil)
+
+	// Start rotation and move to initial phase. A new CA will be added (for
+	// verification), but requests will continue to be signed by the old CA.
+	gracePeriod := time.Hour
+	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+		Type:        services.JWT,
+		GracePeriod: &gracePeriod,
+		TargetPhase: services.RotationPhaseInit,
+		Mode:        services.RotationModeManual,
+	})
+	c.Assert(err, check.IsNil)
+
+	// At this point in rotation, two JWT keys pairs should exist.
+	oldCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
+		DomainName: s.server.ClusterName(),
+		Type:       services.JWT,
+	}, true)
+	c.Assert(err, check.IsNil)
+	c.Assert(oldCA.GetRotation().Phase, check.Equals, services.RotationPhaseInit)
+	c.Assert(oldCA.GetJWTKeyPairs(), check.HasLen, 2)
+
+	// Move rotation into the update client phase. In this phase, requests will
+	// be signed by the new CA, but the old CA will be around to verify requests.
+	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+		Type:        services.JWT,
+		GracePeriod: &gracePeriod,
+		TargetPhase: services.RotationPhaseUpdateClients,
+		Mode:        services.RotationModeManual,
+	})
+	c.Assert(err, check.IsNil)
+
+	// New tokens should now fail the validate with the old key.
+	newJWT, err := client.GenerateJWT(context.Background(),
+		defaults.Namespace, services.JWTParams{
+			Username: "foo",
+			Roles:    []string{"bar", "baz"},
+			Expiry:   1 * time.Minute,
+		})
+	c.Assert(err, check.IsNil)
+	_, err = oldKey.Verify(newJWT)
+	c.Assert(err, check.NotNil)
+
+	// New tokens will validate with the new key.
+	newCA, err := s.server.Auth().GetCertAuthority(services.CertAuthID{
+		DomainName: s.server.ClusterName(),
+		Type:       services.JWT,
+	}, true)
+	c.Assert(err, check.IsNil)
+	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 2)
+	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseUpdateClients)
+	newKey, err := newCA.JWTKey()
+	c.Assert(err, check.IsNil)
+	_, err = newKey.Verify(newJWT)
+	c.Assert(err, check.IsNil)
+
+	// Move rotation into update servers phase.
+	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+		Type:        services.JWT,
+		GracePeriod: &gracePeriod,
+		TargetPhase: services.RotationPhaseUpdateServers,
+		Mode:        services.RotationModeManual,
+	})
+	c.Assert(err, check.IsNil)
+
+	// At this point only the phase on the CA should have changed.
+	newCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
+		DomainName: s.server.ClusterName(),
+		Type:       services.JWT,
+	}, true)
+	c.Assert(err, check.IsNil)
+	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 2)
+	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseUpdateServers)
+
+	// Complete rotation. The old CA will be removed.
+	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+		Type:        services.JWT,
+		GracePeriod: &gracePeriod,
+		TargetPhase: services.RotationPhaseStandby,
+		Mode:        services.RotationModeManual,
+	})
+	c.Assert(err, check.IsNil)
+
+	// The new CA should now only have a single key.
+	newCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
+		DomainName: s.server.ClusterName(),
+		Type:       services.JWT,
+	}, true)
+	c.Assert(err, check.IsNil)
+	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 1)
+	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseStandby)
+
+	// New tokens will however validate with the new key, but won't validate
+	// the old key.
+	newKey, err = newCA.JWTKey()
+	c.Assert(err, check.IsNil)
+	_, err = newKey.Verify(newJWT)
+	c.Assert(err, check.IsNil)
+	_, err = newKey.Verify(oldJWT)
+	c.Assert(err, check.NotNil)
+}
+
 // TestRemoteUser tests scenario when remote user connects to the local
 // auth server and some edge cases.
 func (s *TLSSuite) TestRemoteUser(c *check.C) {
@@ -1764,6 +1895,68 @@ func (s *TLSSuite) TestGenerateCerts(c *check.C) {
 
 	_, _, _, _, err = ssh.ParseAuthorizedKey(userCerts.SSH)
 	c.Assert(err, check.IsNil)
+}
+
+// TestGenerateJWT checks the identity of the caller and makes sure only
+// certain roles can request JWT tokens.
+func (s *TLSSuite) TestGenerateJWT(c *check.C) {
+	authClient, err := s.server.NewClient(TestBuiltin(teleport.RoleAdmin))
+	c.Assert(err, check.IsNil)
+
+	ca, err := authClient.GetCertAuthority(services.CertAuthID{
+		Type:       services.JWT,
+		DomainName: s.server.ClusterName(),
+	}, true)
+	c.Assert(err, check.IsNil)
+
+	key, err := ca.JWTKey()
+	c.Assert(err, check.IsNil)
+
+	var tests = []struct {
+		inMachineRole teleport.Role
+		inReqUsername string
+		inReqRoles    []string
+		outError      bool
+	}{
+		{
+			inMachineRole: teleport.RoleNode,
+			inReqUsername: "foo@example.com",
+			inReqRoles:    []string{"bar", "baz"},
+			outError:      true,
+		},
+		{
+			inMachineRole: teleport.RoleProxy,
+			inReqUsername: "foo@example.com",
+			inReqRoles:    []string{"bar", "baz"},
+			outError:      true,
+		},
+		{
+			inMachineRole: teleport.RoleWeb,
+			inReqUsername: "foo@example.com",
+			inReqRoles:    []string{"bar", "baz"},
+			outError:      false,
+		},
+	}
+	for _, tt := range tests {
+		client, err := s.server.NewClient(TestBuiltin(tt.inMachineRole))
+		c.Assert(err, check.IsNil)
+
+		jwt, err := client.GenerateJWT(
+			context.Background(),
+			defaults.Namespace,
+			services.JWTParams{
+				Username: "foo@example.com",
+				Roles:    []string{"bar", "baz"},
+				Expiry:   1 * time.Minute,
+			})
+		c.Assert(err != nil, check.Equals, tt.outError)
+		if tt.outError == false {
+			claims, err := key.Verify(jwt)
+			c.Assert(err, check.IsNil)
+			c.Assert(claims.GetUsername(), check.Equals, tt.inReqUsername)
+			c.Assert(claims.GetRoles(), check.DeepEquals, tt.inReqRoles)
+		}
+	}
 }
 
 // TestCertificateFormat makes sure that certificates are generated with the

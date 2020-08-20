@@ -530,6 +530,27 @@ func (g *GRPCServer) DeleteAllApps(ctx context.Context, req *proto.DeleteAllApps
 	return &empty.Empty{}, nil
 }
 
+// GenerateJWT returns a signed JWT with the requested claims.
+func (g *GRPCServer) GenerateJWT(ctx context.Context, req *proto.GenerateJWTRequest) (*proto.GenerateJWTResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	jwt, err := auth.GenerateJWT(ctx, req.Namespace, services.JWTParams{
+		Username: req.GetUsername(),
+		Roles:    req.GetRoles(),
+		Expiry:   time.Duration(req.GetExpiry()),
+	})
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &proto.GenerateJWTResponse{
+		JWT: jwt,
+	}, nil
+}
+
 type grpcContext struct {
 	*AuthContext
 	*AuthWithRoles

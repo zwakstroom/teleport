@@ -2807,6 +2807,26 @@ func (c *Client) DeleteAllApps(ctx context.Context, namespace string) error {
 	return nil
 }
 
+// GenerateJWT returns a signed JWT with the requested claims.
+func (c *Client) GenerateJWT(ctx context.Context, namespace string, params services.JWTParams) (string, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	resp, err := clt.GenerateJWT(ctx, &proto.GenerateJWTRequest{
+		Namespace: namespace,
+		Username:  params.Username,
+		Roles:     params.Roles,
+		Expiry:    proto.Duration(params.Expiry),
+	})
+	if err != nil {
+		return "", trail.FromGRPC(err)
+	}
+
+	return resp.GetJWT(), nil
+}
+
 // WebService implements features used by Web UI clients
 type WebService interface {
 	// GetWebSessionInfo checks if a web sesion is valid, returns session id in case if

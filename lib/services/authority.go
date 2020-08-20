@@ -24,6 +24,7 @@ import (
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/sshutils"
 	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
@@ -139,6 +140,32 @@ func (c UserCertParams) Check() error {
 	return nil
 }
 
+// JWTParams is the claims the be signed under the JWT token.
+type JWTParams struct {
+	// Username is the Teleport identify of the user.
+	Username string
+
+	// Roles is the list of roles assigned to the user.
+	Roles []string
+
+	// Expiry is the time to live for the JWT token.
+	Expiry time.Duration
+}
+
+// Check verifies the JWT parameters.
+func (p JWTParams) Check() error {
+	if p.Username == "" {
+		return trace.BadParameter("username is required")
+	}
+	if len(p.Roles) == 0 {
+		return trace.BadParameter("roles are required")
+	}
+	if p.Expiry == 0 {
+		return trace.BadParameter("expiry is required")
+	}
+	return nil
+}
+
 // CertRoles defines certificate roles
 type CertRoles struct {
 	// Version is current version of the roles
@@ -237,6 +264,12 @@ type CertAuthority interface {
 	SetTLSKeyPairs(keyPairs []TLSKeyPair)
 	// GetTLSKeyPairs returns first PEM encoded TLS cert
 	GetTLSKeyPairs() []TLSKeyPair
+	// JWTKey returns the JWT key used to sign and verify tokens.
+	JWTKey() (*jwt.Key, error)
+	// GetJWTKeyPairs set all JWT key pairs.
+	GetJWTKeyPairs() []JWTKeyPair
+	// SetJWTKeyPairs sets all JWT key pairs.
+	SetJWTKeyPairs(keyPairs []JWTKeyPair)
 	// GetRotation returns rotation state.
 	GetRotation() Rotation
 	// SetRotation sets rotation state.
@@ -406,6 +439,32 @@ func (c *CertAuthorityV2) SetTLSKeyPairs(pairs []TLSKeyPair) {
 // GetTLSPrivateKey returns TLS key pairs
 func (c *CertAuthorityV2) GetTLSKeyPairs() []TLSKeyPair {
 	return c.Spec.TLSKeyPairs
+}
+
+// JWTKey return the first JWT keypair from the list of keypairs.
+func (c *CertAuthorityV2) JWTKey() (*jwt.Key, error) {
+	if len(c.Spec.JWTKeyPairs) == 0 {
+		return nil, trace.BadParameter("not JWT keypairs found")
+	}
+	key, err := jwt.New(&jwt.Config{
+		PublicKey:  c.Spec.JWTKeyPairs[0].PublicKey,
+		PrivateKey: c.Spec.JWTKeyPairs[0].PrivateKey,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return key, nil
+}
+
+// GetJWTKeyPairs gets all JWT keypairs used to sign a JWT.
+func (c *CertAuthorityV2) GetJWTKeyPairs() []JWTKeyPair {
+	return c.Spec.JWTKeyPairs
+}
+
+// SetJWTKeyPairs sets ll JWT keypairs used to sign a JWT.
+func (c *CertAuthorityV2) SetJWTKeyPairs(keyPairs []JWTKeyPair) {
+	c.Spec.JWTKeyPairs = keyPairs
 }
 
 // GetMetadata returns object metadata
@@ -616,10 +675,34 @@ func (ca *CertAuthorityV2) SetSigningAlg(alg string) {
 
 // Check checks if all passed parameters are valid
 func (ca *CertAuthorityV2) Check() error {
+	var err error
+	switch ca.GetType() {
+	case UserCA, HostCA:
+		err = ca.checkUserOrHostCA()
+	case JWT:
+		err = ca.checkJWT()
+	default:
+		err = trace.BadParameter("invalid CA type %q", ca.GetType())
+	}
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (ca *CertAuthorityV2) checkUserOrHostCA() error {
 	err := ca.ID().Check()
 	if err != nil {
 		return trace.Wrap(err)
 	}
+
+	if len(ca.Spec.CheckingKeys) == 0 {
+		return trace.BadParameter("certificate authority missing SSH public keys")
+	}
+	if len(ca.Spec.TLSKeyPairs) == 0 {
+		return trace.BadParameter("certificate authority missing TLS key pairs")
+	}
+
 	_, err = ca.Checkers()
 	if err != nil {
 		return trace.Wrap(err)
@@ -628,6 +711,7 @@ func (ca *CertAuthorityV2) Check() error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
+
 	// This is to force users to migrate
 	if len(ca.Spec.Roles) != 0 && len(ca.Spec.RoleMap) != 0 {
 		return trace.BadParameter("should set either 'roles' or 'role_map', not both")
@@ -635,6 +719,42 @@ func (ca *CertAuthorityV2) Check() error {
 	if err := RoleMap(ca.Spec.RoleMap).Check(); err != nil {
 		return trace.Wrap(err)
 	}
+	return nil
+}
+
+func (ca *CertAuthorityV2) checkJWT() error {
+	err := ca.ID().Check()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Check that some JWT keys have been set on the CA.
+	if len(ca.Spec.JWTKeyPairs) == 0 {
+		return trace.BadParameter("missing JWT CA")
+	}
+
+	// Check that the JWT keys set are valid.
+	for _, pair := range ca.Spec.JWTKeyPairs {
+		// If a private key is set, check the private and public keys, otherwise
+		// only check the public key parts.
+		if len(pair.PrivateKey) > 0 {
+			_, err := jwt.New(&jwt.Config{
+				PublicKey:  pair.PublicKey,
+				PrivateKey: pair.PrivateKey,
+			})
+			if err != nil {
+				return trace.Wrap(err)
+			}
+		} else {
+			_, err := jwt.NewPublic(&jwt.Config{
+				PublicKey: pair.PublicKey,
+			})
+			if err != nil {
+				return trace.Wrap(err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -671,15 +791,22 @@ func ParseSigningAlg(alg string) CertAuthoritySpecV2_SigningAlgType {
 	}
 }
 
-// RemoveCASecrets removes secret values and keys
-// from the certificate authority
+// RemoveCASecrets removes private (SSH, TLS, and JWT) keys from certificate
+// authority.
 func RemoveCASecrets(ca CertAuthority) {
 	ca.SetSigningKeys(nil)
-	keyPairs := ca.GetTLSKeyPairs()
-	for i := range keyPairs {
-		keyPairs[i].Key = nil
+
+	tlsKeyPairs := ca.GetTLSKeyPairs()
+	for i := range tlsKeyPairs {
+		tlsKeyPairs[i].Key = nil
 	}
-	ca.SetTLSKeyPairs(keyPairs)
+	ca.SetTLSKeyPairs(tlsKeyPairs)
+
+	jwtKeyPairs := ca.GetJWTKeyPairs()
+	for i := range jwtKeyPairs {
+		jwtKeyPairs[i].PrivateKey = nil
+	}
+	ca.SetJWTKeyPairs(jwtKeyPairs)
 }
 
 const (
@@ -847,7 +974,7 @@ func (s *RotationSchedule) CheckAndSetDefaults(clock clockwork.Clock) error {
 const CertAuthoritySpecV2Schema = `{
   "type": "object",
   "additionalProperties": false,
-  "required": ["type", "cluster_name", "checking_keys"],
+  "required": ["type", "cluster_name"],
   "properties": {
     "type": {"type": "string"},
     "cluster_name": {"type": "string"},
@@ -877,6 +1004,17 @@ const CertAuthoritySpecV2Schema = `{
         "properties": {
            "cert": {"type": "string"},
            "key": {"type": "string"}
+        }
+      }
+    },
+    "jwt_key_pairs":  {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+           "public_key": {"type": "string"},
+           "private_key": {"type": "string"}
         }
       }
     },

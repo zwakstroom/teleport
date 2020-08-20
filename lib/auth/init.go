@@ -32,6 +32,7 @@ import (
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/services/local"
 	"github.com/gravitational/teleport/lib/sshca"
@@ -423,6 +424,41 @@ func Init(cfg InitConfig, opts ...AuthServerOption) (*AuthServer, error) {
 		}
 		hostCA.SetTLSKeyPairs([]services.TLSKeyPair{{Cert: certPEM, Key: keyPEM}})
 		if err := asrv.Trust.UpsertCertAuthority(hostCA); err != nil {
+			return nil, trace.Wrap(err)
+		}
+	}
+
+	// If a JWT "CA" does not exist for this cluster, create one.
+	jwtCA, err := asrv.GetCertAuthority(services.CertAuthID{
+		DomainName: cfg.ClusterName.GetClusterName(),
+		Type:       services.JWT,
+	}, true)
+	if trace.IsNotFound(err) || len(jwtCA.GetJWTKeyPairs()) == 0 {
+		log.Infof("Migrate: Adding JWT key to existing cluster %q.", cfg.ClusterName.GetClusterName())
+
+		publicKey, privateKey, err := jwt.GenerateKeypair()
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		jwtCA = &services.CertAuthorityV2{
+			Kind:    services.KindCertAuthority,
+			Version: services.V2,
+			Metadata: services.Metadata{
+				Name:      cfg.ClusterName.GetClusterName(),
+				Namespace: defaults.Namespace,
+			},
+			Spec: services.CertAuthoritySpecV2{
+				ClusterName: cfg.ClusterName.GetClusterName(),
+				Type:        services.JWT,
+				JWTKeyPairs: []services.JWTKeyPair{
+					services.JWTKeyPair{
+						PublicKey:  publicKey,
+						PrivateKey: privateKey,
+					},
+				},
+			},
+		}
+		if err := asrv.Trust.UpsertCertAuthority(jwtCA); err != nil {
 			return nil, trace.Wrap(err)
 		}
 	}

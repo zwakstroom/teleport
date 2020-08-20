@@ -72,6 +72,11 @@ const (
 	HostCA CertAuthType = "host"
 	// UserCA identifies the key as a user certificate authority
 	UserCA CertAuthType = "user"
+	// JWT identifies type of certificate authority as JWT. In this case JWT is
+	// not a real certificate authority because it does not issue certificates
+	// but rather an entity that can be used to issue JWT tokens, however it
+	// behaves much like a CA in terms of rotation and storage.
+	JWT CertAuthType = "jwt"
 )
 
 // CertAuthType specifies certificate authority type, user or host
@@ -79,7 +84,7 @@ type CertAuthType string
 
 // Check checks if certificate authority type value is correct
 func (c CertAuthType) Check() error {
-	if c != HostCA && c != UserCA {
+	if c != HostCA && c != UserCA && c != JWT {
 		return trace.BadParameter("'%v' authority type is not supported", c)
 	}
 	return nil

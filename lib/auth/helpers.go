@@ -210,6 +210,10 @@ func NewTestAuthServer(cfg TestAuthServerConfig) (*TestAuthServer, error) {
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	err = srv.AuthServer.UpsertCertAuthority(suite.NewTestCA(services.JWT, srv.ClusterName))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 	srv.Authorizer, err = NewAuthorizer(srv.AuthServer.Access, srv.AuthServer.Identity, srv.AuthServer.Trust)
 	if err != nil {
 		return nil, trace.Wrap(err)

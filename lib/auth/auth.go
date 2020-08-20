@@ -38,6 +38,7 @@ import (
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/limiter"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/services/local"
@@ -573,6 +574,38 @@ func (s *AuthServer) generateUserCert(req certRequest) (*certs, error) {
 		return nil, trace.Wrap(err)
 	}
 	return &certs{ssh: sshCert, tls: tlsCert}, nil
+}
+
+// GenerateJWT returns a signed JWT with the requested claims.
+func (s *AuthServer) GenerateJWT(ctx context.Context, req services.JWTParams) (string, error) {
+	// Get the CA with which this JWT will be signed.
+	clusterName, err := s.GetDomainName()
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+	ca, err := s.Trust.GetCertAuthority(services.CertAuthID{
+		Type:       services.JWT,
+		DomainName: clusterName,
+	}, true)
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	// Fetch the signing key and sign the claims.
+	privateKey, err := ca.JWTKey()
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+	jwt, err := privateKey.Sign(&jwt.SignParams{
+		Username: req.Username,
+		Roles:    req.Roles,
+		Expiry:   req.Expiry,
+	})
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	return jwt, nil
 }
 
 // WithUserLock executes function authenticateFn that performs user authentication

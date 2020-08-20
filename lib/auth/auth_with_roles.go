@@ -1981,6 +1981,20 @@ func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) err
 	return nil
 }
 
+// GenerateJWT returns a signed JWT with the requested claims.
+func (a *AuthWithRoles) GenerateJWT(ctx context.Context, namespace string, params services.JWTParams) (string, error) {
+	if err := a.action(namespace, services.KindJWT, services.VerbCreate); err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	jwt, err := a.authServer.GenerateJWT(ctx, params)
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	return jwt, nil
+}
+
 func (a *AuthWithRoles) Close() error {
 	return a.authServer.Close()
 }

@@ -31,6 +31,7 @@ import (
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/fixtures"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/tlsca"
 
@@ -71,6 +72,11 @@ func NewTestCA(caType services.CertAuthType, clusterName string, privateKeys ...
 		panic(err)
 	}
 
+	publicKey, privateKey, err := jwt.GenerateKeypair()
+	if err != nil {
+		panic(err)
+	}
+
 	return &services.CertAuthorityV2{
 		Kind:    services.KindCertAuthority,
 		SubKind: string(caType),
@@ -85,6 +91,12 @@ func NewTestCA(caType services.CertAuthType, clusterName string, privateKeys ...
 			CheckingKeys: [][]byte{ssh.MarshalAuthorizedKey(signer.PublicKey())},
 			SigningKeys:  [][]byte{keyBytes},
 			TLSKeyPairs:  []services.TLSKeyPair{{Cert: cert, Key: key}},
+			JWTKeyPairs: []services.JWTKeyPair{
+				services.JWTKeyPair{
+					PublicKey:  publicKey,
+					PrivateKey: privateKey,
+				},
+			},
 		},
 	}
 }
