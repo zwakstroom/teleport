@@ -28,6 +28,7 @@ spec:
     spec:
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       containers:
+      {{- if .Values.trustedCluster.enabled }}
       - name: {{ .Chart.Name }}-sidecar
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -47,6 +48,7 @@ spec:
           readOnly: true
         - mountPath: /var/lib/teleport
           name: {{ template "teleport.fullname" . }}-storage
+      {{- end }}
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}

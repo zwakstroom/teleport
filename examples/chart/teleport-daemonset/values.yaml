@@ -1,7 +1,7 @@
 image:
   repository: quay.io/gravitational/teleport-ent
   # This tag reflects the version of Teleport to deploy
-  tag: 4.2.9
+  tag: 4.3.5
   pullPolicy: IfNotPresent
   # Optionally specify an array of imagePullSecrets.
   # Secrets must be manually created in the namespace.
@@ -46,6 +46,12 @@ config:
 # INSTRUCTIONS
 # Set these values as appropriate for the root cluster you want to join this leaf cluster back to.
 trustedCluster:
+  # Set to true to join this cluster as a 'leaf' back to a 'root' cluster for management
+  # using the credentials below.
+  # Set to false to disable joining the leaf cluster back to a root.
+  # Note: you will then need to configure access to this cluster via LoadBalancer, Ingress
+  # or similar for it to be useful.
+  enabled: false
   extraVars:
     # The name of the role on the root cluster which should be granted admin permissions on this leaf cluster
     ROOT_CLUSTER_ADMIN_ROLE: "admin"

@@ -25,6 +25,7 @@ metadata:
   labels:
 {{ include "teleport.labels" . | indent 4 }}
 data:
+{{- if .Values.trustedCluster.enabled }}
   bootstrap.sh: |
     #!/bin/bash
     set -euo pipefail
@@ -54,6 +55,7 @@ data:
     done
     echo "[sidecar] Trusted cluster added. Tailing a never-ending file to keep the sidecar pod running..."
     tail -F /dev/null
+{{- end }}
   get-kubelet-labels.sh:
     #!/bin/bash
     ps -ef | grep bin/kubelet | tr ' ' '\n' | grep node-labels | cut -d= -f2- | tr ',' '|'
