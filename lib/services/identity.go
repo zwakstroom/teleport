@@ -228,6 +228,10 @@ type Identity interface {
 
 	// GetResetPasswordTokenSecrets returns token secrets
 	GetResetPasswordTokenSecrets(ctx context.Context, tokenID string) (ResetPasswordTokenSecrets, error)
+
+	GetNonce(context.Context, string) (Nonce, error)
+	CreateNonce(context.Context, string, string) (Nonce, error)
+	DeleteNonce(context.Context, string) error
 }
 
 // VerifyPassword makes sure password satisfies our requirements (relaxed),

@@ -184,6 +184,9 @@ const (
 	// KindState is local on disk process state
 	KindState = "state"
 
+	// KindNonce is a random number that can be exchanged for a web session.
+	KindNonce = "nonce"
+
 	// V3 is the third version of resources.
 	V3 = "v3"
 

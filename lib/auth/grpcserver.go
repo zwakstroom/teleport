@@ -583,6 +583,54 @@ func (g *GRPCServer) GenerateAppToken(ctx context.Context, req *proto.GenerateAp
 	}, nil
 }
 
+// ExchangeWebSession will exchange a valid web session for a nonce. The nonce
+// will be passed to the caller who can then exchange it for an
+// application session.
+//
+// This is to work around web security not allowing one origin to set
+// cookies for another origin.
+func (g *GRPCServer) ExchangeWebSession(ctx context.Context, req *proto.ExchangeWebSessionRequest) (*proto.ExchangeWebSessionResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	n, err := auth.ExchangeWebSession(ctx, req.Username, req.SessionID)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	nonce, ok := n.(*services.NonceV3)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", n))
+	}
+
+	return &proto.ExchangeWebSessionResponse{
+		Nonce: nonce,
+	}, nil
+}
+
+// ExchangeNonce exchanges a nonce created by "ExchangeWebSession" for an
+// app specific services.WebSession.
+func (g *GRPCServer) ExchangeNonce(ctx context.Context, req *proto.ExchangeNonceRequest) (*proto.ExchangeNonceResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	sess, err := auth.ExchangeNonce(ctx, req.Nonce)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	session, ok := sess.(*services.WebSessionV2)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", sess))
+	}
+
+	return &proto.ExchangeNonceResponse{
+		Session: session,
+	}, nil
+}
+
 type grpcContext struct {
 	*AuthContext
 	*AuthWithRoles

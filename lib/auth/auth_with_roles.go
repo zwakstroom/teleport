@@ -1971,6 +1971,40 @@ func (a *AuthWithRoles) GenerateAppToken(ctx context.Context, namespace string, 
 	return token, nil
 }
 
+// ExchangeWebSession will exchange a valid web session for a nonce. The nonce
+// will be passed to the caller who can then exchange it for an
+// application session.
+//
+// This is to work around web security not allowing one origin to set
+// cookies for another origin.
+func (a *AuthWithRoles) ExchangeWebSession(ctx context.Context, username string, sessionID string) (services.Nonce, error) {
+	if !a.hasBuiltinRole(string(teleport.RoleWeb)) {
+		return nil, trace.AccessDenied("this request can be only executed by a proxy")
+	}
+
+	nonce, err := a.authServer.ExchangeWebSession(ctx, username, sessionID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return nonce, nil
+}
+
+// ExchangeNonce exchanges a nonce created by "ExchangeWebSession" for an
+// app specific services.WebSession.
+func (a *AuthWithRoles) ExchangeNonce(ctx context.Context, nonceID string) (services.WebSession, error) {
+	if !a.hasBuiltinRole(string(teleport.RoleWeb)) {
+		return nil, trace.AccessDenied("this request can be only executed by a proxy")
+	}
+
+	session, err := a.authServer.ExchangeNonce(ctx, nonceID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return session, nil
+}
+
 func (a *AuthWithRoles) Close() error {
 	return a.authServer.Close()
 }
