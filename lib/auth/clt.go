@@ -2837,9 +2837,10 @@ func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSes
 	}
 
 	resp, err := clt.CreateAppSession(ctx, &proto.CreateAppSessionRequest{
+		AppName:     req.AppName,
+		ClusterName: req.ClusterName,
 		SessionID:   req.SessionID,
 		BearerToken: req.BearerToken,
-		AppName:     req.AppName,
 	})
 	if err != nil {
 		return nil, trail.FromGRPC(err)
@@ -2886,6 +2887,9 @@ type WebService interface {
 	// GetAppSession returns the requested application specific session to
 	// the caller.
 	GetAppSession(context.Context, services.GetAppSessionRequest) (services.WebSession, error)
+	// GenerateAppToken returns a signed token that contains claims about the
+	// caller signed and embedded inside.
+	GenerateAppToken(context.Context, services.AppTokenParams) (string, error)
 }
 
 // IdentityService manages identities and users
