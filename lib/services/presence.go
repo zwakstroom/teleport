@@ -165,9 +165,6 @@ type Presence interface {
 	// GetApps returns all applications.
 	GetApps(context.Context, string, ...MarshalOption) ([]Server, error)
 
-	// GetApp returns a specific application.
-	GetApp(context.Context, string, string, ...MarshalOption) (Server, error)
-
 	// UpsertApp registers an application with a TTL.
 	UpsertApp(context.Context, Server) (*KeepAlive, error)
 

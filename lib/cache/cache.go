@@ -681,15 +681,6 @@ func (c *Cache) GetAllTunnelConnections(opts ...services.MarshalOption) (conns [
 	return c.presenceCache.GetAllTunnelConnections(opts...)
 }
 
-// GetApp returns a specific application.
-func (c *Cache) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
-	app, err := c.presenceCache.GetApp(ctx, namespace, name, opts...)
-	if trace.IsNotFound(err) {
-		return c.Presence.GetApp(ctx, namespace, name, opts...)
-	}
-	return app, err
-}
-
 // GetApps returns all applications.
 func (c *Cache) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	return c.presenceCache.GetApps(ctx, namespace, opts...)

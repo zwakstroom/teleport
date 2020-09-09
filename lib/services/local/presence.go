@@ -661,35 +661,6 @@ func (s *PresenceService) DeleteAllRemoteClusters() error {
 	return trace.Wrap(err)
 }
 
-// GetApp returns a specific application.
-func (s *PresenceService) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
-	if namespace == "" {
-		return nil, trace.BadParameter("missing namespace")
-	}
-	if name == "" {
-		return nil, trace.BadParameter("missing application name")
-	}
-
-	// Fetch the item from the backend.
-	item, err := s.Get(ctx, backend.Key(appsPrefix, namespace, name))
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	// Marshal and services.Server that can be returned to the client.
-	app, err := services.GetServerMarshaler().UnmarshalServer(
-		item.Value,
-		services.KindApp,
-		services.AddOptions(opts,
-			services.WithResourceID(item.ID),
-			services.WithExpires(item.Expires))...)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	return app, nil
-}
-
 // GetApps returns the list of registered applications.
 func (s *PresenceService) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	if namespace == "" {

@@ -101,6 +101,15 @@ type CommandLineFlags struct {
 	// FIPS mode means Teleport starts in a FedRAMP/FIPS 140-2 compliant
 	// configuration.
 	FIPS bool
+
+	// AppName is the name of the application to proxy.
+	AppName string
+
+	// AppURI is the internal address of the application to proxy.
+	AppURI string
+
+	// AppPublicAddr is the public address of the application to proxy.
+	AppPublicAddr string
 }
 
 // readConfigFile reads /etc/teleport.yaml (or whatever is passed via --config flag)
@@ -927,6 +936,32 @@ func Configure(clf *CommandLineFlags, cfg *service.Config) error {
 		}
 	}
 
+	// If application name was specified on command line, add to configuration.
+	if clf.AppName != "" {
+		cfg.Apps.Enabled = true
+
+		// Parse the internal address of the application.
+		uriAddr, err := utils.ParseHostPortAddr(clf.AppURI, -1)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		// Parse the external address of the application.
+		publicAddr, err := utils.ParseHostPortAddr(clf.AppPublicAddr, -1)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		cfg.Apps.Apps = append(cfg.Apps.Apps, service.App{
+			Name:          clf.AppName,
+			Protocol:      teleport.ServerProtocolHTTPS,
+			InternalAddr:  *uriAddr,
+			PublicAddr:    *publicAddr,
+			StaticLabels:  make(map[string]string),
+			DynamicLabels: make(services.CommandLabels),
+		})
+	}
+
 	if err = ApplyFileConfig(fileConf, cfg); err != nil {
 		return trace.Wrap(err)
 	}
@@ -999,6 +1034,7 @@ func Configure(clf *CommandLineFlags, cfg *service.Config) error {
 		cfg.SSH.Enabled = strings.Contains(clf.Roles, defaults.RoleNode)
 		cfg.Auth.Enabled = strings.Contains(clf.Roles, defaults.RoleAuthService)
 		cfg.Proxy.Enabled = strings.Contains(clf.Roles, defaults.RoleProxy)
+		cfg.Apps.Enabled = strings.Contains(clf.Roles, defaults.RoleApp)
 	}
 
 	// apply --auth-server flag:
@@ -1187,7 +1223,8 @@ func validateRoles(roles string) error {
 		switch role {
 		case defaults.RoleAuthService,
 			defaults.RoleNode,
-			defaults.RoleProxy:
+			defaults.RoleProxy,
+			defaults.RoleApp:
 			break
 		default:
 			return trace.Errorf("unknown role: '%s'", role)

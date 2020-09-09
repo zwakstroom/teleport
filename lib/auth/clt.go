@@ -2690,30 +2690,6 @@ func (c *Client) Ping(ctx context.Context) (proto.PingResponse, error) {
 	return *rsp, nil
 }
 
-// GetApp fetches a single application.
-func (c *Client) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
-	clt, err := c.grpc()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	cfg, err := services.CollectOptions(opts)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	resp, err := clt.GetApp(ctx, &proto.GetAppRequest{
-		Namespace:      namespace,
-		Name:           name,
-		SkipValidation: cfg.SkipValidation,
-	})
-	if err != nil {
-		return nil, trail.FromGRPC(err)
-	}
-
-	return resp.GetApp(), nil
-}
-
 // GetApps returns all registered applications.
 func (c *Client) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	clt, err := c.grpc()

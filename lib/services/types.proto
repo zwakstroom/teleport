@@ -164,6 +164,8 @@ message ServerSpecV2 {
     bool UseTunnel = 6 [ (gogoproto.jsontag) = "use_tunnel,omitempty" ];
     // TeleportVersion is the teleport version that the server is running on
     string Version = 7 [ (gogoproto.jsontag) = "version" ];
+    // AppName is name of the application this server is proxying.
+    string AppName = 8 [ (gogoproto.jsontag) = "app_name,omitempty" ];
     // Protocol used to proxy this application. At the moment only HTTPS is
     // supported.
     enum ServerProtocolType {
@@ -171,9 +173,9 @@ message ServerSpecV2 {
         SSH = 1;
         HTTPS = 2;
     }
-    ServerProtocolType Protocol = 8 [ (gogoproto.jsontag) = "protocol" ];
+    ServerProtocolType Protocol = 9 [ (gogoproto.jsontag) = "protocol" ];
     // InternalAddr is the internal address of the application.
-    string InternalAddr = 9 [ (gogoproto.jsontag) = "internal_addr,omitempty" ];
+    string InternalAddr = 10 [ (gogoproto.jsontag) = "internal_addr,omitempty" ];
 }
 
 // CommandLabelV2 is a label that has a value as a result of the

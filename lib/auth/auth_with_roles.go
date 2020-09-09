@@ -1790,24 +1790,6 @@ func (a *AuthWithRoles) ProcessKubeCSR(req KubeCSR) (*KubeCSRResponse, error) {
 	return a.authServer.ProcessKubeCSR(req)
 }
 
-// GetApp fetches a single application. This endpoint can only be called by
-// machine roles as it does not filter access to an application based on
-// identity.
-func (a *AuthWithRoles) GetApp(ctx context.Context, namespace string, name string, opts ...services.MarshalOption) (services.Server, error) {
-	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
-		return nil, trace.Wrap(err)
-	}
-	if !a.hasMachineRole() {
-		return nil, trace.AccessDenied("identity does not have access to apps")
-	}
-
-	app, err := a.authServer.GetApp(ctx, namespace, name, opts...)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	return app, nil
-}
-
 // GetApps returns all registered applications. This endpoint can only be
 // called by machine roles as it does not filter access to an application
 // based on identity.

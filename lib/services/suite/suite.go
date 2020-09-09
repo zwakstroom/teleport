@@ -385,9 +385,6 @@ func (s *ServicesTestSuite) AppCRUD(c *check.C) {
 	c.Assert(err, check.IsNil)
 	c.Assert(len(out), check.Equals, 0)
 
-	_, err = s.PresenceS.GetApp(ctx, app.GetNamespace(), app.GetName())
-	fixtures.ExpectNotFound(c, err)
-
 	// Upsert application.
 	_, err = s.PresenceS.UpsertApp(ctx, app)
 	c.Assert(err, check.IsNil)
@@ -399,11 +396,6 @@ func (s *ServicesTestSuite) AppCRUD(c *check.C) {
 	app.SetResourceID(out[0].GetResourceID())
 	fixtures.DeepCompare(c, out, []services.Server{app})
 
-	sout, err := s.PresenceS.GetApp(ctx, app.GetNamespace(), app.GetName())
-	c.Assert(err, check.IsNil)
-	app.SetResourceID(sout.GetResourceID())
-	fixtures.DeepCompare(c, sout, app)
-
 	// Remove the application.
 	err = s.PresenceS.DeleteApp(ctx, app.Metadata.Namespace, app.GetName())
 	c.Assert(err, check.IsNil)
@@ -412,9 +404,6 @@ func (s *ServicesTestSuite) AppCRUD(c *check.C) {
 	out, err = s.PresenceS.GetApps(ctx, app.Metadata.Namespace)
 	c.Assert(err, check.IsNil)
 	c.Assert(out, check.HasLen, 0)
-
-	_, err = s.PresenceS.GetApp(ctx, app.GetNamespace(), app.GetName())
-	fixtures.ExpectNotFound(c, err)
 }
 
 func newReverseTunnel(clusterName string, dialAddrs []string) *services.ReverseTunnelV2 {

@@ -428,33 +428,6 @@ func (g *GRPCServer) DeleteUser(ctx context.Context, req *proto.DeleteUserReques
 	return &empty.Empty{}, nil
 }
 
-// GetApp fetches a single application.
-func (g *GRPCServer) GetApp(ctx context.Context, req *proto.GetAppRequest) (*proto.GetAppResponse, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	var opts []services.MarshalOption
-	if req.GetSkipValidation() {
-		opts = append(opts, services.SkipValidation())
-	}
-
-	application, err := auth.GetApp(ctx, req.GetNamespace(), req.GetName(), opts...)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	app, ok := application.(*services.ServerV2)
-	if !ok {
-		return nil, trail.ToGRPC(trace.BadParameter("unexpected app type %T", app))
-	}
-
-	return &proto.GetAppResponse{
-		App: app,
-	}, nil
-}
-
 // GetApps returns all registered applications.
 func (g *GRPCServer) GetApps(ctx context.Context, req *proto.GetAppsRequest) (*proto.GetAppsResponse, error) {
 	auth, err := g.authenticate(ctx)

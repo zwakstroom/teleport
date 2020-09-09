@@ -85,6 +85,11 @@ type Server interface {
 	// SetProtocol sets the protocol supported by this server.
 	SetProtocol(string) error
 
+	// GetAppName gets the name of the application being proxied.
+	GetAppName() string
+	// SetAppName sets the name of the application being proxied.
+	SetAppName(string)
+
 	// GetInternalAddr gets the internal address of the application.
 	GetInternalAddr() string
 	// SetInternalAddr sets the internal address of the application.
@@ -285,6 +290,16 @@ func (s *ServerV2) SetProtocol(protocol string) error {
 	return nil
 }
 
+// GetAppName gets the name of the application being proxied.
+func (s *ServerV2) GetAppName() string {
+	return s.Spec.AppName
+}
+
+// SetAppName sets the name of the application being proxied.
+func (s *ServerV2) SetAppName(appName string) {
+	s.Spec.AppName = appName
+}
+
 // GetInternalAddr gets the internal address of the application.
 func (s *ServerV2) GetInternalAddr() string {
 	return s.Spec.InternalAddr
@@ -411,8 +426,14 @@ func CompareServers(a, b Server) int {
 	if a.GetProtocol() != b.GetProtocol() {
 		return Different
 	}
-	if a.GetInternalAddr() != b.GetInternalAddr() {
-		return Different
+
+	if a.GetProtocol() == teleport.ServerProtocolHTTPS {
+		if a.GetAppName() != b.GetAppName() {
+			return Different
+		}
+		if a.GetInternalAddr() != b.GetInternalAddr() {
+			return Different
+		}
 	}
 
 	return Equal
@@ -446,6 +467,7 @@ const ServerSpecV2Schema = `{
     "protocol": {"type": "integer"},
     "public_addr": {"type": "string"},
     "internal_addr": {"type": "string"},
+    "app_name": {"type": "string"},
     "hostname": {"type": "string"},
     "use_tunnel": {"type": "boolean"},
     "labels": {
