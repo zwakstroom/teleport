@@ -569,10 +569,11 @@ func (g *GRPCServer) GenerateAppToken(ctx context.Context, req *proto.GenerateAp
 		return nil, trail.ToGRPC(err)
 	}
 
-	token, err := auth.GenerateAppToken(ctx, req.Namespace, services.AppTokenParams{
-		Username: req.GetUsername(),
-		Roles:    req.GetRoles(),
-		Expiry:   time.Duration(req.GetExpiry()),
+	token, err := auth.GenerateAppToken(ctx, services.AppTokenParams{
+		Namespace: req.Namespace,
+		Username:  req.GetUsername(),
+		Roles:     req.GetRoles(),
+		Expiry:    time.Duration(req.GetExpiry()),
 	})
 	if err != nil {
 		return nil, trail.ToGRPC(err)

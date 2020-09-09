@@ -2809,14 +2809,14 @@ func (c *Client) DeleteAllApps(ctx context.Context, namespace string) error {
 
 // GenerateAppToken returns a signed token that contains claims about the
 // caller signed and embedded inside.
-func (c *Client) GenerateAppToken(ctx context.Context, namespace string, params services.AppTokenParams) (string, error) {
+func (c *Client) GenerateAppToken(ctx context.Context, params services.AppTokenParams) (string, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return "", trace.Wrap(err)
 	}
 
 	resp, err := clt.GenerateAppToken(ctx, &proto.GenerateAppTokenRequest{
-		Namespace: namespace,
+		Namespace: params.Namespace,
 		Username:  params.Username,
 		Roles:     params.Roles,
 		Expiry:    proto.Duration(params.Expiry),
