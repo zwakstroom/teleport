@@ -960,7 +960,7 @@ func Configure(clf *CommandLineFlags, cfg *service.Config) error {
 
 		cfg.Apps.Apps = append(cfg.Apps.Apps, service.App{
 			Name:          clf.AppName,
-			Protocol:      teleport.ServerProtocolHTTPS,
+			Protocol:      services.ServerSpecV2_HTTPS,
 			InternalAddr:  *uriAddr,
 			PublicAddr:    *publicAddr,
 			StaticLabels:  make(map[string]string),

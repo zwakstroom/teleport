@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// labels package provides a way to get dynamic labels. Used by SSH, App,
+// Package labels provides a way to get dynamic labels. Used by SSH, App,
 // and Kubernetes servers.
 package labels
 
@@ -43,13 +43,17 @@ type DynamicConfig struct {
 // dynamic labels.
 func (c *DynamicConfig) CheckAndSetDefaults() error {
 	if c.Log == nil {
-		c.Log = logrus.WithFields(logrus.Fields{})
+		c.Log = logrus.NewEntry(logrus.StandardLogger())
 	}
 
 	// Loop over all labels and make sure the key name is valid and the interval
 	// is valid as well. If the interval is not valid, update the value.
 	labels := c.Labels.Clone()
 	for name, label := range labels {
+		if len(label.GetCommand()) == 0 {
+			return trace.BadParameter("command missing")
+
+		}
 		if !services.IsValidLabelKey(name) {
 			return trace.BadParameter("invalid label key: %q", name)
 		}
@@ -69,8 +73,8 @@ func (c *DynamicConfig) CheckAndSetDefaults() error {
 // of some command execution. Dynamic labels can be configured to update
 // periodically to provide updated information.
 type Dynamic struct {
-	mu     sync.Mutex
-	config *DynamicConfig
+	mu sync.Mutex
+	c  *DynamicConfig
 
 	closeContext context.Context
 	closeFunc    context.CancelFunc
@@ -86,7 +90,7 @@ func NewDynamic(ctx context.Context, config *DynamicConfig) (*Dynamic, error) {
 	closeContext, closeFunc := context.WithCancel(ctx)
 
 	return &Dynamic{
-		config:       config,
+		c:            config,
 		closeContext: closeContext,
 		closeFunc:    closeFunc,
 	}, nil
@@ -97,8 +101,8 @@ func (l *Dynamic) Get() map[string]services.CommandLabel {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	out := make(map[string]services.CommandLabel, len(l.config.Labels))
-	for name, label := range l.config.Labels {
+	out := make(map[string]services.CommandLabel, len(l.c.Labels))
+	for name, label := range l.c.Labels {
 		out[name] = label.Clone()
 	}
 
@@ -144,7 +148,7 @@ func (l *Dynamic) periodicUpdateLabel(name string, label services.CommandLabel) 
 func (l *Dynamic) updateLabel(name string, label services.CommandLabel) {
 	out, err := exec.Command(label.GetCommand()[0], label.GetCommand()[1:]...).Output()
 	if err != nil {
-		l.config.Log.Errorf(err.Error())
+		l.c.Log.Errorf("Failed run command and update label: %v.", err)
 		label.SetResult(err.Error() + " output: " + string(out))
 	} else {
 		label.SetResult(strings.TrimSpace(string(out)))
@@ -159,5 +163,5 @@ func (l *Dynamic) setLabel(name string, value services.CommandLabel) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.config.Labels[name] = value
+	l.c.Labels[name] = value
 }

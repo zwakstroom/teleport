@@ -46,7 +46,7 @@ func (c *AppsCommand) Initialize(app *kingpin.Application, config *service.Confi
 
 	apps := app.Command("apps", "Operate on applications registered with the cluster.")
 	c.appsList = apps.Command("ls", "List all applications registered with the cluster.")
-	c.appsList.Flag("format", "Output format, 'text', 'json', or 'yaml'").Hidden().Default("text").StringVar(&c.format)
+	c.appsList.Flag("format", "Output format, 'text', 'json', or 'yaml'").Default("text").StringVar(&c.format)
 }
 
 // TryRun attempts to run subcommands like "apps ls".
@@ -68,15 +68,19 @@ func (c *AppsCommand) ListApps(client auth.ClientI) error {
 		return trace.Wrap(err)
 	}
 	coll := &appCollection{apps: apps}
+
 	switch c.format {
 	case teleport.Text:
-		coll.writeText(os.Stdout)
+		err = coll.writeText(os.Stdout)
 	case teleport.JSON:
-		coll.writeJSON(os.Stdout)
+		err = coll.writeJSON(os.Stdout)
 	case teleport.YAML:
-		coll.writeYAML(os.Stdout)
+		err = coll.writeYAML(os.Stdout)
 	default:
 		return trace.BadParameter("unknown format %q", c.format)
+	}
+	if err != nil {
+		return trace.Wrap(err)
 	}
 	return nil
 }

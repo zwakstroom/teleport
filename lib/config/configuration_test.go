@@ -915,7 +915,6 @@ app_service:
 		cfg := service.MakeDefaultConfig()
 
 		err := Configure(&clf, cfg)
-		fmt.Printf("--> err: %v.\n", err)
 		c.Assert(err != nil, check.Equals, tt.outError, tt.inComment)
 	}
 }

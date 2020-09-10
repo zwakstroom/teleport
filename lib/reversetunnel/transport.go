@@ -242,9 +242,9 @@ func (p *transport) start() {
 		servers = append(servers, p.kubeDialAddr.Addr)
 	// LocalNode requests are for the single server running in the agent pool.
 	case LocalNode:
-		// Transport is allocated within both teleport.ComponentReverseTunnelAgent
-		// and teleport.ComponentReverseTunnelAgent. However, dialing to this address
-		// only makes sense when running within a teleport.ComponentReverseTunnelServer.
+		// Transport is allocated with both teleport.ComponentReverseTunnelAgent
+		// and teleport.ComponentReverseTunneServer. However, dialing to this address
+		// only makes sense when running within a teleport.ComponentReverseTunnelAgent.
 		if p.component == teleport.ComponentReverseTunnelServer {
 			p.reply(req, false, []byte("connection rejected: no local node"))
 			return
@@ -269,14 +269,14 @@ func (p *transport) start() {
 	// LocalApp requests are for the single application (HTTP) server running
 	// in the agent pool.
 	case LocalApp:
-		// Transport is allocated within both teleport.ComponentReverseTunnelAgent
-		// and teleport.ComponentReverseTunnelAgent. However, dialing to this address
-		// only makes sense when running within a teleport.ComponentReverseTunnelServer.
+		// Transport is allocated with both teleport.ComponentReverseTunnelAgent
+		// and teleport.ComponentReverseTunneServer. However, dialing to this address
+		// only makes sense when running within a teleport.ComponentReverseTunnelAgent.
 		if p.component == teleport.ComponentReverseTunnelServer {
 			p.reply(req, false, []byte("connection rejected: no local node"))
 			return
 		}
-		if p.server == nil {
+		if p.appServer == nil {
 			p.reply(req, false, []byte("connection rejected: server missing"))
 			return
 		}
@@ -291,7 +291,8 @@ func (p *transport) start() {
 		}
 
 		// Hand connection off to the application server.
-		p.appServer.HandleConnection(utils.NewChConn(p.sconn, p.channel))
+		go p.appServer.HandleConnection(utils.NewChConn(p.sconn, p.channel))
+		return
 	default:
 		servers = append(servers, dreq.Address)
 	}

@@ -110,7 +110,8 @@ func (s *Suite) SetUpTest(c *check.C) {
 	dynamicLabels := map[string]services.CommandLabel{
 		"qux": &services.CommandLabelV2{
 			Period:  services.NewDuration(time.Second),
-			Command: []string{"expr", "1", "+", "3"}},
+			Command: []string{"expr", "1", "+", "3"},
+		},
 	}
 	s.app = &services.ServerV2{
 		Kind:    services.KindApp,
@@ -137,9 +138,7 @@ func (s *Suite) SetUpTest(c *check.C) {
 	})
 	c.Assert(err, check.IsNil)
 
-	err = s.appServer.Start()
-	c.Assert(err, check.IsNil)
-
+	s.appServer.Start()
 	err = s.appServer.heartbeat.ForceSend(time.Second)
 	c.Assert(err, check.IsNil)
 }
@@ -155,8 +154,10 @@ func (s *Suite) TearDownTest(c *check.C) {
 // has been created.
 func (s *Suite) TestStart(c *check.C) {
 	// Fetch the services.App that the service heartbeat.
-	app, err := s.authServer.AuthServer.GetApp(context.Background(), defaults.Namespace, "foo")
+	apps, err := s.authServer.AuthServer.GetApps(context.Background(), defaults.Namespace)
 	c.Assert(err, check.IsNil)
+	c.Assert(apps, check.HasLen, 1)
+	app := apps[0]
 
 	// Check that the services.App that was heartbeat is correct. For example,
 	// check that the dynamic labels have been evaluated.
@@ -207,10 +208,7 @@ func (s *Suite) TestHandleConnection(c *check.C) {
 	defer clientConn.Close()
 
 	// Process the connection.
-	s.appServer.HandleConnection(serverConn)
-
-	// Before performing any requests, active connection count should be 0.
-	c.Assert(s.appServer.activeConnections(), check.Equals, int64(0))
+	go s.appServer.HandleConnection(serverConn)
 
 	// Perform a simple HTTP GET against the application server.
 	httpTransport := &http.Transport{

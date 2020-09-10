@@ -2431,7 +2431,7 @@ func (process *TeleportProcess) initApps() {
 			select {
 			case appName := <-startCh:
 				n -= 1
-				log.Infof("Application %v started.", appName)
+				log.Infof("Application %q started.", appName)
 
 				// Once all events have been received, broadcast that the apps
 				// proxy is ready.
@@ -2464,9 +2464,7 @@ func (process *TeleportProcess) initApp(application services.Server, authClient 
 
 		// Start the apps server. This starts the server, heartbeat (services.App),
 		// and (dynamic) label update.
-		if err := server.Start(); err != nil {
-			return trace.Wrap(err)
-		}
+		server.Start()
 
 		// Notify parent that this app has started.
 		startCh <- application.GetName()

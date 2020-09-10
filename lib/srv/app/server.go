@@ -173,21 +173,13 @@ func (s *Server) GetServerInfo() (services.Server, error) {
 
 // Start starts heart beating the presence of service.Apps that this
 // server is proxying along with any dynamic labels.
-func (s *Server) Start() error {
+func (s *Server) Start() {
 	go s.dynamicLabels.Start()
 	go s.heartbeat.Run()
-
-	return nil
 }
 
 // Serve accepts incoming connections on the Listener and calls the handler.
-// Since this code is called from the reverse tunnel agent, the listener will
-// be a single connection app.Listener.
-func (s *Server) HandleConnection(conn net.Conn) {
-	go s.handleConnection(conn)
-}
-
-func (s *Server) handleConnection(channelConn net.Conn) {
+func (s *Server) HandleConnection(channelConn net.Conn) {
 	// Establish connection to target server.
 	d := net.Dialer{
 		KeepAlive: s.keepAlive,
@@ -195,11 +187,11 @@ func (s *Server) handleConnection(channelConn net.Conn) {
 	targetConn, err := d.DialContext(s.closeContext, "tcp", s.config.App.GetInternalAddr())
 	if err != nil {
 		s.log.Errorf("Failed to connect to %v: %v.", s.config.App.GetName(), err)
-		return
+		channelConn.Close()
 	}
 
 	// Keep a count of the number of active connections. Used in tests to check
-	// for go routine leaks.
+	// for goroutine leaks.
 	atomic.AddInt64(&s.activeConns, 1)
 	defer atomic.AddInt64(&s.activeConns, -1)
 

@@ -34,6 +34,8 @@ type LabelSuite struct {
 
 var _ = check.Suite(&LabelSuite{})
 
+func TestLabels(t *testing.T) { check.TestingT(t) }
+
 func (s *LabelSuite) SetUpSuite(c *check.C) {
 	utils.InitLoggerForTests(testing.Verbose())
 }
@@ -56,9 +58,7 @@ func (s *LabelSuite) TestSync(c *check.C) {
 	l.Sync()
 
 	// Check that the result contains the output of the command.
-	val, ok := l.Get()["foo"]
-	c.Assert(ok, check.Equals, true)
-	c.Assert(val.GetResult(), check.Equals, "4")
+	c.Assert(l.Get()["foo"].GetResult(), check.Equals, "4")
 }
 
 func (s *LabelSuite) TestStart(c *check.C) {
@@ -74,14 +74,7 @@ func (s *LabelSuite) TestStart(c *check.C) {
 	c.Assert(err, check.IsNil)
 	l.Start()
 
-	// When checked right away, result should be empty. Loop to update dynamic
-	// labels has not run yet.
-	val, ok := l.Get()["foo"]
-	c.Assert(ok, check.Equals, true)
-	c.Assert(val.GetResult(), check.Equals, "")
-
-	// Wait a maximum of 2 seconds for dynamic labels to be updated (should be
-	// updated at 1 second).
+	// Wait a maximum of 5 seconds for dynamic labels to be updated.
 	select {
 	case <-time.Tick(50 * time.Millisecond):
 		val, ok := l.Get()["foo"]
