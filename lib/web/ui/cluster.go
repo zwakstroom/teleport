@@ -50,16 +50,7 @@ type Cluster struct {
 func NewClusters(remoteClusters []reversetunnel.RemoteSite) ([]Cluster, error) {
 	clusters := []Cluster{}
 	for _, site := range remoteClusters {
-		// Other fields such as node count, url, and proxy/auth versions are not set
-		// because each cluster will need to make network calls to retrieve information
-		// which does not scale well (ie: 1k clusters, each request will take seconds).
-		cluster := &Cluster{
-			Name:          site.GetName(),
-			LastConnected: site.GetLastConnected(),
-			Status:        site.GetStatus(),
-		}
-
-		clusters = append(clusters, *cluster)
+		clusters = append(clusters, getBasicClusterDetails(site))
 	}
 
 	sort.Slice(clusters, func(i, j int) bool {
@@ -69,14 +60,25 @@ func NewClusters(remoteClusters []reversetunnel.RemoteSite) ([]Cluster, error) {
 	return clusters, nil
 }
 
+// getBasicClusterDetails gets only those cluster details which are immediately
+// available without accessing the cache (prefer this over GetClusterDetails
+// when performance is important).
+func getBasicClusterDetails(site reversetunnel.RemoteSite) Cluster {
+	return Cluster{
+		Name:          site.GetName(),
+		LastConnected: site.GetLastConnected(),
+		Status:        site.GetStatus(),
+	}
+}
+
 // GetClusterDetails retrieves and sets details about a cluster
-func GetClusterDetails(site reversetunnel.RemoteSite) (*Cluster, error) {
+func GetClusterDetails(site reversetunnel.RemoteSite, opts ...services.MarshalOption) (*Cluster, error) {
 	clt, err := site.CachingAccessPoint()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	nodes, err := clt.GetNodes(defaults.Namespace)
+	nodes, err := clt.GetNodes(defaults.Namespace, opts...)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
