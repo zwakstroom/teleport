@@ -18,7 +18,6 @@ package auth
 
 import (
 	"context"
-	"crypto/subtle"
 
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/services"
@@ -26,18 +25,19 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func (s *AuthServer) createAppSession(ctx context.Context, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {
+func (s *AuthServer) createAppSession(ctx context.Context, checker services.AccessChecker, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {
 	if err := req.Check(); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	// Check that a matching web session exists in the backend.
-	parentSession, err := s.GetWebSession(identity.Username, req.SessionID)
+	// Fetch the application and check if caller has access.
+	app, server, err := s.getApp(ctx, req.PublicAddr)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	if subtle.ConstantTimeCompare([]byte(parentSession.GetBearerToken()), []byte(req.BearerToken)) == 0 {
-		return nil, trace.BadParameter("invalid session")
+	err = checker.CheckAccessToApp(server.GetNamespace(), app)
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 
 	// Create a new session for the application.
@@ -49,11 +49,8 @@ func (s *AuthServer) createAppSession(ctx context.Context, identity tlsca.Identi
 	session.SetPublicAddr(req.PublicAddr)
 	session.SetParentHash(services.SessionHash(parentSession.GetName()))
 	session.SetClusterName(req.ClusterName)
-
-	// TODO(russjones): The proxy should use it's access to the AccessPoint of
-	// the remote host to provide the maximum length of the session here.
-	// However, enforcement of that session length should occur in lib/srv/app.
-	session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
+	session.SetExpiryTime(s.clock.Now().Add(checker.AdjustSessionTTL(defaults.MaxCertDuration)))
+	//session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
 
 	// Create session in backend.
 	err = s.Identity.UpsertAppSession(ctx, session)

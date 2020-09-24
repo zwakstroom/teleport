@@ -1963,12 +1963,11 @@ func (a *AuthWithRoles) GenerateAppToken(ctx context.Context, params services.Ap
 // CreateAppSession takes an existing web session and uses it to create a
 // new application session.
 func (a *AuthWithRoles) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.WebSession, error) {
-	// TODO(russjones): Include the username in services.CreateAppSessionRequest and validate it correctly here.
-	if err := a.currentUserAction(a.identity.Username); err != nil {
-		return nil, trace.Wrap(err)
+	if err := a.action(params.Namespace, services.KindWebSession, services.VerbCreate); err != nil {
+		return "", trace.Wrap(err)
 	}
 
-	session, err := a.authServer.createAppSession(ctx, a.identity, req)
+	session, err := a.authServer.createAppSession(ctx, a.identity, a.checker, req)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
