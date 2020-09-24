@@ -54,14 +54,6 @@ type DialParams struct {
 	// that are connected over a reverse tunnel.
 	ServerID string
 
-	// PublicAddr is the public address of the application to connect to after
-	// connecting to "ServerID". Only used when connecting to applications.
-	PublicAddr string
-
-	// Certificate is a PEM encoded x509 certificate that contains the identity
-	// of the caller. Only used when connecting to applications.
-	Certificate []byte
-
 	// ConnType is the type of connection requested, either node or application.
 	// Only used when connecting through a tunnel.
 	ConnType services.TunnelType
@@ -70,7 +62,7 @@ type DialParams struct {
 func (params DialParams) String() string {
 	switch params.ConnType {
 	case services.AppTunnel:
-		return fmt.Sprintf("DialParams(ConnType=%v,ServerID=%v,PublicAddr=%v)", params.ConnType, params.ServerID, params.PublicAddr)
+		return fmt.Sprintf("DialParams(ConnType=%v,ServerID=%v)", params.ConnType, params.ServerID)
 	default:
 		to := params.To.String()
 		if to == "" {

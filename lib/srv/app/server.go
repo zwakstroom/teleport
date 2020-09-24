@@ -22,15 +22,17 @@ package app
 import (
 	"context"
 	"crypto/x509"
-	"io"
 	"net"
+	"net/http"
 	"net/url"
 	"sync/atomic"
 	"time"
 
+	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/labels"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/srv"
@@ -88,11 +90,13 @@ type Server struct {
 	closeContext context.Context
 	closeFunc    context.CancelFunc
 
+	httpServer *http.Server
+
 	heartbeat     *srv.Heartbeat
 	dynamicLabels map[string]*labels.Dynamic
-	clusterName   string
 
-	keepAlive time.Duration
+	clusterName string
+	keepAlive   time.Duration
 
 	activeConns int64
 }
@@ -112,6 +116,12 @@ func New(ctx context.Context, c *Config) (*Server, error) {
 	}
 
 	s.closeContext, s.closeFunc = context.WithCancel(ctx)
+
+	// Create HTTP server that will be forwarding requests to target application.
+	s.httpServer = &http.Server{
+		Handler:           s,
+		ReadHeaderTimeout: defaults.DefaultDialTimeout,
+	}
 
 	// Create dynamic labels for all applications that are being proxied and
 	// sync them right away so the first heartbeat has correct dynamic labels.
@@ -203,9 +213,54 @@ func (s *Server) Start() {
 	go s.heartbeat.Run()
 }
 
+// HandleConnection takes a connection and wraps it in a listener so it can
+// be passed to http.Serve to process as a HTTP request.
+func (s *Server) HandleConnection(conn net.Conn) error {
+	if err := s.httpServer.Serve(newListener(s.closeContext, conn)); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Check if the caller has access to the application requested.
+	application, err := s.checkAccess(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	// Extract the address to redirect the request to.
+	r.URL, err = url.Parse(application.URI)
+	if err != nil {
+		s.log.Errorf("Failed to forward request: %v.", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	// Create a HTTP request forwarder that will be used to forward the actual
+	// request over the reverse tunnel to the target application.
+	fwdHandler := &forwardHandler{}
+	fwd, err := forward.New(forward.RoundTripper(fwdHandler))
+	if err != nil {
+		s.log.Errorf("Failed to forward request: %v.", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	fwd.ServeHTTP(w, r)
+}
+
 // CheckAccess parses the identity of the caller to check if the caller has
 // access to the requested application.
-func (s *Server) CheckAccess(ctx context.Context, certBytes []byte, publicAddr string) (*services.App, error) {
+func (s *Server) CheckAccess(ctx context.Context, r *http.Request) (*services.App, error) {
+	// Parse and extract public address of the target application as well as the
+	// x509 certificate from the request.
+	publicAddr, certBytes, err := s.parseJWT(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	// Verify and extract the identity of the caller.
 	identity, ca, err := s.verifyCertificate(certBytes)
 	if err != nil {
@@ -235,66 +290,134 @@ func (s *Server) CheckAccess(ctx context.Context, certBytes []byte, publicAddr s
 	return app, nil
 }
 
-// ForwardConnection accepts incoming connections on the Listener and calls the handler.
-func (s *Server) ForwardConnection(channelConn net.Conn, uri string) {
-	// Extract the host:port for the target server.
-	u, err := url.Parse(uri)
+func (s *Server) parseJWT(r *http.Request) (string, []byte, error) {
+	clusterName := r.Header.Get("x-teleport-cluster")
+	if clusterName == "" {
+		return "", nil, trace.BadParameter("cluster name header missing")
+	}
+	assertion := r.Header.Get("x-teleport-jwt-assertion")
+	if assertion == "" {
+		return "", nil, trace.BadParameter("assertion header missing")
+	}
+
+	ca, err := s.c.AccessPoint.GetCertAuthority(&services.CertAuthID{
+		Type:       services.JWTSigner,
+		DomainName: clusterName,
+	})
 	if err != nil {
-		s.log.Errorf("Failed to parse %v: %v.", uri, err)
-		channelConn.Close()
-		return
-	}
-	hostport := u.Host
-	if u.Port() == "" && u.Scheme == "https" {
-		hostport = net.JoinHostPort(u.Host, "443")
+		return "", nil, trace.BadParameter("")
 	}
 
-	// Establish connection to target server.
-	s.log.Debugf("Attempting to dial %v.", hostport)
-	d := net.Dialer{
-		KeepAlive: s.keepAlive,
-	}
-	targetConn, err := d.DialContext(s.closeContext, "tcp", hostport)
-	if err != nil {
-		s.log.Errorf("Failed to connect to %v: %v.", hostport, err)
-		channelConn.Close()
-		return
-	}
-	s.log.Debugf("Established connection to %v, proxying traffic.", hostport)
-
-	// Keep a count of the number of active connections. Used in tests to check
-	// for goroutine leaks.
-	atomic.AddInt64(&s.activeConns, 1)
-	defer atomic.AddInt64(&s.activeConns, -1)
-
-	errorCh := make(chan error, 2)
-
-	// Copy data between channel connection and connection to target application.
-	go func() {
-		defer targetConn.Close()
-		defer channelConn.Close()
-
-		_, err := io.Copy(targetConn, channelConn)
-		errorCh <- err
-	}()
-	go func() {
-		defer targetConn.Close()
-		defer channelConn.Close()
-
-		_, err := io.Copy(channelConn, targetConn)
-		errorCh <- err
-	}()
-
-	// Block until connection is closed.
-	for i := 0; i < 2; i++ {
-		select {
-		case err := <-errorCh:
-			if err != nil && err != io.EOF {
-				s.log.Debugf("Proxy transport failed: %v.", err)
-			}
+	for _, keyPair := range ca.GetJWTKeyPairs() {
+		publicKey, err := utils.ParsePublicKey(keyPair.PublicKey)
+		if err != nil {
+			return nil, trace.Wrap(err)
 		}
+		key, err := jwt.New(&jwt.Config{
+			Algorithm:   defaults.ApplicationTokenAlgorithm,
+			ClusterName: clusterName,
+			PublicKey:   publicKey,
+		})
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		// key.Verify
 	}
+
 }
+
+//// CheckAccess parses the identity of the caller to check if the caller has
+//// access to the requested application.
+//func (s *Server) CheckAccess(ctx context.Context, certBytes []byte, publicAddr string) (*services.App, error) {
+//	// Verify and extract the identity of the caller.
+//	identity, ca, err := s.verifyCertificate(certBytes)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	// Find the application the caller is requesting by public address.
+//	app, server, err := s.getApp(ctx, publicAddr)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	// Build the access checker either directly or by mapping roles depending on
+//	// if this code is running within the same cluster that issued the identity
+//	// or if it's running in a leaf cluster.
+//	checker, err := s.buildChecker(identity, ca)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	// Check if the caller has access to the application being requested.
+//	err = checker.CheckAccessToApp(server.GetNamespace(), app)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	return app, nil
+//}
+//
+//// ForwardConnection accepts incoming connections on the Listener and calls the handler.
+//func (s *Server) ForwardConnection(channelConn net.Conn, uri string) {
+//	// Extract the host:port for the target server.
+//	u, err := url.Parse(uri)
+//	if err != nil {
+//		s.log.Errorf("Failed to parse %v: %v.", uri, err)
+//		channelConn.Close()
+//		return
+//	}
+//	hostport := u.Host
+//	if u.Port() == "" && u.Scheme == "https" {
+//		hostport = net.JoinHostPort(u.Host, "443")
+//	}
+//
+//	// Establish connection to target server.
+//	s.log.Debugf("Attempting to dial %v.", hostport)
+//	d := net.Dialer{
+//		KeepAlive: s.keepAlive,
+//	}
+//	targetConn, err := d.DialContext(s.closeContext, "tcp", hostport)
+//	if err != nil {
+//		s.log.Errorf("Failed to connect to %v: %v.", hostport, err)
+//		channelConn.Close()
+//		return
+//	}
+//	s.log.Debugf("Established connection to %v, proxying traffic.", hostport)
+//
+//	// Keep a count of the number of active connections. Used in tests to check
+//	// for goroutine leaks.
+//	atomic.AddInt64(&s.activeConns, 1)
+//	defer atomic.AddInt64(&s.activeConns, -1)
+//
+//	errorCh := make(chan error, 2)
+//
+//	// Copy data between channel connection and connection to target application.
+//	go func() {
+//		defer targetConn.Close()
+//		defer channelConn.Close()
+//
+//		_, err := io.Copy(targetConn, channelConn)
+//		errorCh <- err
+//	}()
+//	go func() {
+//		defer targetConn.Close()
+//		defer channelConn.Close()
+//
+//		_, err := io.Copy(channelConn, targetConn)
+//		errorCh <- err
+//	}()
+//
+//	// Block until connection is closed.
+//	for i := 0; i < 2; i++ {
+//		select {
+//		case err := <-errorCh:
+//			if err != nil && err != io.EOF {
+//				s.log.Debugf("Proxy transport failed: %v.", err)
+//			}
+//		}
+//	}
+//}
 
 // ForceHeartbeat is used in tests to force updating of services.Server.
 func (s *Server) ForceHeartbeat() error {
@@ -307,6 +430,11 @@ func (s *Server) ForceHeartbeat() error {
 
 // Close will shut the server down and unblock any resources.
 func (s *Server) Close() error {
+	// TODO(russjones): Pass in a context here.
+	if err := s.httpServer.Shutdown(context.Background()); err != nil {
+		return trace.Wrap(err)
+	}
+
 	err := s.heartbeat.Close()
 	for _, dynamicLabel := range s.dynamicLabels {
 		dynamicLabel.Close()
@@ -426,4 +554,17 @@ func (s *Server) buildChecker(identity *tlsca.Identity, ca services.CertAuthorit
 // Used in tests.
 func (s *Server) activeConnections() int64 {
 	return atomic.LoadInt64(&s.activeConns)
+}
+
+type forwardHandler struct {
+}
+
+func (f *forwardHandler) RoundTrip(r *http.Request) (*http.Response, error) {
+	resp, err := http.DefaultTransport.RoundTrip(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	logrus.Debugf("Proxied application request: %v %v.\n", resp.StatusCode, r.URL.Path)
+	return resp, nil
 }

@@ -99,11 +99,14 @@ type SignParams struct {
 	// Roles are the roles assigned to the user within Teleport.
 	Roles []string
 
+	// Certificate is the x509 identity of the user.
+	Certificate []byte
+
 	// Expiry is time to live for the token.
 	Expires time.Time
 
-	// AppName is the target of this signed request.
-	AppName string
+	// PublicAddr is the public address of the target application.
+	PublicAddr string
 }
 
 // Check verifies all the values are valid.
@@ -113,6 +116,12 @@ func (p *SignParams) Check() error {
 	}
 	if len(p.Roles) == 0 {
 		return trace.BadParameter("missing roles")
+	}
+	if len(p.Certificate) == 0 {
+		return trace.BadParameter("certificate missing")
+	}
+	if p.PublicAddr == "" {
+		return trace.BadParameter("public address missing")
 	}
 	if p.Expires.IsZero() {
 		return trace.BadParameter("expires required")
@@ -145,12 +154,13 @@ func (k *Key) Sign(p SignParams) (string, error) {
 		Claims: josejwt.Claims{
 			Subject:   p.Username,
 			Issuer:    k.config.ClusterName,
-			Audience:  josejwt.Audience{p.AppName},
+			Audience:  josejwt.Audience{p.PublicAddr},
 			NotBefore: josejwt.NewNumericDate(k.config.Clock.Now().Add(-10 * time.Second)),
 			Expiry:    josejwt.NewNumericDate(p.Expires),
 		},
-		Username: p.Username,
-		Roles:    p.Roles,
+		Username:    p.Username,
+		Roles:       p.Roles,
+		Certificate: p.Certificate,
 	}
 	token, err := josejwt.Signed(sig).Claims(claims).CompactSerialize()
 	if err != nil {
@@ -167,8 +177,7 @@ type VerifyParams struct {
 	// RawToken is the JWT token.
 	RawToken string
 
-	// AppName is the target of this signed request.
-	AppName string
+	PublicAddr string
 }
 
 // Check verifies all the values are valid.
@@ -179,8 +188,8 @@ func (p *VerifyParams) Check() error {
 	if p.RawToken == "" {
 		return trace.BadParameter("raw token missing")
 	}
-	if p.AppName == "" {
-		return trace.BadParameter("app name missing")
+	if p.PublicAddr == "" {
+		return trace.BadParameter("public addr missing")
 	}
 
 	return nil
@@ -211,7 +220,7 @@ func (k *Key) Verify(p VerifyParams) (*Claims, error) {
 	expectedClaims := josejwt.Expected{
 		Issuer:   k.config.ClusterName,
 		Subject:  p.Username,
-		Audience: jwt.Audience{p.AppName},
+		Audience: jwt.Audience{p.PublicAddr},
 		Time:     k.config.Clock.Now(),
 	}
 	if err = out.Validate(expectedClaims); err != nil {
@@ -231,6 +240,9 @@ type Claims struct {
 
 	// Roles returns the list of roles assigned to the user within Teleport.
 	Roles []string `json:"roles"`
+
+	// Certificate is the x509 identity of the user.
+	Certificate []byte `json:"certificate"`
 }
 
 // GenerateKeyPair  generate and return a PEM encoded private and public

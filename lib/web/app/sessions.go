@@ -18,6 +18,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"math/rand"
 	"net"
 	"net/http"
@@ -66,6 +67,7 @@ type sessionCacheConfig struct {
 	Clock       clockwork.Clock
 	AuthClient  auth.ClientI
 	ProxyClient reversetunnel.Server
+	ClusterName string
 }
 
 func (c *sessionCacheConfig) CheckAndSetDefaults() error {
@@ -79,6 +81,10 @@ func (c *sessionCacheConfig) CheckAndSetDefaults() error {
 	if c.ProxyClient == nil {
 		return trace.BadParameter("proxy client missing")
 	}
+	if c.ClusterName == "" {
+		return trace.BadParameter("cluster name missing")
+	}
+
 	return nil
 }
 
@@ -189,6 +195,58 @@ func (s *sessionCache) GetApp(ctx context.Context, publicAddr string, clusterNam
 	return appMatch[index], serverMatch[index], nil
 }
 
+func (s *sessionCache) tmp() (*session, error) {
+	// Parse the URI, will be added to each forwarded request.
+	u, err := url.Parse("http://localhost:8080")
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	routingValue, err := json.Marshal(&RoutingRequest{
+		PublicAddr:  "dumper.example.com",
+		Certificate: []byte{},
+	})
+
+	// Get a connection through the reverse tunnel to the target application.
+	clusterClient, err := s.c.ProxyClient.GetSite("example.com")
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	conn, err := clusterClient.Dial(reversetunnel.DialParams{
+		ServerID: "45d2752c-f82c-4476-ace0-5f6c85db8044.example.com",
+		ConnType: services.AppTunnel,
+	})
+	if err != nil {
+		return nil, trace.BadParameter("application not available")
+	}
+
+	// Create a HTTP request forwarder that will be used to forward the actual
+	// request over the reverse tunnel to the target application.
+	fwdHandler := &forwardHandler{
+		conn:         conn,
+		routingValue: string(routingValue),
+	}
+	fwd, err := forward.New(
+		forward.RoundTripper(fwdHandler),
+		forward.Rewriter(fwdHandler),
+		forward.ErrorHandler(fwdHandler),
+		forward.Logger(s.log))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &session{
+		cache:    s,
+		cacheKey: "123",
+		url:      u,
+		//identity: identity,
+		conn: conn,
+		fwd:  fwd,
+		jwt:  "",
+	}, nil
+
+}
+
 func (s *sessionCache) newSession(ctx context.Context, cookieValue string, sess services.WebSession) (*session, error) {
 	// Get the application this session is targeting.
 	app, server, err := s.GetApp(ctx, sess.GetPublicAddr(), sess.GetClusterName())
@@ -219,14 +277,19 @@ func (s *sessionCache) newSession(ctx context.Context, cookieValue string, sess 
 	// Generate a signed token that can be re-used during the lifetime of this
 	// session to pass authentication information to the target application.
 	jwt, err := s.c.AuthClient.GenerateAppToken(ctx, services.AppTokenParams{
-		Username: sess.GetUser(),
-		Roles:    roles,
-		AppName:  app.Name,
-		Expires:  sess.GetExpiryTime(),
+		Username:   sess.GetUser(),
+		Roles:      roles,
+		PublicAddr: app.PublicAddr,
+		Expires:    sess.GetExpiryTime(),
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+
+	routingValue, err := json.Marshal(&RoutingRequest{
+		PublicAddr:  sess.GetPublicAddr(),
+		Certificate: sess.GetTLSCert(),
+	})
 
 	// Get a connection through the reverse tunnel to the target application.
 	clusterClient, err := s.c.ProxyClient.GetSite(sess.GetClusterName())
@@ -234,10 +297,8 @@ func (s *sessionCache) newSession(ctx context.Context, cookieValue string, sess 
 		return nil, trace.Wrap(err)
 	}
 	conn, err := clusterClient.Dial(reversetunnel.DialParams{
-		ServerID:    strings.Join([]string{server.GetName(), sess.GetClusterName()}, "."),
-		PublicAddr:  sess.GetPublicAddr(),
-		Certificate: sess.GetTLSCert(),
-		ConnType:    services.AppTunnel,
+		ServerID: strings.Join([]string{server.GetName(), sess.GetClusterName()}, "."),
+		ConnType: services.AppTunnel,
 	})
 	if err != nil {
 		s.log.Warnf("Failed to establish connection to %q through reverse tunnel: %v.", sess.GetPublicAddr(), err)
@@ -247,10 +308,12 @@ func (s *sessionCache) newSession(ctx context.Context, cookieValue string, sess 
 	// Create a HTTP request forwarder that will be used to forward the actual
 	// request over the reverse tunnel to the target application.
 	fwdHandler := &forwardHandler{
-		conn:     conn,
-		jwt:      jwt,
-		cache:    s,
-		cacheKey: cookieValue,
+		conn:         conn,
+		jwt:          jwt,
+		cache:        s,
+		cacheKey:     cookieValue,
+		routingValue: string(routingValue),
+		clusterName:  s.c.ClusterName,
 	}
 	fwd, err := forward.New(
 		forward.RoundTripper(fwdHandler),
@@ -321,18 +384,6 @@ func (s *session) errorHandler(w http.ResponseWriter, r *http.Request, err error
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-//func parseAddress(addr string) (string, error) {
-//	u, err := url.Parse(addr)
-//	if err != nil {
-//		u, err = url.Parse("http://" + addr)
-//		if err != nil {
-//			return "", trace.Wrap(err)
-//		}
-//		return u.String(), nil
-//	}
-//	return u.String(), nil
-//}
-
 func closeSession(key string, val interface{}) {
 	if sess, ok := val.(*session); ok {
 		if err := sess.conn.Close(); err != nil {
@@ -342,10 +393,12 @@ func closeSession(key string, val interface{}) {
 }
 
 type forwardHandler struct {
-	conn     net.Conn
-	jwt      string
-	cacheKey string
-	cache    *sessionCache
+	conn         net.Conn
+	jwt          string
+	routingValue string
+	cacheKey     string
+	cache        *sessionCache
+	clusterName  string
 }
 
 func (f *forwardHandler) RoundTrip(r *http.Request) (*http.Response, error) {
@@ -372,6 +425,9 @@ func (f *forwardHandler) Rewrite(r *http.Request) {
 	// Add in JWT headers.
 	r.Header.Add("x-teleport-jwt-assertion", f.jwt)
 	r.Header.Add("Cf-access-token", f.jwt)
+
+	// Add in a header that specifies the cluster that originated the request.
+	r.Header.Add("x-teleport-cluster", f.clusterName)
 
 	// Remove the application specific session cookie from the header. This is
 	// done by first wiping out the "Cookie" header then adding back all cookies

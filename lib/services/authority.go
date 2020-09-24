@@ -151,8 +151,9 @@ type AppTokenParams struct {
 	// Roles is the list of roles assigned to the user.
 	Roles []string
 
-	// AppName is the name of the target application.
-	AppName string
+	PublicAddr string
+
+	Certificate []byte
 
 	// Expires is the expiration time for the JWT.
 	Expires time.Time
@@ -169,9 +170,13 @@ func (p AppTokenParams) Check() error {
 	if p.Expires.IsZero() {
 		return trace.BadParameter("expires is required")
 	}
-	if p.AppName == "" {
-		return trace.BadParameter("app name is required")
+	if p.PublicAddr == "" {
+		return trace.BadParameter("public addr is required")
 	}
+	if len(p.Certificate) == 0 {
+		return trace.BadParameter("certificate is missing")
+	}
+
 	return nil
 }
 

@@ -598,10 +598,11 @@ func (s *AuthServer) GenerateAppToken(ctx context.Context, req services.AppToken
 		return "", trace.Wrap(err)
 	}
 	token, err := privateKey.Sign(jwt.SignParams{
-		Username: req.Username,
-		Roles:    req.Roles,
-		AppName:  req.AppName,
-		Expires:  req.Expires,
+		Username:    req.Username,
+		Roles:       req.Roles,
+		PublicAddr:  req.PublicAddr,
+		Certificate: req.Certificate,
+		Expires:     req.Expires,
 	})
 	if err != nil {
 		return "", trace.Wrap(err)

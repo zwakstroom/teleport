@@ -35,10 +35,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type RoutingRequest struct {
+	PublicAddr  string `json:"public_addr"`
+	Certificate []byte `json:"certificate"`
+}
+
 type HandlerConfig struct {
 	Clock       clockwork.Clock
 	AuthClient  auth.ClientI
 	ProxyClient reversetunnel.Server
+	ClusterName string
 }
 
 func (c *HandlerConfig) CheckAndSetDefaults() error {
@@ -51,6 +57,9 @@ func (c *HandlerConfig) CheckAndSetDefaults() error {
 	}
 	if c.ProxyClient == nil {
 		return trace.BadParameter("proxy client missing")
+	}
+	if c.ClusterName == "" {
+		return trace.BadParameter("cluster name is missing")
 	}
 
 	return nil
@@ -72,6 +81,7 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 		Clock:       config.Clock,
 		AuthClient:  config.AuthClient,
 		ProxyClient: config.ProxyClient,
+		ClusterName: config.ClusterName,
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -90,32 +100,38 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 // Used by "ServeHTTP" within the "web" package to make a decision if the
 // request should be processed by the UI or forwarded to an application.
 func (h *Handler) ForwardToApp(r *http.Request) bool {
-	// The only unauthenticated endpoint supported is the special
-	// "x-teleport-auth" endpoint. If the request is coming to this special
-	// endpoint, it should be processed by application handlers.
-	if r.URL.Path == "/x-teleport-auth" {
+	fmt.Printf("--> inbound request for: %v.\n", r.Host)
+	if r.Host == "dumper.example.com:3080" {
 		return true
 	}
+	return false
 
-	// Check if an application specific cookie exists. If it exists, forward the
-	// request to an application handler otherwise allow the UI to handle it.
-	_, err := r.Cookie(cookieName)
-	if err != nil {
-		return false
-	}
-	return true
+	//// The only unauthenticated endpoint supported is the special
+	//// "x-teleport-auth" endpoint. If the request is coming to this special
+	//// endpoint, it should be processed by application handlers.
+	//if r.URL.Path == "/x-teleport-auth" {
+	//	return true
+	//}
+
+	//// Check if an application specific cookie exists. If it exists, forward the
+	//// request to an application handler otherwise allow the UI to handle it.
+	//_, err := r.Cookie(cookieName)
+	//if err != nil {
+	//	return false
+	//}
+	//return true
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// If the target is an application but it hits the special "x-teleport-auth"
-	// endpoint, then perform redirect authentication logic.
-	if r.URL.Path == "/x-teleport-auth" {
-		if err := h.handleFragment(w, r); err != nil {
-			h.log.Warnf("Fragment authentication failed: %v.", err)
-			http.Error(w, "internal service error", 500)
-			return
-		}
-	}
+	//// If the target is an application but it hits the special "x-teleport-auth"
+	//// endpoint, then perform redirect authentication logic.
+	//if r.URL.Path == "/x-teleport-auth" {
+	//	if err := h.handleFragment(w, r); err != nil {
+	//		h.log.Warnf("Fragment authentication failed: %v.", err)
+	//		http.Error(w, "internal service error", 500)
+	//		return
+	//	}
+	//}
 
 	// Authenticate request by looking for an existing session. If a session
 	// does not exist, redirect the caller to the login screen.
@@ -167,14 +183,15 @@ func (h *Handler) handleFragment(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *Handler) authenticate(r *http.Request) (*session, error) {
-	// Extract the session cookie from the *http.Request.
-	cookieValue, err := extractCookie(r)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
+	//// Extract the session cookie from the *http.Request.
+	//cookieValue, err := extractCookie(r)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
 
-	// Check the cache for an authenticated session.
-	session, err := h.sessions.get(r.Context(), cookieValue)
+	//// Check the cache for an authenticated session.
+	//session, err := h.sessions.get(r.Context(), cookieValue)
+	session, err := h.sessions.tmp()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -186,6 +203,8 @@ func (h *Handler) authenticate(r *http.Request) (*session, error) {
 // the target. If an error occurs, the error handler attached to the session
 // is called.
 func (h *Handler) forward(w http.ResponseWriter, r *http.Request, s *session) {
+	// TODO(russjones): Can this value be anything? Because we use a customer
+	// dialer here and this will be re-written by the application proxy node.
 	r.URL = s.url
 	s.fwd.ServeHTTP(w, r)
 }

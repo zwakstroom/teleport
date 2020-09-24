@@ -2792,11 +2792,12 @@ func (c *Client) GenerateAppToken(ctx context.Context, params services.AppTokenP
 	}
 
 	resp, err := clt.GenerateAppToken(ctx, &proto.GenerateAppTokenRequest{
-		Namespace: params.Namespace,
-		Username:  params.Username,
-		AppName:   params.AppName,
-		Roles:     params.Roles,
-		Expires:   params.Expires,
+		Namespace:   params.Namespace,
+		Username:    params.Username,
+		Roles:       params.Roles,
+		PublicAddr:  params.PublicAddr,
+		Certificate: params.Certificate,
+		Expires:     params.Expires,
 	})
 	if err != nil {
 		return "", trail.FromGRPC(err)

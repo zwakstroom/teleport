@@ -247,9 +247,11 @@ message GenerateAppTokenRequest {
     // is being issued.
     repeated string Roles = 3 [ (gogoproto.jsontag) = "roles" ];
     // AppName is the application this token is being sent to.
-    string AppName = 4 [ (gogoproto.jsontag) = "app_name" ];
+    string PublicAddr = 4 [ (gogoproto.jsontag) = "public_addr" ];
+    // Certificate is the x509 identity of the user.
+    bytes Certificate = 5 [ (gogoproto.jsontag) = "certificate" ];
     // Expiry is the expiration time for the JWT.
-    google.protobuf.Timestamp Expires = 5 [
+    google.protobuf.Timestamp Expires = 6 [
         (gogoproto.stdtime) = true,
         (gogoproto.nullable) = false,
         (gogoproto.jsontag) = "expires"

@@ -84,34 +84,19 @@ type dialReq struct {
 	// channel upon calling close on the net.Conn.
 	Exclusive bool `json:"exclusive"`
 
-	// PublicAddr is the public address of the application to connect to after
-	// connecting to "ServerID". Only used when connecting to applications.
-	PublicAddr string `json:"target_addr,omitempty"`
-
-	// Certificate is a PEM encoded x509 certificate that contains the identity
-	// of the caller. Only used when connecting to applications.
-	Certificate []byte `json:"certificate,omitempty"`
-
 	// ConnType is the type of connection requested, either node or application.
 	ConnType services.TunnelType `json:"conn_type"`
 }
 
+// TODO(russjones): Revert this function to whatever it was before.
 func (r *dialReq) CheckAndSetDefaults() error {
-	if r.ConnType == "" {
-		r.ConnType = services.NodeTunnel
-	}
+	//if r.ConnType == "" {
+	//	r.ConnType = services.NodeTunnel
+	//}
 
-	if r.Address == "" {
-		return trace.BadParameter("address is missing")
-	}
-	if r.ConnType == services.AppTunnel {
-		if r.PublicAddr == "" {
-			return trace.BadParameter("public address is missing")
-		}
-		if r.Certificate == nil {
-			return trace.BadParameter("certificate is missing")
-		}
-	}
+	//if r.Address == "" {
+	//	return trace.BadParameter("address is missing")
+	//}
 
 	return nil
 }
@@ -323,21 +308,13 @@ func (p *transport) start() {
 			return
 		}
 
-		// Check if the caller has access to the requested application.
-		application, err := p.appServer.CheckAccess(p.closeContext, dreq.Certificate, dreq.PublicAddr)
-		if err != nil {
-			p.log.Errorf("Denied access to %v: %v.", dreq.PublicAddr, err)
-			p.reply(req, false, []byte("connection rejected: access denied"))
-			return
-		}
-
 		// Caller has access to the application, reply that a connection has been
 		// established and hand off the connection the application proxy.
 		if err := req.Reply(true, []byte("Connected.")); err != nil {
 			p.log.Errorf("Failed responding OK to %q request: %v", req.Type, err)
 			return
 		}
-		p.appServer.ForwardConnection(utils.NewChConn(p.sconn, p.channel), application.URI)
+		p.appServer.HandleConnection(utils.NewChConn(p.sconn, p.channel))
 		return
 	default:
 		servers = append(servers, dreq.Address)
@@ -468,10 +445,10 @@ func (p *transport) tunnelDial(r *dialReq) (net.Conn, error) {
 	//	return nil, trace.Wrap(err)
 	//}
 	conn, err := localCluster.dialTunnel(DialParams{
-		ServerID:    r.ServerID,
-		PublicAddr:  r.PublicAddr,
-		Certificate: r.Certificate,
-		ConnType:    r.ConnType,
+		ServerID: r.ServerID,
+		//PublicAddr:  r.PublicAddr,
+		//Certificate: r.Certificate,
+		ConnType: r.ConnType,
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)

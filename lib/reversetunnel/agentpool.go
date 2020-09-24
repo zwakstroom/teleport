@@ -40,16 +40,13 @@ import (
 type SSHConnHandler interface {
 	// HandleConnection accepts incoming connections and either forwards them
 	// or processes them based off the protocol implemented.
-	HandleConnection(conn net.Conn)
+	HandleConnection(net.Conn)
 }
 
 // AppHandler is an application server that can check access and forward
 // connection requests to the target application.
 type AppHandler interface {
-	// CheckAccess checks if the caller has access to requested application.
-	CheckAccess(context.Context, []byte, string) (*services.App, error)
-	// ForwardConnection forwards the passed in connection to target application.
-	ForwardConnection(net.Conn, string)
+	HandleConnection(net.Conn) error
 }
 
 // AgentPool manages the pool of outbound reverse tunnel agents.
