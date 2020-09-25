@@ -25,7 +25,7 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func (s *AuthServer) createAppSession(ctx context.Context, checker services.AccessChecker, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {
+func (s *AuthServer) createAppSession(ctx context.Context, user services.User, checker services.AccessChecker, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {
 	if err := req.Check(); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -41,13 +41,14 @@ func (s *AuthServer) createAppSession(ctx context.Context, checker services.Acce
 	}
 
 	// Create a new session for the application.
-	session, err := s.NewWebSession(identity.Username, identity.Groups, identity.Traits)
+	//session, err := s.NewWebSession(identity.Username, identity.Groups, identity.Traits)
+	session, err := s.NewAppSession(user, checker, identity.Traits)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 	session.SetType(services.WebSessionSpecV2_App)
 	session.SetPublicAddr(req.PublicAddr)
-	session.SetParentHash(services.SessionHash(parentSession.GetName()))
+	session.SetParentHash(services.SessionHash(req.SessionID))
 	session.SetClusterName(req.ClusterName)
 	session.SetExpiryTime(s.clock.Now().Add(checker.AdjustSessionTTL(defaults.MaxCertDuration)))
 	//session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
@@ -59,4 +60,23 @@ func (s *AuthServer) createAppSession(ctx context.Context, checker services.Acce
 	}
 
 	return session, nil
+}
+
+// getApp returns an application matching the public address. If multiple
+// matching applications exist, the first one is returned.
+func (s *AuthServer) getApp(ctx context.Context, publicAddr string) (*services.App, services.Server, error) {
+	servers, err := s.GetApps(ctx, defaults.Namespace)
+	if err != nil {
+		return nil, nil, trace.Wrap(err)
+	}
+
+	for _, server := range servers {
+		for _, a := range server.GetApps() {
+			if publicAddr == a.PublicAddr {
+				return a, server, nil
+			}
+		}
+	}
+
+	return nil, nil, trace.NotFound("no application at %v found", publicAddr)
 }

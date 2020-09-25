@@ -60,7 +60,9 @@ func (a *AuthWithRoles) action(namespace string, resource string, action string)
 // even if they are not admins, e.g. update their own passwords,
 // or generate certificates, otherwise it will require admin privileges
 func (a *AuthWithRoles) currentUserAction(username string) error {
-	if a.hasLocalUserRole(a.checker) && username == a.user.GetName() {
+	// TODO(russjones): Fix this check for the username correctly. So remote role + role name format OR local user an orig format.
+	if (a.hasRemoteUserRole(a.checker) || a.hasLocalUserRole(a.checker)) &&
+		username == a.user.GetName() {
 		return nil
 	}
 	return a.checker.CheckAccessToRule(&services.Context{User: a.user},
@@ -109,6 +111,13 @@ func (a *AuthWithRoles) hasRemoteBuiltinRole(name string) bool {
 		return false
 	}
 
+	return true
+}
+
+func (a *AuthWithRoles) hasRemoteUserRole(checker services.AccessChecker) bool {
+	if _, ok := checker.(RemoteUserRoleSet); !ok {
+		return false
+	}
 	return true
 }
 
@@ -1960,14 +1969,18 @@ func (a *AuthWithRoles) GenerateAppToken(ctx context.Context, params services.Ap
 	return token, nil
 }
 
+// TODO(russjones): Get namespace from request.
 // CreateAppSession takes an existing web session and uses it to create a
 // new application session.
 func (a *AuthWithRoles) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.WebSession, error) {
-	if err := a.action(params.Namespace, services.KindWebSession, services.VerbCreate); err != nil {
-		return "", trace.Wrap(err)
+	//if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbCreate); err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	if err := a.currentUserAction(req.Username); err != nil {
+		return nil, trace.Wrap(err)
 	}
 
-	session, err := a.authServer.createAppSession(ctx, a.identity, a.checker, req)
+	session, err := a.authServer.createAppSession(ctx, a.user, a.checker, a.identity, req)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -1986,6 +1999,16 @@ func (a *AuthWithRoles) GetAppSession(ctx context.Context, req services.GetAppSe
 		return nil, trace.Wrap(err)
 	}
 	return session, nil
+}
+
+func (a *AuthWithRoles) DeleteAllAppSessions(ctx context.Context) error {
+	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.authServer.Identity.DeleteAllAppSessions(ctx); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
 }
 
 func (a *AuthWithRoles) Close() error {

@@ -264,14 +264,16 @@ message GenerateAppTokenResponse { string Token = 1 [ (gogoproto.jsontag) = "tok
 // CreateAppSessionRequest contains the parameters needed to create an
 // application session from an existing web session.
 message CreateAppSessionRequest {
+    // Username
+    string Username = 1 [ (gogoproto.jsontag) = "username" ];
     // PublicAddr is the address of the application requested.
-    string PublicAddr = 1 [ (gogoproto.jsontag) = "public_addr" ];
+    string PublicAddr = 2 [ (gogoproto.jsontag) = "public_addr" ];
     // ClusterName is the cluster within which the application is running.
-    string ClusterName = 2 [ (gogoproto.jsontag) = "cluster_name" ];
+    string ClusterName = 3 [ (gogoproto.jsontag) = "cluster_name" ];
     // SessionID is the session cookie.
-    string SessionID = 3 [ (gogoproto.jsontag) = "session_id" ];
+    string SessionID = 4 [ (gogoproto.jsontag) = "session_id" ];
     // BearerToken is the bearer token for the session.
-    string BearerToken = 4 [ (gogoproto.jsontag) = "bearer_token" ];
+    string BearerToken = 5 [ (gogoproto.jsontag) = "bearer_token" ];
 }
 
 // CreateAppSessionResponse returns the application session.
@@ -292,6 +294,11 @@ message GetAppSessionRequest {
 message GetAppSessionResponse {
     // Session is the new application session that was created.
     services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
+}
+
+message GetAppSessionsResponse {
+    // Sessions is a list of all applications sessions.
+    repeated services.WebSessionV2 Sessions = 1 [ (gogoproto.jsontag) = "sessions" ];
 }
 
 // AuthService is authentication/authorization service implementation
@@ -356,10 +363,12 @@ service AuthService {
     // caller signed and embedded inside.
     rpc GenerateAppToken(GenerateAppTokenRequest) returns (GenerateAppTokenResponse);
 
-    // CreateAppSession takes an existing web session and uses it to create a
-    // new application session.
+    // CreateAppSession creates an application session.
     rpc CreateAppSession(CreateAppSessionRequest) returns (CreateAppSessionResponse);
-    // GetAppSession returns the requested application specific session to
-    // the caller.
+    // GetAppSession returns a specific application session.
     rpc GetAppSession(GetAppSessionRequest) returns (GetAppSessionResponse);
+    // GetAppSessions returns all application specific sessions.
+    rpc GetAppSessions(google.protobuf.Empty) returns (GetAppSessionsResponse);
+    // DeleteAllAppSessions removes all application specific sessions.
+    rpc DeleteAllAppSessions(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

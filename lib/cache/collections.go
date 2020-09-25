@@ -1127,3 +1127,66 @@ func (a *app) processEvent(ctx context.Context, event services.Event) error {
 func (a *app) watchKind() services.WatchKind {
 	return a.watch
 }
+
+type appSession struct {
+	*Cache
+	watch services.WatchKind
+}
+
+// erase erases all data in the collection
+func (a *app) erase() error {
+	if err := a.IdentityCache.DeleteAllApps(context.TODO(), defaults.Namespace); err != nil {
+		if !trace.IsNotFound(err) {
+			return trace.Wrap(err)
+		}
+	}
+	return nil
+}
+
+func (a *app) fetch(ctx context.Context) error {
+	resources, err := a.Presence.GetApps(ctx, defaults.Namespace)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.erase(); err != nil {
+		return trace.Wrap(err)
+	}
+	for _, resource := range resources {
+		a.setTTL(resource)
+		if _, err := a.presenceCache.UpsertApp(ctx, resource); err != nil {
+			return trace.Wrap(err)
+		}
+	}
+	return nil
+}
+
+func (a *app) processEvent(ctx context.Context, event services.Event) error {
+	switch event.Type {
+	case backend.OpDelete:
+		err := a.presenceCache.DeleteApp(ctx, event.Resource.GetMetadata().Namespace, event.Resource.GetName())
+		if err != nil {
+			// Resource could be missing in the cache expired or not created, if the
+			// first consumed event is delete.
+			if !trace.IsNotFound(err) {
+				a.Warningf("Failed to delete resource %v.", err)
+				return trace.Wrap(err)
+			}
+		}
+	case backend.OpPut:
+		resource, ok := event.Resource.(services.Server)
+		if !ok {
+			return trace.BadParameter("unexpected type %T", event.Resource)
+		}
+		a.setTTL(resource)
+		if _, err := a.presenceCache.UpsertApp(ctx, resource); err != nil {
+			return trace.Wrap(err)
+		}
+	default:
+		a.Warningf("Skipping unsupported event type %v.", event.Type)
+	}
+	return nil
+}
+
+func (a *app) watchKind() services.WatchKind {
+	return a.watch
+}

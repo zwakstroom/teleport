@@ -140,6 +140,7 @@ type Cache struct {
 	accessCache        services.Access
 	dynamicAccessCache services.DynamicAccessExt
 	presenceCache      services.Presence
+	identityCache      services.Identity
 	eventsFanout       *services.Fanout
 
 	// closedFlag is set to indicate that the services are closed
@@ -684,4 +685,9 @@ func (c *Cache) GetAllTunnelConnections(opts ...services.MarshalOption) (conns [
 // GetApps returns all applications.
 func (c *Cache) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	return c.presenceCache.GetApps(ctx, namespace, opts...)
+}
+
+// GetAppSession returns an application specific web session.
+func (c *Cache) GetAppSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
+	return c.identityCache.GetAppSession(ctx, req)
 }

@@ -189,9 +189,44 @@ func (h *Handler) authenticate(r *http.Request) (*session, error) {
 	//	return nil, trace.Wrap(err)
 	//}
 
+	cookie, err := parseCookie(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	proxyClient, err := h.c.ProxyClient.GetSite(cookie.ClusterName)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	authClient, err := proxyClient.CachingAccessPoint()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	session, err := authClient.GetAppSession()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	app, server, err := s.GetApp(session.GetAppName())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	pool, err := h.getPool(server.GetName())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	conn, err := pool.Get()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	//// Check the cache for an authenticated session.
 	//session, err := h.sessions.get(r.Context(), cookieValue)
-	session, err := h.sessions.tmp()
+	//session, err := h.sessions.tmp()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

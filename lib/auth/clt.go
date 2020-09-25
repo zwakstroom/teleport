@@ -2815,6 +2815,7 @@ func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSes
 	}
 
 	resp, err := clt.CreateAppSession(ctx, &proto.CreateAppSessionRequest{
+		Username:    req.Username,
 		PublicAddr:  req.PublicAddr,
 		ClusterName: req.ClusterName,
 		SessionID:   req.SessionID,
@@ -2844,6 +2845,20 @@ func (c *Client) GetAppSession(ctx context.Context, req services.GetAppSessionRe
 	}
 
 	return resp.GetSession(), nil
+}
+
+func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	_, err := clt.DeleteAllAppSessions(ctx, &empty.Empty{})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return nil
 }
 
 // WebService implements features used by Web UI clients

@@ -525,29 +525,31 @@ func (*TeleportWebSessionMarshaler) MarshalWebSession(ws WebSession, opts ...Mar
 }
 
 type CreateAppSessionRequest struct {
+	Namespace string `json:"namespace"`
 	// PublicAddr is the address of the application requested.
 	PublicAddr string `json:"app"`
 	// ClusterName is the cluster within which the application is running.
 	ClusterName string `json:"cluster_name"`
 	// SessionID is the ID of the parent session.
-	SessionID string
+	SessionID string `json:"session_id"`
 	// BearerToken is the bearer token of the parent session.
 	BearerToken string
+	Username    string `json:"username"`
 }
 
 func (r CreateAppSessionRequest) Check() error {
 	if r.PublicAddr == "" {
 		return trace.BadParameter("public address is missing")
 	}
-	if r.ClusterName == "" {
-		return trace.BadParameter("cluster name is missing")
-	}
+	//if r.ClusterName == "" {
+	//	return trace.BadParameter("cluster name is missing")
+	//}
 	if r.SessionID == "" {
 		return trace.BadParameter("session ID is missing")
 	}
-	if r.BearerToken == "" {
-		return trace.BadParameter("bearer token is missing")
-	}
+	//if r.BearerToken == "" {
+	//	return trace.BadParameter("bearer token is missing")
+	//}
 
 	return nil
 }

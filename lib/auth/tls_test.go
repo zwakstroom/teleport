@@ -42,13 +42,13 @@ import (
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/fixtures"
-	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/services/suite"
 	"github.com/gravitational/teleport/lib/session"
 	"github.com/gravitational/teleport/lib/tlsca"
 	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/trace/trail"
+	"github.com/pborman/uuid"
 
 	"github.com/gravitational/trace"
 	"github.com/jonboulle/clockwork"
@@ -690,147 +690,147 @@ func (s *TLSSuite) TestRollback(c *check.C) {
 	c.Assert(err, check.IsNil)
 }
 
-// TestAppTokenRotation checks that JWT tokens can be rotated and tokens can or
-// can not be validated at the appropriate phase.
-func (s *TLSSuite) TestAppTokenRotation(c *check.C) {
-	clock := clockwork.NewFakeClockAt(time.Now())
-	s.server.Auth().SetClock(clock)
-
-	client, err := s.server.NewClient(TestBuiltin(teleport.RoleWeb))
-	c.Assert(err, check.IsNil)
-
-	// Create a JWT using the current CA, this will become the "old" CA during
-	// rotation.
-	oldJWT, err := client.GenerateAppToken(context.Background(),
-		services.AppTokenParams{
-			Namespace: defaults.Namespace,
-			Username:  "foo",
-			Roles:     []string{"bar", "baz"},
-			AppName:   "panel",
-			Expires:   clock.Now().Add(1 * time.Minute),
-		})
-	c.Assert(err, check.IsNil)
-
-	// Check that the "old" CA can be used to verify tokens.
-	oldCA, err := s.server.Auth().GetCertAuthority(services.CertAuthID{
-		DomainName: s.server.ClusterName(),
-		Type:       services.JWTSigner,
-	}, true)
-	c.Assert(err, check.IsNil)
-	c.Assert(oldCA.GetJWTKeyPairs(), check.HasLen, 1)
-
-	// Verify that the JWT token validates with the JWT authority.
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), oldCA.GetJWTKeyPairs(), oldJWT)
-	c.Assert(err, check.IsNil)
-
-	// Start rotation and move to initial phase. A new CA will be added (for
-	// verification), but requests will continue to be signed by the old CA.
-	gracePeriod := time.Hour
-	err = s.server.Auth().RotateCertAuthority(RotateRequest{
-		Type:        services.JWTSigner,
-		GracePeriod: &gracePeriod,
-		TargetPhase: services.RotationPhaseInit,
-		Mode:        services.RotationModeManual,
-	})
-	c.Assert(err, check.IsNil)
-
-	// At this point in rotation, two JWT keys pairs should exist.
-	oldCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
-		DomainName: s.server.ClusterName(),
-		Type:       services.JWTSigner,
-	}, true)
-	c.Assert(err, check.IsNil)
-	c.Assert(oldCA.GetRotation().Phase, check.Equals, services.RotationPhaseInit)
-	c.Assert(oldCA.GetJWTKeyPairs(), check.HasLen, 2)
-
-	// Verify that the JWT token validates with the JWT authority.
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), oldCA.GetJWTKeyPairs(), oldJWT)
-	c.Assert(err, check.IsNil)
-
-	// Move rotation into the update client phase. In this phase, requests will
-	// be signed by the new CA, but the old CA will be around to verify requests.
-	err = s.server.Auth().RotateCertAuthority(RotateRequest{
-		Type:        services.JWTSigner,
-		GracePeriod: &gracePeriod,
-		TargetPhase: services.RotationPhaseUpdateClients,
-		Mode:        services.RotationModeManual,
-	})
-	c.Assert(err, check.IsNil)
-
-	// New tokens should now fail the validate with the old key.
-	newJWT, err := client.GenerateAppToken(context.Background(),
-		services.AppTokenParams{
-			Namespace: defaults.Namespace,
-			Username:  "foo",
-			Roles:     []string{"bar", "baz"},
-			AppName:   "panel",
-			Expires:   clock.Now().Add(1 * time.Minute),
-		})
-	c.Assert(err, check.IsNil)
-
-	// New tokens will validate with the new key.
-	newCA, err := s.server.Auth().GetCertAuthority(services.CertAuthID{
-		DomainName: s.server.ClusterName(),
-		Type:       services.JWTSigner,
-	}, true)
-	c.Assert(err, check.IsNil)
-	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 2)
-	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseUpdateClients)
-
-	// Both JWT should now validate.
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), oldJWT)
-	c.Assert(err, check.IsNil)
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), newJWT)
-	c.Assert(err, check.IsNil)
-
-	// Move rotation into update servers phase.
-	err = s.server.Auth().RotateCertAuthority(RotateRequest{
-		Type:        services.JWTSigner,
-		GracePeriod: &gracePeriod,
-		TargetPhase: services.RotationPhaseUpdateServers,
-		Mode:        services.RotationModeManual,
-	})
-	c.Assert(err, check.IsNil)
-
-	// At this point only the phase on the CA should have changed.
-	newCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
-		DomainName: s.server.ClusterName(),
-		Type:       services.JWTSigner,
-	}, true)
-	c.Assert(err, check.IsNil)
-	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 2)
-	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseUpdateServers)
-
-	// Both JWT should continue to validate.
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), oldJWT)
-	c.Assert(err, check.IsNil)
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), newJWT)
-	c.Assert(err, check.IsNil)
-
-	// Complete rotation. The old CA will be removed.
-	err = s.server.Auth().RotateCertAuthority(RotateRequest{
-		Type:        services.JWTSigner,
-		GracePeriod: &gracePeriod,
-		TargetPhase: services.RotationPhaseStandby,
-		Mode:        services.RotationModeManual,
-	})
-	c.Assert(err, check.IsNil)
-
-	// The new CA should now only have a single key.
-	newCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
-		DomainName: s.server.ClusterName(),
-		Type:       services.JWTSigner,
-	}, true)
-	c.Assert(err, check.IsNil)
-	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 1)
-	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseStandby)
-
-	// Old token should not longer validate.
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), oldJWT)
-	c.Assert(err, check.NotNil)
-	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), newJWT)
-	c.Assert(err, check.IsNil)
-}
+//// TestAppTokenRotation checks that JWT tokens can be rotated and tokens can or
+//// can not be validated at the appropriate phase.
+//func (s *TLSSuite) TestAppTokenRotation(c *check.C) {
+//	clock := clockwork.NewFakeClockAt(time.Now())
+//	s.server.Auth().SetClock(clock)
+//
+//	client, err := s.server.NewClient(TestBuiltin(teleport.RoleWeb))
+//	c.Assert(err, check.IsNil)
+//
+//	// Create a JWT using the current CA, this will become the "old" CA during
+//	// rotation.
+//	oldJWT, err := client.GenerateAppToken(context.Background(),
+//		services.AppTokenParams{
+//			Namespace: defaults.Namespace,
+//			Username:  "foo",
+//			Roles:     []string{"bar", "baz"},
+//			AppName:   "panel",
+//			Expires:   clock.Now().Add(1 * time.Minute),
+//		})
+//	c.Assert(err, check.IsNil)
+//
+//	// Check that the "old" CA can be used to verify tokens.
+//	oldCA, err := s.server.Auth().GetCertAuthority(services.CertAuthID{
+//		DomainName: s.server.ClusterName(),
+//		Type:       services.JWTSigner,
+//	}, true)
+//	c.Assert(err, check.IsNil)
+//	c.Assert(oldCA.GetJWTKeyPairs(), check.HasLen, 1)
+//
+//	// Verify that the JWT token validates with the JWT authority.
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), oldCA.GetJWTKeyPairs(), oldJWT)
+//	c.Assert(err, check.IsNil)
+//
+//	// Start rotation and move to initial phase. A new CA will be added (for
+//	// verification), but requests will continue to be signed by the old CA.
+//	gracePeriod := time.Hour
+//	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+//		Type:        services.JWTSigner,
+//		GracePeriod: &gracePeriod,
+//		TargetPhase: services.RotationPhaseInit,
+//		Mode:        services.RotationModeManual,
+//	})
+//	c.Assert(err, check.IsNil)
+//
+//	// At this point in rotation, two JWT keys pairs should exist.
+//	oldCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
+//		DomainName: s.server.ClusterName(),
+//		Type:       services.JWTSigner,
+//	}, true)
+//	c.Assert(err, check.IsNil)
+//	c.Assert(oldCA.GetRotation().Phase, check.Equals, services.RotationPhaseInit)
+//	c.Assert(oldCA.GetJWTKeyPairs(), check.HasLen, 2)
+//
+//	// Verify that the JWT token validates with the JWT authority.
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), oldCA.GetJWTKeyPairs(), oldJWT)
+//	c.Assert(err, check.IsNil)
+//
+//	// Move rotation into the update client phase. In this phase, requests will
+//	// be signed by the new CA, but the old CA will be around to verify requests.
+//	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+//		Type:        services.JWTSigner,
+//		GracePeriod: &gracePeriod,
+//		TargetPhase: services.RotationPhaseUpdateClients,
+//		Mode:        services.RotationModeManual,
+//	})
+//	c.Assert(err, check.IsNil)
+//
+//	// New tokens should now fail the validate with the old key.
+//	newJWT, err := client.GenerateAppToken(context.Background(),
+//		services.AppTokenParams{
+//			Namespace: defaults.Namespace,
+//			Username:  "foo",
+//			Roles:     []string{"bar", "baz"},
+//			AppName:   "panel",
+//			Expires:   clock.Now().Add(1 * time.Minute),
+//		})
+//	c.Assert(err, check.IsNil)
+//
+//	// New tokens will validate with the new key.
+//	newCA, err := s.server.Auth().GetCertAuthority(services.CertAuthID{
+//		DomainName: s.server.ClusterName(),
+//		Type:       services.JWTSigner,
+//	}, true)
+//	c.Assert(err, check.IsNil)
+//	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 2)
+//	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseUpdateClients)
+//
+//	// Both JWT should now validate.
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), oldJWT)
+//	c.Assert(err, check.IsNil)
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), newJWT)
+//	c.Assert(err, check.IsNil)
+//
+//	// Move rotation into update servers phase.
+//	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+//		Type:        services.JWTSigner,
+//		GracePeriod: &gracePeriod,
+//		TargetPhase: services.RotationPhaseUpdateServers,
+//		Mode:        services.RotationModeManual,
+//	})
+//	c.Assert(err, check.IsNil)
+//
+//	// At this point only the phase on the CA should have changed.
+//	newCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
+//		DomainName: s.server.ClusterName(),
+//		Type:       services.JWTSigner,
+//	}, true)
+//	c.Assert(err, check.IsNil)
+//	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 2)
+//	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseUpdateServers)
+//
+//	// Both JWT should continue to validate.
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), oldJWT)
+//	c.Assert(err, check.IsNil)
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), newJWT)
+//	c.Assert(err, check.IsNil)
+//
+//	// Complete rotation. The old CA will be removed.
+//	err = s.server.Auth().RotateCertAuthority(RotateRequest{
+//		Type:        services.JWTSigner,
+//		GracePeriod: &gracePeriod,
+//		TargetPhase: services.RotationPhaseStandby,
+//		Mode:        services.RotationModeManual,
+//	})
+//	c.Assert(err, check.IsNil)
+//
+//	// The new CA should now only have a single key.
+//	newCA, err = s.server.Auth().GetCertAuthority(services.CertAuthID{
+//		DomainName: s.server.ClusterName(),
+//		Type:       services.JWTSigner,
+//	}, true)
+//	c.Assert(err, check.IsNil)
+//	c.Assert(newCA.GetJWTKeyPairs(), check.HasLen, 1)
+//	c.Assert(newCA.GetRotation().Phase, check.Equals, services.RotationPhaseStandby)
+//
+//	// Old token should not longer validate.
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), oldJWT)
+//	c.Assert(err, check.NotNil)
+//	_, err = s.verifyJWT(clock, s.server.ClusterName(), newCA.GetJWTKeyPairs(), newJWT)
+//	c.Assert(err, check.IsNil)
+//}
 
 // TestRemoteUser tests scenario when remote user connects to the local
 // auth server and some edge cases.
@@ -1909,71 +1909,71 @@ func (s *TLSSuite) TestGenerateCerts(c *check.C) {
 	c.Assert(err, check.IsNil)
 }
 
-// TestGenerateAppToken checks the identity of the caller and makes sure only
-// certain roles can request JWT tokens.
-func (s *TLSSuite) TestGenerateAppToken(c *check.C) {
-	clock := clockwork.NewFakeClockAt(time.Now())
-	s.server.Auth().SetClock(clock)
-
-	authClient, err := s.server.NewClient(TestBuiltin(teleport.RoleAdmin))
-	c.Assert(err, check.IsNil)
-
-	ca, err := authClient.GetCertAuthority(services.CertAuthID{
-		Type:       services.JWTSigner,
-		DomainName: s.server.ClusterName(),
-	}, true)
-	c.Assert(err, check.IsNil)
-
-	key, err := ca.JWTSigner()
-	c.Assert(err, check.IsNil)
-
-	var tests = []struct {
-		inMachineRole teleport.Role
-		inComment     check.CommentInterface
-		outError      bool
-	}{
-		{
-			inMachineRole: teleport.RoleNode,
-			inComment:     check.Commentf("nodes should not have the ability to generate tokens"),
-			outError:      true,
-		},
-		{
-			inMachineRole: teleport.RoleProxy,
-			inComment:     check.Commentf("proxies should not have the ability to generate tokens"),
-			outError:      true,
-		},
-		{
-			inMachineRole: teleport.RoleWeb,
-			inComment:     check.Commentf("only web proxies should have the ability to generate tokens"),
-			outError:      false,
-		},
-	}
-	for _, tt := range tests {
-		client, err := s.server.NewClient(TestBuiltin(tt.inMachineRole))
-		c.Assert(err, check.IsNil, tt.inComment)
-
-		token, err := client.GenerateAppToken(
-			context.Background(),
-			services.AppTokenParams{
-				Namespace: defaults.Namespace,
-				Username:  "foo@example.com",
-				Roles:     []string{"bar", "baz"},
-				AppName:   "panel",
-				Expires:   clock.Now().Add(1 * time.Minute),
-			})
-		c.Assert(err != nil, check.Equals, tt.outError, tt.inComment)
-		if !tt.outError {
-			claims, err := key.Verify(jwt.VerifyParams{
-				Username: "foo@example.com",
-				RawToken: token,
-				AppName:  "panel",
-			})
-			c.Assert(err, check.IsNil, tt.inComment)
-			c.Assert(claims.Username, check.Equals, "foo@example.com", tt.inComment)
-			c.Assert(claims.Roles, check.DeepEquals, []string{"bar", "baz"}, tt.inComment)
-		}
-	}
-}
+//// TestGenerateAppToken checks the identity of the caller and makes sure only
+//// certain roles can request JWT tokens.
+//func (s *TLSSuite) TestGenerateAppToken(c *check.C) {
+//	clock := clockwork.NewFakeClockAt(time.Now())
+//	s.server.Auth().SetClock(clock)
+//
+//	authClient, err := s.server.NewClient(TestBuiltin(teleport.RoleAdmin))
+//	c.Assert(err, check.IsNil)
+//
+//	ca, err := authClient.GetCertAuthority(services.CertAuthID{
+//		Type:       services.JWTSigner,
+//		DomainName: s.server.ClusterName(),
+//	}, true)
+//	c.Assert(err, check.IsNil)
+//
+//	key, err := ca.JWTSigner()
+//	c.Assert(err, check.IsNil)
+//
+//	var tests = []struct {
+//		inMachineRole teleport.Role
+//		inComment     check.CommentInterface
+//		outError      bool
+//	}{
+//		{
+//			inMachineRole: teleport.RoleNode,
+//			inComment:     check.Commentf("nodes should not have the ability to generate tokens"),
+//			outError:      true,
+//		},
+//		{
+//			inMachineRole: teleport.RoleProxy,
+//			inComment:     check.Commentf("proxies should not have the ability to generate tokens"),
+//			outError:      true,
+//		},
+//		{
+//			inMachineRole: teleport.RoleWeb,
+//			inComment:     check.Commentf("only web proxies should have the ability to generate tokens"),
+//			outError:      false,
+//		},
+//	}
+//	for _, tt := range tests {
+//		client, err := s.server.NewClient(TestBuiltin(tt.inMachineRole))
+//		c.Assert(err, check.IsNil, tt.inComment)
+//
+//		token, err := client.GenerateAppToken(
+//			context.Background(),
+//			services.AppTokenParams{
+//				Namespace: defaults.Namespace,
+//				Username:  "foo@example.com",
+//				Roles:     []string{"bar", "baz"},
+//				AppName:   "panel",
+//				Expires:   clock.Now().Add(1 * time.Minute),
+//			})
+//		c.Assert(err != nil, check.Equals, tt.outError, tt.inComment)
+//		if !tt.outError {
+//			claims, err := key.Verify(jwt.VerifyParams{
+//				Username: "foo@example.com",
+//				RawToken: token,
+//				AppName:  "panel",
+//			})
+//			c.Assert(err, check.IsNil, tt.inComment)
+//			c.Assert(claims.Username, check.Equals, "foo@example.com", tt.inComment)
+//			c.Assert(claims.Roles, check.DeepEquals, []string{"bar", "baz"}, tt.inComment)
+//		}
+//	}
+//}
 
 // TestCertificateFormat makes sure that certificates are generated with the
 // correct format.
@@ -2841,37 +2841,389 @@ func (s *TLSSuite) TestAPIBackwardsCompatibilityLogic(c *check.C) {
 	c.Assert(err, check.ErrorMatches, `test-other-error`)
 }
 
-func (s *TLSSuite) verifyJWT(clock clockwork.Clock, clusterName string, pairs []services.JWTKeyPair, token string) (*jwt.Claims, error) {
-	errs := []error{}
-	for _, pair := range pairs {
-		publicKey, err := utils.ParsePublicKey(pair.PublicKey)
-		if err != nil {
-			errs = append(errs, trace.Wrap(err))
-			continue
-		}
+func (s *TLSSuite) TestCreateAppSession(c *check.C) {
+	// Create user and role.
+	user, role, err := CreateUserAndRole(s.server.Auth(), "foo-user", []string{"foo-login"})
+	c.Assert(err, check.IsNil)
 
-		key, err := jwt.New(&jwt.Config{
-			Clock:       clock,
-			PublicKey:   publicKey,
-			Algorithm:   defaults.ApplicationTokenAlgorithm,
-			ClusterName: clusterName,
-		})
-		if err != nil {
-			errs = append(errs, trace.Wrap(err))
-			continue
-		}
-		claims, err := key.Verify(jwt.VerifyParams{
-			RawToken: token,
-			Username: "foo",
-			AppName:  "panel",
-		})
-		if err != nil {
-			errs = append(errs, trace.Wrap(err))
-			continue
-		}
-		if err == nil {
-			return claims, nil
-		}
+	// Give the users role application label "bar: baz".
+	role.SetAppLabels(services.Allow, services.Labels{"bar": []string{"baz"}})
+	err = s.server.Auth().UpsertRole(context.Background(), role)
+	c.Assert(err, check.IsNil)
+
+	client, err := s.server.NewClient(TestUser(user.GetName()))
+	c.Assert(err, check.IsNil)
+
+	// Create an application with label "bar: baz" and an application with
+	// "qux: quxx". The user created by the suite has role with label "bar: baz"
+	// so only "app-001" should be available.
+	server := &services.ServerV2{
+		Kind:    services.KindApp,
+		Version: services.V2,
+		Metadata: services.Metadata{
+			Namespace: defaults.Namespace,
+			Name:      uuid.New(),
+		},
+		Spec: services.ServerSpecV2{
+			Hostname: "server-001",
+			Protocol: services.ServerSpecV2_HTTPS,
+			Version:  teleport.Version,
+			Apps: []*services.App{
+				&services.App{
+					Name:       "app-001",
+					URI:        "http://127.0.0.1:8080",
+					PublicAddr: "app-001.example.com",
+					StaticLabels: map[string]string{
+						"bar": "baz",
+					},
+				},
+				&services.App{
+					Name:       "app-002",
+					URI:        "http://127.0.0.1:8080",
+					PublicAddr: "app-002.example.com",
+					StaticLabels: map[string]string{
+						"qux": "quxx",
+					},
+				},
+			},
+		},
 	}
-	return nil, trace.NewAggregate(errs...)
+	_, err = s.server.Auth().UpsertApp(context.Background(), server)
+	c.Assert(err, check.IsNil)
+
+	var tests = []struct {
+		desc      string
+		inAddress string
+		outError  bool
+	}{
+		{
+			desc:      "allowed access, label match",
+			inAddress: "app-001.example.com",
+			outError:  false,
+		},
+		{
+			desc:      "denied access, labels do not match",
+			inAddress: "app-002.example.com",
+			outError:  true,
+		},
+	}
+	for _, tt := range tests {
+		_, err = client.CreateAppSession(context.Background(), services.CreateAppSessionRequest{
+			Username:   user.GetName(),
+			PublicAddr: tt.inAddress,
+			SessionID:  "fake-session-id",
+		})
+		c.Assert(err != nil, check.Equals, tt.outError)
+	}
 }
+
+func (s *TLSSuite) TestRemoteCreateAppSession(c *check.C) {
+	// Create an application with label "bar: baz" and an application with
+	// "qux: quxx". The user created by the suite has role with label "bar: baz"
+	// so only "app-001" should be available.
+	server := &services.ServerV2{
+		Kind:    services.KindApp,
+		Version: services.V2,
+		Metadata: services.Metadata{
+			Namespace: defaults.Namespace,
+			Name:      uuid.New(),
+		},
+		Spec: services.ServerSpecV2{
+			Hostname: "server-001",
+			Protocol: services.ServerSpecV2_HTTPS,
+			Version:  teleport.Version,
+			Apps: []*services.App{
+				&services.App{
+					Name:       "app-001",
+					URI:        "http://127.0.0.1:8080",
+					PublicAddr: "app-001.example.com",
+					StaticLabels: map[string]string{
+						"bar": "baz",
+					},
+				},
+				&services.App{
+					Name:       "app-002",
+					URI:        "http://127.0.0.1:8080",
+					PublicAddr: "app-002.example.com",
+					StaticLabels: map[string]string{
+						"qux": "quxx",
+					},
+				},
+			},
+		},
+	}
+	_, err := s.server.Auth().UpsertApp(context.Background(), server)
+	c.Assert(err, check.IsNil)
+
+	remoteServer, err := NewTestAuthServer(TestAuthServerConfig{
+		Dir:         c.MkDir(),
+		ClusterName: "remote",
+	})
+	c.Assert(err, check.IsNil)
+
+	//remoteTLS, err := remoteServer.NewTestTLSServer()
+	//c.Assert(err, check.IsNil)
+	//defer remoteTLS.Close()
+
+	remoteUser, remoteRole, err := CreateUserAndRole(remoteServer.AuthServer, "remote-user", []string{"remote-role"})
+	c.Assert(err, check.IsNil)
+
+	// Give the users role application label "bar: baz".
+	remoteRole.SetAppLabels(services.Allow, services.Labels{"bar": []string{"baz"}})
+	err = remoteServer.AuthServer.UpsertRole(context.Background(), remoteRole)
+	c.Assert(err, check.IsNil)
+
+	certPool, err := s.server.CertPool()
+	c.Assert(err, check.IsNil)
+
+	remoteClient, err := remoteServer.NewRemoteClient(
+		TestUser(remoteUser.GetName()), s.server.Addr(), certPool)
+	c.Assert(err, check.IsNil)
+
+	_, localRole, err := CreateUserAndRole(s.server.Auth(), "local-user", []string{"local-role"})
+	c.Assert(err, check.IsNil)
+
+	localRole.SetAppLabels(services.Allow, services.Labels{"bar": []string{"baz"}})
+	err = s.server.Auth().UpsertRole(context.Background(), localRole)
+	c.Assert(err, check.IsNil)
+
+	err = s.server.AuthServer.Trust(remoteServer, services.RoleMap{{Remote: remoteRole.GetName(), Local: []string{localRole.GetName()}}})
+	c.Assert(err, check.IsNil)
+
+	_, err = remoteClient.GetDomainName()
+	c.Assert(err, check.IsNil)
+
+	var tests = []struct {
+		desc      string
+		inAddress string
+		outError  bool
+	}{
+		{
+			desc:      "allowed access, label match",
+			inAddress: "app-001.example.com",
+			outError:  false,
+		},
+		{
+			desc:      "denied access, labels do not match",
+			inAddress: "app-002.example.com",
+			outError:  true,
+		},
+	}
+	for _, tt := range tests {
+		_, err = remoteClient.CreateAppSession(context.Background(), services.CreateAppSessionRequest{
+			Username:   "remote-remote-user-remote",
+			PublicAddr: tt.inAddress,
+			SessionID:  "fake-session-id",
+		})
+		c.Assert(err != nil, check.Equals, tt.outError, check.Commentf(tt.desc))
+	}
+
+	/*
+
+
+
+
+
+
+
+		// Create user and role.
+		user, role, err := CreateUserAndRole(s.server.Auth(), "foo-user", []string{"foo-login"})
+		c.Assert(err, check.IsNil)
+
+		// Give the users role application label "bar: baz".
+		role.SetAppLabels(services.Allow, services.Labels{"bar": []string{"baz"}})
+		err = s.server.Auth().UpsertRole(context.Background(), role)
+		c.Assert(err, check.IsNil)
+
+		remoteServer, err := NewTestAuthServer(TestAuthServerConfig{
+			Dir:         c.MkDir(),
+			ClusterName: "remote.example.com",
+		})
+		c.Assert(err, check.IsNil)
+
+		certPool, err := s.server.CertPool()
+		c.Assert(err, check.IsNil)
+
+		err = s.server.AuthServer.Trust(remoteServer, nil)
+		c.Assert(err, check.IsNil)
+
+		remoteClient, err := remoteServer.NewRemoteClient(
+			TestUser(user.GetName()), s.server.Addr(), certPool)
+		c.Assert(err, check.IsNil)
+
+		_, err = remoteClient.CreateAppSession(context.Background(), services.CreateAppSessionRequest{})
+		fmt.Printf("--> err: %v.\n", err)
+
+		/*
+			// Create an application with label "bar: baz" and an application with
+			// "qux: quxx". The user created by the suite has role with label "bar: baz"
+			// so only "app-001" should be available.
+			server := &services.ServerV2{
+				Kind:    services.KindApp,
+				Version: services.V2,
+				Metadata: services.Metadata{
+					Namespace: defaults.Namespace,
+					Name:      uuid.New(),
+				},
+				Spec: services.ServerSpecV2{
+					Hostname: "server-001",
+					Protocol: services.ServerSpecV2_HTTPS,
+					Version:  teleport.Version,
+					Apps: []*services.App{
+						&services.App{
+							Name:       "app-001",
+							URI:        "http://127.0.0.1:8080",
+							PublicAddr: "app-001.example.com",
+							StaticLabels: map[string]string{
+								"bar": "baz",
+							},
+						},
+						&services.App{
+							Name:       "app-002",
+							URI:        "http://127.0.0.1:8080",
+							PublicAddr: "app-002.example.com",
+							StaticLabels: map[string]string{
+								"qux": "quxx",
+							},
+						},
+					},
+				},
+			}
+			_, err = s.server.Auth().UpsertApp(context.Background(), server)
+			c.Assert(err, check.IsNil)
+
+			var tests = []struct {
+				desc      string
+				inAddress string
+				outError  bool
+			}{
+				{
+					desc:      "allowed access, label match",
+					inAddress: "app-001.example.com",
+					outError:  false,
+				},
+				{
+					desc:      "denied access, labels do not match",
+					inAddress: "app-002.example.com",
+					outError:  true,
+				},
+			}
+			for _, tt := range tests {
+				_, err = client.CreateAppSession(context.Background(), services.CreateAppSessionRequest{
+					Username:   user.GetName(),
+					PublicAddr: tt.inAddress,
+					SessionID:  "fake-session-id",
+				})
+				c.Assert(err != nil, check.Equals, tt.outError)
+			}
+	*/
+
+	//// Create user and role.
+	//user, role, err := CreateUserAndRole(s.server.Auth(), "foo-user", []string{"foo-login"})
+	//c.Assert(err, check.IsNil)
+
+	//// Give the users role application label "bar: baz".
+	//role.SetAppLabels(services.Allow, services.Labels{"bar": []string{"baz"}})
+	//err = s.server.Auth().UpsertRole(context.Background(), role)
+	//c.Assert(err, check.IsNil)
+
+	//client, err := s.server.NewClient(TestUser(user.GetName()))
+	//c.Assert(err, check.IsNil)
+
+	//// Create an application with label "bar: baz" and an application with
+	//// "qux: quxx". The user created by the suite has role with label "bar: baz"
+	//// so only "app-001" should be available.
+	//server := &services.ServerV2{
+	//	Kind:    services.KindApp,
+	//	Version: services.V2,
+	//	Metadata: services.Metadata{
+	//		Namespace: defaults.Namespace,
+	//		Name:      uuid.New(),
+	//	},
+	//	Spec: services.ServerSpecV2{
+	//		Hostname: "server-001",
+	//		Protocol: services.ServerSpecV2_HTTPS,
+	//		Version:  teleport.Version,
+	//		Apps: []*services.App{
+	//			&services.App{
+	//				Name:       "app-001",
+	//				URI:        "http://127.0.0.1:8080",
+	//				PublicAddr: "app-001.example.com",
+	//				StaticLabels: map[string]string{
+	//					"bar": "baz",
+	//				},
+	//			},
+	//			&services.App{
+	//				Name:       "app-002",
+	//				URI:        "http://127.0.0.1:8080",
+	//				PublicAddr: "app-002.example.com",
+	//				StaticLabels: map[string]string{
+	//					"qux": "quxx",
+	//				},
+	//			},
+	//		},
+	//	},
+	//}
+	//_, err = s.server.Auth().UpsertApp(context.Background(), server)
+	//c.Assert(err, check.IsNil)
+
+	//var tests = []struct {
+	//	desc      string
+	//	inAddress string
+	//	outError  bool
+	//}{
+	//	{
+	//		desc:      "allowed access, label match",
+	//		inAddress: "app-001.example.com",
+	//		outError:  false,
+	//	},
+	//	{
+	//		desc:      "denied access, labels do not match",
+	//		inAddress: "app-002.example.com",
+	//		outError:  true,
+	//	},
+	//}
+	//for _, tt := range tests {
+	//	_, err = client.CreateAppSession(context.Background(), services.CreateAppSessionRequest{
+	//		Username:   user.GetName(),
+	//		PublicAddr: tt.inAddress,
+	//		SessionID:  "fake-session-id",
+	//	})
+	//	c.Assert(err != nil, check.Equals, tt.outError)
+	//}
+}
+
+//func (s *TLSSuite) verifyJWT(clock clockwork.Clock, clusterName string, pairs []services.JWTKeyPair, token string) (*jwt.Claims, error) {
+//	errs := []error{}
+//	for _, pair := range pairs {
+//		publicKey, err := utils.ParsePublicKey(pair.PublicKey)
+//		if err != nil {
+//			errs = append(errs, trace.Wrap(err))
+//			continue
+//		}
+//
+//		key, err := jwt.New(&jwt.Config{
+//			Clock:       clock,
+//			PublicKey:   publicKey,
+//			Algorithm:   defaults.ApplicationTokenAlgorithm,
+//			ClusterName: clusterName,
+//		})
+//		if err != nil {
+//			errs = append(errs, trace.Wrap(err))
+//			continue
+//		}
+//		claims, err := key.Verify(jwt.VerifyParams{
+//			RawToken: token,
+//			Username: "foo",
+//			AppName:  "panel",
+//		})
+//		if err != nil {
+//			errs = append(errs, trace.Wrap(err))
+//			continue
+//		}
+//		if err == nil {
+//			return claims, nil
+//		}
+//	}
+//	return nil, trace.NewAggregate(errs...)
+//}

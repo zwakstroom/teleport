@@ -46,7 +46,6 @@ type Suite struct {
 	authClient *auth.Client
 	appServer  *Server
 	server     services.Server
-	userClient *auth.Client
 
 	hostUUID     string
 	closeContext context.Context
@@ -54,6 +53,7 @@ type Suite struct {
 	message      string
 	hostport     string
 	testhttp     *httptest.Server
+	cert         []byte
 }
 
 var _ = check.Suite(&Suite{})
@@ -81,7 +81,7 @@ func (s *Suite) SetUpSuite(c *check.C) {
 	c.Assert(err, check.IsNil)
 
 	// Create user and role.
-	user, role, err := auth.CreateUserAndRole(s.tlsServer.Auth(), "foo-user", []string{"foo-login"})
+	user, role, err := auth.CreateUserAndRole(s.tlsServer.Auth(), "foo", []string{"foo-login"})
 	c.Assert(err, check.IsNil)
 
 	// Give the users role application label "bar: baz".
@@ -89,8 +89,10 @@ func (s *Suite) SetUpSuite(c *check.C) {
 	err = s.tlsServer.Auth().UpsertRole(context.Background(), role)
 	c.Assert(err, check.IsNil)
 
-	// Create a client that is authenticated as the user.
-	s.userClient, err = s.tlsServer.NewClient(auth.TestUser(user.GetName()))
+	// Generate certificate for user.
+	_, public, err := s.tlsServer.Auth().GenerateKeyPair("")
+	c.Assert(err, check.IsNil)
+	_, s.cert, err = s.tlsServer.Auth().GenerateUserTestCerts(public, user.GetName(), 1*time.Hour, teleport.CertificateFormatStandard, "")
 	c.Assert(err, check.IsNil)
 }
 
@@ -224,26 +226,9 @@ func (s *Suite) TestWaitStop(c *check.C) {
 	c.Assert(err, check.Equals, context.Canceled)
 }
 
-// TestHandleConnection makes sure the application server forwards connections
-// to the target host and accurately keeps track of connections.
-func (s *Suite) TestHandleConnection(c *check.C) {
-	// Create an application specific session on the backend.
-	session, err := s.userClient.CreateAppSession(context.Background(), services.CreateAppSessionRequest{
-		Namespace:  defaults.Namespace,
-		Username:   "foo-user",
-		PublicAddr: "foo.example.com",
-		SessionID:  "not-required",
-	})
-	c.Assert(err, check.IsNil)
-
-	// Encode the cookie.
-	cookieValue, err := encodeCookie(&Cookie{
-		Username:   "foo-user",
-		ParentHash: services.SessionHash("no-required"),
-		SessionID:  session.GetName(),
-	})
-	c.Assert(err, check.IsNil)
-
+// TestForwardConnection makes sure the application server forwards
+// connections to the target host and accurately keeps track of connections.
+func (s *Suite) TestForwardConnection(c *check.C) {
 	// Create a net.Pipe. The "server" end will be passed to the application
 	// server while the client end will be used by the http.Client to read/write
 	// a request.
@@ -252,7 +237,7 @@ func (s *Suite) TestHandleConnection(c *check.C) {
 	defer clientConn.Close()
 
 	// Process the connection.
-	go s.appServer.HandleConnection(serverConn)
+	go s.appServer.ForwardConnection(serverConn, s.testhttp.URL)
 
 	// Perform a simple HTTP GET against the application server.
 	httpTransport := &http.Transport{
@@ -263,12 +248,7 @@ func (s *Suite) TestHandleConnection(c *check.C) {
 	httpClient := http.Client{
 		Transport: httpTransport,
 	}
-	req, err := http.NewRequest(http.MethodGet, "http://not-required", nil)
-	req.AddCookie(&http.Cookie{
-		Name:  cookieName,
-		Value: cookieValue,
-	})
-	resp, err := httpClient.Do(req)
+	resp, err := httpClient.Get("http://foo.example.com")
 	c.Assert(err, check.IsNil)
 	defer resp.Body.Close()
 
@@ -298,7 +278,6 @@ func (s *Suite) TestHandleConnection(c *check.C) {
 	}
 }
 
-/*
 // TestVerifyCertificate checks that certificates not signed by a known CA are rejected.
 func (s *Suite) TestVerifyCertificate(c *check.C) {
 	// Create another independent cluster acme.example.com.
@@ -532,7 +511,6 @@ func (s *Suite) TestCheckAccessTrustedCluster(c *check.C) {
 		c.Assert(err != nil, check.Equals, tt.outError, check.Commentf(tt.desc))
 	}
 }
-*/
 
 func testRotationGetter(role teleport.Role) (*services.Rotation, error) {
 	return &services.Rotation{}, nil

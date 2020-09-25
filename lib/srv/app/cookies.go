@@ -25,9 +25,10 @@ import (
 )
 
 type Cookie struct {
-	Username   string `json:"username"`
-	ParentHash string `json:"parent_hash"`
-	SessionID  string `json:"session_id"`
+	Username    string `json:"username"`
+	ParentHash  string `json:"parent_hash"`
+	SessionID   string `json:"session_id"`
+	ClusterName string `json:"cluster_name"`
 }
 
 func parseCookie(r *http.Request) (*Cookie, error) {

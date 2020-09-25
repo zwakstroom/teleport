@@ -528,42 +528,6 @@ func (s *IdentityService) UpsertWebSession(user, sid string, session services.We
 	return trace.Wrap(err)
 }
 
-// UpsertAppSession updates to inserts an application specific session.
-func (s *IdentityService) UpsertAppSession(ctx context.Context, session services.WebSession) error {
-	value, err := services.GetWebSessionMarshaler().MarshalWebSession(session)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	item := backend.Item{
-		Key:     backend.Key(webPrefix, usersPrefix, session.GetUser(), sessionsPrefix, session.GetParentHash(), session.GetName()),
-		Value:   value,
-		Expires: session.GetExpiryTime(),
-	}
-
-	if _, err = s.Put(ctx, item); err != nil {
-		return trace.Wrap(err)
-	}
-	return nil
-}
-
-// GetAppSession returns an application specific session.
-func (s *IdentityService) GetAppSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
-	if err := req.Check(); err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	item, err := s.Get(ctx, backend.Key(webPrefix, usersPrefix, req.Username, sessionsPrefix, req.ParentHash, req.SessionID))
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	return session, nil
-}
-
 // AddUserLoginAttempt logs user login attempt
 func (s *IdentityService) AddUserLoginAttempt(user string, attempt services.LoginAttempt, ttl time.Duration) error {
 	if err := attempt.Check(); err != nil {
@@ -657,19 +621,10 @@ func (s *IdentityService) DeleteWebSession(user string, sessionID string) error 
 	}
 
 	// Delete all application specific sessions.
-	if err := s.DeleteAllAppSessions(ctx, user, sessionID); err != nil {
+	if err := s.DeleteAppSessions(ctx, user, sessionID); err != nil {
 		return trace.Wrap(err)
 	}
 
-	return nil
-}
-
-// DeleteAllAppSessions deletes all applicable specific sessions for a parent session.
-func (s *IdentityService) DeleteAllAppSessions(ctx context.Context, user string, sessionID string) error {
-	startKey := backend.Key(webPrefix, usersPrefix, user, sessionsPrefix, services.SessionHash(sessionID))
-	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
-		return trace.Wrap(err)
-	}
 	return nil
 }
 
@@ -1262,6 +1217,85 @@ func (s *IdentityService) GetGithubAuthRequest(stateToken string) (*services.Git
 		return nil, trace.Wrap(err)
 	}
 	return &req, nil
+}
+
+// UpsertAppSession updates to inserts an application specific session.
+func (s *IdentityService) UpsertAppSession(ctx context.Context, session services.WebSession) error {
+	value, err := services.GetWebSessionMarshaler().MarshalWebSession(session)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	item := backend.Item{
+		Key:     backend.Key(webPrefix, usersPrefix, session.GetUser(), sessionsPrefix, session.GetParentHash(), session.GetName()),
+		Value:   value,
+		Expires: session.GetExpiryTime(),
+	}
+
+	if _, err = s.Put(ctx, item); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+// GetAppSession returns an application specific session.
+func (s *IdentityService) GetAppSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
+	if err := req.Check(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	item, err := s.Get(ctx, backend.Key(webPrefix, usersPrefix, req.Username, sessionsPrefix, req.ParentHash, req.SessionID))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return session, nil
+}
+
+// TODO(russjones): Remove secrets.
+func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.WebSession, error) {
+	startKey := backend.Key(webPrefix, usersPrefix)
+	result, err := s.GetRange(context.TODO(), startKey, backend.RangeEnd(startKey), backend.NoLimit)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	var out []services.User
+	for _, item := range result.Items {
+		if !bytes.HasSuffix(item.Key, []byte(paramsPrefix)) {
+			continue
+		}
+		u, err := services.GetUserMarshaler().UnmarshalUser(
+			item.Value, services.WithResourceID(item.ID), services.WithExpires(item.Expires))
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		if !withSecrets {
+			u.SetLocalAuth(nil)
+		}
+		out = append(out, u)
+	}
+	return out, nil
+
+}
+
+// DeleteAllAppSessions deletes all applicable specific sessions for a parent session.
+func (s *IdentityService) DeleteAppSessions(ctx context.Context, user string, sessionID string) error {
+	startKey := backend.Key(webPrefix, usersPrefix, user, sessionsPrefix, services.SessionHash(sessionID))
+	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (s *IdentityService) DeleteAllAppSessions(ctx context.Context) error {
+	startKey := backend.Key(webPrefix, usersPrefix)
+	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
 }
 
 const (

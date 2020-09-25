@@ -1309,9 +1309,42 @@ func (s *AuthServer) GetTokens(opts ...services.MarshalOption) (tokens []service
 	return tokens, nil
 }
 
+func (s *AuthServer) NewAppSession(user services.User, checker services.AccessChecker, traits wrappers.Traits) (services.WebSession, error) {
+	priv, pub, err := s.GetNewKeyPairFromPool()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	sessionTTL := checker.AdjustSessionTTL(defaults.CertDuration)
+	certs, err := s.generateUserCert(certRequest{
+		user:      user,
+		ttl:       sessionTTL,
+		publicKey: pub,
+		checker:   checker,
+		traits:    traits,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	token, err := utils.CryptoRandomHex(SessionTokenBytes)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return services.NewWebSession(token, services.WebSessionSpecV2{
+		User:    user.GetName(),
+		Priv:    priv,
+		Pub:     certs.ssh,
+		TLSCert: certs.tls,
+		Expires: s.clock.Now().UTC().Add(sessionTTL),
+	}), nil
+
+}
+
 func (s *AuthServer) NewWebSession(username string, roles []string, traits wrappers.Traits) (services.WebSession, error) {
 	user, err := s.GetUser(username, false)
 	if err != nil {
+		fmt.Printf("--> here!\n")
 		return nil, trace.Wrap(err)
 	}
 	checker, err := services.FetchRoles(roles, s.Access, traits)
@@ -1334,11 +1367,11 @@ func (s *AuthServer) NewWebSession(username string, roles []string, traits wrapp
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	token, err := utils.CryptoRandomHex(SessionTokenBytes)
+	token, err := utils.CryptoRandomHex(TokenLenBytes)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	bearerToken, err := utils.CryptoRandomHex(SessionTokenBytes)
+	bearerToken, err := utils.CryptoRandomHex(TokenLenBytes)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
