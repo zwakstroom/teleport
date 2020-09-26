@@ -1973,15 +1973,15 @@ func (a *AuthWithRoles) GetAppWebSession(ctx context.Context, req services.GetAp
 }
 
 func (a *AuthWithRoles) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, services.AppSession, error) {
-	if err := a.currentUserAction(session.GetUser()); err != nil {
-		return trace.Wrap(err)
+	if err := a.currentUserAction(req.Username); err != nil {
+		return nil, nil, trace.Wrap(err)
 	}
 
-	// TODO(russjones): Continue here.
-	if err := a.authServer.CreateAppWebSession(ctx, session); err != nil {
-		return trace.Wrap(err)
+	wsess, asess, err := a.authServer.CreateAppWebSession(ctx, req)
+	if err != nil {
+		return nil, nil, trace.Wrap(err)
 	}
-	return nil
+	return wsess, asess, nil
 }
 
 func (a *AuthWithRoles) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
@@ -1995,7 +1995,7 @@ func (a *AuthWithRoles) GetAppSession(ctx context.Context, sessionID string) (se
 
 	session, err := a.authServer.Identity.GetAppSession(ctx, sessionID)
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	return session, nil
 }
@@ -2010,25 +2010,31 @@ func (a *AuthWithRoles) GetAppSessions(ctx context.Context) ([]services.AppSessi
 
 	sessions, err := a.authServer.Identity.GetAppSessions(ctx)
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	return sessions, nil
 }
 
-func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+func (a *AuthWithRoles) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbCreate); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	if err := a.authServer.Identity.UpsertAppSessions(ctx, session); err != nil {
-		return trace.Wrap(err)
+	session, err := a.authServer.CreateAppSession(ctx, req)
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
-	return nil
+
+	return session, nil
+}
+
+func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+	return trace.NotImplemented("not implemented")
 }
 
 func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) error {
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
-		return nil, trace.Wrap(err)
+		return trace.Wrap(err)
 	}
 
 	if err := a.authServer.Identity.DeleteAppSession(ctx, sessionID); err != nil {
@@ -2039,7 +2045,7 @@ func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) 
 
 func (a *AuthWithRoles) DeleteAllAppSessions(ctx context.Context) error {
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
-		return nil, trace.Wrap(err)
+		return trace.Wrap(err)
 	}
 
 	if err := a.authServer.Identity.DeleteAllAppSessions(ctx); err != nil {

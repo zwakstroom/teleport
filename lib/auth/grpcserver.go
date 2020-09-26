@@ -606,10 +606,36 @@ func (g *GRPCServer) CreateAppWebSession(ctx context.Context, req *proto.CreateA
 		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
 	}
 
-	return &proto.CreateAppSessionResponse{
+	return &proto.CreateAppWebSessionResponse{
 		WebSession: wsess,
 		AppSession: asess,
 	}, nil
+}
+
+func (g *GRPCServer) DeleteAppWebSession(ctx context.Context, req *DeleteAppWebSessionRequest) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	if err := auth.DeleteAppWebSession(ctx, req.SessionID); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
+}
+
+func (g *GRPCServer) DeleteAllAppWebSessions(ctx context.Context, _ *empty.Empty) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	if err := auth.DeleteAllAppWebSessions(ctx); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
 }
 
 func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSessionRequest) (*proto.GetAppSessionResponse, error) {
@@ -677,31 +703,31 @@ func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppS
 	}, nil
 }
 
-func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *DeleteAppSessionRequest) (*empty.Empty, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	if err := auth.DeleteAppSession(ctx, req.SessionID); err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	return &empty.Empty{}, nil
-}
-
-func (g *GRPCServer) DeleteAllAppSessions(ctx context.Context, _ *empty.Empty) (*empty.Empty, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	if err := auth.DeleteAllAppSessions(ctx); err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	return &empty.Empty{}, nil
-}
+//func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *DeleteAppSessionRequest) (*empty.Empty, error) {
+//	auth, err := g.authenticate(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	if err := auth.DeleteAppSession(ctx, req.SessionID); err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	return &empty.Empty{}, nil
+//}
+//
+//func (g *GRPCServer) DeleteAllAppSessions(ctx context.Context, _ *empty.Empty) (*empty.Empty, error) {
+//	auth, err := g.authenticate(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	if err := auth.DeleteAllAppSessions(ctx); err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	return &empty.Empty{}, nil
+//}
 
 type grpcContext struct {
 	*AuthContext

@@ -578,6 +578,18 @@ func (r CreateAppWebSessionRequest) Check() error {
 	return nil
 }
 
+type CreateAppSessionRequest struct {
+	PublicAddr string `json:"app"`
+}
+
+func (r CreateAppSessionRequest) Check() error {
+	if r.PublicAddr == "" {
+		return trace.BadParameter("public address is missing")
+	}
+
+	return nil
+}
+
 // SessionHash returns hex-encoded SHA256 hash of a session ID. Used by parent
 // session to identify application specific child sessions.
 func SessionHash(sessionID string) string {

@@ -2811,7 +2811,7 @@ func (c *Client) GetAppWebSession(ctx context.Context, req services.GetAppWebSes
 		return nil, trace.Wrap(err)
 	}
 
-	resp, err := clt.GetAppSession(ctx, &proto.GetAppWebSessionRequest{
+	resp, err := clt.GetAppWebSession(ctx, &proto.GetAppWebSessionRequest{
 		Username:   req.Username,
 		ParentHash: req.ParentHash,
 		SessionID:  req.SessionID,
@@ -2823,24 +2823,27 @@ func (c *Client) GetAppWebSession(ctx context.Context, req services.GetAppWebSes
 	return resp.GetSession(), nil
 }
 
-func (c *Client) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
+func (c *Client) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, services.AppSession, error) {
 	clt, err := c.grpc()
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, nil, trace.Wrap(err)
 	}
 
-	protoSession, ok := app.(*services.WebSessionV2)
-	if !ok {
-		return nil, trace.BadParameter("invalid type for app: %T", app)
-	}
-	resp, err := clt.UpsertAppWebSession(ctx, &proto.UpsertAppWebSessionRequest{
-		Session: protoSession,
+	resp, err := clt.CreateAppWebSession(ctx, &proto.CreateAppWebSessionRequest{
+		Username:    req.Username,
+		PublicAddr:  req.PublicAddr,
+		ClusterName: req.ClusterName,
+		SessionID:   req.SessionID,
 	})
 	if err != nil {
-		return nil, trail.FromGRPC(err)
+		return nil, nil, trail.FromGRPC(err)
 	}
 
-	return resp.GetSession(), nil
+	return resp.GetWebSession(), resp.GetAppSession(), nil
+}
+
+func (c *Client) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
+	return trace.NotImplemented("not implemented")
 }
 
 func (c *Client) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
@@ -2873,25 +2876,26 @@ func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, err
 	return resp.GetSessions(), nil
 }
 
-func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSession) (services.AppSession, error) {
 	clt, err := c.grpc()
 	if err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 
-	protoSession, ok := session.(*services.AppSessionV3)
-	if !ok {
-		return trace.BadParameter("invalid type %T", session)
-	}
-	err := clt.UpsertAppSession(ctx, &proto.UpsertAppSessionRequest{
-		Session: protoSession,
+	session, err := clt.CreateAppSession(ctx, &proto.CreateAppSessionRequest{
+		PublicAddr: req.PublicAddr,
 	})
 	if err != nil {
-		return trail.FromGRPC(err)
+		return nil, trail.FromGRPC(err)
 
 	}
-	return nil
+	return session, nil
 }
+
+func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+	return trace.NotImplemented("not implemented")
+}
+
 func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
 	clt, err := c.grpc()
 	if err != nil {
@@ -2934,15 +2938,16 @@ type WebService interface {
 	CreateWebSession(user string) (services.WebSession, error)
 	// DeleteWebSession deletes a web session for this user by id
 	DeleteWebSession(user string, sid string) error
-	// CreateAppSession takes an existing web session and uses it to create a
-	// new application session.
-	CreateAppSession(context.Context, services.CreateAppSessionRequest) (services.WebSession, error)
-	// GetAppSession returns the requested application specific session to
-	// the caller.
-	GetAppSession(context.Context, services.GetAppSessionRequest) (services.WebSession, error)
 	// GenerateAppToken returns a signed token that contains claims about the
 	// caller signed and embedded inside.
 	GenerateAppToken(context.Context, services.AppTokenParams) (string, error)
+
+	//// CreateAppSession takes an existing web session and uses it to create a
+	//// new application session.
+	//CreateAppSession(context.Context, services.CreateAppSessionRequest) (services.WebSession, error)
+	//// GetAppSession returns the requested application specific session to
+	//// the caller.
+	//GetAppSession(context.Context, services.GetAppSessionRequest) (services.WebSession, error)
 }
 
 // IdentityService manages identities and users
