@@ -229,7 +229,7 @@ type Identity interface {
 	// GetResetPasswordTokenSecrets returns token secrets
 	GetResetPasswordTokenSecrets(ctx context.Context, tokenID string) (ResetPasswordTokenSecrets, error)
 
-	GetAppWebSession(context.Context, GetAppSessionRequest) (WebSession, error)
+	GetAppWebSession(context.Context, GetAppWebSessionRequest) (WebSession, error)
 	UpsertAppWebSession(context.Context, WebSession) error
 
 	GetAppSession(ctx context.Context, sessionID string) (AppSession, error)

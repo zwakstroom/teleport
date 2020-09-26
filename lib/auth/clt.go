@@ -2805,35 +2805,13 @@ func (c *Client) GenerateAppToken(ctx context.Context, params services.AppTokenP
 	return resp.GetToken(), nil
 }
 
-// CreateAppSession takes an existing web session and uses it to create a
-// new application session.
-func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.WebSession, error) {
+func (c *Client) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	resp, err := clt.CreateAppSession(ctx, &proto.CreateAppSessionRequest{
-		PublicAddr:  req.PublicAddr,
-		ClusterName: req.ClusterName,
-		SessionID:   req.SessionID,
-		BearerToken: req.BearerToken,
-	})
-	if err != nil {
-		return nil, trail.FromGRPC(err)
-	}
-
-	return resp.GetSession(), nil
-}
-
-// GetAppSession returns an application specific web session.
-func (c *Client) GetAppSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
-	clt, err := c.grpc()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	resp, err := clt.GetAppSession(ctx, &proto.GetAppSessionRequest{
+	resp, err := clt.GetAppSession(ctx, &proto.GetAppWebSessionRequest{
 		Username:   req.Username,
 		ParentHash: req.ParentHash,
 		SessionID:  req.SessionID,
@@ -2843,6 +2821,105 @@ func (c *Client) GetAppSession(ctx context.Context, req services.GetAppSessionRe
 	}
 
 	return resp.GetSession(), nil
+}
+
+func (c *Client) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	protoSession, ok := app.(*services.WebSessionV2)
+	if !ok {
+		return nil, trace.BadParameter("invalid type for app: %T", app)
+	}
+	resp, err := clt.UpsertAppWebSession(ctx, &proto.UpsertAppWebSessionRequest{
+		Session: protoSession,
+	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetSession(), nil
+}
+
+func (c *Client) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetAppSession(ctx, &proto.GetAppSessionRequest{
+		SessionID: sessionID,
+	})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetSession(), nil
+}
+
+func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetAppSessions(ctx, &empty.Empty{})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetSessions(), nil
+}
+
+func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	protoSession, ok := session.(*services.AppSessionV3)
+	if !ok {
+		return trace.BadParameter("invalid type %T", session)
+	}
+	err := clt.UpsertAppSession(ctx, &proto.UpsertAppSessionRequest{
+		Session: protoSession,
+	})
+	if err != nil {
+		return trail.FromGRPC(err)
+
+	}
+	return nil
+}
+func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
+		SessionID: sessionID,
+	})
+	if err != nil {
+
+		return trail.FromGRPC(err)
+	}
+
+	return nil
+
+}
+func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := clt.DeleteAllAppSessiosn(ctx, &empty.Empty{}); err != nil {
+		return trail.FromGRPC(err)
+	}
+
+	return nil
 }
 
 // WebService implements features used by Web UI clients

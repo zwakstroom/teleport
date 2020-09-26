@@ -259,6 +259,26 @@ message GenerateAppTokenRequest {
 // GenerateAppTokenResponse contains a signed token with claims.
 message GenerateAppTokenResponse { string Token = 1 [ (gogoproto.jsontag) = "token" ]; }
 
+message UpsertAppWebSessionRequest {
+    services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
+}
+
+// message UpsertAppWebSessionRequest {
+//    // PublicAddr is the address of the application requested.
+//    string PublicAddr = 1 [ (gogoproto.jsontag) = "public_addr" ];
+//    // ClusterName is the cluster within which the application is running.
+//    string ClusterName = 2 [ (gogoproto.jsontag) = "cluster_name" ];
+//    // SessionID is the session cookie.
+//    string SessionID = 3 [ (gogoproto.jsontag) = "session_id" ];
+//    // BearerToken is the bearer token for the session.
+//    string BearerToken = 4 [ (gogoproto.jsontag) = "bearer_token" ];
+//}
+//
+// message UpsertAppWebSessionResponse {
+//    // Session is the new application session that was created.
+//    services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
+//}
+
 message GetAppWebSessionRequest {
     // Username is the Teleport identity of the requester.
     string Username = 1 [ (gogoproto.jsontag) = "username" ];
@@ -272,22 +292,6 @@ message GetAppWebSessionResponse {
     services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
 }
 
-message CreateAppWebSessionRequest {
-    string Username = 1 [ (gogoproto.jsontag) = "username" ];
-    string PublicAddr = 2 [ (gogoproto.jsontag) = "public_addr" ];
-    string ClusterName = 3 [ (gogoproto.jsontag) = "cluster_name" ];
-    string SessionID = 4 [ (gogoproto.jsontag) = "session_id" ];
-}
-
-message CreateAppWebSessionResponse {
-    services.WebSessionV2 WebSession = 1 [ (gogoproto.jsontag) = "web_session" ];
-    services.AppSessionV3 AppSession = 2 [ (gogoproto.jsontag) = "app_session" ];
-}
-
-// message UpsertAppWebSessionRequest {
-//    services.WebSessionV2 Session = 1 [ (gogoproto.jsontag) = "session" ];
-//}
-
 message GetAppSessionRequest { string SessionID = 1 [ (gogoproto.jsontag) = "session_id" ]; }
 
 message GetAppSessionResponse {
@@ -298,15 +302,9 @@ message GetAppSessionsResponse {
     repeated services.AppSessionV3 Sessions = 1 [ (gogoproto.jsontag) = "sessions" ];
 }
 
-message CreateAppSessionRequest { string PublicAddr = 1 [ (gogoproto.jsontag) = "public_addr" ]; }
-
-message CreateAppSessionResponse {
+message UpsertAppSessionRequest {
     services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
 }
-
-// message UpsertAppSessionRequest {
-//    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
-//}
 
 message DeleteAppSessionRequest { string SessionID = 1 [ (gogoproto.jsontag) = "session_id" ]; }
 
@@ -373,13 +371,11 @@ service AuthService {
     rpc GenerateAppToken(GenerateAppTokenRequest) returns (GenerateAppTokenResponse);
 
     rpc GetAppWebSession(GetAppWebSessionRequest) returns (GetAppWebSessionResponse);
-    rpc CreateAppWebSession(CreateAppWebSessionRequest) returns (CreateAppWebSessionResponse);
-    // rpc UpsertAppWebSession(UpsertAppWebSessionRequest) returns (google.protobuf.Empty);
+    rpc UpsertAppWebSession(UpsertAppWebSessionRequest) returns (UpsertAppWebSessionResponse);
 
     rpc GetAppSession(GetAppSessionRequest) returns (GetAppSessionResponse);
     rpc GetAppSessions(google.protobuf.Empty) returns (GetAppSessionsResponse);
-    rpc CreateAppSession(CreateAppSessionRequest) returns (CreateAppSessionResponse);
-    // rpc UpsertAppSession(UpsertAppSessionRequest) returns (google.protobuf.Empty);
+    rpc UpsertAppSession(UpsertAppSessionRequest) returns (google.protobuf.Empty);
     rpc DeleteAppSession(DeleteAppSessionRequest) returns (google.protobuf.Empty);
     rpc DeleteAllAppSessions(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

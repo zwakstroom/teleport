@@ -1960,33 +1960,92 @@ func (a *AuthWithRoles) GenerateAppToken(ctx context.Context, params services.Ap
 	return token, nil
 }
 
-// CreateAppSession takes an existing web session and uses it to create a
-// new application session.
-func (a *AuthWithRoles) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.WebSession, error) {
-	// TODO(russjones): Include the username in services.CreateAppSessionRequest and validate it correctly here.
-	if err := a.currentUserAction(a.identity.Username); err != nil {
+func (a *AuthWithRoles) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
+	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	session, err := a.authServer.createAppSession(ctx, a.identity, req)
+	session, err := a.authServer.Identity.GetAppWebSession(ctx, req)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 	return session, nil
 }
 
-// GetAppSession returns the requested application specific session to
-// the caller.
-func (a *AuthWithRoles) GetAppSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
-	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbRead); err != nil {
+func (a *AuthWithRoles) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, services.AppSession, error) {
+	if err := a.currentUserAction(session.GetUser()); err != nil {
+		return trace.Wrap(err)
+	}
+
+	// TODO(russjones): Continue here.
+	if err := a.authServer.CreateAppWebSession(ctx, session); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (a *AuthWithRoles) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
+	return trace.NotImplemented("not implemented")
+}
+
+func (a *AuthWithRoles) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	session, err := a.authServer.Identity.GetAppSession(ctx, req)
+	session, err := a.authServer.Identity.GetAppSession(ctx, sessionID)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return trace.Wrap(err)
 	}
 	return session, nil
+}
+
+func (a *AuthWithRoles) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbList); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	sessions, err := a.authServer.Identity.GetAppSessions(ctx)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return sessions, nil
+}
+
+func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.AppSession) error {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbCreate); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := a.authServer.Identity.UpsertAppSessions(ctx, session); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) error {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := a.authServer.Identity.DeleteAppSession(ctx, sessionID); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (a *AuthWithRoles) DeleteAllAppSessions(ctx context.Context) error {
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := a.authServer.Identity.DeleteAllAppSessions(ctx); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
 }
 
 func (a *AuthWithRoles) Close() error {

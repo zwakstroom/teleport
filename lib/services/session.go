@@ -524,18 +524,44 @@ func (*TeleportWebSessionMarshaler) MarshalWebSession(ws WebSession, opts ...Mar
 	}
 }
 
-type CreateAppSessionRequest struct {
+type GetAppWebSessionRequest struct {
+	// Username is the Teleport identity of the requester.
+	Username string
+	// ParentHash is the hash of the parent session ID.
+	ParentHash string
+	// SessionID is the session ID of the application session itself.
+	SessionID string
+}
+
+func (r *GetAppWebSessionRequest) Check() error {
+	if r.Username == "" {
+		return trace.BadParameter("username is missing")
+	}
+	if r.ParentHash == "" {
+		return trace.BadParameter("parent hash is missing")
+	}
+	if r.SessionID == "" {
+		return trace.BadParameter("session ID is missing")
+	}
+	return nil
+}
+
+type CreateAppWebSessionRequest struct {
+	Username string `json:"username"`
 	// PublicAddr is the address of the application requested.
 	PublicAddr string `json:"app"`
 	// ClusterName is the cluster within which the application is running.
 	ClusterName string `json:"cluster_name"`
 	// SessionID is the ID of the parent session.
 	SessionID string
-	// BearerToken is the bearer token of the parent session.
-	BearerToken string
+	//// BearerToken is the bearer token of the parent session.
+	//BearerToken string
 }
 
-func (r CreateAppSessionRequest) Check() error {
+func (r CreateAppWebSessionRequest) Check() error {
+	if r.Username == "" {
+		return trace.BadParameter("username is missing")
+	}
 	if r.PublicAddr == "" {
 		return trace.BadParameter("public address is missing")
 	}
@@ -549,28 +575,6 @@ func (r CreateAppSessionRequest) Check() error {
 	//	return trace.BadParameter("bearer token is missing")
 	//}
 
-	return nil
-}
-
-type GetAppSessionRequest struct {
-	// Username is the Teleport identity of the requester.
-	Username string
-	// ParentHash is the hash of the parent session ID.
-	ParentHash string
-	// SessionID is the session ID of the application session itself.
-	SessionID string
-}
-
-func (r *GetAppSessionRequest) Check() error {
-	if r.Username == "" {
-		return trace.BadParameter("username is missing")
-	}
-	if r.ParentHash == "" {
-		return trace.BadParameter("parent hash is missing")
-	}
-	if r.SessionID == "" {
-		return trace.BadParameter("session ID is missing")
-	}
 	return nil
 }
 

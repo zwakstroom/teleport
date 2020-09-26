@@ -528,42 +528,6 @@ func (s *IdentityService) UpsertWebSession(user, sid string, session services.We
 	return trace.Wrap(err)
 }
 
-// UpsertAppSession updates to inserts an application specific session.
-func (s *IdentityService) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
-	value, err := services.GetWebSessionMarshaler().MarshalWebSession(session)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	item := backend.Item{
-		Key:     backend.Key(webPrefix, usersPrefix, session.GetUser(), sessionsPrefix, session.GetParentHash(), session.GetName()),
-		Value:   value,
-		Expires: session.GetExpiryTime(),
-	}
-
-	if _, err = s.Put(ctx, item); err != nil {
-		return trace.Wrap(err)
-	}
-	return nil
-}
-
-// GetAppSession returns an application specific session.
-func (s *IdentityService) GetAppWebSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
-	if err := req.Check(); err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	item, err := s.Get(ctx, backend.Key(webPrefix, usersPrefix, req.Username, sessionsPrefix, req.ParentHash, req.SessionID))
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	return session, nil
-}
-
 // AddUserLoginAttempt logs user login attempt
 func (s *IdentityService) AddUserLoginAttempt(user string, attempt services.LoginAttempt, ttl time.Duration) error {
 	if err := attempt.Check(); err != nil {
