@@ -558,42 +558,13 @@ func (g *GRPCServer) GenerateAppToken(ctx context.Context, req *proto.GenerateAp
 	}, nil
 }
 
-// CreateAppSession takes an existing web session and uses it to create a
-// new application session.
-func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppSessionRequest) (*proto.CreateAppSessionResponse, error) {
+func (g *GRPCServer) GetAppWebSession(ctx context.Context, req *proto.GetAppWebSessionRequest) (*proto.GetAppWebSessionResponse, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
-	session, err := auth.CreateAppSession(ctx, services.CreateAppSessionRequest{
-		PublicAddr:  req.GetPublicAddr(),
-		ClusterName: req.GetClusterName(),
-		SessionID:   req.GetSessionID(),
-		BearerToken: req.GetBearerToken(),
-	})
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-	sess, ok := session.(*services.WebSessionV2)
-	if !ok {
-		return nil, trail.ToGRPC(trace.BadParameter("unexpected session type %T", session))
-	}
-
-	return &proto.CreateAppSessionResponse{
-		Session: sess,
-	}, nil
-}
-
-// GetAppSession returns the requested application specific session to
-// the caller.
-func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSessionRequest) (*proto.GetAppSessionResponse, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	session, err := auth.GetAppSession(ctx, services.GetAppSessionRequest{
+	session, err := auth.GetAppWebSession(ctx, services.GetAppWebSessionRequest{
 		Username:   req.GetUsername(),
 		ParentHash: req.GetParentHash(),
 		SessionID:  req.GetSessionID(),
@@ -606,9 +577,118 @@ func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSession
 		return nil, trail.ToGRPC(trace.BadParameter("unexpected session type %T", session))
 	}
 
+	return &proto.GetAppWebSessionResponse{
+		Session: sess,
+	}, nil
+}
+
+func (g *GRPCServer) UpsertAppWebSession(ctx context.Context, req *proto.UpsertAppWebSessionRequest) (*proto.UpsertAppWebSessionResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	session, err := auth.UpsertAppWebSession(ctx, services.UpsertAppWebSessionRequest{
+		PublicAddr:  req.GetPublicAddr(),
+		ClusterName: req.GetClusterName(),
+		SessionID:   req.GetSessionID(),
+	})
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	sess, ok := session.(*services.WebSessionV2)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected session type %T", session))
+	}
+
+	return &proto.UpsertAppSessionResponse{
+		Session: sess,
+	}, nil
+}
+
+func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSessionRequest) (*proto.GetAppSessionResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	session, err := auth.GetAppSession(ctx, req.SessionID)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+	sess, ok := session.(*services.AppSessionV3)
+	if !ok {
+		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
+	}
+
 	return &proto.GetAppSessionResponse{
 		Session: sess,
 	}, nil
+}
+
+func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto.GetAppSessionsResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	sessions, err := auth.GetAppSessions(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	var sessions []*services.AppSession
+	for _, session := range sessions {
+		sess, ok := session.(*services.AppSessionV3)
+		if !ok {
+			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
+		}
+		sessions = append(sessions, sess)
+	}
+
+	return &proto.GetAppSessionsResponse{
+		Sessions: sessions,
+	}
+}
+
+func (g *GRPCServer) UpsertAppSession(ctx context.Context, req *UpsertAppSessionRequest) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	err := auth.UpsertAppSession(ctx, req.Session)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
+}
+
+func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *DeleteAppSessionRequest) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	if err := auth.DeleteAppSession(ctx, req.SessionID); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
+}
+
+func (g *GRPCServer) DeleteAllAppSessions(ctx context.Context, _ *empty.Empty) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	if err := auth.DeleteAllAppSessions(ctx); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
 }
 
 type grpcContext struct {

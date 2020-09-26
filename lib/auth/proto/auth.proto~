@@ -259,7 +259,9 @@ message GenerateAppTokenRequest {
 // GenerateAppTokenResponse contains a signed token with claims.
 message GenerateAppTokenResponse { string Token = 1 [ (gogoproto.jsontag) = "token" ]; }
 
-message UpsertAppWebSessionRequest {
+// CreateAppSessionRequest contains the parameters needed to create an
+// application session from an existing web session.
+message CreateAppSessionRequest {
     // PublicAddr is the address of the application requested.
     string PublicAddr = 1 [ (gogoproto.jsontag) = "public_addr" ];
     // ClusterName is the cluster within which the application is running.
@@ -296,11 +298,11 @@ message GetAppSessionResponse {
 }
 
 message GetAppSessionsResponse {
-    repeated services.AppSessionV3 Sessions = 1 [ (gogoproto.jsontag) = "sessions" ];
+    repeated services.AppSessionV3 Session = 2 [ (gogoproto.jsontag) = "sessions" ];
 }
 
 message UpsertAppSessionRequest {
-    services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
+    services.AppSessionV3 Session = [ (gogoproto.jsontag) = "session" ];
 }
 
 message DeleteAppSessionRequest { string SessionID = 1 [ (gogoproto.jsontag) = "session_id" ]; }

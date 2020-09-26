@@ -529,7 +529,7 @@ func (s *IdentityService) UpsertWebSession(user, sid string, session services.We
 }
 
 // UpsertAppSession updates to inserts an application specific session.
-func (s *IdentityService) UpsertAppSession(ctx context.Context, session services.WebSession) error {
+func (s *IdentityService) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
 	value, err := services.GetWebSessionMarshaler().MarshalWebSession(session)
 	if err != nil {
 		return trace.Wrap(err)
@@ -547,7 +547,7 @@ func (s *IdentityService) UpsertAppSession(ctx context.Context, session services
 }
 
 // GetAppSession returns an application specific session.
-func (s *IdentityService) GetAppSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
+func (s *IdentityService) GetAppWebSession(ctx context.Context, req services.GetAppSessionRequest) (services.WebSession, error) {
 	if err := req.Check(); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -656,20 +656,12 @@ func (s *IdentityService) DeleteWebSession(user string, sessionID string) error 
 		return trace.Wrap(err)
 	}
 
+	// TODO(russjones): !!
 	// Delete all application specific sessions.
-	if err := s.DeleteAllAppSessions(ctx, user, sessionID); err != nil {
-		return trace.Wrap(err)
-	}
+	//if err := s.DeleteAllAppSessions(ctx, user, sessionID); err != nil {
+	//	return trace.Wrap(err)
+	//}
 
-	return nil
-}
-
-// DeleteAllAppSessions deletes all applicable specific sessions for a parent session.
-func (s *IdentityService) DeleteAllAppSessions(ctx context.Context, user string, sessionID string) error {
-	startKey := backend.Key(webPrefix, usersPrefix, user, sessionsPrefix, services.SessionHash(sessionID))
-	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
-		return trace.Wrap(err)
-	}
 	return nil
 }
 

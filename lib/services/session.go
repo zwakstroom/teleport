@@ -545,9 +545,9 @@ func (r CreateAppSessionRequest) Check() error {
 	if r.SessionID == "" {
 		return trace.BadParameter("session ID is missing")
 	}
-	if r.BearerToken == "" {
-		return trace.BadParameter("bearer token is missing")
-	}
+	//if r.BearerToken == "" {
+	//	return trace.BadParameter("bearer token is missing")
+	//}
 
 	return nil
 }

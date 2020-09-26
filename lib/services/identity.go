@@ -121,13 +121,6 @@ type Identity interface {
 	// GetWebSession returns a web session state for a given user and session id
 	GetWebSession(user, sid string) (WebSession, error)
 
-	// GetAppSession returns the requested application specific session to
-	// the caller.
-	GetAppSession(context.Context, GetAppSessionRequest) (WebSession, error)
-
-	// UpsertAppSession updates to inserts an application specific session.
-	UpsertAppSession(context.Context, WebSession) error
-
 	// DeleteWebSession deletes web session from the storage
 	DeleteWebSession(user, sid string) error
 
@@ -235,6 +228,15 @@ type Identity interface {
 
 	// GetResetPasswordTokenSecrets returns token secrets
 	GetResetPasswordTokenSecrets(ctx context.Context, tokenID string) (ResetPasswordTokenSecrets, error)
+
+	GetAppWebSession(context.Context, GetAppSessionRequest) (WebSession, error)
+	UpsertAppWebSession(context.Context, WebSession) error
+
+	GetAppSession(ctx context.Context, sessionID string) (AppSession, error)
+	GetAppSessions(ctx context.Context) ([]AppSession, error)
+	UpsertAppSession(ctx context.Context, session AppSession) error
+	DeleteAppSession(ctx context.Context, sessionID string) error
+	DeleteAllAppSessions(ctx context.Context) error
 }
 
 // VerifyPassword makes sure password satisfies our requirements (relaxed),

@@ -380,7 +380,9 @@ func (s *Server) getApp(ctx context.Context, publicAddr string) (*services.App, 
 
 	for _, server := range servers {
 		for _, a := range server.GetApps() {
-			if publicAddr == a.PublicAddr {
+			host, _, _ := net.SplitHostPort(a.PublicAddr)
+			//if publicAddr == a.PublicAddr {
+			if publicAddr == host {
 				return a, server, nil
 			}
 		}

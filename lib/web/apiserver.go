@@ -129,6 +129,9 @@ func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.appHandler.ServeHTTP(w, r)
 		return
 	}
+	// if r.Host != proxyPublicAddr {
+	//   302 proxyPublicAddr/web/launcher/{r.Host}
+	//}
 	h.Handler.ServeHTTP(w, r)
 }
 

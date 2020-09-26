@@ -175,7 +175,9 @@ func (s *sessionCache) GetApp(ctx context.Context, publicAddr string, clusterNam
 	}
 	for _, server := range servers {
 		for _, a := range server.GetApps() {
-			if a.PublicAddr == publicAddr {
+			//if a.PublicAddr == publicAddr {
+			host, _, _ := net.SplitHostPort(a.PublicAddr)
+			if host == publicAddr {
 				appMatch = append(appMatch, a)
 				serverMatch = append(serverMatch, server)
 			}
@@ -240,7 +242,7 @@ func (s *sessionCache) newSession(ctx context.Context, cookieValue string, sess 
 		ConnType:    services.AppTunnel,
 	})
 	if err != nil {
-		s.log.Warnf("Failed to establish connection to %q through reverse tunnel: %v.", sess.GetPublicAddr(), err)
+		s.log.Warnf("Failed to establish connection to %q through reverse tunnel: %#v.", sess.GetPublicAddr(), err)
 		return nil, trace.BadParameter("application not available")
 	}
 

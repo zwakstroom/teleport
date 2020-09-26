@@ -19,6 +19,7 @@ limitations under the License.
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -44,7 +45,8 @@ func (h *Handler) siteAppsGet(w http.ResponseWriter, r *http.Request, p httprout
 		return nil, trace.Wrap(err)
 	}
 
-	proxies, err := clt.GetProxies()
+	//proxies, err := clt.GetProxies()
+	proxies, err := h.cfg.ProxyClient.GetProxies()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -60,6 +62,7 @@ func (h *Handler) siteAppsGet(w http.ResponseWriter, r *http.Request, p httprout
 		return nil, trace.Wrap(err)
 	}
 	// remove port number if any
+	// TODO(russjones): Handle IPv6.
 	proxyHost = strings.Split(proxyHost, ":")[0]
 	appClusterName := p.ByName("site")
 
@@ -79,10 +82,22 @@ func (h *Handler) createAppSession(w http.ResponseWriter, r *http.Request, p htt
 		return nil, trace.Wrap(err)
 	}
 
+	fmt.Printf("--> fqdn: %v.\n", req.FQDN)
+	//--> fqdn: dumper.example.com:3080.
+
+	//for app in apps:
+	//  if publicAddr == fqdn:
+	//     found app
+
+	//appName.publicAddrOfRemoteProxy
+	//publicAddr
+
 	session, err := client.CreateAppSession(r.Context(), services.CreateAppSessionRequest{
 		// TODO: add app name
 		// TODO: add app cluster id
-		SessionID: ctx.GetWebSession().GetName(),
+		PublicAddr:  "dumper.example.com",
+		ClusterName: "example.com",
+		SessionID:   ctx.GetWebSession().GetName(),
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)
