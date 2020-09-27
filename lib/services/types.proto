@@ -1074,19 +1074,25 @@ message WebSessionSpecV2 {
         (gogoproto.nullable) = false,
         (gogoproto.jsontag) = "expires"
     ];
-    // Type is the type of keep alive, either server or app.
-    enum SessionType {
-        UNKNOWN = 0;
-        Web = 1;
-        App = 2;
-    }
-    SessionType Type = 8 [ (gogoproto.jsontag) = "type" ];
-    // ParentHash is the hash of the parent session.
-    string ParentHash = 9 [ (gogoproto.jsontag) = "parent_hash,omitempty" ];
-    // PublicAddr is the address of the application requested.
-    string PublicAddr = 10 [ (gogoproto.jsontag) = "public_addr,omitempty" ];
-    // ClusterName is the cluster within which the application is running.
+
+    string ParentHash = 8 [ (gogoproto.jsontag) = "parent_hash,omitempty" ];
+    string SessionID = 9 [ (gogoproto.jsontag) = "session_id,omitempty" ];
+    string ServerID = 10 [ (gogoproto.jsontag) = "server_id,omitempty" ];
     string ClusterName = 11 [ (gogoproto.jsontag) = "cluster_name,omitempty" ];
+
+    //// Type is the type of keep alive, either server or app.
+    // enum SessionType {
+    //    UNKNOWN = 0;
+    //    Web = 1;
+    //    App = 2;
+    //}
+    // SessionType Type = 8 [ (gogoproto.jsontag) = "type" ];
+    //// ParentHash is the hash of the parent session.
+    // string ParentHash = 9 [ (gogoproto.jsontag) = "parent_hash,omitempty" ];
+    //// PublicAddr is the address of the application requested.
+    // string PublicAddr = 10 [ (gogoproto.jsontag) = "public_addr,omitempty" ];
+    //// ClusterName is the cluster within which the application is running.
+    // string ClusterName = 11 [ (gogoproto.jsontag) = "cluster_name,omitempty" ];
 }
 
 message AppSessionV3 {

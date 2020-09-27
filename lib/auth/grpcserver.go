@@ -693,18 +693,18 @@ func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto
 		return nil, trail.ToGRPC(err)
 	}
 
-	var sessions []*services.AppSession
+	var protoSessions []*services.AppSessionV3
 	for _, session := range sessions {
 		sess, ok := session.(*services.AppSessionV3)
 		if !ok {
 			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
 		}
-		sessions = append(sessions, sess)
+		protoSessions = append(protoSessions, sess)
 	}
 
 	return &proto.GetAppSessionsResponse{
-		Sessions: sessions,
-	}
+		Sessions: protoSessions,
+	}, nil
 }
 
 func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppSessionRequest) (*proto.CreateAppSessionResponse, error) {
@@ -729,7 +729,7 @@ func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppS
 	}, nil
 }
 
-func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *DeleteAppSessionRequest) (*empty.Empty, error) {
+func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *proto.DeleteAppSessionRequest) (*empty.Empty, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)

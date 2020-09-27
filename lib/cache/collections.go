@@ -1144,7 +1144,7 @@ type appWebSession struct {
 }
 
 func (a *appWebSession) erase() error {
-	if err := a.webIdentityCache.DeleteAllAppWebSessions(context.TODO()); err != nil {
+	if err := a.appIdentityCache.DeleteAllAppWebSessions(context.TODO()); err != nil {
 		if !trace.IsNotFound(err) {
 			return trace.Wrap(err)
 		}
@@ -1153,7 +1153,7 @@ func (a *appWebSession) erase() error {
 }
 
 func (a *appWebSession) fetch(ctx context.Context) error {
-	resources, err := a.WebIdentity.GetAppWebSessions(ctx)
+	resources, err := a.AppIdentity.GetAppWebSessions(ctx)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -1162,7 +1162,7 @@ func (a *appWebSession) fetch(ctx context.Context) error {
 	}
 	for _, resource := range resources {
 		a.setTTL(resource)
-		if err := a.webIdentityCache.UpsertAppWebSession(ctx, resource); err != nil {
+		if err := a.appIdentityCache.UpsertAppWebSession(ctx, resource); err != nil {
 			return trace.Wrap(err)
 		}
 	}
@@ -1177,7 +1177,7 @@ func (a *appWebSession) processEvent(ctx context.Context, event services.Event) 
 			return trace.BadParameter("unexpected type %T", event.Resource)
 		}
 
-		err := a.webIdentityCache.DeleteAppWebSession(ctx, services.DeleteAppWebSessionRequest{
+		err := a.appIdentityCache.DeleteAppWebSession(ctx, services.DeleteAppWebSessionRequest{
 			Username:   resource.GetUser(),
 			ParentHash: resource.GetParentHash(),
 			SessionID:  resource.GetName(),
@@ -1196,7 +1196,7 @@ func (a *appWebSession) processEvent(ctx context.Context, event services.Event) 
 			return trace.BadParameter("unexpected type %T", event.Resource)
 		}
 		a.setTTL(resource)
-		if err := a.webIdentityCache.UpsertAppWebSession(ctx, resource); err != nil {
+		if err := a.appIdentityCache.UpsertAppWebSession(ctx, resource); err != nil {
 			return trace.Wrap(err)
 		}
 	default:

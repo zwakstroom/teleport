@@ -108,23 +108,23 @@ func (s *IdentityService) GetAppSession(ctx context.Context, sessionID string) (
 	return session, nil
 }
 
-//func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
-//	startKey := backend.Key(sessionsPrefix, appsPrefix)
-//	result, err := s.GetRange(context.TODO(), startKey, backend.RangeEnd(startKey), backend.NoLimit)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	out := make([]services.AppSession, len(result.Items))
-//	for i, item := range result.Items {
-//		var a services.AppSession
-//		if err := json.Unmarshal(item.Value, &a); err != nil {
-//			return nil, trace.Wrap(err)
-//		}
-//		out[i] = a
-//	}
-//	return out, nil
-//}
+func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+	startKey := backend.Key(sessionsPrefix, appsPrefix)
+	result, err := s.GetRange(ctx, startKey, backend.RangeEnd(startKey), backend.NoLimit)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	out := make([]services.AppSession, len(result.Items))
+	for i, item := range result.Items {
+		var a services.AppSession
+		if err := json.Unmarshal(item.Value, &a); err != nil {
+			return nil, trace.Wrap(err)
+		}
+		out[i] = a
+	}
+	return out, nil
+}
 
 func (s *IdentityService) UpsertAppSession(ctx context.Context, session services.AppSession) error {
 	value, err := services.GetAppSessionMarshaler().MarshalAppSession(session)
@@ -143,17 +143,17 @@ func (s *IdentityService) UpsertAppSession(ctx context.Context, session services
 	return nil
 }
 
-//func (s *IdentityService) DeleteAppSession(ctx context.Context, sessionID string) error {
-//	if err := s.Delete(ctx, backend.Key(sessionsPrefix, appsPrefix, sessionID)); err != nil {
-//		return trace.Wrap(err)
-//	}
-//	return nil
-//}
-//
-//func (s *IdentityService) DeleteAllAppSessions(ctx context.Context) error {
-//	startKey := backend.Key(sessionsPrefix, appsPrefix)
-//	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
-//		return trace.Wrap(err)
-//	}
-//	return nil
-//}
+func (s *IdentityService) DeleteAppSession(ctx context.Context, sessionID string) error {
+	if err := s.Delete(ctx, backend.Key(sessionsPrefix, appsPrefix, sessionID)); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (s *IdentityService) DeleteAllAppSessions(ctx context.Context) error {
+	startKey := backend.Key(sessionsPrefix, appsPrefix)
+	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}

@@ -513,8 +513,12 @@ func (a *AuthWithRoles) NewWatcher(ctx context.Context, watch services.Watch) (s
 			if err := a.action(defaults.Namespace, services.KindApp, services.VerbRead); err != nil {
 				return nil, trace.Wrap(err)
 			}
-		case services.KindWebSession:
-			if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbRead); err != nil {
+		case services.KindAppWebSession:
+			if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbRead); err != nil {
+				return nil, trace.Wrap(err)
+			}
+		case services.KindAppSession:
+			if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
 				return nil, trace.Wrap(err)
 			}
 		default:
@@ -1966,7 +1970,8 @@ func (a *AuthWithRoles) GenerateAppToken(ctx context.Context, params services.Ap
 }
 
 func (a *AuthWithRoles) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
-	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbRead); err != nil {
+	fmt.Printf("--> a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
@@ -1978,10 +1983,11 @@ func (a *AuthWithRoles) GetAppWebSession(ctx context.Context, req services.GetAp
 }
 
 func (a *AuthWithRoles) GetAppWebSessions(ctx context.Context) ([]services.WebSession, error) {
-	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbList); err != nil {
+	fmt.Printf("--> a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbList); err != nil {
 		return nil, trace.Wrap(err)
 	}
-	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbRead); err != nil {
+	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
@@ -1993,6 +1999,7 @@ func (a *AuthWithRoles) GetAppWebSessions(ctx context.Context) ([]services.WebSe
 }
 
 func (a *AuthWithRoles) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, error) {
+	fmt.Printf("--> a.identity: %v.\n", a.identity)
 	if err := a.currentUserAction(req.Username); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -2011,7 +2018,8 @@ func (a *AuthWithRoles) UpsertAppWebSession(ctx context.Context, session service
 }
 
 func (a *AuthWithRoles) DeleteAppWebSession(ctx context.Context, req services.DeleteAppWebSessionRequest) error {
-	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbDelete); err != nil {
+	fmt.Printf("--> a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
 
@@ -2022,7 +2030,8 @@ func (a *AuthWithRoles) DeleteAppWebSession(ctx context.Context, req services.De
 }
 
 func (a *AuthWithRoles) DeleteAllAppWebSessions(ctx context.Context) error {
-	if err := a.action(defaults.Namespace, services.KindWebSession, services.VerbDelete); err != nil {
+	fmt.Printf("--> a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
 
@@ -2033,6 +2042,7 @@ func (a *AuthWithRoles) DeleteAllAppWebSessions(ctx context.Context) error {
 }
 
 func (a *AuthWithRoles) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
+	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -2044,28 +2054,31 @@ func (a *AuthWithRoles) GetAppSession(ctx context.Context, sessionID string) (se
 	return session, nil
 }
 
-//func (a *AuthWithRoles) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
-//	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbList); err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	sessions, err := a.authServer.Identity.GetAppSessions(ctx)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//	return sessions, nil
-//}
+func (a *AuthWithRoles) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+
+	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbList); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	sessions, err := a.authServer.Identity.GetAppSessions(ctx)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return sessions, nil
+}
 
 func (a *AuthWithRoles) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
-	// TODO(russjones): Verify that no authorization checks need to occur, anyone
-	// can try and create an application session with their own identity. The
-	// Auth Server decides using the mapped identity if access is allowed.
-	//if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbCreate); err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
+	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
+	// TODO(russjones): The only check that needs to occur here is if the role
+	// is a user role. But note this does not really provide security properties,
+	// auth does that.
+	//
+	// Any user is allowed to request a session, just like an SSH session,
+	// however, auth decides if this session will be granted.
 
 	session, err := a.authServer.CreateAppSession(ctx, req)
 	if err != nil {
@@ -2079,27 +2092,29 @@ func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.A
 	return trace.NotImplemented("not implemented")
 }
 
-//func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) error {
-//	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
-//		return trace.Wrap(err)
-//	}
-//
-//	if err := a.authServer.Identity.DeleteAppSession(ctx, sessionID); err != nil {
-//		return trace.Wrap(err)
-//	}
-//	return nil
-//}
-//
-//func (a *AuthWithRoles) DeleteAllAppSessions(ctx context.Context) error {
-//	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
-//		return trace.Wrap(err)
-//	}
-//
-//	if err := a.authServer.Identity.DeleteAllAppSessions(ctx); err != nil {
-//		return trace.Wrap(err)
-//	}
-//	return nil
-//}
+func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) error {
+	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+
+	if err := a.authServer.Identity.DeleteAppSession(ctx, sessionID); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (a *AuthWithRoles) DeleteAllAppSessions(ctx context.Context) error {
+	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
+	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+
+	if err := a.authServer.Identity.DeleteAllAppSessions(ctx); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
 
 func (a *AuthWithRoles) Close() error {
 	return a.authServer.Close()

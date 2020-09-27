@@ -199,11 +199,11 @@ func (h *Handler) authenticate(r *http.Request) (services.WebSession, error) {
 // the target. If an error occurs, the error handler attached to the session
 // is called.
 func (h *Handler) forward(w http.ResponseWriter, r *http.Request, session services.WebSession) {
-	_, server, err := h.getApp(r.Context(), session.GetPublicAddr(), session.GetClusterName())
-	if err != nil {
-		http.Error(w, "internal service error", 500)
-		return
-	}
+	//_, server, err := h.getApp(r.Context(), session.GetPublicAddr(), session.GetClusterName())
+	//if err != nil {
+	//	http.Error(w, "internal service error", 500)
+	//	return
+	//}
 
 	// Get a connection through the reverse tunnel to the target application.
 	clusterClient, err := h.c.ProxyClient.GetSite(session.GetClusterName())
@@ -212,7 +212,8 @@ func (h *Handler) forward(w http.ResponseWriter, r *http.Request, session servic
 		return
 	}
 	conn, err := clusterClient.Dial(reversetunnel.DialParams{
-		ServerID: strings.Join([]string{server.GetName(), session.GetClusterName()}, "."),
+		//ServerID: strings.Join([]string{server.GetName(), session.GetClusterName()}, "."),
+		ServerID: strings.Join([]string{session.GetServerID(), session.GetClusterName()}, "."),
 		ConnType: services.AppTunnel,
 	})
 	if err != nil {

@@ -2881,8 +2881,8 @@ func (c *Client) DeleteAppWebSession(ctx context.Context, req services.DeleteApp
 	}
 
 	return nil
-
 }
+
 func (c *Client) DeleteAllAppWebSessions(ctx context.Context) error {
 	clt, err := c.grpc()
 	if err != nil {
@@ -2923,7 +2923,11 @@ func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, err
 		return nil, trail.FromGRPC(err)
 	}
 
-	return resp.GetSessions(), nil
+	out := make([]services.AppSession, 0, len(resp.GetSessions()))
+	for _, v := range resp.GetSessions() {
+		out = append(out, v)
+	}
+	return out, nil
 }
 
 func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
@@ -2952,7 +2956,7 @@ func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
 		return trace.Wrap(err)
 	}
 
-	err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
+	_, err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
 		SessionID: sessionID,
 	})
 	if err != nil {
@@ -2961,15 +2965,15 @@ func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
 	}
 
 	return nil
-
 }
+
 func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
 	clt, err := c.grpc()
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return trace.Wrap(err)
 	}
 
-	if err := clt.DeleteAllAppSessiosn(ctx, &empty.Empty{}); err != nil {
+	if _, err := clt.DeleteAllAppSessions(ctx, &empty.Empty{}); err != nil {
 		return trail.FromGRPC(err)
 	}
 
@@ -2992,7 +2996,7 @@ type WebService interface {
 	// caller signed and embedded inside.
 	GenerateAppToken(context.Context, services.AppTokenParams) (string, error)
 
-	services.WebIdentity
+	services.AppIdentity
 
 	//GetAppWebSession(context.Context, services.GetAppWebSessionRequest) (services.WebSession, error)
 

@@ -41,10 +41,7 @@ type WebSession interface {
 	GetShortName() string
 	// GetName returns session name
 	GetName() string
-	// GetType gets the type of session, either web or app.
-	GetType() WebSessionSpecV2_SessionType
-	// SetType sets the type of session, either web or app.
-	SetType(WebSessionSpecV2_SessionType)
+
 	// GetUser returns the user this session is associated with
 	GetUser() string
 	// SetName sets session name
@@ -60,14 +57,14 @@ type WebSession interface {
 	// GetTLSCert returns PEM encoded TLS certificate associated with session
 	GetTLSCert() []byte
 
+	// GetServerID gets the ID of the server the application is running on.
+	GetServerID() string
+	// GetServerID sets the ID of the server the application is running on.
+	SetServerID(string)
 	// GetParentHash gets the hash of the parent session.
 	GetParentHash() string
 	// SetParentHash sets the hash of the parent session.
 	SetParentHash(string)
-	// GetPublicAddr gets the address of the application requested.
-	GetPublicAddr() string
-	// SetPublicAddr sets the address of the application requested.
-	SetPublicAddr(string)
 	// ClusterName gets the name of the cluster in which the application is running.
 	GetClusterName() string
 	// ClusterName sets the name of the cluster in which the application is running.
@@ -96,6 +93,16 @@ type WebSession interface {
 	String() string
 
 	Expiry() time.Time
+
+	//// GetType gets the type of session, either web or app.
+	//GetType() WebSessionSpecV2_SessionType
+	//// SetType sets the type of session, either web or app.
+	//SetType(WebSessionSpecV2_SessionType)
+	//// GetPublicAddr gets the address of the application requested.
+	//GetPublicAddr() string
+	//// SetPublicAddr sets the address of the application requested.
+	//SetPublicAddr(string)
+
 }
 
 // NewWebSession returns new instance of the web session based on the V2 spec
@@ -219,15 +226,15 @@ func (ws *WebSessionV2) GetShortName() string {
 //	return ws.Metadata.Name
 //}
 
-// GetType gets the type of session, either web or app.
-func (ws *WebSessionV2) GetType() WebSessionSpecV2_SessionType {
-	return ws.Spec.Type
-}
-
-// SetType sets the type of session, either web or app.
-func (ws *WebSessionV2) SetType(sessionType WebSessionSpecV2_SessionType) {
-	ws.Spec.Type = sessionType
-}
+//// GetType gets the type of session, either web or app.
+//func (ws *WebSessionV2) GetType() WebSessionSpecV2_SessionType {
+//	return ws.Spec.Type
+//}
+//
+//// SetType sets the type of session, either web or app.
+//func (ws *WebSessionV2) SetType(sessionType WebSessionSpecV2_SessionType) {
+//	ws.Spec.Type = sessionType
+//}
 
 // GetTLSCert returns PEM encoded TLS certificate associated with session
 func (ws *WebSessionV2) GetTLSCert() []byte {
@@ -244,15 +251,23 @@ func (ws *WebSessionV2) SetParentHash(parentHash string) {
 	ws.Spec.ParentHash = parentHash
 }
 
-// GetPublicAddr gets the address of the application requested.
-func (ws *WebSessionV2) GetPublicAddr() string {
-	return ws.Spec.PublicAddr
+func (ws *WebSessionV2) GetServerID() string {
+	return ws.Spec.ServerID
 }
 
-// SetPublicAddr sets the address of the application requested.
-func (ws *WebSessionV2) SetPublicAddr(publicAddr string) {
-	ws.Spec.PublicAddr = publicAddr
+func (ws *WebSessionV2) SetServerID(serverID string) {
+	ws.Spec.ServerID = serverID
 }
+
+//// GetPublicAddr gets the address of the application requested.
+//func (ws *WebSessionV2) GetPublicAddr() string {
+//	return ws.Spec.PublicAddr
+//}
+//
+//// SetPublicAddr sets the address of the application requested.
+//func (ws *WebSessionV2) SetPublicAddr(publicAddr string) {
+//	ws.Spec.PublicAddr = publicAddr
+//}
 
 // ClusterName gets the name of the cluster in which the application is running.
 func (ws *WebSessionV2) GetClusterName() string {
@@ -334,6 +349,7 @@ const WebSessionSpecV2Schema = `{
     "tls_cert": {"type": "string"},
     "parent_hash": {"type": "string"},
     "public_addr": {"type": "string"},
+    "server_id": {"type": "string"},
     "cluster_name": {"type": "string"},
     "bearer_token": {"type": "string"},
     "bearer_token_expires": {"type": "string"},

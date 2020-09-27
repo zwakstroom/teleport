@@ -40,8 +40,9 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	session.SetType(services.WebSessionSpecV2_App)
-	session.SetPublicAddr(req.PublicAddr)
+	// TODO(russjones): set session id and server id here.
+	//session.SetType(services.WebSessionSpecV2_App)
+	//session.SetPublicAddr(req.PublicAddr)
 	session.SetParentHash(services.SessionHash(parentSession.GetName()))
 	session.SetClusterName(req.ClusterName)
 

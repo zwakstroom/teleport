@@ -102,8 +102,8 @@ type ReadAccessPoint interface {
 	// GetApps returns a list of registered apps for this cluster.
 	GetApps(context.Context, string, ...services.MarshalOption) ([]services.Server, error)
 
-	//GetAppsWithIdentity(context.Context, string, ...services.MarshalOption) ([]services.Server, error)
 	GetAppWebSession(context.Context, services.GetAppWebSessionRequest) (services.WebSession, error)
+	GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error)
 }
 
 // AccessPoint is an API interface implemented by a certificate authority (CA)

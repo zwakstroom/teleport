@@ -18,6 +18,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"sync/atomic"
 	"time"
 
@@ -70,7 +71,7 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindReverseTunnel},
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindApp},
-		{Kind: services.KindWebSession},
+		{Kind: services.KindAppWebSession},
 	}
 	cfg.QueueSize = defaults.ProxyQueueSize
 	return cfg
@@ -299,7 +300,7 @@ func New(config Config) (*Cache, error) {
 		accessCache:        local.NewAccessService(wrapper),
 		dynamicAccessCache: local.NewDynamicAccessService(wrapper),
 		presenceCache:      local.NewPresenceService(wrapper),
-		appSessionCache:    local.NewIdentityService(wrapper),
+		appIdentityCache:   local.NewIdentityService(wrapper),
 		eventsFanout:       services.NewFanout(),
 		Entry: log.WithFields(log.Fields{
 			trace.Component: config.Component,
@@ -355,6 +356,7 @@ func (c *Cache) update(ctx context.Context) {
 		if err != nil {
 			c.setCacheState(err)
 			if !c.isClosed() {
+				fmt.Printf("--> %v: %v.\n", c.Component, err)
 				c.Warningf("Re-init the cache on error: %v.", trace.Unwrap(err))
 			}
 		}
