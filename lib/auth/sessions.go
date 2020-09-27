@@ -18,6 +18,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/services"
@@ -59,21 +60,23 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 }
 
 func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
-	// TODO(russjones): Check if access is allowed.
-	session, err := services.NewAppSession("123", services.AppSessionSpecV3{
-		PublicAddr: req.PublicAddr,
-		Username:   "this-comes-from-identity",
-		Roles:      []string{"these-come-from-roles"},
-	})
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
+	fmt.Printf("--> Okay done!.\n")
+	return nil, nil
+	//// TODO(russjones): Check if access is allowed.
+	//session, err := services.NewAppSession("123", services.AppSessionSpecV3{
+	//	PublicAddr: req.PublicAddr,
+	//	Username:   "this-comes-from-identity",
+	//	Roles:      []string{"these-come-from-roles"},
+	//})
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
 
-	if err := s.UpsertAppSession(ctx, session); err != nil {
-		return nil, trace.Wrap(err)
-	}
+	//if err := s.UpsertAppSession(ctx, session); err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
 
-	return session, nil
+	//return session, nil
 }
 
 func (s *AuthServer) NewAppSession(username string, roles []string, traits wrappers.Traits) (services.WebSession, error) {

@@ -105,6 +105,8 @@ func ForApps(cfg Config) Config {
 		// Applications only need to "know" about default namespace events to avoid
 		// matching too much data about other namespaces or events.
 		{Kind: services.KindNamespace, Name: defaults.Namespace},
+		// TODO(russjones): This doesn't need to be here, the application knows
+		// what applications it is proxying itself.
 		{Kind: services.KindApp},
 		{Kind: services.KindAppSession},
 	}

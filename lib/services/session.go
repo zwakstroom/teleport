@@ -621,15 +621,21 @@ func (r *GetAppWebSessionRequest) Check() error {
 }
 
 type CreateAppWebSessionRequest struct {
-	Username string `json:"username"`
-	// PublicAddr is the address of the application requested.
-	PublicAddr string `json:"app"`
-	// ClusterName is the cluster within which the application is running.
-	ClusterName string `json:"cluster_name"`
-	// SessionID is the ID of the parent session.
-	SessionID string
-	//// BearerToken is the bearer token of the parent session.
-	//BearerToken string
+	//Username string `json:"username"`
+	//// PublicAddr is the address of the application requested.
+	//PublicAddr string `json:"app"`
+	//// ClusterName is the cluster within which the application is running.
+	//ClusterName string `json:"cluster_name"`
+	//// SessionID is the ID of the parent session.
+	//SessionID string
+	////// BearerToken is the bearer token of the parent session.
+	////BearerToken string
+
+	Username      string `json:"username"`
+	ParentSession string `json:"parent_session"`
+	AppSessionID  string `json:"app_session"`
+	ServerID      string `json:"server_id"`
+	ClusterName   string `json:"cluster_name"`
 }
 
 func (r CreateAppWebSessionRequest) Check() error {

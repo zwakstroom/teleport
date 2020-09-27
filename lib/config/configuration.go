@@ -683,6 +683,13 @@ func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
 			return trace.Wrap(err)
 		}
 
+		// Remove any port the user may have supplied in file configuration.
+		// Matching for applications happens on host.
+		publicAddr, err := utils.Host(application.PublicAddr)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
 		// Parse the static labels of the application.
 		staticLabels := make(map[string]string)
 		if application.StaticLabels != nil {
@@ -706,7 +713,7 @@ func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
 			Name:          application.Name,
 			Protocol:      services.ServerSpecV2_HTTPS,
 			URI:           application.URI,
-			PublicAddr:    application.PublicAddr,
+			PublicAddr:    publicAddr,
 			StaticLabels:  staticLabels,
 			DynamicLabels: dynamicLabels,
 		})

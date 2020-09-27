@@ -115,6 +115,14 @@ func (s *AppSessionV3) SetPublicAddr(publicAddr string) {
 	s.Spec.PublicAddr = publicAddr
 }
 
+func (s *AppSessionV3) GetServerID() string {
+	return s.Spec.ServerID
+}
+
+func (s *AppSessionV3) SetServerID(serverID string) {
+	s.Spec.ServerID = serverID
+}
+
 func (s *AppSessionV3) GetUsername() string {
 	return s.Spec.Username
 }
@@ -218,8 +226,8 @@ const AppSessionSpecSchema = `{
 	"type": "object",
 	"additionalProperties": false,
 	"properties": {
-		"public_addr": { "type":"string" }
-		"username": { "type":"string" }
+		"public_addr": { "type":"string" },
+		"username": { "type":"string" },
 		"roles": { "type":"array" }
 	}
 }`
