@@ -456,10 +456,8 @@ func (s *localSite) chanTransportConn(rconn *remoteConn, params DialParams) (net
 	}
 
 	conn, markInvalid, err := connectProxyTransport(rconn.sconn, &dialReq{
-		Address:     address,
-		PublicAddr:  params.PublicAddr,
-		Certificate: params.Certificate,
-		ConnType:    params.ConnType,
+		Address:  address,
+		ConnType: params.ConnType,
 	})
 	if err != nil {
 		if markInvalid {

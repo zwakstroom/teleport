@@ -19,15 +19,59 @@ package auth
 import (
 	"context"
 
+	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/trace"
 )
 
-func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, services.AppSession, error) {
-	return nil, nil, nil
+func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, error) {
+	// Check that a matching web session exists in the backend.
+	parentSession, err := s.GetWebSession("rjones", req.SessionID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	//if subtle.ConstantTimeCompare([]byte(parentSession.GetBearerToken()), []byte(req.BearerToken)) == 0 {
+	//	return nil, trace.BadParameter("invalid session")
+	//}
+
+	// Create a new session for the application.
+	session, err := s.NewWebSession("rjones", []string{"admin"}, map[string][]string{"logins": []string{"foo"}})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	session.SetType(services.WebSessionSpecV2_App)
+	session.SetPublicAddr(req.PublicAddr)
+	session.SetParentHash(services.SessionHash(parentSession.GetName()))
+	session.SetClusterName(req.ClusterName)
+
+	// TODO(russjones): This should be passed in the request and shoud be picked from appsession.
+	session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
+
+	// Create session in backend.
+	err = s.Identity.UpsertAppWebSession(ctx, session)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return session, nil
 }
 
 func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
-	return nil, nil, nil
+	// TODO(russjones): Check if access is allowed.
+	session, err := services.NewAppSession("123", services.AppSessionSpecV3{
+		PublicAddr: req.PublicAddr,
+		Username:   "this-comes-from-identity",
+		Roles:      []string{"these-come-from-roles"},
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := s.UpsertAppSession(ctx, session); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return session, nil
 }
 
 //func (s *AuthServer) createAppSession(ctx context.Context, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {

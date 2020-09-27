@@ -120,6 +120,11 @@ func setupCollections(c *Cache, watches []services.WatchKind) (map[string]collec
 				return nil, trace.BadParameter("missing parameter Presence")
 			}
 			collections[watch.Kind] = &app{watch: watch, Cache: c}
+		case services.KindWebSession:
+			if c.WebIdentity == nil {
+				return nil, trace.BadParameter("missing parameter WebIdentity")
+			}
+			collections[watch.Kind] = &web{watch: watch, Cache: c}
 		default:
 			return nil, trace.BadParameter("resource %q is not supported", watch.Kind)
 		}
@@ -1125,5 +1130,77 @@ func (a *app) processEvent(ctx context.Context, event services.Event) error {
 }
 
 func (a *app) watchKind() services.WatchKind {
+	return a.watch
+}
+
+type web struct {
+	*Cache
+	watch services.WatchKind
+}
+
+// erase erases all data in the collection
+func (a *web) erase() error {
+	if err := a.webIdentityCache.DeleteAllAppWebSessions(context.TODO()); err != nil {
+		if !trace.IsNotFound(err) {
+			return trace.Wrap(err)
+		}
+	}
+	return nil
+}
+
+func (a *web) fetch(ctx context.Context) error {
+	resources, err := a.WebIdentity.GetAppWebSessions(ctx)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.erase(); err != nil {
+		return trace.Wrap(err)
+	}
+	for _, resource := range resources {
+		a.setTTL(resource)
+		if err := a.webIdentityCache.UpsertAppWebSession(ctx, resource); err != nil {
+			return trace.Wrap(err)
+		}
+	}
+	return nil
+}
+
+func (a *web) processEvent(ctx context.Context, event services.Event) error {
+	switch event.Type {
+	case backend.OpDelete:
+		resource, ok := event.Resource.(services.WebSession)
+		if !ok {
+			return trace.BadParameter("unexpected type %T", event.Resource)
+		}
+
+		err := a.webIdentityCache.DeleteAppWebSession(ctx, services.DeleteAppWebSessionRequest{
+			Username:   resource.GetUser(),
+			ParentHash: resource.GetParentHash(),
+			SessionID:  resource.GetName(),
+		})
+		if err != nil {
+			// Resource could be missing in the cache expired or not created, if the
+			// first consumed event is delete.
+			if !trace.IsNotFound(err) {
+				a.Warningf("Failed to delete resource %v.", err)
+				return trace.Wrap(err)
+			}
+		}
+	case backend.OpPut:
+		resource, ok := event.Resource.(services.WebSession)
+		if !ok {
+			return trace.BadParameter("unexpected type %T", event.Resource)
+		}
+		a.setTTL(resource)
+		if err := a.webIdentityCache.UpsertAppWebSession(ctx, resource); err != nil {
+			return trace.Wrap(err)
+		}
+	default:
+		a.Warningf("Skipping unsupported event type %v.", event.Type)
+	}
+	return nil
+}
+
+func (a *web) watchKind() services.WatchKind {
 	return a.watch
 }

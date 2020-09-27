@@ -18,6 +18,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -582,13 +583,38 @@ func (g *GRPCServer) GetAppWebSession(ctx context.Context, req *proto.GetAppWebS
 	}, nil
 }
 
+func (g *GRPCServer) GetAppWebSessions(ctx context.Context, _ *empty.Empty) (*proto.GetAppWebSessionsResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	sessions, err := auth.GetAppWebSessions(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	var out []*services.WebSessionV2
+	for _, session := range sessions {
+		sess, ok := session.(*services.WebSessionV2)
+		if !ok {
+			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
+		}
+		out = append(out, sess)
+	}
+
+	return &proto.GetAppWebSessionsResponse{
+		Sessions: out,
+	}, nil
+}
+
 func (g *GRPCServer) CreateAppWebSession(ctx context.Context, req *proto.CreateAppWebSessionRequest) (*proto.CreateAppWebSessionResponse, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
-	webSession, appSession, err := auth.CreateAppWebSession(ctx, services.CreateAppWebSessionRequest{
+	session, err := auth.CreateAppWebSession(ctx, services.CreateAppWebSessionRequest{
 		Username:    req.GetUsername(),
 		PublicAddr:  req.GetPublicAddr(),
 		ClusterName: req.GetClusterName(),
@@ -597,28 +623,27 @@ func (g *GRPCServer) CreateAppWebSession(ctx context.Context, req *proto.CreateA
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
-	wsess, ok := webSession.(*services.WebSessionV2)
-	if !ok {
-		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
-	}
-	asess, ok := appSession.(*services.WebSessionV2)
+	sess, ok := session.(*services.WebSessionV2)
 	if !ok {
 		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
 	}
 
 	return &proto.CreateAppWebSessionResponse{
-		WebSession: wsess,
-		AppSession: asess,
+		Session: sess,
 	}, nil
 }
 
-func (g *GRPCServer) DeleteAppWebSession(ctx context.Context, req *DeleteAppWebSessionRequest) (*empty.Empty, error) {
+func (g *GRPCServer) DeleteAppWebSession(ctx context.Context, req *proto.DeleteAppWebSessionRequest) (*empty.Empty, error) {
 	auth, err := g.authenticate(ctx)
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
-	if err := auth.DeleteAppWebSession(ctx, req.SessionID); err != nil {
+	if err := auth.DeleteAppWebSession(ctx, services.DeleteAppWebSessionRequest{
+		Username:   req.GetUsername(),
+		ParentHash: req.GetParentHash(),
+		SessionID:  req.GetSessionID(),
+	}); err != nil {
 		return nil, trail.ToGRPC(err)
 	}
 
@@ -646,6 +671,7 @@ func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSession
 
 	session, err := auth.GetAppSession(ctx, req.SessionID)
 	if err != nil {
+		fmt.Printf("--> err: %v.\n", err)
 		return nil, trail.ToGRPC(err)
 	}
 	sess, ok := session.(*services.AppSessionV3)
@@ -658,30 +684,30 @@ func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSession
 	}, nil
 }
 
-func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto.GetAppSessionsResponse, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	sessions, err := auth.GetAppSessions(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	var sessions []*services.AppSession
-	for _, session := range sessions {
-		sess, ok := session.(*services.AppSessionV3)
-		if !ok {
-			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
-		}
-		sessions = append(sessions, sess)
-	}
-
-	return &proto.GetAppSessionsResponse{
-		Sessions: sessions,
-	}
-}
+//func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto.GetAppSessionsResponse, error) {
+//	auth, err := g.authenticate(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	sessions, err := auth.GetAppSessions(ctx)
+//	if err != nil {
+//		return nil, trail.ToGRPC(err)
+//	}
+//
+//	var sessions []*services.AppSession
+//	for _, session := range sessions {
+//		sess, ok := session.(*services.AppSessionV3)
+//		if !ok {
+//			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
+//		}
+//		sessions = append(sessions, sess)
+//	}
+//
+//	return &proto.GetAppSessionsResponse{
+//		Sessions: sessions,
+//	}
+//}
 
 func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppSessionRequest) (*proto.CreateAppSessionResponse, error) {
 	auth, err := g.authenticate(ctx)
@@ -689,7 +715,9 @@ func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppS
 		return nil, trail.ToGRPC(err)
 	}
 
-	session, err := auth.CreateAppSession(ctx, req.PublicAddr)
+	session, err := auth.CreateAppSession(ctx, services.CreateAppSessionRequest{
+		PublicAddr: req.PublicAddr,
+	})
 	if err != nil {
 		return nil, trail.ToGRPC(err)
 	}
@@ -698,7 +726,7 @@ func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppS
 		return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
 	}
 
-	return &proto.CreateAppWebSessionResponse{
+	return &proto.CreateAppSessionResponse{
 		Session: sess,
 	}, nil
 }
@@ -853,6 +881,10 @@ func eventToGRPC(in services.Event) (*proto.Event, error) {
 		out.Resource = &proto.Event_AccessRequest{
 			AccessRequest: r,
 		}
+	case *services.WebSessionV2:
+		out.Resource = &proto.Event_AppWebSession{
+			AppWebSession: r,
+		}
 	default:
 		return nil, trace.BadParameter("resource type %T is not supported", in.Resource)
 	}
@@ -920,6 +952,9 @@ func eventFromGRPC(in proto.Event) (*services.Event, error) {
 		out.Resource = r
 		return &out, nil
 	} else if r := in.GetAccessRequest(); r != nil {
+		out.Resource = r
+		return &out, nil
+	} else if r := in.GetAppWebSession(); r != nil {
 		out.Resource = r
 		return &out, nil
 	} else {

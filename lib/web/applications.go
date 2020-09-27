@@ -19,14 +19,19 @@ limitations under the License.
 package web
 
 import (
+	"context"
+	"crypto/tls"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 
+	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/httplib"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/web/app"
 	"github.com/gravitational/teleport/lib/web/ui"
 
@@ -75,6 +80,27 @@ func (h *Handler) createAppSession(w http.ResponseWriter, r *http.Request, p htt
 		return nil, trace.Wrap(err)
 	}
 
+	// TODO(russjones): SOmething of this form works for trusted clusters.
+	//fmt.Printf("--> Enter.\n")
+	//clusterClient, err := h.cfg.Proxy.GetSite("remote.example.com")
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	////authClient, err := clientInRemote(clusterClient, h.cfg.ProxyClient, "remote.example.com", ctx.sess)
+	//authClient, err := clientInRemote(clusterClient, h.cfg.ProxyClient, "example.com", ctx.sess)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	//asess, err := authClient.CreateAppSession(r.Context(), services.CreateAppSessionRequest{
+	//	//Username:    ctx.sess.GetUser(),
+	//	PublicAddr: "whatever.com",
+	//	//ClusterName: "remote.example.com",
+	//	//SessionID:   ctx.sess.GetName(),
+	//})
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+
 	// Get a client to auth with the identity of the logged in user and use it
 	// to request the creation of an application session for this user.
 	client, err := ctx.GetClient()
@@ -82,32 +108,47 @@ func (h *Handler) createAppSession(w http.ResponseWriter, r *http.Request, p htt
 		return nil, trace.Wrap(err)
 	}
 
-	fmt.Printf("--> fqdn: %v.\n", req.FQDN)
-	//--> fqdn: dumper.example.com:3080.
+	//fmt.Printf("--> fqdn: %v.\n", req.FQDN)
+	////--> fqdn: dumper.example.com:3080.
 
-	//for app in apps:
-	//  if publicAddr == fqdn:
-	//     found app
+	////for app in apps:
+	////  if publicAddr == fqdn:
+	////     found app
 
-	//appName.publicAddrOfRemoteProxy
-	//publicAddr
+	////appName.publicAddrOfRemoteProxy
+	////publicAddr
 
-	session, err := client.CreateAppSession(r.Context(), services.CreateAppSessionRequest{
-		// TODO: add app name
-		// TODO: add app cluster id
-		PublicAddr:  "dumper.example.com",
-		ClusterName: "example.com",
-		SessionID:   ctx.GetWebSession().GetName(),
+	// TODO(russjones): Pick up expiry from here.
+	_, err = client.CreateAppSession(r.Context(), services.CreateAppSessionRequest{
+		PublicAddr: "dumper.example.com",
+		//ClusterName: "example.com",
+		//SessionID:   ctx.GetWebSession().GetName(),
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	wsess, err := client.CreateAppWebSession(r.Context(), services.CreateAppWebSessionRequest{
+		Username:    "rjones",
+		PublicAddr:  "dumper.example.com",
+		ClusterName: "example.com",
+		SessionID:   ctx.sess.GetName(),
+	})
+	if err != nil {
+		fmt.Printf("--> failed to CreateAppWebSession: %v.\n", err)
+		return nil, trace.Wrap(err)
+	}
 
 	appCookie := app.Cookie{
-		Username:   session.GetUser(),
-		ParentHash: session.GetParentHash(),
-		SessionID:  session.GetName(),
+		Username:   wsess.GetUser(),
+		ParentHash: wsess.GetParentHash(),
+		SessionID:  wsess.GetName(),
 	}
+
+	//appCookie := app.Cookie{
+	//	Username:   session.GetUser(),
+	//	ParentHash: session.GetParentHash(),
+	//	SessionID:  session.GetName(),
+	//}
 
 	appCookieValue, err := app.EncodeCookie(&appCookie)
 	if err != nil {
@@ -129,4 +170,59 @@ type createAppSessionRequest struct {
 	FQDN string `json:"fqdn"`
 	// ClusterName is the cluster within which the application is running.
 	ClusterName string `json:"cluster_name"`
+}
+
+func clientInRemote(clusterClient reversetunnel.RemoteSite, authClient auth.ClientI, clusterName string, session services.WebSession) (*auth.Client, error) {
+	fmt.Printf("--> Enter clientInRemote.\n")
+	ca, err := authClient.GetCertAuthority(services.CertAuthID{
+		Type: services.HostCA,
+		//	DomainName: clusterName,
+		DomainName: "remote.example.com",
+	}, false)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	certPool, err := services.CertPool(ca)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	//tlsConfig := utils.TLSConfig(s.cipherSuites)
+	tlsConfig := utils.TLSConfig(nil)
+	tlsCert, err := tls.X509KeyPair(session.GetTLSCert(), session.GetPriv())
+	if err != nil {
+		return nil, trace.Wrap(err, "failed to parse TLS cert and key")
+	}
+	fmt.Printf("--> sending cert: %v.\n", tlsCert)
+	tlsConfig.Certificates = []tls.Certificate{tlsCert}
+	tlsConfig.RootCAs = certPool
+	tlsConfig.ServerName = auth.EncodeClusterName(clusterName)
+
+	conn, err := clusterClient.DialAuthServer()
+	fmt.Printf("--> clusterClient.DialAuthServer: %v.\n", err)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	userClient, err := auth.NewTLSClient(auth.ClientConfig{
+		//Addrs: s.authServers,
+		Dialer: &tmpDialer{
+			conn: conn,
+		},
+		TLS: tlsConfig,
+	})
+	fmt.Printf("--> auth.NewTLSClient: %v.\n", err)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return userClient, nil
+}
+
+type tmpDialer struct {
+	conn net.Conn
+}
+
+func (t *tmpDialer) DialContext(in context.Context, network, addr string) (net.Conn, error) {
+	return t.conn, nil
 }

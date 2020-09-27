@@ -2823,10 +2823,28 @@ func (c *Client) GetAppWebSession(ctx context.Context, req services.GetAppWebSes
 	return resp.GetSession(), nil
 }
 
-func (c *Client) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, services.AppSession, error) {
+func (c *Client) GetAppWebSessions(ctx context.Context) ([]services.WebSession, error) {
 	clt, err := c.grpc()
 	if err != nil {
-		return nil, nil, trace.Wrap(err)
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetAppWebSessions(ctx, &empty.Empty{})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	out := make([]services.WebSession, 0, len(resp.GetSessions()))
+	for _, v := range resp.GetSessions() {
+		out = append(out, v)
+	}
+	return out, nil
+}
+
+func (c *Client) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 
 	resp, err := clt.CreateAppWebSession(ctx, &proto.CreateAppWebSessionRequest{
@@ -2836,14 +2854,46 @@ func (c *Client) CreateAppWebSession(ctx context.Context, req services.CreateApp
 		SessionID:   req.SessionID,
 	})
 	if err != nil {
-		return nil, nil, trail.FromGRPC(err)
+		return nil, trail.FromGRPC(err)
 	}
 
-	return resp.GetWebSession(), resp.GetAppSession(), nil
+	return resp.GetSession(), nil
 }
 
 func (c *Client) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
 	return trace.NotImplemented("not implemented")
+}
+
+func (c *Client) DeleteAppWebSession(ctx context.Context, req services.DeleteAppWebSessionRequest) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	_, err = clt.DeleteAppWebSession(ctx, &proto.DeleteAppWebSessionRequest{
+		Username:   req.Username,
+		ParentHash: req.ParentHash,
+		SessionID:  req.SessionID,
+	})
+	if err != nil {
+
+		return trail.FromGRPC(err)
+	}
+
+	return nil
+
+}
+func (c *Client) DeleteAllAppWebSessions(ctx context.Context) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	if _, err := clt.DeleteAllAppWebSessions(ctx, &empty.Empty{}); err != nil {
+		return trail.FromGRPC(err)
+	}
+
+	return nil
 }
 
 func (c *Client) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
@@ -2862,69 +2912,69 @@ func (c *Client) GetAppSession(ctx context.Context, sessionID string) (services.
 	return resp.GetSession(), nil
 }
 
-func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+//func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	resp, err := clt.GetAppSessions(ctx, &empty.Empty{})
+//	if err != nil {
+//		return nil, trail.FromGRPC(err)
+//	}
+//
+//	return resp.GetSessions(), nil
+//}
+
+func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
 	clt, err := c.grpc()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	resp, err := clt.GetAppSessions(ctx, &empty.Empty{})
-	if err != nil {
-		return nil, trail.FromGRPC(err)
-	}
-
-	return resp.GetSessions(), nil
-}
-
-func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSession) (services.AppSession, error) {
-	clt, err := c.grpc()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	session, err := clt.CreateAppSession(ctx, &proto.CreateAppSessionRequest{
+	resp, err := clt.CreateAppSession(ctx, &proto.CreateAppSessionRequest{
 		PublicAddr: req.PublicAddr,
 	})
 	if err != nil {
 		return nil, trail.FromGRPC(err)
 
 	}
-	return session, nil
+	return resp.GetSession(), nil
 }
 
 func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSession) error {
 	return trace.NotImplemented("not implemented")
 }
 
-func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
-	clt, err := c.grpc()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
-		SessionID: sessionID,
-	})
-	if err != nil {
-
-		return trail.FromGRPC(err)
-	}
-
-	return nil
-
-}
-func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
-	clt, err := c.grpc()
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	if err := clt.DeleteAllAppSessiosn(ctx, &empty.Empty{}); err != nil {
-		return trail.FromGRPC(err)
-	}
-
-	return nil
-}
+//func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return trace.Wrap(err)
+//	}
+//
+//	err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
+//		SessionID: sessionID,
+//	})
+//	if err != nil {
+//
+//		return trail.FromGRPC(err)
+//	}
+//
+//	return nil
+//
+//}
+//func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
+//	clt, err := c.grpc()
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	if err := clt.DeleteAllAppSessiosn(ctx, &empty.Empty{}); err != nil {
+//		return trail.FromGRPC(err)
+//	}
+//
+//	return nil
+//}
 
 // WebService implements features used by Web UI clients
 type WebService interface {
@@ -2941,6 +2991,10 @@ type WebService interface {
 	// GenerateAppToken returns a signed token that contains claims about the
 	// caller signed and embedded inside.
 	GenerateAppToken(context.Context, services.AppTokenParams) (string, error)
+
+	services.WebIdentity
+
+	//GetAppWebSession(context.Context, services.GetAppWebSessionRequest) (services.WebSession, error)
 
 	//// CreateAppSession takes an existing web session and uses it to create a
 	//// new application session.
@@ -3159,4 +3213,7 @@ type ClientI interface {
 
 	// Ping gets basic info about the auth server.
 	Ping(ctx context.Context) (proto.PingResponse, error)
+
+	CreateAppWebSession(context.Context, services.CreateAppWebSessionRequest) (services.WebSession, error)
+	CreateAppSession(context.Context, services.CreateAppSessionRequest) (services.AppSession, error)
 }

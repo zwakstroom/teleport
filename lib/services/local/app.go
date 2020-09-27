@@ -19,6 +19,7 @@ package local
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/services"
@@ -31,7 +32,7 @@ func (s *IdentityService) GetAppWebSession(ctx context.Context, req services.Get
 		return nil, trace.Wrap(err)
 	}
 
-	item, err := s.Get(ctx, backend.Key(webPrefix, usersPrefix, req.Username, sessionsPrefix, req.ParentHash, req.SessionID))
+	item, err := s.Get(ctx, backend.Key(webPrefix, sessionsPrefix, appsPrefix, req.Username, req.ParentHash, req.SessionID))
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -43,18 +44,51 @@ func (s *IdentityService) GetAppWebSession(ctx context.Context, req services.Get
 	return session, nil
 }
 
+func (s *IdentityService) GetAppWebSessions(ctx context.Context) ([]services.WebSession, error) {
+	startKey := backend.Key(webPrefix, sessionsPrefix, appsPrefix)
+	result, err := s.GetRange(ctx, startKey, backend.RangeEnd(startKey), backend.NoLimit)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	out := make([]services.WebSession, len(result.Items))
+	for i, item := range result.Items {
+		var a services.WebSession
+		if err := json.Unmarshal(item.Value, &a); err != nil {
+			return nil, trace.Wrap(err)
+		}
+		out[i] = a
+	}
+	return out, nil
+}
+
 func (s *IdentityService) UpsertAppWebSession(ctx context.Context, session services.WebSession) error {
 	value, err := services.GetWebSessionMarshaler().MarshalWebSession(session)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 	item := backend.Item{
-		Key:     backend.Key(webPrefix, usersPrefix, session.GetUser(), sessionsPrefix, session.GetParentHash(), session.GetName()),
+		Key:     backend.Key(webPrefix, sessionsPrefix, appsPrefix, session.GetUser(), session.GetParentHash(), session.GetName()),
 		Value:   value,
 		Expires: session.GetExpiryTime(),
 	}
 
 	if _, err = s.Put(ctx, item); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (s *IdentityService) DeleteAppWebSession(ctx context.Context, req services.DeleteAppWebSessionRequest) error {
+	if err := s.Delete(ctx, backend.Key(webPrefix, sessionsPrefix, appsPrefix, req.Username, req.ParentHash, req.SessionID)); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+func (s *IdentityService) DeleteAllAppWebSessions(ctx context.Context) error {
+	startKey := backend.Key(webPrefix, sessionsPrefix, appsPrefix)
+	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
 		return trace.Wrap(err)
 	}
 	return nil
@@ -68,28 +102,29 @@ func (s *IdentityService) GetAppSession(ctx context.Context, sessionID string) (
 
 	session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value)
 	if err != nil {
+		fmt.Printf("--> %v: %v.\n", string(item.Value), err)
 		return nil, trace.Wrap(err)
 	}
 	return session, nil
 }
 
-func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
-	startKey := backend.Key(sessionsPrefix, appsPrefix)
-	result, err := s.GetRange(context.TODO(), startKey, backend.RangeEnd(startKey), backend.NoLimit)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	out := make([]services.AppSession, len(result.Items))
-	for i, item := range result.Items {
-		var a services.AppSession
-		if err := json.Unmarshal(item.Value, &a); err != nil {
-			return nil, trace.Wrap(err)
-		}
-		out[i] = a
-	}
-	return out, nil
-}
+//func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+//	startKey := backend.Key(sessionsPrefix, appsPrefix)
+//	result, err := s.GetRange(context.TODO(), startKey, backend.RangeEnd(startKey), backend.NoLimit)
+//	if err != nil {
+//		return nil, trace.Wrap(err)
+//	}
+//
+//	out := make([]services.AppSession, len(result.Items))
+//	for i, item := range result.Items {
+//		var a services.AppSession
+//		if err := json.Unmarshal(item.Value, &a); err != nil {
+//			return nil, trace.Wrap(err)
+//		}
+//		out[i] = a
+//	}
+//	return out, nil
+//}
 
 func (s *IdentityService) UpsertAppSession(ctx context.Context, session services.AppSession) error {
 	value, err := services.GetAppSessionMarshaler().MarshalAppSession(session)
@@ -108,17 +143,17 @@ func (s *IdentityService) UpsertAppSession(ctx context.Context, session services
 	return nil
 }
 
-func (s *IdentityService) DeleteAppSession(ctx context.Context, sessionID string) error {
-	if err := s.Delete(ctx, backend.Key(sessionsPrefix, appsPrefix, sessionID)); err != nil {
-		return trace.Wrap(err)
-	}
-	return nil
-}
-
-func (s *IdentityService) DeleteAllAppSessions(ctx context.Context) error {
-	startKey := backend.Key(sessionsPrefix, appsPrefix)
-	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
-		return trace.Wrap(err)
-	}
-	return nil
-}
+//func (s *IdentityService) DeleteAppSession(ctx context.Context, sessionID string) error {
+//	if err := s.Delete(ctx, backend.Key(sessionsPrefix, appsPrefix, sessionID)); err != nil {
+//		return trace.Wrap(err)
+//	}
+//	return nil
+//}
+//
+//func (s *IdentityService) DeleteAllAppSessions(ctx context.Context) error {
+//	startKey := backend.Key(sessionsPrefix, appsPrefix)
+//	if err := s.DeleteRange(ctx, startKey, backend.RangeEnd(startKey)); err != nil {
+//		return trace.Wrap(err)
+//	}
+//	return nil
+//}

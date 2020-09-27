@@ -70,6 +70,7 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindReverseTunnel},
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindApp},
+		{Kind: services.KindWebSession},
 	}
 	cfg.QueueSize = defaults.ProxyQueueSize
 	return cfg
@@ -140,6 +141,7 @@ type Cache struct {
 	accessCache        services.Access
 	dynamicAccessCache services.DynamicAccessExt
 	presenceCache      services.Presence
+	webIdentityCache   services.WebIdentity
 	eventsFanout       *services.Fanout
 
 	// closedFlag is set to indicate that the services are closed
@@ -170,6 +172,8 @@ type Config struct {
 	DynamicAccess services.DynamicAccess
 	// Presence is a presence service
 	Presence services.Presence
+	// WebIdentity is the identity service.
+	WebIdentity services.WebIdentity
 	// Backend is a backend for local cache
 	Backend backend.Backend
 	// RetryPeriod is a period between cache retries on failures
@@ -294,6 +298,7 @@ func New(config Config) (*Cache, error) {
 		accessCache:        local.NewAccessService(wrapper),
 		dynamicAccessCache: local.NewDynamicAccessService(wrapper),
 		presenceCache:      local.NewPresenceService(wrapper),
+		webIdentityCache:   local.NewIdentityService(wrapper),
 		eventsFanout:       services.NewFanout(),
 		Entry: log.WithFields(log.Fields{
 			trace.Component: config.Component,
@@ -684,4 +689,12 @@ func (c *Cache) GetAllTunnelConnections(opts ...services.MarshalOption) (conns [
 // GetApps returns all applications.
 func (c *Cache) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
 	return c.presenceCache.GetApps(ctx, namespace, opts...)
+}
+
+//func (c *Cache) GetAppsWithIdentity(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
+//	return c.presenceCache.GetAppsWithIdentity(ctx, namespace, opts...)
+//}
+
+func (c *Cache) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
+	return c.webIdentityCache.GetAppWebSession(ctx, req)
 }

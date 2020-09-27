@@ -185,15 +185,15 @@ func (m *appSessionMarshaler) UnmarshalAppSession(raw []byte, opts ...MarshalOpt
 		return nil, trace.Wrap(err)
 	}
 	var data AppSessionV3
-	if cfg.SkipValidation {
-		if err := utils.FastUnmarshal(raw, &data); err != nil {
-			return nil, trace.Wrap(err)
-		}
-	} else {
-		if err := utils.UnmarshalWithSchema(GetAppSessionSchema(), &data, raw); err != nil {
-			return nil, trace.Wrap(err)
-		}
+	//if cfg.SkipValidation {
+	if err := utils.FastUnmarshal(raw, &data); err != nil {
+		return nil, trace.Wrap(err)
 	}
+	//} else {
+	//	if err := utils.UnmarshalWithSchema(GetAppSessionSchema(), &data, raw); err != nil {
+	//		return nil, trace.Wrap(err)
+	//	}
+	//}
 	if err := data.CheckAndSetDefaults(); err != nil {
 		return nil, trace.Wrap(err)
 	}

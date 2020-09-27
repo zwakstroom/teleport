@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"math"
 	"net"
 	"net/http"
@@ -159,6 +160,7 @@ func (t *TLSServer) GetConfigForClient(info *tls.ClientHelloInfo) (*tls.Config, 
 	// certificate authorities.
 	// TODO(klizhentas) drop connections of the TLS cert authorities
 	// that are not trusted
+	fmt.Printf("--> clusterName: %v.\n", clusterName)
 	pool, err := ClientCertPool(t.AccessPoint, clusterName)
 	if err != nil {
 		var ourClusterName string

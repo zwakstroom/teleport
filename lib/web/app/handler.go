@@ -19,13 +19,19 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 
+	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
+	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/httplib"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
@@ -38,7 +44,8 @@ import (
 )
 
 type HandlerConfig struct {
-	Clock       clockwork.Clock
+	Clock clockwork.Clock
+	// TODO(russjones): Replace this with a AccessPoint so all requests are cached.
 	AuthClient  auth.ClientI
 	ProxyClient reversetunnel.Server
 }
@@ -61,21 +68,10 @@ func (c *HandlerConfig) CheckAndSetDefaults() error {
 type Handler struct {
 	c   *HandlerConfig
 	log *logrus.Entry
-
-	sessions *sessionCache
 }
 
 func NewHandler(config *HandlerConfig) (*Handler, error) {
 	if err := config.CheckAndSetDefaults(); err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	sessionCache, err := newSessionCache(&sessionCacheConfig{
-		Clock:       config.Clock,
-		AuthClient:  config.AuthClient,
-		ProxyClient: config.ProxyClient,
-	})
-	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
@@ -84,7 +80,6 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 		log: logrus.WithFields(logrus.Fields{
 			trace.Component: teleport.ComponentAppProxy,
 		}),
-		sessions: sessionCache,
 	}, nil
 }
 
@@ -147,8 +142,17 @@ func (h *Handler) handleFragment(w http.ResponseWriter, r *http.Request) error {
 			return trace.Wrap(err)
 		}
 
-		// Validate that the session exists.
-		if _, err := h.sessions.get(r.Context(), req.CookieValue); err != nil {
+		// validate that the session exists.
+		cookie, err := decodeCookie(req.CookieValue)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		_, err = h.c.AuthClient.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
+			Username:   cookie.Username,
+			ParentHash: cookie.ParentHash,
+			SessionID:  cookie.SessionID,
+		})
+		if err != nil {
 			return trace.Wrap(err)
 		}
 
@@ -167,15 +171,23 @@ func (h *Handler) handleFragment(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *Handler) authenticate(r *http.Request) (*session, error) {
+func (h *Handler) authenticate(r *http.Request) (services.WebSession, error) {
 	// Extract the session cookie from the *http.Request.
 	cookieValue, err := extractCookie(r)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	// Check the cache for an authenticated session.
-	session, err := h.sessions.get(r.Context(), cookieValue)
+	cookie, err := decodeCookie(cookieValue)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	session, err := h.c.AuthClient.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
+		Username:   cookie.Username,
+		ParentHash: cookie.ParentHash,
+		SessionID:  cookie.SessionID,
+	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -186,9 +198,49 @@ func (h *Handler) authenticate(r *http.Request) (*session, error) {
 // forward will update the URL on the request and then forward the request to
 // the target. If an error occurs, the error handler attached to the session
 // is called.
-func (h *Handler) forward(w http.ResponseWriter, r *http.Request, s *session) {
-	r.URL = s.url
-	s.fwd.ServeHTTP(w, r)
+func (h *Handler) forward(w http.ResponseWriter, r *http.Request, session services.WebSession) {
+	_, server, err := h.getApp(r.Context(), session.GetPublicAddr(), session.GetClusterName())
+	if err != nil {
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	// Get a connection through the reverse tunnel to the target application.
+	clusterClient, err := h.c.ProxyClient.GetSite(session.GetClusterName())
+	if err != nil {
+		http.Error(w, "internal service error", 500)
+		return
+	}
+	conn, err := clusterClient.Dial(reversetunnel.DialParams{
+		ServerID: strings.Join([]string{server.GetName(), session.GetClusterName()}, "."),
+		ConnType: services.AppTunnel,
+	})
+	if err != nil {
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	// Create a HTTP request forwarder that will be used to forward the actual
+	// request over the reverse tunnel to the target application.
+	fwdHandler := &forwardHandler{
+		conn:      conn,
+		sessionID: session.GetName(),
+	}
+	fwd, err := forward.New(
+		forward.RoundTripper(fwdHandler),
+		forward.Rewriter(fwdHandler),
+		forward.Logger(h.log))
+	if err != nil {
+		http.Error(w, "internal service error", 500)
+		return
+	}
+
+	r.URL, err = url.Parse("http://nowhere")
+	if err != nil {
+		http.Error(w, "internal service error", 500)
+		return
+	}
+	fwd.ServeHTTP(w, r)
 }
 
 func extractAppName(r *http.Request) (string, error) {
@@ -220,4 +272,86 @@ func ResolveFQDN(proxyName string, proxyHost string, appClusterName string, app 
 	}
 
 	return fmt.Sprintf("%v.%v", app.Name, appClusterName)
+}
+
+// getApp looks for an application registered for the requested public address
+// in the cluster and returns it. In the situation multiple applications match,
+// a random selection is returned. This is done on purpose to support HA to
+// allow multiple application proxy nodes to be run and if one is down, at
+// least the application can be accessible on the other.
+func (h *Handler) getApp(ctx context.Context, publicAddr string, clusterName string) (*services.App, services.Server, error) {
+	var appMatch []*services.App
+	var serverMatch []services.Server
+
+	proxyClient, err := h.c.ProxyClient.GetSite(clusterName)
+	if err != nil {
+		return nil, nil, trace.Wrap(err)
+	}
+
+	authClient, err := proxyClient.CachingAccessPoint()
+	if err != nil {
+		return nil, nil, trace.Wrap(err)
+	}
+
+	servers, err := authClient.GetApps(ctx, defaults.Namespace)
+	if err != nil {
+		return nil, nil, trace.Wrap(err)
+	}
+	for _, server := range servers {
+		for _, a := range server.GetApps() {
+			//if a.PublicAddr == publicAddr {
+			host, _, _ := net.SplitHostPort(a.PublicAddr)
+			if host == publicAddr {
+				appMatch = append(appMatch, a)
+				serverMatch = append(serverMatch, server)
+			}
+		}
+	}
+
+	if len(appMatch) == 0 {
+		return nil, nil, trace.NotFound("%q not found in %q", publicAddr, clusterName)
+	}
+	index := rand.Intn(len(appMatch))
+	return appMatch[index], serverMatch[index], nil
+}
+
+type forwardHandler struct {
+	conn      net.Conn
+	sessionID string
+}
+
+func (f *forwardHandler) RoundTrip(r *http.Request) (*http.Response, error) {
+	tr := &http.Transport{
+		DialContext:           f.dialContext,
+		ResponseHeaderTimeout: defaults.DefaultDialTimeout,
+		MaxIdleConns:          defaults.HTTPMaxIdleConns,
+		MaxIdleConnsPerHost:   defaults.HTTPMaxIdleConnsPerHost,
+		MaxConnsPerHost:       defaults.HTTPMaxConnsPerHost,
+		IdleConnTimeout:       defaults.HTTPIdleTimeout,
+	}
+	resp, err := tr.RoundTrip(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return resp, nil
+}
+
+func (f *forwardHandler) dialContext(ctx context.Context, network string, addr string) (net.Conn, error) {
+	return f.conn, nil
+}
+
+func (f *forwardHandler) Rewrite(r *http.Request) {
+	r.Header.Set("x-teleport-session-id", f.sessionID)
+
+	// Remove the application specific session cookie from the header. This is
+	// done by first wiping out the "Cookie" header then adding back all cookies
+	// except the Teleport application specific session cookie. This appears to
+	// be the best way to serialize cookies.
+	r.Header.Del("Cookie")
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == cookieName {
+			continue
+		}
+		r.AddCookie(cookie)
+	}
 }

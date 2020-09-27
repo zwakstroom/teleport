@@ -63,6 +63,8 @@ message Event {
         // AccessRequest is a resource for access requests
         services.AccessRequestV3 AccessRequest = 14
             [ (gogoproto.jsontag) = "access_request,omitempty" ];
+        services.WebSessionV2 AppWebSession = 15
+            [ (gogoproto.jsontag) = "app_web_session,omitempty" ];
     }
 }
 
@@ -278,11 +280,16 @@ message CreateAppWebSessionRequest {
     string PublicAddr = 2 [ (gogoproto.jsontag) = "public_addr" ];
     string ClusterName = 3 [ (gogoproto.jsontag) = "cluster_name" ];
     string SessionID = 4 [ (gogoproto.jsontag) = "session_id" ];
+    // Expires is the expiration time for the JWT.
+    google.protobuf.Timestamp Expires = 5 [
+        (gogoproto.stdtime) = true,
+        (gogoproto.nullable) = false,
+        (gogoproto.jsontag) = "expires"
+    ];
 }
 
 message CreateAppWebSessionResponse {
-    services.WebSessionV2 WebSession = 1 [ (gogoproto.jsontag) = "web_session" ];
-    services.AppSessionV3 AppSession = 2 [ (gogoproto.jsontag) = "app_session" ];
+    services.WebSessionV2 session = 1 [ (gogoproto.jsontag) = "session" ];
 }
 
 message DeleteAppWebSessionRequest {

@@ -25,6 +25,7 @@ import (
 
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/utils"
+	"github.com/jonboulle/clockwork"
 
 	"github.com/gravitational/trace"
 )
@@ -32,7 +33,9 @@ import (
 // WebSession stores key and value used to authenticate with SSH
 // notes on behalf of user
 type WebSession interface {
-	GetMetadata() Metadata
+	Resource
+
+	//GetMetadata() Metadata
 
 	// GetShortName returns visible short name used in logging
 	GetShortName() string
@@ -91,6 +94,8 @@ type WebSession interface {
 	CheckAndSetDefaults() error
 	// String returns string representation of the session.
 	String() string
+
+	Expiry() time.Time
 }
 
 // NewWebSession returns new instance of the web session based on the V2 spec
@@ -106,10 +111,58 @@ func NewWebSession(name string, spec WebSessionSpecV2) WebSession {
 	}
 }
 
-// GetMetadata returns metadata
-func (ws *WebSessionV2) GetMetadata() Metadata {
-	return ws.Metadata
+func (r *WebSessionV2) GetKind() string {
+	return r.Kind
 }
+
+func (r *WebSessionV2) GetSubKind() string {
+	return r.SubKind
+}
+
+func (r *WebSessionV2) SetSubKind(subKind string) {
+	r.SubKind = subKind
+}
+
+func (r *WebSessionV2) GetVersion() string {
+	return r.Version
+}
+
+func (r *WebSessionV2) GetName() string {
+	return r.Metadata.Name
+}
+
+func (r *WebSessionV2) SetName(name string) {
+	r.Metadata.Name = name
+}
+
+func (r *WebSessionV2) Expiry() time.Time {
+	return r.Metadata.Expiry()
+}
+
+func (r *WebSessionV2) SetExpiry(expiry time.Time) {
+	r.Metadata.SetExpiry(expiry)
+}
+
+func (r *WebSessionV2) SetTTL(clock clockwork.Clock, ttl time.Duration) {
+	r.Metadata.SetTTL(clock, ttl)
+}
+
+func (r *WebSessionV2) GetMetadata() Metadata {
+	return r.Metadata
+}
+
+func (r *WebSessionV2) GetResourceID() int64 {
+	return r.Metadata.GetID()
+}
+
+func (r *WebSessionV2) SetResourceID(id int64) {
+	r.Metadata.SetID(id)
+}
+
+//// GetMetadata returns metadata
+//func (ws *WebSessionV2) GetMetadata() Metadata {
+//	return ws.Metadata
+//}
 
 // WithoutSecrets returns copy of the object but without secrets
 func (ws *WebSessionV2) WithoutSecrets() WebSession {
@@ -117,6 +170,10 @@ func (ws *WebSessionV2) WithoutSecrets() WebSession {
 	v2.Spec.Priv = nil
 	return v2
 }
+
+//func (ws *WebSessionV2) Expiry() time.Time {
+//	return ws.Metadata.Expiry()
+//}
 
 // CheckAndSetDefaults checks and set default values for any missing fields.
 func (ws *WebSessionV2) CheckAndSetDefaults() error {
@@ -133,10 +190,10 @@ func (ws *WebSessionV2) String() string {
 	return fmt.Sprintf("WebSession(name=%v,id=%v)", ws.GetUser(), ws.GetName())
 }
 
-// SetName sets session name
-func (ws *WebSessionV2) SetName(name string) {
-	ws.Metadata.Name = name
-}
+//// SetName sets session name
+//func (ws *WebSessionV2) SetName(name string) {
+//	ws.Metadata.Name = name
+//}
 
 // SetUser sets user associated with this session
 func (ws *WebSessionV2) SetUser(u string) {
@@ -156,10 +213,10 @@ func (ws *WebSessionV2) GetShortName() string {
 	return ws.Metadata.Name[:4]
 }
 
-// GetName returns session name
-func (ws *WebSessionV2) GetName() string {
-	return ws.Metadata.Name
-}
+//// GetName returns session name
+//func (ws *WebSessionV2) GetName() string {
+//	return ws.Metadata.Name
+//}
 
 // GetType gets the type of session, either web or app.
 func (ws *WebSessionV2) GetType() WebSessionSpecV2_SessionType {
@@ -576,6 +633,12 @@ func (r CreateAppWebSessionRequest) Check() error {
 	//}
 
 	return nil
+}
+
+type DeleteAppWebSessionRequest struct {
+	Username   string `json:"username"`
+	ParentHash string `json:"parent_hash"`
+	SessionID  string `json:"session_id"`
 }
 
 type CreateAppSessionRequest struct {
