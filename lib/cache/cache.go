@@ -105,6 +105,7 @@ func ForApps(cfg Config) Config {
 		// matching too much data about other namespaces or events.
 		{Kind: services.KindNamespace, Name: defaults.Namespace},
 		{Kind: services.KindApp},
+		{Kind: services.KindAppSession},
 	}
 	cfg.QueueSize = defaults.AppsQueueSize
 	return cfg
@@ -141,7 +142,7 @@ type Cache struct {
 	accessCache        services.Access
 	dynamicAccessCache services.DynamicAccessExt
 	presenceCache      services.Presence
-	webIdentityCache   services.WebIdentity
+	appIdentityCache   services.AppIdentity
 	eventsFanout       *services.Fanout
 
 	// closedFlag is set to indicate that the services are closed
@@ -172,8 +173,8 @@ type Config struct {
 	DynamicAccess services.DynamicAccess
 	// Presence is a presence service
 	Presence services.Presence
-	// WebIdentity is the identity service.
-	WebIdentity services.WebIdentity
+	// AppIdentity holds web and application sessions for AAP.
+	AppIdentity services.AppIdentity
 	// Backend is a backend for local cache
 	Backend backend.Backend
 	// RetryPeriod is a period between cache retries on failures
@@ -298,7 +299,7 @@ func New(config Config) (*Cache, error) {
 		accessCache:        local.NewAccessService(wrapper),
 		dynamicAccessCache: local.NewDynamicAccessService(wrapper),
 		presenceCache:      local.NewPresenceService(wrapper),
-		webIdentityCache:   local.NewIdentityService(wrapper),
+		appSessionCache:    local.NewIdentityService(wrapper),
 		eventsFanout:       services.NewFanout(),
 		Entry: log.WithFields(log.Fields{
 			trace.Component: config.Component,
@@ -691,10 +692,10 @@ func (c *Cache) GetApps(ctx context.Context, namespace string, opts ...services.
 	return c.presenceCache.GetApps(ctx, namespace, opts...)
 }
 
-//func (c *Cache) GetAppsWithIdentity(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
-//	return c.presenceCache.GetAppsWithIdentity(ctx, namespace, opts...)
-//}
-
 func (c *Cache) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
-	return c.webIdentityCache.GetAppWebSession(ctx, req)
+	return c.appIdentityCache.GetAppWebSession(ctx, req)
+}
+
+func (c *Cache) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
+	return c.appIdentityCache.GetAppSession(ctx, sessionID)
 }

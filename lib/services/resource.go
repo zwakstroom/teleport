@@ -99,6 +99,8 @@ const (
 	// KindWebSession is a web session resource
 	KindWebSession = "web_session"
 
+	KindAppWebSession = "app_web_session"
+
 	KindAppSession = "app_session"
 
 	// KindEvent is structured audit logging event

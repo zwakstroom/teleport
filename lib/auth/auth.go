@@ -1342,7 +1342,7 @@ func (s *AuthServer) NewWebSession(username string, roles []string, traits wrapp
 		return nil, trace.Wrap(err)
 	}
 	bearerTokenTTL := utils.MinTTL(sessionTTL, BearerTokenTTL)
-	return services.NewWebSession(token, services.WebSessionSpecV2{
+	return services.NewWebSession(token, services.KindWebSession, services.WebSessionSpecV2{
 		User:               user.GetName(),
 		Priv:               priv,
 		Pub:                certs.ssh,

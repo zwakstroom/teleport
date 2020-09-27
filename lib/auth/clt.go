@@ -2912,19 +2912,19 @@ func (c *Client) GetAppSession(ctx context.Context, sessionID string) (services.
 	return resp.GetSession(), nil
 }
 
-//func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
-//	clt, err := c.grpc()
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	resp, err := clt.GetAppSessions(ctx, &empty.Empty{})
-//	if err != nil {
-//		return nil, trail.FromGRPC(err)
-//	}
-//
-//	return resp.GetSessions(), nil
-//}
+func (c *Client) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	resp, err := clt.GetAppSessions(ctx, &empty.Empty{})
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+
+	return resp.GetSessions(), nil
+}
 
 func (c *Client) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
 	clt, err := c.grpc()
@@ -2946,35 +2946,35 @@ func (c *Client) UpsertAppSession(ctx context.Context, session services.AppSessi
 	return trace.NotImplemented("not implemented")
 }
 
-//func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
-//	clt, err := c.grpc()
-//	if err != nil {
-//		return trace.Wrap(err)
-//	}
-//
-//	err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
-//		SessionID: sessionID,
-//	})
-//	if err != nil {
-//
-//		return trail.FromGRPC(err)
-//	}
-//
-//	return nil
-//
-//}
-//func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
-//	clt, err := c.grpc()
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	if err := clt.DeleteAllAppSessiosn(ctx, &empty.Empty{}); err != nil {
-//		return trail.FromGRPC(err)
-//	}
-//
-//	return nil
-//}
+func (c *Client) DeleteAppSession(ctx context.Context, sessionID string) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	err = clt.DeleteAppSession(ctx, &proto.DeleteAppSessionRequest{
+		SessionID: sessionID,
+	})
+	if err != nil {
+
+		return trail.FromGRPC(err)
+	}
+
+	return nil
+
+}
+func (c *Client) DeleteAllAppSessions(ctx context.Context) error {
+	clt, err := c.grpc()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	if err := clt.DeleteAllAppSessiosn(ctx, &empty.Empty{}); err != nil {
+		return trail.FromGRPC(err)
+	}
+
+	return nil
+}
 
 // WebService implements features used by Web UI clients
 type WebService interface {

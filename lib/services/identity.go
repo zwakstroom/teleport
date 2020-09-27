@@ -229,27 +229,21 @@ type Identity interface {
 	// GetResetPasswordTokenSecrets returns token secrets
 	GetResetPasswordTokenSecrets(ctx context.Context, tokenID string) (ResetPasswordTokenSecrets, error)
 
-	WebIdentity
-
-	//GetAppWebSession(context.Context, GetAppWebSessionRequest) (WebSession, error)
-	//GetAppWebSessions(context.Context) ([]WebSession, error)
-	//UpsertAppWebSession(context.Context, WebSession) error
-	//DeleteAppWebSession(context.Context, DeleteAppWebSessionRequest) error
-	//DeleteAllAppWebSessions(context.Context) error
-
-	GetAppSession(ctx context.Context, sessionID string) (AppSession, error)
-	//GetAppSessions(ctx context.Context) ([]AppSession, error)
-	UpsertAppSession(ctx context.Context, session AppSession) error
-	//DeleteAppSession(ctx context.Context, sessionID string) error
-	//DeleteAllAppSessions(ctx context.Context) error
+	AppIdentity
 }
 
-type WebIdentity interface {
+type AppIdentity interface {
 	GetAppWebSession(context.Context, GetAppWebSessionRequest) (WebSession, error)
 	GetAppWebSessions(context.Context) ([]WebSession, error)
 	UpsertAppWebSession(context.Context, WebSession) error
 	DeleteAppWebSession(context.Context, DeleteAppWebSessionRequest) error
 	DeleteAllAppWebSessions(context.Context) error
+
+	GetAppSession(ctx context.Context, sessionID string) (AppSession, error)
+	GetAppSessions(ctx context.Context) ([]AppSession, error)
+	UpsertAppSession(ctx context.Context, session AppSession) error
+	DeleteAppSession(ctx context.Context, sessionID string) error
+	DeleteAllAppSessions(ctx context.Context) error
 }
 
 // VerifyPassword makes sure password satisfies our requirements (relaxed),

@@ -21,6 +21,7 @@ import (
 
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/wrappers"
 	"github.com/gravitational/trace"
 )
 
@@ -35,7 +36,7 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 	//}
 
 	// Create a new session for the application.
-	session, err := s.NewWebSession("rjones", []string{"admin"}, map[string][]string{"logins": []string{"foo"}})
+	session, err := s.NewAppSession("rjones", []string{"admin"}, map[string][]string{"logins": []string{"foo"}})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -72,6 +73,52 @@ func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAp
 	}
 
 	return session, nil
+}
+
+func (s *AuthServer) NewAppSession(username string, roles []string, traits wrappers.Traits) (services.WebSession, error) {
+	return nil, nil
+	//user, err := s.GetUser(username, false)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	//checker, err := services.FetchRoles(roles, s.Access, traits)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+
+	//priv, pub, err := s.GetNewKeyPairFromPool()
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	//sessionTTL := checker.AdjustSessionTTL(defaults.CertDuration)
+	//certs, err := s.generateUserCert(certRequest{
+	//	user:      user,
+	//	ttl:       sessionTTL,
+	//	publicKey: pub,
+	//	checker:   checker,
+	//	traits:    traits,
+	//})
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	//token, err := utils.CryptoRandomHex(SessionTokenBytes)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	//bearerToken, err := utils.CryptoRandomHex(SessionTokenBytes)
+	//if err != nil {
+	//	return nil, trace.Wrap(err)
+	//}
+	//bearerTokenTTL := utils.MinTTL(sessionTTL, BearerTokenTTL)
+	//return services.NewWebSession(token, services.KindWebSession, services.WebSessionSpecV2{
+	//	User:               user.GetName(),
+	//	Priv:               priv,
+	//	Pub:                certs.ssh,
+	//	TLSCert:            certs.tls,
+	//	Expires:            s.clock.Now().UTC().Add(sessionTTL),
+	//	BearerToken:        bearerToken,
+	//	BearerTokenExpires: s.clock.Now().UTC().Add(bearerTokenTTL),
+	//}), nil
 }
 
 //func (s *AuthServer) createAppSession(ctx context.Context, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {

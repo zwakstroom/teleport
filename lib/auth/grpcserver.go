@@ -18,7 +18,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -671,7 +670,6 @@ func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSession
 
 	session, err := auth.GetAppSession(ctx, req.SessionID)
 	if err != nil {
-		fmt.Printf("--> err: %v.\n", err)
 		return nil, trail.ToGRPC(err)
 	}
 	sess, ok := session.(*services.AppSessionV3)
@@ -684,30 +682,30 @@ func (g *GRPCServer) GetAppSession(ctx context.Context, req *proto.GetAppSession
 	}, nil
 }
 
-//func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto.GetAppSessionsResponse, error) {
-//	auth, err := g.authenticate(ctx)
-//	if err != nil {
-//		return nil, trail.ToGRPC(err)
-//	}
-//
-//	sessions, err := auth.GetAppSessions(ctx)
-//	if err != nil {
-//		return nil, trail.ToGRPC(err)
-//	}
-//
-//	var sessions []*services.AppSession
-//	for _, session := range sessions {
-//		sess, ok := session.(*services.AppSessionV3)
-//		if !ok {
-//			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
-//		}
-//		sessions = append(sessions, sess)
-//	}
-//
-//	return &proto.GetAppSessionsResponse{
-//		Sessions: sessions,
-//	}
-//}
+func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto.GetAppSessionsResponse, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	sessions, err := auth.GetAppSessions(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	var sessions []*services.AppSession
+	for _, session := range sessions {
+		sess, ok := session.(*services.AppSessionV3)
+		if !ok {
+			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
+		}
+		sessions = append(sessions, sess)
+	}
+
+	return &proto.GetAppSessionsResponse{
+		Sessions: sessions,
+	}
+}
 
 func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppSessionRequest) (*proto.CreateAppSessionResponse, error) {
 	auth, err := g.authenticate(ctx)
@@ -731,31 +729,31 @@ func (g *GRPCServer) CreateAppSession(ctx context.Context, req *proto.CreateAppS
 	}, nil
 }
 
-//func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *DeleteAppSessionRequest) (*empty.Empty, error) {
-//	auth, err := g.authenticate(ctx)
-//	if err != nil {
-//		return nil, trail.ToGRPC(err)
-//	}
-//
-//	if err := auth.DeleteAppSession(ctx, req.SessionID); err != nil {
-//		return nil, trail.ToGRPC(err)
-//	}
-//
-//	return &empty.Empty{}, nil
-//}
-//
-//func (g *GRPCServer) DeleteAllAppSessions(ctx context.Context, _ *empty.Empty) (*empty.Empty, error) {
-//	auth, err := g.authenticate(ctx)
-//	if err != nil {
-//		return nil, trail.ToGRPC(err)
-//	}
-//
-//	if err := auth.DeleteAllAppSessions(ctx); err != nil {
-//		return nil, trail.ToGRPC(err)
-//	}
-//
-//	return &empty.Empty{}, nil
-//}
+func (g *GRPCServer) DeleteAppSession(ctx context.Context, req *DeleteAppSessionRequest) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	if err := auth.DeleteAppSession(ctx, req.SessionID); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
+}
+
+func (g *GRPCServer) DeleteAllAppSessions(ctx context.Context, _ *empty.Empty) (*empty.Empty, error) {
+	auth, err := g.authenticate(ctx)
+	if err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	if err := auth.DeleteAllAppSessions(ctx); err != nil {
+		return nil, trail.ToGRPC(err)
+	}
+
+	return &empty.Empty{}, nil
+}
 
 type grpcContext struct {
 	*AuthContext
@@ -885,6 +883,10 @@ func eventToGRPC(in services.Event) (*proto.Event, error) {
 		out.Resource = &proto.Event_AppWebSession{
 			AppWebSession: r,
 		}
+	case *services.AppSessionV3:
+		out.Resource = &proto.Event_AppSession{
+			AppSession: r,
+		}
 	default:
 		return nil, trace.BadParameter("resource type %T is not supported", in.Resource)
 	}
@@ -955,6 +957,9 @@ func eventFromGRPC(in proto.Event) (*services.Event, error) {
 		out.Resource = r
 		return &out, nil
 	} else if r := in.GetAppWebSession(); r != nil {
+		out.Resource = r
+		return &out, nil
+	} else if r := in.GetAppSession(); r != nil {
 		out.Resource = r
 		return &out, nil
 	} else {

@@ -65,6 +65,7 @@ message Event {
             [ (gogoproto.jsontag) = "access_request,omitempty" ];
         services.WebSessionV2 AppWebSession = 15
             [ (gogoproto.jsontag) = "app_web_session,omitempty" ];
+        services.AppSessionV3 AppSession = 16 [ (gogoproto.jsontag) = "app_session,omitempty" ];
     }
 }
 
@@ -304,9 +305,9 @@ message GetAppSessionResponse {
     services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
 }
 
-// message GetAppSessionsResponse {
-//    repeated services.AppSessionV3 Sessions = 1 [ (gogoproto.jsontag) = "sessions" ];
-//}
+message GetAppSessionsResponse {
+    repeated services.AppSessionV3 Sessions = 1 [ (gogoproto.jsontag) = "sessions" ];
+}
 
 message CreateAppSessionRequest { string PublicAddr = 1 [ (gogoproto.jsontag) = "public_addr" ]; }
 
@@ -314,7 +315,7 @@ message CreateAppSessionResponse {
     services.AppSessionV3 Session = 1 [ (gogoproto.jsontag) = "session" ];
 }
 
-// message DeleteAppSessionRequest { string SessionID = 1 [ (gogoproto.jsontag) = "session_id" ]; }
+message DeleteAppSessionRequest { string SessionID = 1 [ (gogoproto.jsontag) = "session_id" ]; }
 
 // AuthService is authentication/authorization service implementation
 service AuthService {
@@ -386,9 +387,9 @@ service AuthService {
     rpc DeleteAllAppWebSessions(google.protobuf.Empty) returns (google.protobuf.Empty);
 
     rpc GetAppSession(GetAppSessionRequest) returns (GetAppSessionResponse);
-    // rpc GetAppSessions(google.protobuf.Empty) returns (GetAppSessionsResponse);
+    rpc GetAppSessions(google.protobuf.Empty) returns (GetAppSessionsResponse);
     rpc CreateAppSession(CreateAppSessionRequest) returns (CreateAppSessionResponse);
     // rpc UpsertAppSession(UpsertAppSessionRequest) returns (google.protobuf.Empty);
-    // rpc DeleteAppSession(DeleteAppSessionRequest) returns (google.protobuf.Empty);
-    // rpc DeleteAllAppSessions(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc DeleteAppSession(DeleteAppSessionRequest) returns (google.protobuf.Empty);
+    rpc DeleteAllAppSessions(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
