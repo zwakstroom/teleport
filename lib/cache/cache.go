@@ -107,7 +107,7 @@ func ForApps(cfg Config) Config {
 		{Kind: services.KindNamespace, Name: defaults.Namespace},
 		// TODO(russjones): This doesn't need to be here, the application knows
 		// what applications it is proxying itself.
-		{Kind: services.KindApp},
+		//{Kind: services.KindApp},
 		{Kind: services.KindAppSession},
 	}
 	cfg.QueueSize = defaults.AppsQueueSize

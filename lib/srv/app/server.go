@@ -230,7 +230,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("--> sessionID: %v.\n", sessionID)
-	session, err := s.c.AuthClient.GetAppSession(r.Context(), "123")
+	session, err := s.c.AuthClient.GetAppSession(r.Context(), sessionID)
 	if err != nil {
 		fmt.Printf("--> 2: %v\n", err)
 		http.Error(w, "internal server error", 500)
@@ -239,7 +239,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	app, err := s.getApp(r.Context(), session.GetPublicAddr())
 	if err != nil {
-		fmt.Printf("--> 3.\n")
+		fmt.Printf("--> 3: %v\n", err)
 		http.Error(w, "internal server error", 500)
 		return
 	}
@@ -250,9 +250,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("--> setting public addr with: %v.\n", app.PublicAddr)
 	fwder := &forwarder{
-		jwt: "123",
-		log: s.log,
+		jwt:        session.GetJWT(),
+		publicAddr: app.PublicAddr,
+		log:        s.log,
 	}
 	fwd, err := forward.New(
 		forward.RoundTripper(fwder),
@@ -303,18 +305,9 @@ func (s *Server) Wait() error {
 // to the same target address. Random selection (or round robin) occurs at the
 // proxy when calling the Dial on the cluster.
 func (s *Server) getApp(ctx context.Context, publicAddr string) (*services.App, error) {
-	servers, err := s.c.AccessPoint.GetApps(ctx, defaults.Namespace)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	for _, server := range servers {
-		for _, a := range server.GetApps() {
-			host, _, _ := net.SplitHostPort(a.PublicAddr)
-			//if publicAddr == a.PublicAddr {
-			if publicAddr == host {
-				return a, nil
-			}
+	for _, a := range s.c.Server.GetApps() {
+		if publicAddr == a.PublicAddr {
+			return a, nil
 		}
 	}
 
@@ -328,8 +321,9 @@ func (s *Server) activeConnections() int64 {
 }
 
 type forwarder struct {
-	jwt string
-	log *logrus.Entry
+	jwt        string
+	publicAddr string
+	log        *logrus.Entry
 }
 
 func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
@@ -337,7 +331,14 @@ func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	f.log.Debugf("Proxied request: %v %v.", resp.StatusCode, r.URL.Path)
+
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	u.Host = f.publicAddr
+
+	f.log.Debugf("Proxied request: %v %v.", resp.StatusCode, u)
 	return resp, nil
 }
 

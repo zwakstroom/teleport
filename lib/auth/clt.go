@@ -2831,6 +2831,7 @@ func (c *Client) GetAppWebSessions(ctx context.Context) ([]services.WebSession, 
 
 	resp, err := clt.GetAppWebSessions(ctx, &empty.Empty{})
 	if err != nil {
+		fmt.Printf("--> clt: %v.\n", err)
 		return nil, trail.FromGRPC(err)
 	}
 
@@ -2848,10 +2849,12 @@ func (c *Client) CreateAppWebSession(ctx context.Context, req services.CreateApp
 	}
 
 	resp, err := clt.CreateAppWebSession(ctx, &proto.CreateAppWebSessionRequest{
-		Username:    req.Username,
-		PublicAddr:  req.PublicAddr,
-		ClusterName: req.ClusterName,
-		SessionID:   req.SessionID,
+		Username:      req.Username,
+		ParentSession: req.ParentSession,
+		AppSessionID:  req.AppSessionID,
+		ServerID:      req.ServerID,
+		ClusterName:   req.ClusterName,
+		Expires:       req.Expires,
 	})
 	if err != nil {
 		return nil, trail.FromGRPC(err)

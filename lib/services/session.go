@@ -57,6 +57,8 @@ type WebSession interface {
 	// GetTLSCert returns PEM encoded TLS certificate associated with session
 	GetTLSCert() []byte
 
+	GetSessionID() string
+	SetSessionID(string)
 	// GetServerID gets the ID of the server the application is running on.
 	GetServerID() string
 	// GetServerID sets the ID of the server the application is running on.
@@ -108,7 +110,6 @@ type WebSession interface {
 // NewWebSession returns new instance of the web session based on the V2 spec
 func NewWebSession(name string, kind string, spec WebSessionSpecV2) WebSession {
 	return &WebSessionV2{
-		//	Kind:    KindWebSession,
 		Kind:    kind,
 		Version: V2,
 		Metadata: Metadata{
@@ -251,6 +252,14 @@ func (ws *WebSessionV2) SetParentHash(parentHash string) {
 	ws.Spec.ParentHash = parentHash
 }
 
+func (ws *WebSessionV2) GetSessionID() string {
+	return ws.Spec.SessionID
+}
+
+func (ws *WebSessionV2) SetSessionID(sessionID string) {
+	ws.Spec.SessionID = sessionID
+}
+
 func (ws *WebSessionV2) GetServerID() string {
 	return ws.Spec.ServerID
 }
@@ -342,15 +351,15 @@ const WebSessionSpecV2Schema = `{
   "additionalProperties": false,
   "required": ["pub", "bearer_token", "bearer_token_expires", "expires", "user"],
   "properties": {
-    "type": {"type": "integer"},
     "user": {"type": "string"},
     "pub": {"type": "string"},
     "priv": {"type": "string"},
     "tls_cert": {"type": "string"},
-    "parent_hash": {"type": "string"},
     "public_addr": {"type": "string"},
+    "parent_hash": {"type": "string"},
     "server_id": {"type": "string"},
     "cluster_name": {"type": "string"},
+    "session_id": {"type": "string"},
     "bearer_token": {"type": "string"},
     "bearer_token_expires": {"type": "string"},
     "expires": {"type": "string"}%v
@@ -544,6 +553,7 @@ func (*TeleportWebSessionMarshaler) UnmarshalWebSession(bytes []byte) (WebSessio
 	case V2:
 		var ws WebSessionV2
 		if err := utils.UnmarshalWithSchema(GetWebSessionSchema(), &ws, bytes); err != nil {
+			fmt.Printf("--> err: %v.\n", err.Error())
 			return nil, trace.BadParameter(err.Error())
 		}
 		utils.UTC(&ws.Spec.BearerTokenExpires)
@@ -631,26 +641,27 @@ type CreateAppWebSessionRequest struct {
 	////// BearerToken is the bearer token of the parent session.
 	////BearerToken string
 
-	Username      string `json:"username"`
-	ParentSession string `json:"parent_session"`
-	AppSessionID  string `json:"app_session"`
-	ServerID      string `json:"server_id"`
-	ClusterName   string `json:"cluster_name"`
+	Username      string    `json:"username"`
+	ParentSession string    `json:"parent_session"`
+	AppSessionID  string    `json:"app_session"`
+	ServerID      string    `json:"server_id"`
+	ClusterName   string    `json:"cluster_name"`
+	Expires       time.Time `json:"expires"`
 }
 
 func (r CreateAppWebSessionRequest) Check() error {
-	if r.Username == "" {
-		return trace.BadParameter("username is missing")
-	}
-	if r.PublicAddr == "" {
-		return trace.BadParameter("public address is missing")
-	}
-	if r.ClusterName == "" {
-		return trace.BadParameter("cluster name is missing")
-	}
-	if r.SessionID == "" {
-		return trace.BadParameter("session ID is missing")
-	}
+	//if r.Username == "" {
+	//	return trace.BadParameter("username is missing")
+	//}
+	//if r.PublicAddr == "" {
+	//	return trace.BadParameter("public address is missing")
+	//}
+	//if r.ClusterName == "" {
+	//	return trace.BadParameter("cluster name is missing")
+	//}
+	//if r.SessionID == "" {
+	//	return trace.BadParameter("session ID is missing")
+	//}
 	//if r.BearerToken == "" {
 	//	return trace.BadParameter("bearer token is missing")
 	//}

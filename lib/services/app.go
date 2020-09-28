@@ -26,6 +26,7 @@ import (
 	"github.com/gravitational/trace"
 
 	"github.com/jonboulle/clockwork"
+	"github.com/pborman/uuid"
 )
 
 type AppSession interface {
@@ -40,15 +41,18 @@ type AppSession interface {
 	GetRoles() []string
 	SetRoles([]string)
 
+	GetJWT() string
+	SetJWT(string)
+
 	CheckAndSetDefaults() error
 }
 
-func NewAppSession(sessionID string, spec AppSessionSpecV3) (AppSession, error) {
+func NewAppSession(spec AppSessionSpecV3) (AppSession, error) {
 	session := &AppSessionV3{
 		Kind:    KindAppSession,
 		Version: V3,
 		Metadata: Metadata{
-			Name:      sessionID,
+			Name:      uuid.New(),
 			Namespace: defaults.Namespace,
 		},
 		Spec: spec,
@@ -115,14 +119,6 @@ func (s *AppSessionV3) SetPublicAddr(publicAddr string) {
 	s.Spec.PublicAddr = publicAddr
 }
 
-func (s *AppSessionV3) GetServerID() string {
-	return s.Spec.ServerID
-}
-
-func (s *AppSessionV3) SetServerID(serverID string) {
-	s.Spec.ServerID = serverID
-}
-
 func (s *AppSessionV3) GetUsername() string {
 	return s.Spec.Username
 }
@@ -137,6 +133,14 @@ func (s *AppSessionV3) GetRoles() []string {
 
 func (s *AppSessionV3) SetRoles(roles []string) {
 	s.Spec.Roles = roles
+}
+
+func (s *AppSessionV3) GetJWT() string {
+	return s.Spec.JWT
+}
+
+func (s *AppSessionV3) SetJWT(jwt string) {
+	s.Spec.JWT = jwt
 }
 
 func (s *AppSessionV3) String() string {
@@ -228,7 +232,8 @@ const AppSessionSpecSchema = `{
 	"properties": {
 		"public_addr": { "type":"string" },
 		"username": { "type":"string" },
-		"roles": { "type":"array" }
+		"roles": { "type":"array" },
+		"jwt": { "type":"string" }
 	}
 }`
 

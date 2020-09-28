@@ -18,6 +18,8 @@ package cache
 
 import (
 	"context"
+	"fmt"
+	"runtime/debug"
 
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
@@ -1155,6 +1157,8 @@ func (a *appWebSession) erase() error {
 func (a *appWebSession) fetch(ctx context.Context) error {
 	resources, err := a.AppIdentity.GetAppWebSessions(ctx)
 	if err != nil {
+		debug.PrintStack()
+		fmt.Printf("--> here: %v.\n", err)
 		return trace.Wrap(err)
 	}
 	if err := a.erase(); err != nil {

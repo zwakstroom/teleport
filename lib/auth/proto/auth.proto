@@ -278,11 +278,11 @@ message GetAppWebSessionsResponse {
 
 message CreateAppWebSessionRequest {
     string Username = 1 [ (gogoproto.jsontag) = "username" ];
-    string PublicAddr = 2 [ (gogoproto.jsontag) = "public_addr" ];
-    string ClusterName = 3 [ (gogoproto.jsontag) = "cluster_name" ];
-    string SessionID = 4 [ (gogoproto.jsontag) = "session_id" ];
-    // Expires is the expiration time for the JWT.
-    google.protobuf.Timestamp Expires = 5 [
+    string ParentSession = 2 [ (gogoproto.jsontag) = "parent_session" ];
+    string AppSessionID = 3 [ (gogoproto.jsontag) = "app_session" ];
+    string ServerID = 4 [ (gogoproto.jsontag) = "server_id" ];
+    string ClusterName = 5 [ (gogoproto.jsontag) = "cluster_name" ];
+    google.protobuf.Timestamp Expires = 6 [
         (gogoproto.stdtime) = true,
         (gogoproto.nullable) = false,
         (gogoproto.jsontag) = "expires"

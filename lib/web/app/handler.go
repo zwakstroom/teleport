@@ -225,7 +225,7 @@ func (h *Handler) forward(w http.ResponseWriter, r *http.Request, session servic
 	// request over the reverse tunnel to the target application.
 	fwdHandler := &forwardHandler{
 		conn:      conn,
-		sessionID: session.GetName(),
+		sessionID: session.GetSessionID(),
 	}
 	fwd, err := forward.New(
 		forward.RoundTripper(fwdHandler),

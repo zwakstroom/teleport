@@ -18,6 +18,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -590,6 +591,7 @@ func (g *GRPCServer) GetAppWebSessions(ctx context.Context, _ *empty.Empty) (*pr
 
 	sessions, err := auth.GetAppWebSessions(ctx)
 	if err != nil {
+		fmt.Printf("--> here (grpcserver): %v.\n", err)
 		return nil, trail.ToGRPC(err)
 	}
 
@@ -614,10 +616,12 @@ func (g *GRPCServer) CreateAppWebSession(ctx context.Context, req *proto.CreateA
 	}
 
 	session, err := auth.CreateAppWebSession(ctx, services.CreateAppWebSessionRequest{
-		Username:    req.GetUsername(),
-		PublicAddr:  req.GetPublicAddr(),
-		ClusterName: req.GetClusterName(),
-		SessionID:   req.GetSessionID(),
+		Username:      req.GetUsername(),
+		ParentSession: req.GetParentSession(),
+		AppSessionID:  req.GetAppSessionID(),
+		ServerID:      req.GetServerID(),
+		ClusterName:   req.GetClusterName(),
+		Expires:       req.GetExpires(),
 	})
 	if err != nil {
 		return nil, trail.ToGRPC(err)
@@ -697,6 +701,7 @@ func (g *GRPCServer) GetAppSessions(ctx context.Context, _ *empty.Empty) (*proto
 	for _, session := range sessions {
 		sess, ok := session.(*services.AppSessionV3)
 		if !ok {
+			fmt.Printf("--> here (grpcserver) 2: %v.\n", err)
 			return nil, trail.ToGRPC(trace.BadParameter("unexpected type %T", session))
 		}
 		protoSessions = append(protoSessions, sess)

@@ -19,68 +19,87 @@ package auth
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gravitational/teleport/lib/defaults"
+	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/services"
-	"github.com/gravitational/teleport/lib/wrappers"
+	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/trace"
 )
 
-func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, error) {
-	// Check that a matching web session exists in the backend.
-	parentSession, err := s.GetWebSession("rjones", req.SessionID)
+func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest, user services.User, checker services.AccessChecker) (services.AppSession, error) {
+	if err := req.Check(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Fetch the application the caller is requesting.
+	app, server, err := s.getApp(ctx, req.PublicAddr)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	//if subtle.ConstantTimeCompare([]byte(parentSession.GetBearerToken()), []byte(req.BearerToken)) == 0 {
-	//	return nil, trace.BadParameter("invalid session")
-	//}
 
-	// Create a new session for the application.
-	session, err := s.NewAppSession("rjones", []string{"admin"}, map[string][]string{"logins": []string{"foo"}})
+	// Check if the caller has access to the requested application.
+	if err := checker.CheckAccessToApp(server.GetNamespace(), app); err != nil {
+		// TODO(russjones): Emit an audit event here.
+		log.Warnf("Access to %v denied: %v.", err)
+		return nil, trace.AccessDenied("access denied")
+	}
+
+	// TODO(russjones): This ends up being 30 hours, does this make sense?
+	expires := s.clock.Now().Add(checker.AdjustSessionTTL(defaults.MaxCertDuration))
+
+	// Generate a JWT that can be re-used during the lifetime of this
+	// session to pass authentication information to the target application.
+	jwt, err := s.generateAppToken(tokenRequest{
+		username:   user.GetName(),
+		roles:      user.GetRoles(),
+		publicAddr: req.PublicAddr,
+		expires:    expires,
+	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	// TODO(russjones): set session id and server id here.
-	//session.SetType(services.WebSessionSpecV2_App)
-	//session.SetPublicAddr(req.PublicAddr)
-	session.SetParentHash(services.SessionHash(parentSession.GetName()))
-	session.SetClusterName(req.ClusterName)
 
-	// TODO(russjones): This should be passed in the request and shoud be picked from appsession.
-	session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
-
-	// Create session in backend.
-	err = s.Identity.UpsertAppWebSession(ctx, session)
+	// Create a new application session.
+	session, err := services.NewAppSession(services.AppSessionSpecV3{
+		PublicAddr: req.PublicAddr,
+		Username:   user.GetName(),
+		Roles:      user.GetRoles(),
+		JWT:        jwt,
+	})
 	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	session.SetExpiry(expires)
+	if err := s.UpsertAppSession(ctx, session); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	return session, nil
 }
 
-func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
-	fmt.Printf("--> Okay done!.\n")
-	return nil, nil
-	//// TODO(russjones): Check if access is allowed.
-	//session, err := services.NewAppSession("123", services.AppSessionSpecV3{
-	//	PublicAddr: req.PublicAddr,
-	//	Username:   "this-comes-from-identity",
-	//	Roles:      []string{"these-come-from-roles"},
-	//})
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
+func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest, user services.User, checker services.AccessChecker) (services.WebSession, error) {
+	// Check that a matching web session exists in the backend.
+	parentSession, err := s.GetWebSession(req.Username, req.ParentSession)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 
-	//if err := s.UpsertAppSession(ctx, session); err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
+	//	// Create a new session for the application.
+	//	session, err := s.NewAppSession("rjones", []string{"admin"}, map[string][]string{"logins": []string{"foo"}})
+	//	if err != nil {
+	//		return nil, trace.Wrap(err)
+	//	}
+	//	// TODO(russjones): set session id and server id here.
+	//	//session.SetType(services.WebSessionSpecV2_App)
+	//	//session.SetPublicAddr(req.PublicAddr)
+	//	session.SetParentHash(services.SessionHash(parentSession.GetName()))
+	//	session.SetClusterName(req.ClusterName)
+	//
+	//	// TODO(russjones): This should be passed in the request and shoud be picked from appsession.
+	//	session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
 
-	//return session, nil
-}
-
-func (s *AuthServer) NewAppSession(username string, roles []string, traits wrappers.Traits) (services.WebSession, error) {
-	return nil, nil
 	//user, err := s.GetUser(username, false)
 	//if err != nil {
 	//	return nil, trace.Wrap(err)
@@ -90,39 +109,107 @@ func (s *AuthServer) NewAppSession(username string, roles []string, traits wrapp
 	//	return nil, trace.Wrap(err)
 	//}
 
-	//priv, pub, err := s.GetNewKeyPairFromPool()
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-	//sessionTTL := checker.AdjustSessionTTL(defaults.CertDuration)
-	//certs, err := s.generateUserCert(certRequest{
-	//	user:      user,
-	//	ttl:       sessionTTL,
-	//	publicKey: pub,
-	//	checker:   checker,
-	//	traits:    traits,
-	//})
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-	//token, err := utils.CryptoRandomHex(SessionTokenBytes)
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-	//bearerToken, err := utils.CryptoRandomHex(SessionTokenBytes)
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-	//bearerTokenTTL := utils.MinTTL(sessionTTL, BearerTokenTTL)
-	//return services.NewWebSession(token, services.KindWebSession, services.WebSessionSpecV2{
-	//	User:               user.GetName(),
-	//	Priv:               priv,
-	//	Pub:                certs.ssh,
-	//	TLSCert:            certs.tls,
-	//	Expires:            s.clock.Now().UTC().Add(sessionTTL),
-	//	BearerToken:        bearerToken,
-	//	BearerTokenExpires: s.clock.Now().UTC().Add(bearerTokenTTL),
-	//}), nil
+	// TODO(russjones): Does this TTL make sense, is it 30 hours?
+	fmt.Printf("--> req.Expires: %v.\n", req.Expires)
+	fmt.Printf("--> s.clock.Now(): %v.\n", s.clock.Now())
+	fmt.Printf("--> Requesting ttl: %v.\n", req.Expires.Sub(s.clock.Now()))
+
+	// Generate certificate for this session.
+	privateKey, publicKey, err := s.GetNewKeyPairFromPool()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	certs, err := s.generateUserCert(certRequest{
+		user:      user,
+		publicKey: publicKey,
+		checker:   checker,
+		// TODO(russjones): What should the traits be?
+		traits:          map[string][]string{"logins": []string{"foo"}},
+		ttl:             req.Expires.Sub(s.clock.Now()),
+		overrideRoleTTL: true,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Create session.
+	sessionID, err := utils.CryptoRandomHex(SessionTokenBytes)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	session := services.NewWebSession(sessionID, services.KindAppWebSession, services.WebSessionSpecV2{
+		User:    req.Username,
+		Priv:    privateKey,
+		Pub:     certs.ssh,
+		TLSCert: certs.tls,
+		Expires: req.Expires,
+		// Set web application specific fields.
+		ParentHash:  services.SessionHash(parentSession.GetName()),
+		ServerID:    req.ServerID,
+		ClusterName: req.ClusterName,
+		SessionID:   req.AppSessionID,
+	})
+	if err = s.Identity.UpsertAppWebSession(ctx, session); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return session, nil
+}
+
+func (s *AuthServer) getApp(ctx context.Context, publicAddr string) (*services.App, services.Server, error) {
+	servers, err := s.GetApps(ctx, defaults.Namespace)
+	if err != nil {
+		return nil, nil, trace.Wrap(err)
+	}
+
+	for _, server := range servers {
+		for _, app := range server.GetApps() {
+			if app.PublicAddr == publicAddr {
+				return app, server, nil
+			}
+		}
+	}
+
+	return nil, nil, trace.NotFound("application %v not found", publicAddr)
+}
+
+type tokenRequest struct {
+	username   string
+	roles      []string
+	publicAddr string
+	expires    time.Time
+}
+
+func (s *AuthServer) generateAppToken(r tokenRequest) (string, error) {
+	// Get the CA with which this JWT will be signed.
+	clusterName, err := s.GetDomainName()
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+	ca, err := s.Trust.GetCertAuthority(services.CertAuthID{
+		Type:       services.JWTSigner,
+		DomainName: clusterName,
+	}, true)
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	// Fetch the signing key and sign the claims.
+	privateKey, err := ca.JWTSigner()
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+	token, err := privateKey.Sign(jwt.SignParams{
+		Username: r.username,
+		Roles:    r.roles,
+		AppName:  r.publicAddr,
+		Expires:  r.expires,
+	})
+	if err != nil {
+		return "", trace.Wrap(err)
+	}
+
+	return token, nil
 }
 
 //func (s *AuthServer) createAppSession(ctx context.Context, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {

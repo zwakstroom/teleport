@@ -18,8 +18,6 @@ package local
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/services"
@@ -53,11 +51,11 @@ func (s *IdentityService) GetAppWebSessions(ctx context.Context) ([]services.Web
 
 	out := make([]services.WebSession, len(result.Items))
 	for i, item := range result.Items {
-		var a services.WebSession
-		if err := json.Unmarshal(item.Value, &a); err != nil {
+		session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
+		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		out[i] = a
+		out[i] = session
 	}
 	return out, nil
 }
@@ -102,7 +100,6 @@ func (s *IdentityService) GetAppSession(ctx context.Context, sessionID string) (
 
 	session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value)
 	if err != nil {
-		fmt.Printf("--> %v: %v.\n", string(item.Value), err)
 		return nil, trace.Wrap(err)
 	}
 	return session, nil
@@ -117,11 +114,11 @@ func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.AppSes
 
 	out := make([]services.AppSession, len(result.Items))
 	for i, item := range result.Items {
-		var a services.AppSession
-		if err := json.Unmarshal(item.Value, &a); err != nil {
+		session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value)
+		if err != nil {
 			return nil, trace.Wrap(err)
 		}
-		out[i] = a
+		out[i] = session
 	}
 	return out, nil
 }

@@ -18,7 +18,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"time"
 
@@ -119,6 +118,14 @@ func (a *AuthWithRoles) hasLocalUserRole(checker services.AccessChecker) bool {
 		return false
 	}
 	return true
+}
+
+// hasUserRole checks if the role set belongs to a local or remote user.
+func (a *AuthWithRoles) hasUserRole(checker services.AccessChecker) bool {
+	_, okLocal := checker.(LocalUserRoleSet)
+	_, okRemote := checker.(RemoteUserRoleSet)
+
+	return okLocal || okRemote
 }
 
 // hasMachineRole returns true of the role is a local or remote machine role.
@@ -1970,7 +1977,6 @@ func (a *AuthWithRoles) GenerateAppToken(ctx context.Context, params services.Ap
 }
 
 func (a *AuthWithRoles) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
-	fmt.Printf("--> a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -1983,7 +1989,6 @@ func (a *AuthWithRoles) GetAppWebSession(ctx context.Context, req services.GetAp
 }
 
 func (a *AuthWithRoles) GetAppWebSessions(ctx context.Context) ([]services.WebSession, error) {
-	fmt.Printf("--> a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbList); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -1999,14 +2004,11 @@ func (a *AuthWithRoles) GetAppWebSessions(ctx context.Context) ([]services.WebSe
 }
 
 func (a *AuthWithRoles) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest) (services.WebSession, error) {
-	fmt.Printf("--> a.identity: %v.\n", a.identity)
 	if err := a.currentUserAction(req.Username); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	fmt.Printf("--> traits: %v.\n ", a.identity.Traits)
-
-	session, err := a.authServer.CreateAppWebSession(ctx, req)
+	session, err := a.authServer.CreateAppWebSession(ctx, req, a.user, a.checker)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -2018,7 +2020,6 @@ func (a *AuthWithRoles) UpsertAppWebSession(ctx context.Context, session service
 }
 
 func (a *AuthWithRoles) DeleteAppWebSession(ctx context.Context, req services.DeleteAppWebSessionRequest) error {
-	fmt.Printf("--> a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
@@ -2030,7 +2031,6 @@ func (a *AuthWithRoles) DeleteAppWebSession(ctx context.Context, req services.De
 }
 
 func (a *AuthWithRoles) DeleteAllAppWebSessions(ctx context.Context) error {
-	fmt.Printf("--> a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppWebSession, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
@@ -2042,7 +2042,6 @@ func (a *AuthWithRoles) DeleteAllAppWebSessions(ctx context.Context) error {
 }
 
 func (a *AuthWithRoles) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
-	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -2055,8 +2054,6 @@ func (a *AuthWithRoles) GetAppSession(ctx context.Context, sessionID string) (se
 }
 
 func (a *AuthWithRoles) GetAppSessions(ctx context.Context) ([]services.AppSession, error) {
-
-	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbList); err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -2072,19 +2069,18 @@ func (a *AuthWithRoles) GetAppSessions(ctx context.Context) ([]services.AppSessi
 }
 
 func (a *AuthWithRoles) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest) (services.AppSession, error) {
-	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
-	// TODO(russjones): The only check that needs to occur here is if the role
-	// is a user role. But note this does not really provide security properties,
-	// auth does that.
-	//
-	// Any user is allowed to request a session, just like an SSH session,
-	// however, auth decides if this session will be granted.
+	// Allow any user to request an application session, however auth will check
+	// if the caller has access to the requested application. This matches the
+	// behavior of SSH sessions: anyone with a valid identity can request a
+	// session, but auth decides if access to the requested server is allowed.
+	if !a.hasUserRole(a.checker) {
+		return nil, trace.AccessDenied("identity can not create application sessions")
+	}
 
-	session, err := a.authServer.CreateAppSession(ctx, req)
+	session, err := a.authServer.CreateAppSession(ctx, req, a.user, a.checker)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-
 	return session, nil
 }
 
@@ -2093,7 +2089,6 @@ func (a *AuthWithRoles) UpsertAppSession(ctx context.Context, session services.A
 }
 
 func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) error {
-	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
@@ -2105,7 +2100,6 @@ func (a *AuthWithRoles) DeleteAppSession(ctx context.Context, sessionID string) 
 }
 
 func (a *AuthWithRoles) DeleteAllAppSessions(ctx context.Context) error {
-	fmt.Printf("--> [1] a.identity: %v.\n", a.identity)
 	if err := a.action(defaults.Namespace, services.KindAppSession, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
 	}
