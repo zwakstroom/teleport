@@ -50,18 +50,21 @@ fi
 
 echo "Creating the Kubernetes Service Account with minimal RBAC permissions."
 kubectl apply -f - <<EOF
+#creates $TELEPORT_NAMESPACE namespace from env variable [core k8s API]
 apiVersion: v1
 kind: Namespace
 metadata:
   name: ${NAMESPACE}
 ---
+#creates service account (object) named $TELEPORT_SA belonging to $TELEPORT_NAMESPACE namcespace [core k8s API]
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ${TELEPORT_SA}
   namespace: ${NAMESPACE}
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+#Creates a ClusterRole resource (not yet applied) [authorization API]
+apiVersion: rbac.authorization.k8s.io/v1 
 kind: ClusterRole
 metadata:
   name: teleport-role
@@ -82,6 +85,7 @@ rules:
   verbs:
   - create
 ---
+# Binds ClusterRole 'teleport-role' to serviceaccount $TElEPORT NAMESPACE
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -109,6 +113,8 @@ CURRENT_CLUSTER_ADDR=$(kubectl config view -o jsonpath="{.clusters[?(@.name == \
 
 echo "Writing kubeconfig."
 cat > kubeconfig <<EOF
+
+#What is this?
 apiVersion: v1
 clusters:
 - cluster:
