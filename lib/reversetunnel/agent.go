@@ -81,12 +81,9 @@ type AgentConfig struct {
 	EventsC chan string
 	// KubeDialAddr is a dial address for kubernetes proxy
 	KubeDialAddr utils.NetAddr
-	// SSHServer is a SSH server that can handle a connection (perform a handshake
-	// then process). Only set with the agent is running within a node.
-	SSHServer SSHConnHandler
-	// AppServer is an application proxy (AAP) that forwards requests to the
-	// target node.
-	AppServer AppHandler
+	// Server is either an SSH or application server. It can handle a connection
+	// (perform handshake and handle request).
+	Server ConnHandler
 	// ReverseTunnelServer holds all reverse tunnel connections.
 	ReverseTunnelServer Server
 	// LocalClusterName is the name of the cluster this agent is running in.
@@ -449,8 +446,7 @@ func (a *Agent) processRequests(conn *ssh.Client) error {
 				channel:             ch,
 				requestCh:           req,
 				sconn:               conn.Conn,
-				sshServer:           a.SSHServer,
-				appServer:           a.AppServer,
+				server:              a.Server,
 				component:           teleport.ComponentReverseTunnelAgent,
 				reverseTunnelServer: a.ReverseTunnelServer,
 				localClusterName:    a.LocalClusterName,

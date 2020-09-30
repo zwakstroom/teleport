@@ -182,14 +182,12 @@ type transport struct {
 	// sconn is a SSH connection to the remote host. Used for dial back nodes.
 	sconn ssh.Conn
 
-	// server is the underlying SSH server. Used for dial back nodes.
-	sshServer SSHConnHandler
-
 	// reverseTunnelServer holds all reverse tunnel connections.
 	reverseTunnelServer Server
 
-	// appServer is the underlying HTTP server. Used for dial back app servers.
-	appServer AppHandler
+	// server is either an SSH or application server. It can handle a connection
+	// (perform handshake and handle request).
+	server ConnHandler
 }
 
 // start will start the transporting data over the tunnel. This function will
@@ -271,7 +269,7 @@ func (p *transport) start() {
 			p.reply(req, false, []byte("connection rejected: no local node"))
 			return
 		}
-		if p.sshServer == nil {
+		if p.server == nil {
 			p.reply(req, false, []byte("connection rejected: server missing"))
 			return
 		}
@@ -286,7 +284,7 @@ func (p *transport) start() {
 		}
 
 		// Hand connection off to the SSH server.
-		p.sshServer.HandleConnection(utils.NewChConn(p.sconn, p.channel))
+		p.server.HandleConnection(utils.NewChConn(p.sconn, p.channel))
 		return
 	// LocalApp requests are for the single application (HTTP) server running
 	// in the agent pool.
@@ -298,7 +296,7 @@ func (p *transport) start() {
 			p.reply(req, false, []byte("connection rejected: no local node"))
 			return
 		}
-		if p.appServer == nil {
+		if p.server == nil {
 			p.reply(req, false, []byte("connection rejected: server missing"))
 			return
 		}
@@ -313,7 +311,7 @@ func (p *transport) start() {
 			p.log.Errorf("Failed responding OK to %q request: %v", req.Type, err)
 			return
 		}
-		p.appServer.HandleConnection(utils.NewChConn(p.sconn, p.channel))
+		p.server.HandleConnection(utils.NewChConn(p.sconn, p.channel))
 		return
 	default:
 		servers = append(servers, dreq.Address)

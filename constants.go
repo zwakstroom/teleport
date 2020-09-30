@@ -684,3 +684,9 @@ const (
 	// KeepAliveApp is the keep alive type for application proxy server.
 	KeepAliveApp = "app"
 )
+
+const (
+	AppSessionIDHeader = "x-teleport-session-id"
+	AppJWTHeader       = "x-teleport-jwt-assertion"
+	AppCFHeader        = "Cf-access-token"
+)

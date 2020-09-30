@@ -460,37 +460,6 @@ func (g *GRPCServer) GetApps(ctx context.Context, req *proto.GetAppsRequest) (*p
 	}, nil
 }
 
-// GetApps returns all registered applications.
-func (g *GRPCServer) GetAppsWithIdentity(ctx context.Context, req *proto.GetAppsRequest) (*proto.GetAppsResponse, error) {
-	auth, err := g.authenticate(ctx)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	var opts []services.MarshalOption
-	if req.GetSkipValidation() {
-		opts = append(opts, services.SkipValidation())
-	}
-
-	applications, err := auth.GetAppsWithIdentity(ctx, req.GetNamespace(), opts...)
-	if err != nil {
-		return nil, trail.ToGRPC(err)
-	}
-
-	var apps []*services.ServerV2
-	for _, application := range applications {
-		app, ok := application.(*services.ServerV2)
-		if !ok {
-			return nil, trail.ToGRPC(trace.BadParameter("unexpected app type %T", app))
-		}
-		apps = append(apps, app)
-	}
-
-	return &proto.GetAppsResponse{
-		Apps: apps,
-	}, nil
-}
-
 // UpsertApp registers an application in the backend.
 func (g *GRPCServer) UpsertApp(ctx context.Context, req *proto.UpsertAppRequest) (*services.KeepAlive, error) {
 	auth, err := g.authenticate(ctx)

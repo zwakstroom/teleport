@@ -21,14 +21,13 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"net/url"
+	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
@@ -37,7 +36,9 @@ import (
 	"github.com/gravitational/teleport/lib/srv"
 	"github.com/gravitational/teleport/lib/utils"
 
+	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/trace"
+	"github.com/gravitational/ttlmap"
 
 	"github.com/jonboulle/clockwork"
 	"github.com/sirupsen/logrus"
@@ -52,10 +53,6 @@ type Config struct {
 
 	// AccessPoint is a caching client connected to the Auth Server.
 	AccessPoint auth.AccessPoint
-
-	// TODO(russjones): Remove this, only use the cache.
-	// AuthClient is directly connected to the Auth Server.
-	AuthClient *auth.Client
 
 	// GetRotation returns the certificate rotation state.
 	GetRotation RotationGetter
@@ -99,6 +96,9 @@ type Server struct {
 	clusterName string
 	keepAlive   time.Duration
 
+	mu    sync.Mutex
+	cache *ttlmap.TTLMap
+
 	activeConns int64
 }
 
@@ -122,6 +122,12 @@ func New(ctx context.Context, c *Config) (*Server, error) {
 	s.httpServer = &http.Server{
 		Handler:           s,
 		ReadHeaderTimeout: defaults.DefaultDialTimeout,
+	}
+
+	// Cache of request forwarders.
+	s.cache, err = ttlmap.New(defaults.ClientCacheSize)
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 
 	// Create dynamic labels for all applications that are being proxied and
@@ -217,56 +223,35 @@ func (s *Server) Start() {
 // HandleConnection takes a connection and wraps it in a listener so it can
 // be passed to http.Serve to process as a HTTP request.
 func (s *Server) HandleConnection(conn net.Conn) {
-	// TODO(russjones): Handler error here
-	s.httpServer.Serve(newListener(s.closeContext, conn))
+	if err := s.httpServer.Serve(newListener(s.closeContext, conn)); err != nil {
+		s.log.Warnf("Failed to handle connection: %v.", err)
+	}
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	sessionID := r.Header.Get("x-teleport-session-id")
+	if err := s.serveHTTP(w, r); err != nil {
+		s.log.Debugf("Failed to serve request: %v.", err)
+
+		// Covert trace error type to HTTP and write response.
+		code := trace.ErrorToCode(err)
+		http.Error(w, http.StatusText(code), code)
+	}
+}
+
+func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) error {
+	// Get session forwarder from cache and forward request.
+	sessionID := r.Header.Get(teleport.AppSessionIDHeader)
 	if sessionID == "" {
-		fmt.Printf("--> 1.\n")
-		http.Error(w, "internal server error", 500)
-		return
+		return trace.AccessDenied("invalid session id")
+	}
+	fwd, err := s.getForwarder(sessionID)
+	if err != nil {
+		return trace.Wrap(err)
 	}
 
-	fmt.Printf("--> sessionID: %v.\n", sessionID)
-	session, err := s.c.AuthClient.GetAppSession(r.Context(), sessionID)
-	if err != nil {
-		fmt.Printf("--> 2: %v\n", err)
-		http.Error(w, "internal server error", 500)
-		return
-	}
-
-	app, err := s.getApp(r.Context(), session.GetPublicAddr())
-	if err != nil {
-		fmt.Printf("--> 3: %v\n", err)
-		http.Error(w, "internal server error", 500)
-		return
-	}
-	r.URL, err = url.Parse(app.URI)
-	if err != nil {
-		fmt.Printf("--> 4.\n")
-		http.Error(w, "internal server error", 500)
-		return
-	}
-
-	fmt.Printf("--> setting public addr with: %v.\n", app.PublicAddr)
-	fwder := &forwarder{
-		jwt:        session.GetJWT(),
-		publicAddr: app.PublicAddr,
-		log:        s.log,
-	}
-	fwd, err := forward.New(
-		forward.RoundTripper(fwder),
-		forward.Rewriter(fwder),
-		forward.Logger(s.log))
-	if err != nil {
-		fmt.Printf("--> 5.\n")
-		http.Error(w, "internal server error", 500)
-		return
-	}
-
+	// Forward request to the target application.
 	fwd.ServeHTTP(w, r)
+	return nil
 }
 
 // ForceHeartbeat is used in tests to force updating of services.Server.
@@ -299,11 +284,59 @@ func (s *Server) Wait() error {
 	return s.closeContext.Err()
 }
 
+func (s *Server) getForwarder(sessionID string) (*forward.Forwarder, error) {
+	// Always look for the session in the cache first. This allows the session
+	// to be invalidated in the backend and be immediately reflected here.
+	session, err := s.c.AccessPoint.GetAppSession(s.closeContext, sessionID)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Lookup if a forwarder for this session exists, if it does return it
+	// right away.
+	fwd, err := s.cacheGet(sessionID)
+	if err == nil {
+		return fwd, nil
+	}
+
+	// Locally lookup the application the caller is targeting.
+	app, err := s.getApp(s.closeContext, session.GetPublicAddr())
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Create the forwarder.
+	fwder, err := newForwarder(&forwarderConfig{
+		publicAddr: app.PublicAddr,
+		uri:        app.URI,
+		jwt:        session.GetJWT(),
+		log:        s.log,
+	})
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	fwd, err = forward.New(
+		forward.RoundTripper(fwder),
+		forward.Rewriter(fwder),
+		forward.Logger(s.log))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Put the forwarder in the cache so the next request can use it.
+	err = s.cacheSet(sessionID, fwd, session.Expiry().Sub(s.c.Clock.Now()))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return fwd, nil
+}
+
 // getApp returns an application matching the public address. If multiple
 // matching applications exist, the first one is returned. Random selection
 // (or round robin) does not need to occur here because they will all point
 // to the same target address. Random selection (or round robin) occurs at the
-// proxy when calling the Dial on the cluster.
+// proxy to load balance requests to the application service.
 func (s *Server) getApp(ctx context.Context, publicAddr string) (*services.App, error) {
 	for _, a := range s.c.Server.GetApps() {
 		if publicAddr == a.PublicAddr {
@@ -314,225 +347,125 @@ func (s *Server) getApp(ctx context.Context, publicAddr string) (*services.App, 
 	return nil, trace.NotFound("no application at %v found", publicAddr)
 }
 
+func (s *Server) cacheGet(key string) (*forward.Forwarder, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if f, ok := s.cache.Get(key); ok {
+		if fwd, fok := f.(*forward.Forwarder); fok {
+			return fwd, nil
+		}
+		return nil, trace.BadParameter("invalid type stored in cache: %T", f)
+	}
+	return nil, trace.NotFound("forwarder not found")
+}
+
+func (s *Server) cacheSet(key string, value *forward.Forwarder, ttl time.Duration) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if err := s.cache.Set(key, value, ttl); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
 // activeConnections returns the number of active connections being proxied.
 // Used in tests.
 func (s *Server) activeConnections() int64 {
 	return atomic.LoadInt64(&s.activeConns)
 }
 
-type forwarder struct {
-	jwt        string
+type forwarderConfig struct {
 	publicAddr string
+	uri        string
+	jwt        string
 	log        *logrus.Entry
 }
 
+func (c *forwarderConfig) Check() error {
+	if c.jwt == "" {
+		return trace.BadParameter("jwt missing")
+	}
+	if c.uri == "" {
+		return trace.BadParameter("uri missing")
+	}
+	if c.publicAddr == "" {
+		return trace.BadParameter("public addr missing")
+	}
+	if c.log == nil {
+		return trace.BadParameter("logger missing")
+	}
+	return nil
+}
+
+// forwarder will rewrite and forward the request to the target address.
+type forwarder struct {
+	c *forwarderConfig
+
+	tr  *http.Transport
+	uri *url.URL
+}
+
+func newForwarder(c *forwarderConfig) (*forwarder, error) {
+	if err := c.Check(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Clone the default transport to pick up sensible defaults.
+	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
+	if !ok {
+		return nil, trace.BadParameter("invalid transport type %T", http.DefaultTransport)
+	}
+	tr := defaultTransport.Clone()
+
+	// Increase the size of the transports connection pool. This substantially
+	// improves the performance of Teleport under load as it reduces the number
+	// of TLS handshakes performed.
+	tr.MaxIdleConns = defaults.HTTPMaxIdleConns
+	tr.MaxIdleConnsPerHost = defaults.HTTPMaxIdleConnsPerHost
+
+	// Set IdleConnTimeout on the transport, this defines the maximum amount of
+	// time before idle connections are closed. Leaving this unset will lead to
+	// connections open forever and will cause memory leaks in a long running
+	// process.
+	tr.IdleConnTimeout = defaults.HTTPIdleTimeout
+
+	// Parse the target address once then inject it into all requests.
+	uri, err := url.Parse(c.uri)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &forwarder{
+		c:   c,
+		uri: uri,
+		tr:  tr,
+	}, nil
+}
+
+// RoundTrip make the request and log the request/response pair in the audit log.
 func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
-	resp, err := http.DefaultTransport.RoundTrip(r)
+	// Update the target address of the request so it's forwarded correctly.
+	r.URL = f.uri
+
+	resp, err := f.tr.RoundTrip(r)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	// TODO(russjones): Hook audit log here.
 
-	u, err := url.Parse(r.URL.String())
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	u.Host = f.publicAddr
-
-	f.log.Debugf("Proxied request: %v %v.", resp.StatusCode, u)
 	return resp, nil
 }
 
+// Rewrite request headers to add in JWT header and remove any Teleport
+// related authentication headers.
 func (f *forwarder) Rewrite(r *http.Request) {
 	// Add in JWT headers.
-	r.Header.Add("x-teleport-jwt-assertion", f.jwt)
-	r.Header.Add("Cf-access-token", f.jwt)
+	r.Header.Add(teleport.AppJWTHeader, f.c.jwt)
+	r.Header.Add(teleport.AppCFHeader, f.c.jwt)
 
 	// Remove the session ID header before forwarding the session to the
 	// target application.
-	r.Header.Del("x-teleport-session-id")
-
-	// TODO(russjones): This should already be gone at this point, move this
-	// logic to lib/web/app/handler.go.
-	//// Remove the application specific session cookie from the header. This is
-	//// done by first wiping out the "Cookie" header then adding back all cookies
-	//// except the Teleport application specific session cookie. This appears to
-	//// be the best way to serialize cookies.
-	//r.Header.Del("Cookie")
-	//for _, cookie := range r.Cookies() {
-	//	if cookie.Name == cookieName {
-	//		continue
-	//	}
-	//	r.AddCookie(cookie)
-	//}
+	r.Header.Del(teleport.AppSessionIDHeader)
 }
-
-//// CheckAccess parses the identity of the caller to check if the caller has
-//// access to the requested application.
-//func (s *Server) CheckAccess(ctx context.Context, certBytes []byte, publicAddr string) (*services.App, error) {
-//	// Verify and extract the identity of the caller.
-//	identity, ca, err := s.verifyCertificate(certBytes)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	// Find the application the caller is requesting by public address.
-//	app, server, err := s.getApp(ctx, publicAddr)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	// Build the access checker either directly or by mapping roles depending on
-//	// if this code is running within the same cluster that issued the identity
-//	// or if it's running in a leaf cluster.
-//	checker, err := s.buildChecker(identity, ca)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	// Check if the caller has access to the application being requested.
-//	err = checker.CheckAccessToApp(server.GetNamespace(), app)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	return app, nil
-//}
-//
-//// ForwardConnection accepts incoming connections on the Listener and calls the handler.
-//func (s *Server) ForwardConnection(channelConn net.Conn, uri string) {
-//	// Extract the host:port for the target server.
-//	u, err := url.Parse(uri)
-//	if err != nil {
-//		s.log.Errorf("Failed to parse %v: %v.", uri, err)
-//		channelConn.Close()
-//		return
-//	}
-//	hostport := u.Host
-//	if u.Port() == "" && u.Scheme == "https" {
-//		hostport = net.JoinHostPort(u.Host, "443")
-//	}
-//
-//	// Establish connection to target server.
-//	s.log.Debugf("Attempting to dial %v.", hostport)
-//	d := net.Dialer{
-//		KeepAlive: s.keepAlive,
-//	}
-//	targetConn, err := d.DialContext(s.closeContext, "tcp", hostport)
-//	if err != nil {
-//		s.log.Errorf("Failed to connect to %v: %v.", hostport, err)
-//		channelConn.Close()
-//		return
-//	}
-//	s.log.Debugf("Established connection to %v, proxying traffic.", hostport)
-//
-//	// Keep a count of the number of active connections. Used in tests to check
-//	// for goroutine leaks.
-//	atomic.AddInt64(&s.activeConns, 1)
-//	defer atomic.AddInt64(&s.activeConns, -1)
-//
-//	errorCh := make(chan error, 2)
-//
-//	// Copy data between channel connection and connection to target application.
-//	go func() {
-//		defer targetConn.Close()
-//		defer channelConn.Close()
-//
-//		_, err := io.Copy(targetConn, channelConn)
-//		errorCh <- err
-//	}()
-//	go func() {
-//		defer targetConn.Close()
-//		defer channelConn.Close()
-//
-//		_, err := io.Copy(channelConn, targetConn)
-//		errorCh <- err
-//	}()
-//
-//	// Block until connection is closed.
-//	for i := 0; i < 2; i++ {
-//		select {
-//		case err := <-errorCh:
-//			if err != nil && err != io.EOF {
-//				s.log.Debugf("Proxy transport failed: %v.", err)
-//			}
-//		}
-//	}
-//}
-//
-//// buildChecker returns a services.AccessChecker which is used to check access
-//// to the requested application.
-//func (s *Server) buildChecker(identity *tlsca.Identity, ca services.CertAuthority) (services.AccessChecker, error) {
-//	var checker services.AccessChecker
-//
-//	// If the caller has an identity issued the same cluster that the application
-//	// proxy is running in, directly build the access checker. Otherwise map the
-//	// roles, then build the access checker.
-//	if s.clusterName == ca.GetClusterName() {
-//		roles, traits, err := services.ExtractFromIdentity(s.c.AccessPoint, identity)
-//		if err != nil {
-//			return nil, trace.Wrap(err)
-//		}
-//		checker, err = services.FetchRoles(roles, s.c.AccessPoint, traits)
-//		if err != nil {
-//			return nil, trace.Wrap(err)
-//		}
-//	} else {
-//		roleNames, err := ca.CombinedMapping().Map(identity.Groups)
-//		if err != nil {
-//			return nil, trace.AccessDenied("failed to map roles")
-//		}
-//		// Pass empty traits, Unix logins are only used for servers, not apps.
-//		traits := map[string][]string{}
-//		checker, err = services.FetchRoles(roleNames, s.c.AccessPoint, traits)
-//		if err != nil {
-//			return nil, trace.Wrap(err)
-//		}
-//	}
-//
-//	return checker, nil
-//}
-//
-//// verifyCertificate ensures the certificate is signed by a known authority.
-//func (s *Server) verifyCertificate(bytes []byte) (*tlsca.Identity, services.CertAuthority, error) {
-//	// Parse certificate and extract the name of the cluster the certificate
-//	// claims it was issued by.
-//	cert, err := tlsca.ParseCertificatePEM(bytes)
-//	if err != nil {
-//		return nil, nil, trace.Wrap(err)
-//	}
-//	clusterName, err := tlsca.ClusterName(cert.Issuer)
-//	if err != nil {
-//		return nil, nil, trace.Wrap(err)
-//	}
-//
-//	// Find the CA the certificate claims it was signed by.
-//	ca, err := s.c.AccessPoint.GetCertAuthority(services.CertAuthID{
-//		Type:       services.UserCA,
-//		DomainName: clusterName,
-//	}, false)
-//	if err != nil {
-//		return nil, nil, trace.Wrap(err)
-//	}
-//
-//	// Verify the CA did actually sign the certificate.
-//	roots := x509.NewCertPool()
-//	for _, keyPair := range ca.GetTLSKeyPairs() {
-//		ok := roots.AppendCertsFromPEM(keyPair.Cert)
-//		if !ok {
-//			return nil, nil, trace.BadParameter("failed to add certificate to pool")
-//		}
-//	}
-//	_, err = cert.Verify(x509.VerifyOptions{
-//		Roots: roots,
-//	})
-//	if err != nil {
-//		return nil, nil, trace.Wrap(err)
-//	}
-//
-//	// Now that the certificate has been verified, extract and return identity.
-//	identity, err := tlsca.FromSubject(cert.Subject, cert.NotAfter)
-//	if err != nil {
-//		return nil, nil, trace.Wrap(err)
-//	}
-//	return identity, ca, nil
-//}

@@ -1853,46 +1853,18 @@ func (a *AuthWithRoles) GetApps(ctx context.Context, namespace string, opts ...s
 	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
 		return nil, trace.Wrap(err)
 	}
-	//if !a.hasMachineRole() {
-	//	return nil, trace.AccessDenied("identity does not have access to apps")
-	//}
 
-	apps, err := a.authServer.GetApps(ctx, namespace, opts...)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	return apps, nil
-}
-
-// GetAppsWithIdentity returns all registered applications for the callers identity.
-func (a *AuthWithRoles) GetAppsWithIdentity(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
-	if err := a.action(namespace, services.KindApp, services.VerbList); err != nil {
-		return nil, trace.Wrap(err)
-	}
-	if err := a.action(namespace, services.KindApp, services.VerbRead); err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	// Fetch roles for identity and filter out any applications the user does
-	// not have access to.
-	roleset, err := services.FetchRoles(a.user.GetRoles(), a.authServer, a.user.GetTraits())
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	// Fetch full list of applications from backend.
 	servers, err := a.authServer.GetApps(ctx, namespace, opts...)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	// Loop over all servers and filter out applications on each to only the
-	// ones this identity has access to.
+	// Loop over all servers and filter out applications on each server and only
+	// return the applications the caller has access to.
 	for _, server := range servers {
 		filteredApps := make([]*services.App, 0, len(server.GetApps()))
 		for _, app := range server.GetApps() {
-			err := roleset.CheckAccessToApp(server.GetNamespace(), app)
+			err := a.checker.CheckAccessToApp(server.GetNamespace(), app)
 			if err != nil {
 				if trace.IsAccessDenied(err) {
 					continue

@@ -365,9 +365,6 @@ service AuthService {
 
     // GetApps returns all registered applications.
     rpc GetApps(GetAppsRequest) returns (GetAppsResponse);
-    // GetAppsWithIdentity returns all registered applications for a
-    // particular identity.
-    rpc GetAppsWithIdentity(GetAppsRequest) returns (GetAppsResponse);
     // UpsertApp registers an application with a TTL.
     rpc UpsertApp(UpsertAppRequest) returns (services.KeepAlive);
     // DeleteApp un-registers an application.

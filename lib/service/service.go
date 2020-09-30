@@ -1580,7 +1580,7 @@ func (process *TeleportProcess) initSSH() error {
 				AccessPoint: conn.Client,
 				HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
 				Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
-				SSHServer:   s,
+				Server:      s,
 			})
 			if err != nil {
 				return trace.Wrap(err)
@@ -2439,7 +2439,6 @@ func (process *TeleportProcess) initApps() {
 
 		appServer, err := app.New(process.ExitContext(), &app.Config{
 			AccessPoint: authClient,
-			AuthClient:  conn.Client,
 			GetRotation: process.getRotation,
 			Server:      server,
 		})
@@ -2457,7 +2456,7 @@ func (process *TeleportProcess) initApps() {
 			HostUUID:    conn.ServerIdentity.ID.HostUUID,
 			ProxyAddr:   conn.TunnelProxy(),
 			Client:      conn.Client,
-			AppServer:   appServer,
+			Server:      appServer,
 			AccessPoint: conn.Client,
 			HostSigners: []ssh.Signer{conn.ServerIdentity.KeySigner},
 			Cluster:     conn.ServerIdentity.Cert.Extensions[utils.CertExtensionAuthority],
@@ -2628,7 +2627,7 @@ func validateConfig(cfg *Config) error {
 		cfg.Console = ioutil.Discard
 	}
 
-	if len(cfg.Proxy.KeyPairs) == 0 {
+	if cfg.Proxy.Enabled && len(cfg.Proxy.KeyPairs) == 0 {
 		return trace.BadParameter("please supply TLS key and certificate")
 	}
 
