@@ -320,11 +320,11 @@ type ProxyConfig struct {
 	// SSHAddr is address of ssh proxy
 	SSHAddr utils.NetAddr
 
-	// TLSKey is a base64 encoded private key used by web portal
-	TLSKey string
+	//// TLSKey is a base64 encoded private key used by web portal
+	//TLSKey string
 
-	// TLSCert is a base64 encoded certificate used by web portal
-	TLSCert string
+	//// TLSCert is a base64 encoded certificate used by web portal
+	//TLSCert string
 
 	Limiter limiter.LimiterConfig
 
@@ -346,16 +346,12 @@ type ProxyConfig struct {
 	// Kube specifies kubernetes proxy configuration
 	Kube KubeProxyConfig
 
-	// AppCerts are additional certificates to load for AAP applications.
-	AppCerts []AppCert
+	KeyPairs []KeyPairPath
 }
 
-// AppCert is a key and certificate for a specific application.
-type AppCert struct {
-	// PrivateKey is a PEM encoded application specific key.
-	PrivateKey string
-	// Certificate is a PEM encoded application specific certificate.
-	Certificate string
+type KeyPairPath struct {
+	PrivateKey  string `yaml:"key_file"`
+	Certificate string `yaml:"cert_file"`
 }
 
 // KubeProxyConfig specifies configuration for proxy service

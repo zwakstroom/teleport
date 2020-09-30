@@ -1623,6 +1623,11 @@ func (a *AuthServer) GetAllTunnelConnections(opts ...services.MarshalOption) (co
 	return a.GetCache().GetAllTunnelConnections(opts...)
 }
 
+// GetApps is a part of the auth.AccessPoint implementation..
+func (a *AuthServer) GetApps(ctx context.Context, namespace string, opts ...services.MarshalOption) ([]services.Server, error) {
+	return a.GetCache().GetApps(ctx, namespace, opts...)
+}
+
 // authKeepAliver is a keep aliver using auth server directly
 type authKeepAliver struct {
 	sync.RWMutex

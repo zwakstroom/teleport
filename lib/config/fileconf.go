@@ -166,7 +166,8 @@ var (
 		"protocol":                false,
 		"uri":                     false,
 		"apps":                    false,
-		"app_certs":               true,
+		"https_keypairs":          true,
+		"key_file":                false,
 	}
 )
 
@@ -868,15 +869,12 @@ type Proxy struct {
 	// principals on the SSH certificate.
 	TunnelPublicAddr utils.Strings `yaml:"tunnel_public_addr,omitempty"`
 
-	// AppCerts are additional certificates to load for AAP applications.
-	AppCerts []AppCert `yaml:"app_certs"`
+	// KeyPairs is a list of x509 key pairs the proxy will load.
+	KeyPairs []KeyPair `yaml:"https_keypairs"`
 }
 
-// AppCert is a key and certificate for a specific application.
-type AppCert struct {
-	// PrivateKey is a PEM encoded application specific key.
-	PrivateKey string `yaml:"key_file"`
-	// Certificate is a PEM encoded application specific certificate.
+type KeyPair struct {
+	PrivateKey  string `yaml:"key_file"`
 	Certificate string `yaml:"cert_file"`
 }
 
