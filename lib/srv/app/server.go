@@ -77,6 +77,7 @@ func (c *Config) CheckAndSetDefaults() error {
 	if c.Server == nil {
 		return trace.BadParameter("server is missing")
 	}
+
 	return nil
 }
 
@@ -98,6 +99,8 @@ type Server struct {
 
 	mu    sync.Mutex
 	cache *ttlmap.TTLMap
+
+	tr http.RoundTripper
 
 	activeConns int64
 }
@@ -122,6 +125,11 @@ func New(ctx context.Context, c *Config) (*Server, error) {
 	s.httpServer = &http.Server{
 		Handler:           s,
 		ReadHeaderTimeout: defaults.DefaultDialTimeout,
+	}
+
+	s.tr, err = newTransport()
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 
 	// Cache of request forwarders.
@@ -228,6 +236,7 @@ func (s *Server) HandleConnection(conn net.Conn) {
 	}
 }
 
+// ServeHTTP will forward the *http.Request to the target application.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := s.serveHTTP(w, r); err != nil {
 		s.log.Debugf("Failed to serve request: %v.", err)
@@ -239,7 +248,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) error {
-	// Get session forwarder from cache and forward request.
+	// Get a session forwarder, will look into the cache first, if not found,
+	// will create one.
 	sessionID := r.Header.Get(teleport.AppSessionIDHeader)
 	if sessionID == "" {
 		return trace.AccessDenied("invalid session id")
@@ -284,9 +294,12 @@ func (s *Server) Wait() error {
 	return s.closeContext.Err()
 }
 
+// getForwarder returns a request forwarder used to proxy the request to the
+// target application. Always checks if the session is valid first and if so,
+// will return a cached forwarder, otherwise will create one.
 func (s *Server) getForwarder(sessionID string) (*forward.Forwarder, error) {
-	// Always look for the session in the cache first. This allows the session
-	// to be invalidated in the backend and be immediately reflected here.
+	// Always look for the session in the backend cache first. This allows the
+	// session to be invalidated in the backend and be immediately reflected here.
 	session, err := s.c.AccessPoint.GetAppSession(s.closeContext, sessionID)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -310,6 +323,7 @@ func (s *Server) getForwarder(sessionID string) (*forward.Forwarder, error) {
 		publicAddr: app.PublicAddr,
 		uri:        app.URI,
 		jwt:        session.GetJWT(),
+		tr:         s.tr,
 		log:        s.log,
 	})
 	if err != nil {
@@ -347,6 +361,7 @@ func (s *Server) getApp(ctx context.Context, publicAddr string) (*services.App, 
 	return nil, trace.NotFound("no application at %v found", publicAddr)
 }
 
+// cacheGet will fetch the forwarder from the cache.
 func (s *Server) cacheGet(key string) (*forward.Forwarder, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -360,6 +375,7 @@ func (s *Server) cacheGet(key string) (*forward.Forwarder, error) {
 	return nil, trace.NotFound("forwarder not found")
 }
 
+// cacheSet will add the forwarder to the cache.
 func (s *Server) cacheSet(key string, value *forward.Forwarder, ttl time.Duration) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -376,13 +392,16 @@ func (s *Server) activeConnections() int64 {
 	return atomic.LoadInt64(&s.activeConns)
 }
 
+// forwarderConfig is the configuration for a forwarder.
 type forwarderConfig struct {
 	publicAddr string
 	uri        string
 	jwt        string
+	tr         http.RoundTripper
 	log        *logrus.Entry
 }
 
+// Check will valid the configuration of a forwarder.
 func (c *forwarderConfig) Check() error {
 	if c.jwt == "" {
 		return trace.BadParameter("jwt missing")
@@ -392,6 +411,9 @@ func (c *forwarderConfig) Check() error {
 	}
 	if c.publicAddr == "" {
 		return trace.BadParameter("public addr missing")
+	}
+	if c.tr == nil {
+		return trace.BadParameter("round tripper missing")
 	}
 	if c.log == nil {
 		return trace.BadParameter("logger missing")
@@ -403,15 +425,56 @@ func (c *forwarderConfig) Check() error {
 type forwarder struct {
 	c *forwarderConfig
 
-	tr  *http.Transport
 	uri *url.URL
 }
 
+// newForwarder creates a new forwarder that can re-write and round trip a
+// HTTP request.
 func newForwarder(c *forwarderConfig) (*forwarder, error) {
 	if err := c.Check(); err != nil {
 		return nil, trace.Wrap(err)
 	}
 
+	// Parse the target address once then inject it into all requests.
+	uri, err := url.Parse(c.uri)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &forwarder{
+		c:   c,
+		uri: uri,
+	}, nil
+}
+
+// RoundTrip make the request and log the request/response pair in the audit log.
+func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
+	// Update the target address of the request so it's forwarded correctly.
+	r.URL = f.uri
+
+	resp, err := f.c.tr.RoundTrip(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	// TODO(russjones): Hook audit log here.
+
+	return resp, nil
+}
+
+// Rewrite request headers to add in JWT header and remove any Teleport
+// related authentication headers.
+func (f *forwarder) Rewrite(r *http.Request) {
+	// Add in JWT headers.
+	r.Header.Add(teleport.AppJWTHeader, f.c.jwt)
+	r.Header.Add(teleport.AppCFHeader, f.c.jwt)
+
+	// Remove the session ID header before forwarding the session to the
+	// target application.
+	r.Header.Del(teleport.AppSessionIDHeader)
+}
+
+// newTransport returns a new http.RoundTripper with sensible defaults.
+func newTransport() (http.RoundTripper, error) {
 	// Clone the default transport to pick up sensible defaults.
 	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
 	if !ok {
@@ -431,41 +494,5 @@ func newForwarder(c *forwarderConfig) (*forwarder, error) {
 	// process.
 	tr.IdleConnTimeout = defaults.HTTPIdleTimeout
 
-	// Parse the target address once then inject it into all requests.
-	uri, err := url.Parse(c.uri)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	return &forwarder{
-		c:   c,
-		uri: uri,
-		tr:  tr,
-	}, nil
-}
-
-// RoundTrip make the request and log the request/response pair in the audit log.
-func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
-	// Update the target address of the request so it's forwarded correctly.
-	r.URL = f.uri
-
-	resp, err := f.tr.RoundTrip(r)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-	// TODO(russjones): Hook audit log here.
-
-	return resp, nil
-}
-
-// Rewrite request headers to add in JWT header and remove any Teleport
-// related authentication headers.
-func (f *forwarder) Rewrite(r *http.Request) {
-	// Add in JWT headers.
-	r.Header.Add(teleport.AppJWTHeader, f.c.jwt)
-	r.Header.Add(teleport.AppCFHeader, f.c.jwt)
-
-	// Remove the session ID header before forwarding the session to the
-	// target application.
-	r.Header.Del(teleport.AppSessionIDHeader)
+	return tr, nil
 }
