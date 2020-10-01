@@ -467,7 +467,8 @@ func newForwarder(c *forwarderConfig) (*forwarder, error) {
 // RoundTrip make the request and log the request/response pair in the audit log.
 func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
 	// Update the target address of the request so it's forwarded correctly.
-	r.URL = f.uri
+	r.URL.Scheme = f.uri.Scheme
+	r.URL.Host = f.uri.Host
 
 	resp, err := f.c.tr.RoundTrip(r)
 	if err != nil {

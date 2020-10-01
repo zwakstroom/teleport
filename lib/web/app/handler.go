@@ -105,7 +105,7 @@ func NewHandler(c *HandlerConfig) (*Handler, error) {
 // ForwardToApp checks if the request is bound for the application handler.
 // Used by "ServeHTTP" within the "web" package to make a decision if the
 // request should be processed by the UI or forwarded to an application.
-func (h *Handler) ForwardToApp(r *http.Request) bool {
+func (h *Handler) IsAuthenticatedApp(r *http.Request) bool {
 	// The only unauthenticated endpoint supported is the special
 	// "x-teleport-auth" endpoint. If the request is coming to this special
 	// endpoint, it should be processed by application handlers.
@@ -120,6 +120,21 @@ func (h *Handler) ForwardToApp(r *http.Request) bool {
 		return false
 	}
 	return true
+}
+
+// IsUnauthenticatedApp checks if the client is attempting to connect to a
+// host that is different than the public address of the proxy. If it is, it
+// redirects back to the application launcher in the Web UI.
+func (h *Handler) IsUnauthenticatedApp(r *http.Request, publicAddr string) (string, bool) {
+	if net.ParseIP(r.Host) != nil && r.Host != publicAddr {
+		u, err := url.Parse(fmt.Sprintf("https://%v/web/launcher/%v", publicAddr, r.Host))
+		if err != nil {
+			h.log.Debugf("Failed to parse while handling unauthenticated request to %v: %v.", r.Host, err)
+			return "", false
+		}
+		return u.String(), true
+	}
+	return "", false
 }
 
 // ServeHTTP will forward the *http.Request to the application proxy service.
@@ -302,7 +317,8 @@ func newForwarder(c forwarderConfig) (*forwarder, error) {
 func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
 	// Update the target address of the request so it's forwarded correctly.
 	// Format is always serverID.clusterName.
-	r.URL = f.uri
+	r.URL.Scheme = f.uri.Scheme
+	r.URL.Host = f.uri.Host
 
 	resp, err := f.c.tr.RoundTrip(r)
 	if err != nil {

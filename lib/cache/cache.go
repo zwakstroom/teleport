@@ -50,6 +50,7 @@ func ForAuth(cfg Config) Config {
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindAccessRequest},
 		{Kind: services.KindApp},
+		{Kind: services.KindAppWebSession},
 		{Kind: services.KindAppSession},
 	}
 	cfg.QueueSize = defaults.AuthQueueSize
@@ -72,8 +73,6 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindApp},
 		{Kind: services.KindAppWebSession},
-		// TODO(russjones): Why is this needed?
-		//{Kind: services.KindAppSession},
 	}
 	cfg.QueueSize = defaults.ProxyQueueSize
 	return cfg

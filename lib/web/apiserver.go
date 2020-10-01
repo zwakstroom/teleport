@@ -122,18 +122,29 @@ type RewritingHandler struct {
 	handler *Handler
 
 	appHandler *app.Handler
+
+	publicAddr string
 }
 
 // Check if this request should be forwarded to an application handler to
 // handled by the UI and redirect the request appropriately.
 func (h *RewritingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if h.appHandler.ForwardToApp(r) {
+	// Check if the request is targeting the fragment authentication endpoint or
+	// if an application specific session cookie exists. If it does, forward the
+	// request to the application specific handlers.
+	if h.appHandler.IsAuthenticatedApp(r) {
 		h.appHandler.ServeHTTP(w, r)
 		return
 	}
-	// if r.Host != proxyPublicAddr {
-	//   302 proxyPublicAddr/web/launcher/{r.Host}
-	//}
+
+	// Check if the request in unauthenticated, but targeting an application. If
+	// it is, redirect to the launcher.
+	if launcherURL, ok := h.appHandler.IsUnauthenticatedApp(r, h.publicAddr); ok {
+		http.Redirect(w, r, launcherURL, http.StatusFound)
+		return
+	}
+
+	// Serve the Web UI.
 	h.Handler.ServeHTTP(w, r)
 }
 
@@ -373,14 +384,15 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 	}
 
 	return &RewritingHandler{
-		appHandler: appHandler,
 		Handler: httplib.RewritePaths(h,
 			httplib.Rewrite("/webapi/sites/([^/]+)/sessions/(.*)", "/webapi/sites/$1/namespaces/default/sessions/$2"),
 			httplib.Rewrite("/webapi/sites/([^/]+)/sessions", "/webapi/sites/$1/namespaces/default/sessions"),
 			httplib.Rewrite("/webapi/sites/([^/]+)/nodes", "/webapi/sites/$1/namespaces/default/nodes"),
 			httplib.Rewrite("/webapi/sites/([^/]+)/connect", "/webapi/sites/$1/namespaces/default/connect"),
 		),
-		handler: h,
+		handler:    h,
+		appHandler: appHandler,
+		publicAddr: cfg.ProxySettings.SSH.PublicAddr,
 	}, nil
 }
 

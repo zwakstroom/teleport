@@ -154,6 +154,8 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 		return nil, trace.Wrap(err)
 	}
 
+	fmt.Printf("--> Successfully created appwebsession.\n")
+
 	return session, nil
 }
 

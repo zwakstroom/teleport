@@ -29,6 +29,7 @@ import (
 	"github.com/gravitational/teleport/lib/httplib"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/teleport/lib/web/app"
 	"github.com/gravitational/teleport/lib/web/ui"
 	log "github.com/sirupsen/logrus"
@@ -38,38 +39,25 @@ import (
 )
 
 func (h *Handler) siteAppsGet(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx *SessionContext, site reversetunnel.RemoteSite) (interface{}, error) {
+	appClusterName := p.ByName("site")
+
+	// Get a list of application servers.
 	clt, err := ctx.GetUserClient(site)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-
 	appServers, err := clt.GetApps(r.Context(), defaults.Namespace)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	//proxies, err := clt.GetProxies()
-	proxies, err := h.cfg.ProxyClient.GetProxies()
+	// Get the public address of the proxy and remove the port.
+	proxyHost, err := utils.Host(h.cfg.ProxySettings.SSH.PublicAddr)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	proxyClusterName, err := h.cfg.ProxyClient.GetClusterName()
-	if err != nil && !trace.IsNotFound(err) {
-		return nil, trace.Wrap(err)
-	}
-
-	proxyName := proxyClusterName.GetClusterName()
-	proxyHost, _, err := services.GuessProxyHostAndVersion(proxies)
-	if err != nil && !trace.IsNotFound(err) {
-		return nil, trace.Wrap(err)
-	}
-	// remove port number if any
-	// TODO(russjones): Handle IPv6.
-	proxyHost = strings.Split(proxyHost, ":")[0]
-	appClusterName := p.ByName("site")
-
-	return makeResponse(ui.MakeApps(proxyName, proxyHost, appClusterName, appServers))
+	return makeResponse(ui.MakeApps(h.auth.clusterName, proxyHost, appClusterName, appServers))
 }
 
 type createAppSessionRequest struct {
