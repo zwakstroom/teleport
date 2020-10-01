@@ -44,9 +44,8 @@ import (
 )
 
 type HandlerConfig struct {
-	Clock clockwork.Clock
-	// TODO(russjones): Replace this with a AccessPoint so all requests are cached.
-	AuthClient  auth.ClientI
+	Clock       clockwork.Clock
+	AccessPoint auth.AccessPoint
 	ProxyClient reversetunnel.Server
 }
 
@@ -55,7 +54,7 @@ func (c *HandlerConfig) CheckAndSetDefaults() error {
 		c.Clock = clockwork.NewRealClock()
 	}
 
-	if c.AuthClient == nil {
+	if c.AccessPoint == nil {
 		return trace.BadParameter("auth client missing")
 	}
 	if c.ProxyClient == nil {
@@ -147,7 +146,7 @@ func (h *Handler) handleFragment(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		_, err = h.c.AuthClient.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
+		_, err = h.c.AccessPoint.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
 			Username:   cookie.Username,
 			ParentHash: cookie.ParentHash,
 			SessionID:  cookie.SessionID,
@@ -183,7 +182,7 @@ func (h *Handler) authenticate(r *http.Request) (services.WebSession, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	session, err := h.c.AuthClient.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
+	session, err := h.c.AccessPoint.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
 		Username:   cookie.Username,
 		ParentHash: cookie.ParentHash,
 		SessionID:  cookie.SessionID,
@@ -355,4 +354,44 @@ func (f *forwardHandler) Rewrite(r *http.Request) {
 		}
 		r.AddCookie(cookie)
 	}
+}
+
+// newTransport creates a http.RoundTripper that uses the reverse tunnel
+// subsystem to build the connection. This allows re-use of the transports
+// connection pooling logic instead of needing to write and maintain our own.
+func newTransport(clusterClient reversetunnel.RemoteSite) (http.RoundTripper, error) {
+	// Clone the default transport to pick up sensible defaults.
+	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
+	if !ok {
+		return nil, trace.BadParameter("invalid transport type %T", http.DefaultTransport)
+	}
+	tr := defaultTransport.Clone()
+
+	// Increase the size of the transports connection pool. This substantially
+	// improves the performance of Teleport under load as it reduces the number
+	// of TLS handshakes performed.
+	tr.MaxIdleConns = defaults.HTTPMaxIdleConns
+	tr.MaxIdleConnsPerHost = defaults.HTTPMaxIdleConnsPerHost
+
+	// Set IdleConnTimeout on the transport, this defines the maximum amount of
+	// time before idle connections are closed. Leaving this unset will lead to
+	// connections open forever and will cause memory leaks in a long running
+	// process.
+	tr.IdleConnTimeout = defaults.HTTPIdleTimeout
+
+	// The address field is always formatted as serverUUID.clusterName allowing
+	// the connection pool maintained by the transport to differentiate
+	// connections to different application proxy hosts.
+	tr.DialContext = func(ctx context.Context, network string, addr string) (net.Conn, error) {
+		conn, err := clusterClient.Dial(reversetunnel.DialParams{
+			ServerID: addr,
+			ConnType: services.AppTunnel,
+		})
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		return conn, nil
+	}
+
+	return tr, nil
 }

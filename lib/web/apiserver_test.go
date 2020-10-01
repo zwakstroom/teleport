@@ -1869,7 +1869,6 @@ func (s *WebSuite) TestCreateAppSession(c *C) {
 		// Make a request to create an application session for "panel".
 		endpoint := pack.clt.Endpoint("webapi", "sessions", "app")
 		resp, err := pack.clt.PostJSON(context.Background(), endpoint, tt.inCreateRequest)
-		fmt.Printf("--> err: %v.\n", err)
 		c.Assert(err != nil, check.Equals, tt.outError, tt.inComment)
 		if tt.outError {
 			continue

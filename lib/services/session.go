@@ -499,7 +499,7 @@ func GetWebSessionMarshaler() WebSessionMarshaler {
 // mostly adds support for extended versions
 type WebSessionMarshaler interface {
 	// UnmarshalWebSession unmarhsals cert authority from binary representation
-	UnmarshalWebSession(bytes []byte) (WebSession, error)
+	UnmarshalWebSession(bytes []byte, opts ...MarshalOption) (WebSession, error)
 	// MarshalWebSession to binary representation
 	MarshalWebSession(c WebSession, opts ...MarshalOption) ([]byte, error)
 	// GenerateWebSession generates new web session and is used to
@@ -535,9 +535,14 @@ func (*TeleportWebSessionMarshaler) ExtendWebSession(ws WebSession) (WebSession,
 }
 
 // UnmarshalWebSession unmarshals web session from on-disk byte format
-func (*TeleportWebSessionMarshaler) UnmarshalWebSession(bytes []byte) (WebSession, error) {
+func (*TeleportWebSessionMarshaler) UnmarshalWebSession(bytes []byte, opts ...MarshalOption) (WebSession, error) {
+	cfg, err := collectOptions(opts)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	var h ResourceHeader
-	err := json.Unmarshal(bytes, &h)
+	err = json.Unmarshal(bytes, &h)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -553,7 +558,6 @@ func (*TeleportWebSessionMarshaler) UnmarshalWebSession(bytes []byte) (WebSessio
 	case V2:
 		var ws WebSessionV2
 		if err := utils.UnmarshalWithSchema(GetWebSessionSchema(), &ws, bytes); err != nil {
-			fmt.Printf("--> err: %v.\n", err.Error())
 			return nil, trace.BadParameter(err.Error())
 		}
 		utils.UTC(&ws.Spec.BearerTokenExpires)
@@ -561,6 +565,12 @@ func (*TeleportWebSessionMarshaler) UnmarshalWebSession(bytes []byte) (WebSessio
 
 		if err := ws.CheckAndSetDefaults(); err != nil {
 			return nil, trace.Wrap(err)
+		}
+		if cfg.ID != 0 {
+			ws.SetResourceID(cfg.ID)
+		}
+		if !cfg.Expires.IsZero() {
+			ws.SetExpiry(cfg.Expires)
 		}
 
 		return &ws, nil

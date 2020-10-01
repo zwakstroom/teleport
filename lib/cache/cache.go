@@ -18,7 +18,6 @@ package cache
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 	"time"
 
@@ -51,6 +50,7 @@ func ForAuth(cfg Config) Config {
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindAccessRequest},
 		{Kind: services.KindApp},
+		{Kind: services.KindAppSession},
 	}
 	cfg.QueueSize = defaults.AuthQueueSize
 	return cfg
@@ -72,6 +72,8 @@ func ForProxy(cfg Config) Config {
 		{Kind: services.KindTunnelConnection},
 		{Kind: services.KindApp},
 		{Kind: services.KindAppWebSession},
+		// TODO(russjones): Why is this needed?
+		//{Kind: services.KindAppSession},
 	}
 	cfg.QueueSize = defaults.ProxyQueueSize
 	return cfg
@@ -355,7 +357,6 @@ func (c *Cache) update(ctx context.Context) {
 		if err != nil {
 			c.setCacheState(err)
 			if !c.isClosed() {
-				fmt.Printf("--> %v: %v.\n", c.Component, err)
 				c.Warningf("Re-init the cache on error: %v.", trace.Unwrap(err))
 			}
 		}

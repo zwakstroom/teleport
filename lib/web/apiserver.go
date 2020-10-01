@@ -113,6 +113,8 @@ type Config struct {
 	// FIPS mode means Teleport started in a FedRAMP/FIPS 140-2 compliant
 	// configuration.
 	FIPS bool
+
+	AccessPoint auth.AccessPoint
 }
 
 type RewritingHandler struct {
@@ -363,7 +365,7 @@ func NewHandler(cfg Config, opts ...HandlerOption) (*RewritingHandler, error) {
 	// forwarding for AAP applications.
 	appHandler, err := app.NewHandler(&app.HandlerConfig{
 		Clock:       h.clock,
-		AuthClient:  cfg.ProxyClient,
+		AccessPoint: cfg.AccessPoint,
 		ProxyClient: cfg.Proxy,
 	})
 	if err != nil {

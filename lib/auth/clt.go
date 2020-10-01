@@ -2831,7 +2831,6 @@ func (c *Client) GetAppWebSessions(ctx context.Context) ([]services.WebSession, 
 
 	resp, err := clt.GetAppWebSessions(ctx, &empty.Empty{})
 	if err != nil {
-		fmt.Printf("--> clt: %v.\n", err)
 		return nil, trail.FromGRPC(err)
 	}
 
