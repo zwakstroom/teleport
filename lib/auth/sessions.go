@@ -19,6 +19,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/gravitational/teleport/lib/defaults"
@@ -156,21 +157,36 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 	return session, nil
 }
 
+// getApp looks for an application registered for the requested public address
+// in the cluster and returns it. In the situation multiple applications match,
+// a random selection is returned. This is done on purpose to support HA to
+// allow multiple application proxy nodes to be run and if one is down, at
+// least the application can be accessible on the other.
+//
+// In the future this function should be updated to keep state on application
+// servers that are down and to not route requests to that server.
 func (s *AuthServer) getApp(ctx context.Context, publicAddr string) (*services.App, services.Server, error) {
+	var am []*services.App
+	var sm []services.Server
+
 	servers, err := s.GetApps(ctx, defaults.Namespace)
 	if err != nil {
 		return nil, nil, trace.Wrap(err)
 	}
-
 	for _, server := range servers {
 		for _, app := range server.GetApps() {
 			if app.PublicAddr == publicAddr {
-				return app, server, nil
+				am = append(am, app)
+				sm = append(sm, server)
 			}
 		}
 	}
 
-	return nil, nil, trace.NotFound("application %v not found", publicAddr)
+	if len(am) == 0 {
+		return nil, nil, trace.NotFound("%q not found", publicAddr)
+	}
+	index := rand.Intn(len(am))
+	return am[index], sm[index], nil
 }
 
 type tokenRequest struct {

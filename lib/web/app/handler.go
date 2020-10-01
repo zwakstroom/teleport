@@ -20,22 +20,21 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gravitational/oxy/forward"
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/defaults"
-	"github.com/gravitational/teleport/lib/httplib"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
-	"github.com/gravitational/teleport/lib/utils"
+	"github.com/gravitational/ttlmap"
 
 	"github.com/gravitational/trace"
 
@@ -65,20 +64,41 @@ func (c *HandlerConfig) CheckAndSetDefaults() error {
 }
 
 type Handler struct {
-	c   *HandlerConfig
+	c *HandlerConfig
+
 	log *logrus.Entry
+
+	tr http.RoundTripper
+
+	mu    sync.Mutex
+	cache *ttlmap.TTLMap
 }
 
-func NewHandler(config *HandlerConfig) (*Handler, error) {
-	if err := config.CheckAndSetDefaults(); err != nil {
+func NewHandler(c *HandlerConfig) (*Handler, error) {
+	if err := c.CheckAndSetDefaults(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Create a http.RoundTripper that is used to cache and limit transport
+	// connections over the reverse tunnel subsystem.
+	tr, err := newTransport(c.ProxyClient)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Cache of request forwarders.
+	cache, err := ttlmap.New(defaults.ClientCacheSize)
+	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	return &Handler{
-		c: config,
+		c: c,
 		log: logrus.WithFields(logrus.Fields{
 			trace.Component: teleport.ComponentAppProxy,
 		}),
+		tr:    tr,
+		cache: cache,
 	}, nil
 }
 
@@ -102,246 +122,201 @@ func (h *Handler) ForwardToApp(r *http.Request) bool {
 	return true
 }
 
+// ServeHTTP will forward the *http.Request to the application proxy service.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := h.serveHTTP(w, r); err != nil {
+		h.log.Warnf("Failed to serve request: %v.", err)
+
+		// Covert trace error type to HTTP and write response.
+		code := trace.ErrorToCode(err)
+		http.Error(w, http.StatusText(code), code)
+	}
+}
+
+func (h *Handler) serveHTTP(w http.ResponseWriter, r *http.Request) error {
 	// If the target is an application but it hits the special "x-teleport-auth"
 	// endpoint, then perform redirect authentication logic.
 	if r.URL.Path == "/x-teleport-auth" {
 		if err := h.handleFragment(w, r); err != nil {
-			h.log.Warnf("Fragment authentication failed: %v.", err)
-			http.Error(w, "internal service error", 500)
-			return
+			return trace.Wrap(err)
 		}
+		return nil
 	}
 
-	// Authenticate request by looking for an existing session. If a session
-	// does not exist, redirect the caller to the login screen.
-	session, err := h.authenticate(r)
+	// Authenticate the session based off the session cookie.
+	session, err := h.authenticate(r.Context(), r)
 	if err != nil {
-		h.log.Warnf("Authentication failed: %v.", err)
-		http.Error(w, "internal service error", 500)
-		return
+		return trace.Wrap(err)
 	}
 
-	h.forward(w, r, session)
-}
-
-type fragmentRequest struct {
-	CookieValue string `json:"cookie_value"`
-}
-
-func (h *Handler) handleFragment(w http.ResponseWriter, r *http.Request) error {
-	switch r.Method {
-	case http.MethodGet:
-		setRedirectPageHeaders(w.Header())
-		fmt.Fprintf(w, js)
-	case http.MethodPost:
-		httplib.SetNoCacheHeaders(w.Header())
-		var req fragmentRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return trace.Wrap(err)
-		}
-
-		// validate that the session exists.
-		cookie, err := decodeCookie(req.CookieValue)
-		if err != nil {
-			return trace.Wrap(err)
-		}
-		_, err = h.c.AccessPoint.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
-			Username:   cookie.Username,
-			ParentHash: cookie.ParentHash,
-			SessionID:  cookie.SessionID,
-		})
-		if err != nil {
-			return trace.Wrap(err)
-		}
-
-		// Set the "Set-Cookie" header on the response.
-		http.SetCookie(w, &http.Cookie{
-			Name:     cookieName,
-			Value:    req.CookieValue,
-			HttpOnly: true,
-			Secure:   true,
-			SameSite: http.SameSiteLaxMode,
-		})
-
-	default:
-		return trace.BadParameter("unsupported method: %q", r.Method)
+	// Fetch a cached request forwarder or create one if this is the first
+	// request (or the process has been restarted).
+	fwd, err := h.getForwarder(r.Context(), session)
+	if err != nil {
+		return trace.Wrap(err)
 	}
+
+	// Forward the request to the Teleport application proxy service.
+	fwd.ServeHTTP(w, r)
 	return nil
 }
 
-func (h *Handler) authenticate(r *http.Request) (services.WebSession, error) {
+// authenticate will check if request carries a session cookie matching a
+// session in the backend.
+func (h *Handler) authenticate(ctx context.Context, r *http.Request) (services.WebSession, error) {
 	// Extract the session cookie from the *http.Request.
-	cookieValue, err := extractCookie(r)
+	cookie, err := parseCookie(r)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		h.log.Warnf("Failed to parse session cookie: %v.", err)
+		return nil, trace.AccessDenied("invalid session")
 	}
 
-	cookie, err := decodeCookie(cookieValue)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	session, err := h.c.AccessPoint.GetAppWebSession(r.Context(), services.GetAppWebSessionRequest{
+	// Check that the session exists in the backend cache. This allows the user
+	// to logout and invalidate their application session immediately. This
+	// lookup should also be fast because it's in the local cache.
+	session, err := h.c.AccessPoint.GetAppWebSession(ctx, services.GetAppWebSessionRequest{
 		Username:   cookie.Username,
 		ParentHash: cookie.ParentHash,
 		SessionID:  cookie.SessionID,
 	})
 	if err != nil {
-		return nil, trace.Wrap(err)
+		h.log.Warnf("Failed to fetch application session: %v.", err)
+		return nil, trace.AccessDenied("invalid session")
 	}
 
 	return session, nil
 }
 
-// forward will update the URL on the request and then forward the request to
-// the target. If an error occurs, the error handler attached to the session
-// is called.
-func (h *Handler) forward(w http.ResponseWriter, r *http.Request, session services.WebSession) {
-	//_, server, err := h.getApp(r.Context(), session.GetPublicAddr(), session.GetClusterName())
-	//if err != nil {
-	//	http.Error(w, "internal service error", 500)
-	//	return
-	//}
-
-	// Get a connection through the reverse tunnel to the target application.
-	clusterClient, err := h.c.ProxyClient.GetSite(session.GetClusterName())
-	if err != nil {
-		http.Error(w, "internal service error", 500)
-		return
-	}
-	conn, err := clusterClient.Dial(reversetunnel.DialParams{
-		//ServerID: strings.Join([]string{server.GetName(), session.GetClusterName()}, "."),
-		ServerID: strings.Join([]string{session.GetServerID(), session.GetClusterName()}, "."),
-		ConnType: services.AppTunnel,
-	})
-	if err != nil {
-		http.Error(w, "internal service error", 500)
-		return
+// getForwarder returns a request forwarder used to proxy the request to the
+// application proxy component of Teleport which will then forward the
+// request to the target application.
+func (h *Handler) getForwarder(ctx context.Context, session services.WebSession) (*forward.Forwarder, error) {
+	// If a cached forwarder exists, return it right away.
+	fwd, err := h.cacheGet(session.GetName())
+	if err == nil {
+		return fwd, nil
 	}
 
-	// Create a HTTP request forwarder that will be used to forward the actual
-	// request over the reverse tunnel to the target application.
-	fwdHandler := &forwardHandler{
-		conn:      conn,
+	// Create the forwarder.
+	fwder, err := newForwarder(forwarderConfig{
+		uri:       fmt.Sprintf("http://%v.%v", session.GetServerID(), session.GetClusterName()),
 		sessionID: session.GetSessionID(),
-	}
-	fwd, err := forward.New(
-		forward.RoundTripper(fwdHandler),
-		forward.Rewriter(fwdHandler),
-		forward.Logger(h.log))
-	if err != nil {
-		http.Error(w, "internal service error", 500)
-		return
-	}
-
-	r.URL, err = url.Parse("http://nowhere")
-	if err != nil {
-		http.Error(w, "internal service error", 500)
-		return
-	}
-	fwd.ServeHTTP(w, r)
-}
-
-func extractAppName(r *http.Request) (string, error) {
-	requestedHost, err := utils.Host(r.Host)
-	if err != nil {
-		return "", trace.Wrap(err)
-	}
-
-	parts := strings.FieldsFunc(requestedHost, func(c rune) bool {
-		return c == '.'
+		tr:        h.tr,
+		log:       h.log,
 	})
-	if len(parts) == 0 {
-		return "", trace.BadParameter("invalid host header: %v", requestedHost)
-	}
-
-	return parts[0], nil
-}
-
-// ResolveFQDN returns FQDN of the application based on proxy parameters
-func ResolveFQDN(proxyName string, proxyHost string, appClusterName string, app services.App) string {
-	// use application publicAdd if running on proxy
-	isProxyCluster := proxyName == appClusterName
-	if isProxyCluster && app.PublicAddr != "" {
-		return app.PublicAddr
-	}
-
-	if proxyHost != "" {
-		return fmt.Sprintf("%v.%v", app.Name, proxyHost)
-	}
-
-	return fmt.Sprintf("%v.%v", app.Name, appClusterName)
-}
-
-// getApp looks for an application registered for the requested public address
-// in the cluster and returns it. In the situation multiple applications match,
-// a random selection is returned. This is done on purpose to support HA to
-// allow multiple application proxy nodes to be run and if one is down, at
-// least the application can be accessible on the other.
-func (h *Handler) getApp(ctx context.Context, publicAddr string, clusterName string) (*services.App, services.Server, error) {
-	var appMatch []*services.App
-	var serverMatch []services.Server
-
-	proxyClient, err := h.c.ProxyClient.GetSite(clusterName)
-	if err != nil {
-		return nil, nil, trace.Wrap(err)
-	}
-
-	authClient, err := proxyClient.CachingAccessPoint()
-	if err != nil {
-		return nil, nil, trace.Wrap(err)
-	}
-
-	servers, err := authClient.GetApps(ctx, defaults.Namespace)
-	if err != nil {
-		return nil, nil, trace.Wrap(err)
-	}
-	for _, server := range servers {
-		for _, a := range server.GetApps() {
-			//if a.PublicAddr == publicAddr {
-			host, _, _ := net.SplitHostPort(a.PublicAddr)
-			if host == publicAddr {
-				appMatch = append(appMatch, a)
-				serverMatch = append(serverMatch, server)
-			}
-		}
-	}
-
-	if len(appMatch) == 0 {
-		return nil, nil, trace.NotFound("%q not found in %q", publicAddr, clusterName)
-	}
-	index := rand.Intn(len(appMatch))
-	return appMatch[index], serverMatch[index], nil
-}
-
-type forwardHandler struct {
-	conn      net.Conn
-	sessionID string
-}
-
-func (f *forwardHandler) RoundTrip(r *http.Request) (*http.Response, error) {
-	tr := &http.Transport{
-		DialContext:           f.dialContext,
-		ResponseHeaderTimeout: defaults.DefaultDialTimeout,
-		MaxIdleConns:          defaults.HTTPMaxIdleConns,
-		MaxIdleConnsPerHost:   defaults.HTTPMaxIdleConnsPerHost,
-		MaxConnsPerHost:       defaults.HTTPMaxConnsPerHost,
-		IdleConnTimeout:       defaults.HTTPIdleTimeout,
-	}
-	resp, err := tr.RoundTrip(r)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	fwd, err = forward.New(
+		forward.RoundTripper(fwder),
+		forward.Rewriter(fwder),
+		forward.Logger(h.log))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Put the forwarder in the cache so the next request can use it.
+	err = h.cacheSet(session.GetName(), fwd, session.Expiry().Sub(h.c.Clock.Now()))
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return fwd, nil
+}
+
+// cacheGet will fetch the forwarder from the cache.
+func (h *Handler) cacheGet(key string) (*forward.Forwarder, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if f, ok := h.cache.Get(key); ok {
+		if fwd, fok := f.(*forward.Forwarder); fok {
+			return fwd, nil
+		}
+		return nil, trace.BadParameter("invalid type stored in cache: %T", f)
+	}
+	return nil, trace.NotFound("forwarder not found")
+}
+
+// cacheSet will add the forwarder to the cache.
+func (h *Handler) cacheSet(key string, value *forward.Forwarder, ttl time.Duration) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if err := h.cache.Set(key, value, ttl); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+// forwarderConfig is the configuration for a forwarder.
+type forwarderConfig struct {
+	uri       string
+	sessionID string
+	tr        http.RoundTripper
+	log       *logrus.Entry
+}
+
+// Check will valid the configuration of a forwarder.
+func (c forwarderConfig) Check() error {
+	if c.uri == "" {
+		return trace.BadParameter("uri missing")
+	}
+	if c.sessionID == "" {
+		return trace.BadParameter("session ID missing")
+	}
+	if c.tr == nil {
+		return trace.BadParameter("round tripper missing")
+	}
+	if c.log == nil {
+		return trace.BadParameter("logger missing")
+	}
+
+	return nil
+}
+
+// forwarder will rewrite and forward the request to the target address.
+type forwarder struct {
+	c forwarderConfig
+
+	uri *url.URL
+}
+
+func newForwarder(c forwarderConfig) (*forwarder, error) {
+	if err := c.Check(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// Parse the target address once then inject it into all requests.
+	uri, err := url.Parse(c.uri)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	return &forwarder{
+		c:   c,
+		uri: uri,
+	}, nil
+}
+
+func (f *forwarder) RoundTrip(r *http.Request) (*http.Response, error) {
+	// Update the target address of the request so it's forwarded correctly.
+	// Format is always serverID.clusterName.
+	r.URL = f.uri
+
+	resp, err := f.c.tr.RoundTrip(r)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	return resp, nil
 }
 
-func (f *forwardHandler) dialContext(ctx context.Context, network string, addr string) (net.Conn, error) {
-	return f.conn, nil
-}
-
-func (f *forwardHandler) Rewrite(r *http.Request) {
-	r.Header.Set("x-teleport-session-id", f.sessionID)
+func (f *forwarder) Rewrite(r *http.Request) {
+	// Pass the application session ID to the application service in a header.
+	// This will be removed by the application proxy service before forwarding
+	// the request to the target application.
+	r.Header.Set(teleport.AppSessionIDHeader, f.c.sessionID)
 
 	// Remove the application specific session cookie from the header. This is
 	// done by first wiping out the "Cookie" header then adding back all cookies
@@ -359,7 +334,7 @@ func (f *forwardHandler) Rewrite(r *http.Request) {
 // newTransport creates a http.RoundTripper that uses the reverse tunnel
 // subsystem to build the connection. This allows re-use of the transports
 // connection pooling logic instead of needing to write and maintain our own.
-func newTransport(clusterClient reversetunnel.RemoteSite) (http.RoundTripper, error) {
+func newTransport(proxyClient reversetunnel.Server) (http.RoundTripper, error) {
 	// Clone the default transport to pick up sensible defaults.
 	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
 	if !ok {
@@ -383,8 +358,17 @@ func newTransport(clusterClient reversetunnel.RemoteSite) (http.RoundTripper, er
 	// the connection pool maintained by the transport to differentiate
 	// connections to different application proxy hosts.
 	tr.DialContext = func(ctx context.Context, network string, addr string) (net.Conn, error) {
+		serverID, clusterName, err := extract(addr)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		clusterClient, err := proxyClient.GetSite(clusterName)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+
 		conn, err := clusterClient.Dial(reversetunnel.DialParams{
-			ServerID: addr,
+			ServerID: fmt.Sprintf("%v.%v", serverID, clusterName),
 			ConnType: services.AppTunnel,
 		})
 		if err != nil {
@@ -394,4 +378,19 @@ func newTransport(clusterClient reversetunnel.RemoteSite) (http.RoundTripper, er
 	}
 
 	return tr, nil
+}
+
+// extract takes an address in the form http://serverID.clusterName:80 and
+// returns serverID and clusterName.
+func extract(address string) (string, string, error) {
+	// Strip port suffix.
+	address = strings.TrimSuffix(address, ":80")
+
+	// Split into two parts: serverID and clusterName.
+	index := strings.Index(address, ".")
+	if index == -1 {
+		return "", "", fmt.Errorf("")
+	}
+
+	return address[:index], address[index+1:], nil
 }

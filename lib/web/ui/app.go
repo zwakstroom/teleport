@@ -17,8 +17,9 @@ limitations under the License.
 package ui
 
 import (
+	"fmt"
+
 	"github.com/gravitational/teleport/lib/services"
-	"github.com/gravitational/teleport/lib/web/app"
 )
 
 // AppLabel describes application label
@@ -51,7 +52,7 @@ func MakeApps(proxyName string, proxyHost string, appClusterName string, appServ
 	for _, server := range appServers {
 		teleApps := server.GetApps()
 		for _, teleApp := range teleApps {
-			fqdn := app.ResolveFQDN(proxyName, proxyHost, appClusterName, *teleApp)
+			fqdn := resolveFQDN(proxyName, proxyHost, appClusterName, *teleApp)
 			labels := []AppLabel{}
 			for name, value := range teleApp.StaticLabels {
 				labels = append(labels, AppLabel{
@@ -71,4 +72,19 @@ func MakeApps(proxyName string, proxyHost string, appClusterName string, appServ
 	}
 
 	return result
+}
+
+// resolveFQDN returns FQDN of the application based on proxy parameters.
+func resolveFQDN(proxyName string, proxyHost string, appClusterName string, app services.App) string {
+	// Use application public address if running on proxy.
+	isProxyCluster := proxyName == appClusterName
+	if isProxyCluster && app.PublicAddr != "" {
+		return app.PublicAddr
+	}
+
+	if proxyHost != "" {
+		return fmt.Sprintf("%v.%v", app.Name, proxyHost)
+	}
+
+	return fmt.Sprintf("%v.%v", app.Name, appClusterName)
 }

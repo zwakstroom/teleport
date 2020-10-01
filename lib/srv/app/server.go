@@ -97,10 +97,10 @@ type Server struct {
 	clusterName string
 	keepAlive   time.Duration
 
+	tr http.RoundTripper
+
 	mu    sync.Mutex
 	cache *ttlmap.TTLMap
-
-	tr http.RoundTripper
 
 	activeConns int64
 }
@@ -228,51 +228,6 @@ func (s *Server) Start() {
 	go s.heartbeat.Run()
 }
 
-// HandleConnection takes a connection and wraps it in a listener so it can
-// be passed to http.Serve to process as a HTTP request.
-func (s *Server) HandleConnection(conn net.Conn) {
-	if err := s.httpServer.Serve(newListener(s.closeContext, conn)); err != nil {
-		s.log.Warnf("Failed to handle connection: %v.", err)
-	}
-}
-
-// ServeHTTP will forward the *http.Request to the target application.
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if err := s.serveHTTP(w, r); err != nil {
-		s.log.Debugf("Failed to serve request: %v.", err)
-
-		// Covert trace error type to HTTP and write response.
-		code := trace.ErrorToCode(err)
-		http.Error(w, http.StatusText(code), code)
-	}
-}
-
-func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) error {
-	// Get a session forwarder, will look into the cache first, if not found,
-	// will create one.
-	sessionID := r.Header.Get(teleport.AppSessionIDHeader)
-	if sessionID == "" {
-		return trace.AccessDenied("invalid session id")
-	}
-	fwd, err := s.getForwarder(sessionID)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	// Forward request to the target application.
-	fwd.ServeHTTP(w, r)
-	return nil
-}
-
-// ForceHeartbeat is used in tests to force updating of services.Server.
-func (s *Server) ForceHeartbeat() error {
-	err := s.heartbeat.ForceSend(time.Second)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	return nil
-}
-
 // Close will shut the server down and unblock any resources.
 func (s *Server) Close() error {
 	if err := s.httpServer.Close(); err != nil {
@@ -294,26 +249,88 @@ func (s *Server) Wait() error {
 	return s.closeContext.Err()
 }
 
-// getForwarder returns a request forwarder used to proxy the request to the
-// target application. Always checks if the session is valid first and if so,
-// will return a cached forwarder, otherwise will create one.
-func (s *Server) getForwarder(sessionID string) (*forward.Forwarder, error) {
+// ForceHeartbeat is used in tests to force updating of services.Server.
+func (s *Server) ForceHeartbeat() error {
+	err := s.heartbeat.ForceSend(time.Second)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+// HandleConnection takes a connection and wraps it in a listener so it can
+// be passed to http.Serve to process as a HTTP request.
+func (s *Server) HandleConnection(conn net.Conn) {
+	if err := s.httpServer.Serve(newListener(s.closeContext, conn)); err != nil {
+		s.log.Warnf("Failed to handle connection: %v.", err)
+	}
+}
+
+// ServeHTTP will forward the *http.Request to the target application.
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := s.serveHTTP(w, r); err != nil {
+		s.log.Debugf("Failed to serve request: %v.", err)
+
+		// Covert trace error type to HTTP and write response.
+		code := trace.ErrorToCode(err)
+		http.Error(w, http.StatusText(code), code)
+	}
+}
+
+func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) error {
+	// Authenticate the request based off the "x-teleport-session-id" header.
+	session, err := s.authenticate(s.closeContext, r)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Fetch a cached request forwarder or create one if this is the first
+	// request (or the process has been restarted).
+	fwd, err := s.getForwarder(s.closeContext, session)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Forward request to the target application.
+	fwd.ServeHTTP(w, r)
+	return nil
+}
+
+// authenticate will check if request carries a session cookie matching a
+// session in the backend.
+func (s *Server) authenticate(ctx context.Context, r *http.Request) (services.AppSession, error) {
+	sessionID := r.Header.Get(teleport.AppSessionIDHeader)
+	if sessionID == "" {
+		s.log.Warnf("Request missing session ID header.")
+		return nil, trace.AccessDenied("invalid session")
+	}
+
 	// Always look for the session in the backend cache first. This allows the
 	// session to be invalidated in the backend and be immediately reflected here.
-	session, err := s.c.AccessPoint.GetAppSession(s.closeContext, sessionID)
+	session, err := s.c.AccessPoint.GetAppSession(ctx, sessionID)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+	if err != nil {
+		s.log.Warnf("Failed to fetch application session: %v.", err)
+		return nil, trace.AccessDenied("invalid session")
+	}
 
-	// Lookup if a forwarder for this session exists, if it does return it
-	// right away.
-	fwd, err := s.cacheGet(sessionID)
+	return session, nil
+}
+
+// getForwarder returns a request forwarder used to proxy the request to the
+// target application. Always checks if the session is valid first and if so,
+// will return a cached forwarder, otherwise will create one.
+func (s *Server) getForwarder(ctx context.Context, session services.AppSession) (*forward.Forwarder, error) {
+	// If a cached forwarder exists, return it right away.
+	fwd, err := s.cacheGet(session.GetName())
 	if err == nil {
 		return fwd, nil
 	}
 
 	// Locally lookup the application the caller is targeting.
-	app, err := s.getApp(s.closeContext, session.GetPublicAddr())
+	app, err := s.getApp(ctx, session.GetPublicAddr())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -338,7 +355,7 @@ func (s *Server) getForwarder(sessionID string) (*forward.Forwarder, error) {
 	}
 
 	// Put the forwarder in the cache so the next request can use it.
-	err = s.cacheSet(sessionID, fwd, session.Expiry().Sub(s.c.Clock.Now()))
+	err = s.cacheSet(session.GetName(), fwd, session.Expiry().Sub(s.c.Clock.Now()))
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
