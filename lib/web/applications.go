@@ -191,15 +191,21 @@ func (h *Handler) resolveDirect(ctx context.Context, publicAddr string, clusterN
 // root cluster. Always supply public address and cluster name to
 // deterministically resolve an application.
 func (h *Handler) resolveFQDN(ctx context.Context, fqdn string) (*services.App, services.Server, string, error) {
+	// Parse the address to remove the port if it's set.
+	addr, err := utils.ParseAddr(fqdn)
+	if err != nil {
+		return nil, nil, "", trace.Wrap(err)
+	}
+
 	// Try and match FQDN to public address of application within cluster.
-	app, server, err := h.match(ctx, h.cfg.ProxyClient, matchPublicAddr(fqdn))
+	app, server, err := h.match(ctx, h.cfg.ProxyClient, matchPublicAddr(addr.Host()))
 	if err == nil {
 		return app, server, h.auth.clusterName, nil
 	}
 
 	// Extract the first subdomain from the FQDN and attempt to use this as the
 	// application name.
-	appName := strings.Split(fqdn, ".")[0]
+	appName := strings.Split(addr.Host(), ".")[0]
 
 	// Try and match application name to an application within the cluster.
 	app, server, err = h.match(ctx, h.cfg.ProxyClient, matchName(appName))

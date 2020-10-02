@@ -34,6 +34,7 @@ import (
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/services"
+	"github.com/gravitational/teleport/lib/utils"
 	"github.com/gravitational/ttlmap"
 
 	"github.com/gravitational/trace"
@@ -126,15 +127,24 @@ func (h *Handler) IsAuthenticatedApp(r *http.Request) bool {
 // host that is different than the public address of the proxy. If it is, it
 // redirects back to the application launcher in the Web UI.
 func (h *Handler) IsUnauthenticatedApp(r *http.Request, publicAddr string) (string, bool) {
-	if net.ParseIP(r.Host) != nil && r.Host != publicAddr {
-		u, err := url.Parse(fmt.Sprintf("https://%v/web/launcher/%v", publicAddr, r.Host))
-		if err != nil {
-			h.log.Debugf("Failed to parse while handling unauthenticated request to %v: %v.", r.Host, err)
-			return "", false
-		}
-		return u.String(), true
+	requestedHost, err := utils.ParseAddr(r.Host)
+	if err != nil {
+		return "", false
 	}
-	return "", false
+
+	if net.ParseIP(requestedHost.Host()) != nil {
+		return "", false
+	}
+	if r.Host == publicAddr {
+		return "", false
+	}
+
+	u, err := url.Parse(fmt.Sprintf("https://%v/web/launcher/%v", publicAddr, r.Host))
+	if err != nil {
+		h.log.Debugf("Failed to parse while handling unauthenticated request to %v: %v.", r.Host, err)
+		return "", false
+	}
+	return u.String(), true
 }
 
 // ServeHTTP will forward the *http.Request to the application proxy service.

@@ -176,6 +176,13 @@ func (s *localSite) DialAuthServer() (conn net.Conn, err error) {
 }
 
 func (s *localSite) Dial(params DialParams) (net.Conn, error) {
+	// DELETE IN: 5.1.
+	//
+	// If a connection type is not set, default to node tunnel.
+	if params.ConnType == "" {
+		params.ConnType = services.NodeTunnel
+	}
+
 	// If the proxy is in recording mode use the agent to dial and build a
 	// in-memory forwarding server.
 	clusterConfig, err := s.accessPoint.GetClusterConfig()
@@ -191,6 +198,13 @@ func (s *localSite) Dial(params DialParams) (net.Conn, error) {
 }
 
 func (s *localSite) DialTCP(params DialParams) (net.Conn, error) {
+	// DELETE IN: 5.1.
+	//
+	// If a connection type is not set, default to node tunnel.
+	if params.ConnType == "" {
+		params.ConnType = services.NodeTunnel
+	}
+
 	s.log.Debugf("Dialing %v.", params)
 
 	conn, _, err := s.getConn(params)
@@ -422,6 +436,8 @@ func (s *localSite) getRemoteConn(params DialParams) (*remoteConn, error) {
 			delete(s.remoteConns, key)
 		}
 	}
+
+	fmt.Printf("--> Looking up conn type: %v.\n", params.ConnType)
 
 	key := connKey{
 		uuid:     params.ServerID,
