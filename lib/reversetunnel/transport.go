@@ -88,18 +88,6 @@ type dialReq struct {
 	ConnType services.TunnelType `json:"conn_type"`
 }
 
-func (r *dialReq) CheckAndSetDefaults() error {
-	if r.ConnType == "" {
-		r.ConnType = services.NodeTunnel
-	}
-
-	if r.Address == "" {
-		return trace.BadParameter("address is missing")
-	}
-
-	return nil
-}
-
 // parseDialReq parses the dial request. Is backward compatible with legacy
 // payload.
 func parseDialReq(payload []byte) *dialReq {
@@ -220,13 +208,6 @@ func (p *transport) start() {
 	var servers []string
 
 	dreq := parseDialReq(req.Payload)
-	err := dreq.CheckAndSetDefaults()
-	if err != nil {
-		p.log.Errorf("Invalid transport request: %v.", err)
-		p.reply(req, false, []byte(fmt.Sprintf("invalid transport request: %v", err)))
-		return
-	}
-
 	p.log.Debugf("Received out-of-band proxy transport request for %v [%v].", dreq.Address, dreq.ServerID)
 
 	// Handle special non-resolvable addresses first.
@@ -320,7 +301,6 @@ func (p *transport) start() {
 	// Get a connection to the target address. If a tunnel exists with matching
 	// search names, connection over the tunnel is returned. Otherwise a direct
 	// net.Dial is performed.
-	//conn, useTunnel, err := p.getConn(servers, dreq.ServerID, dreq.ConnType)
 	conn, useTunnel, err := p.getConn(servers, dreq)
 	if err != nil {
 		errorMessage := fmt.Sprintf("connection rejected: %v", err)
@@ -437,10 +417,6 @@ func (p *transport) tunnelDial(r *dialReq) (net.Conn, error) {
 		return nil, trace.BadParameter("did not find local cluster, found %T", cluster)
 	}
 
-	//to, err := utils.ParseAddr(r.TargetAddr)
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
 	conn, err := localCluster.dialTunnel(DialParams{
 		ServerID: r.ServerID,
 		ConnType: r.ConnType,

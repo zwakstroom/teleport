@@ -35,13 +35,10 @@ import (
 type WebSession interface {
 	Resource
 
-	//GetMetadata() Metadata
-
 	// GetShortName returns visible short name used in logging
 	GetShortName() string
 	// GetName returns session name
 	GetName() string
-
 	// GetUser returns the user this session is associated with
 	GetUser() string
 	// SetName sets session name
@@ -56,8 +53,9 @@ type WebSession interface {
 	SetPriv([]byte)
 	// GetTLSCert returns PEM encoded TLS certificate associated with session
 	GetTLSCert() []byte
-
+	// GetSessionID gets the application session ID.
 	GetSessionID() string
+	// SetSessionID sets the application session ID.
 	SetSessionID(string)
 	// GetServerID gets the ID of the server the application is running on.
 	GetServerID() string
@@ -71,7 +69,6 @@ type WebSession interface {
 	GetClusterName() string
 	// ClusterName sets the name of the cluster in which the application is running.
 	SetClusterName(string)
-
 	// BearerToken is a special bearer token used for additional
 	// bearer authentication
 	GetBearerToken() string
@@ -94,17 +91,8 @@ type WebSession interface {
 	// String returns string representation of the session.
 	String() string
 
+	// Expiry is the expiration time for this resource.
 	Expiry() time.Time
-
-	//// GetType gets the type of session, either web or app.
-	//GetType() WebSessionSpecV2_SessionType
-	//// SetType sets the type of session, either web or app.
-	//SetType(WebSessionSpecV2_SessionType)
-	//// GetPublicAddr gets the address of the application requested.
-	//GetPublicAddr() string
-	//// SetPublicAddr sets the address of the application requested.
-	//SetPublicAddr(string)
-
 }
 
 // NewWebSession returns new instance of the web session based on the V2 spec
@@ -168,21 +156,12 @@ func (r *WebSessionV2) SetResourceID(id int64) {
 	r.Metadata.SetID(id)
 }
 
-//// GetMetadata returns metadata
-//func (ws *WebSessionV2) GetMetadata() Metadata {
-//	return ws.Metadata
-//}
-
 // WithoutSecrets returns copy of the object but without secrets
 func (ws *WebSessionV2) WithoutSecrets() WebSession {
 	v2 := ws.V2()
 	v2.Spec.Priv = nil
 	return v2
 }
-
-//func (ws *WebSessionV2) Expiry() time.Time {
-//	return ws.Metadata.Expiry()
-//}
 
 // CheckAndSetDefaults checks and set default values for any missing fields.
 func (ws *WebSessionV2) CheckAndSetDefaults() error {
@@ -196,13 +175,8 @@ func (ws *WebSessionV2) CheckAndSetDefaults() error {
 
 // String returns string representation of the session.
 func (ws *WebSessionV2) String() string {
-	return fmt.Sprintf("WebSession(name=%v,id=%v)", ws.GetUser(), ws.GetName())
+	return fmt.Sprintf("WebSession(kind=%v,name=%v,id=%v)", ws.GetKind(), ws.GetUser(), ws.GetName())
 }
-
-//// SetName sets session name
-//func (ws *WebSessionV2) SetName(name string) {
-//	ws.Metadata.Name = name
-//}
 
 // SetUser sets user associated with this session
 func (ws *WebSessionV2) SetUser(u string) {
@@ -221,21 +195,6 @@ func (ws *WebSessionV2) GetShortName() string {
 	}
 	return ws.Metadata.Name[:4]
 }
-
-//// GetName returns session name
-//func (ws *WebSessionV2) GetName() string {
-//	return ws.Metadata.Name
-//}
-
-//// GetType gets the type of session, either web or app.
-//func (ws *WebSessionV2) GetType() WebSessionSpecV2_SessionType {
-//	return ws.Spec.Type
-//}
-//
-//// SetType sets the type of session, either web or app.
-//func (ws *WebSessionV2) SetType(sessionType WebSessionSpecV2_SessionType) {
-//	ws.Spec.Type = sessionType
-//}
 
 // GetTLSCert returns PEM encoded TLS certificate associated with session
 func (ws *WebSessionV2) GetTLSCert() []byte {
@@ -267,16 +226,6 @@ func (ws *WebSessionV2) GetServerID() string {
 func (ws *WebSessionV2) SetServerID(serverID string) {
 	ws.Spec.ServerID = serverID
 }
-
-//// GetPublicAddr gets the address of the application requested.
-//func (ws *WebSessionV2) GetPublicAddr() string {
-//	return ws.Spec.PublicAddr
-//}
-//
-//// SetPublicAddr sets the address of the application requested.
-//func (ws *WebSessionV2) SetPublicAddr(publicAddr string) {
-//	ws.Spec.PublicAddr = publicAddr
-//}
 
 // ClusterName gets the name of the cluster in which the application is running.
 func (ws *WebSessionV2) GetClusterName() string {
@@ -629,28 +578,18 @@ type GetAppWebSessionRequest struct {
 
 func (r *GetAppWebSessionRequest) Check() error {
 	if r.Username == "" {
-		return trace.BadParameter("username is missing")
+		return trace.BadParameter("username missing")
 	}
 	if r.ParentHash == "" {
-		return trace.BadParameter("parent hash is missing")
+		return trace.BadParameter("parent hash missing")
 	}
 	if r.SessionID == "" {
-		return trace.BadParameter("session ID is missing")
+		return trace.BadParameter("session ID missing")
 	}
 	return nil
 }
 
 type CreateAppWebSessionRequest struct {
-	//Username string `json:"username"`
-	//// PublicAddr is the address of the application requested.
-	//PublicAddr string `json:"app"`
-	//// ClusterName is the cluster within which the application is running.
-	//ClusterName string `json:"cluster_name"`
-	//// SessionID is the ID of the parent session.
-	//SessionID string
-	////// BearerToken is the bearer token of the parent session.
-	////BearerToken string
-
 	Username      string    `json:"username"`
 	ParentSession string    `json:"parent_session"`
 	AppSessionID  string    `json:"app_session"`
@@ -660,21 +599,24 @@ type CreateAppWebSessionRequest struct {
 }
 
 func (r CreateAppWebSessionRequest) Check() error {
-	//if r.Username == "" {
-	//	return trace.BadParameter("username is missing")
-	//}
-	//if r.PublicAddr == "" {
-	//	return trace.BadParameter("public address is missing")
-	//}
-	//if r.ClusterName == "" {
-	//	return trace.BadParameter("cluster name is missing")
-	//}
-	//if r.SessionID == "" {
-	//	return trace.BadParameter("session ID is missing")
-	//}
-	//if r.BearerToken == "" {
-	//	return trace.BadParameter("bearer token is missing")
-	//}
+	if r.Username == "" {
+		return trace.BadParameter("username missing")
+	}
+	if r.ParentSession == "" {
+		return trace.BadParameter("parent session missing")
+	}
+	if r.AppSessionID == "" {
+		return trace.BadParameter("application session ID missing")
+	}
+	if r.ServerID == "" {
+		return trace.BadParameter("server ID missing")
+	}
+	if r.ClusterName == "" {
+		return trace.BadParameter("cluster name missing")
+	}
+	if r.Expires.IsZero() {
+		return trace.BadParameter("expires missing")
+	}
 
 	return nil
 }
@@ -691,7 +633,7 @@ type CreateAppSessionRequest struct {
 
 func (r CreateAppSessionRequest) Check() error {
 	if r.PublicAddr == "" {
-		return trace.BadParameter("public address is missing")
+		return trace.BadParameter("public address missing")
 	}
 
 	return nil

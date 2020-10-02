@@ -685,12 +685,11 @@ func applyAppsConfig(fc *FileConfig, cfg *service.Config) error {
 			return trace.Wrap(err)
 		}
 
-		//// Remove any port the user may have supplied in file configuration.
-		//// Matching for applications happens on host.
-		//publicAddr, err := utils.Host(application.PublicAddr)
-		//if err != nil {
-		//	return trace.Wrap(err)
-		//}
+		// If a port was specified, return an error, public address should be a FQDN.
+		_, _, err = net.SplitHostPort(application.PublicAddr)
+		if err == nil {
+			return trace.BadParameter("public address can only be a domain name")
+		}
 
 		// Parse the static labels of the application.
 		staticLabels := make(map[string]string)

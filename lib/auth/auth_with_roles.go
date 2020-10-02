@@ -128,14 +128,6 @@ func (a *AuthWithRoles) hasUserRole(checker services.AccessChecker) bool {
 	return okLocal || okRemote
 }
 
-// hasMachineRole returns true of the role is a local or remote machine role.
-func (a *AuthWithRoles) hasMachineRole() bool {
-	_, okLocal := a.checker.(BuiltinRoleSet)
-	_, okRemote := a.checker.(RemoteBuiltinRoleSet)
-
-	return okLocal || okRemote
-}
-
 // AuthenticateWebUser authenticates web user, creates and  returns web session
 // in case if authentication is successful
 func (a *AuthWithRoles) AuthenticateWebUser(req AuthenticateUserRequest) (services.WebSession, error) {
@@ -1889,9 +1881,6 @@ func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.Server) (*se
 	if err := a.action(app.GetNamespace(), services.KindApp, services.VerbUpdate); err != nil {
 		return nil, trace.Wrap(err)
 	}
-	if !a.hasMachineRole() {
-		return nil, trace.AccessDenied("identity does not have access to apps")
-	}
 
 	return a.authServer.UpsertApp(ctx, app)
 }
@@ -1903,9 +1892,6 @@ func (a *AuthWithRoles) UpsertApp(ctx context.Context, app services.Server) (*se
 func (a *AuthWithRoles) DeleteApp(ctx context.Context, namespace string, name string) error {
 	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
-	}
-	if !a.hasMachineRole() {
-		return trace.AccessDenied("identity does not have access to apps")
 	}
 
 	if err := a.authServer.DeleteApp(ctx, namespace, name); err != nil {
@@ -1920,9 +1906,6 @@ func (a *AuthWithRoles) DeleteApp(ctx context.Context, namespace string, name st
 func (a *AuthWithRoles) DeleteAllApps(ctx context.Context, namespace string) error {
 	if err := a.action(namespace, services.KindApp, services.VerbDelete); err != nil {
 		return trace.Wrap(err)
-	}
-	if !a.hasMachineRole() {
-		return trace.AccessDenied("identity does not have access to apps")
 	}
 
 	if err := a.authServer.DeleteAllApps(ctx, namespace); err != nil {

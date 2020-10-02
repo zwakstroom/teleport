@@ -188,8 +188,8 @@ func (a *authorizer) authorizeRemoteBuiltinRole(r RemoteBuiltinRole) (*AuthConte
 					services.NewRule(services.KindReverseTunnel, services.RO()),
 					services.NewRule(services.KindTunnelConnection, services.RO()),
 					services.NewRule(services.KindClusterConfig, services.RO()),
-					//// TODO(russjones): Is this needed?
-					services.NewRule(services.KindAppWebSession, services.RO()),
+					// TODO(russjones): Verify this is not needed for Trusted Clusters.
+					//services.NewRule(services.KindAppWebSession, services.RO()),
 					// this rule allows remote proxy to update the cluster's certificate authorities
 					// during certificates renewal
 					{
@@ -315,7 +315,6 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 							services.NewRule(services.KindRemoteCluster, services.RO()),
 							services.NewRule(services.KindApp, services.RO()),
 							services.NewRule(services.KindAppWebSession, services.RW()),
-							services.NewRule(services.KindJWT, services.RW()),
 							// this rule allows local proxy to update the remote cluster's host certificate authorities
 							// during certificates renewal
 							{
@@ -369,7 +368,6 @@ func GetCheckerForBuiltinRole(clusterName string, clusterConfig services.Cluster
 						services.NewRule(services.KindRemoteCluster, services.RO()),
 						services.NewRule(services.KindApp, services.RO()),
 						services.NewRule(services.KindAppWebSession, services.RW()),
-						services.NewRule(services.KindJWT, services.RW()),
 						// this rule allows local proxy to update the remote cluster's host certificate authorities
 						// during certificates renewal
 						{

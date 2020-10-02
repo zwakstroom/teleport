@@ -824,33 +824,6 @@ func (process *TeleportProcess) newClient(authServers []utils.NetAddr, identity 
 		log.Debugf("Connected to Auth Server with direct connection.")
 		return directClient, nil
 	}
-	//directClient, err := process.newClientDirect(authServers, identity)
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-
-	//// Try and connect to the Auth Server. If the request fails, try and
-	//// connect through a tunnel.
-	//log.Debugf("Attempting to connect to Auth Server directly.")
-	//_, err = directClient.GetLocalClusterName()
-	//if err != nil {
-	//	// Only attempt to connect through the proxy for nodes.
-	//	if identity.ID.Role != teleport.RoleNode {
-	//		return nil, trace.Unwrap(err)
-	//	}
-
-	//	log.Debugf("Attempting to connect to Auth Server through tunnel.")
-	//	tunnelClient, err := process.newClientThroughTunnel(authServers, identity)
-	//	if err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-
-	//	log.Debugf("Connected to Auth Server through tunnel.")
-	//	return tunnelClient, nil
-	//}
-
-	//log.Debugf("Connected to Auth Server with direct connection.")
-	//return directClient, nil
 }
 
 // findReverseTunnel uses the web proxy to discover where the SSH reverse tunnel

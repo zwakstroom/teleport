@@ -69,13 +69,13 @@ func (c *Config) CheckAndSetDefaults() error {
 	}
 
 	if c.AccessPoint == nil {
-		return trace.BadParameter("access point is missing")
+		return trace.BadParameter("access point missing")
 	}
 	if c.GetRotation == nil {
-		return trace.BadParameter("rotation getter is missing")
+		return trace.BadParameter("rotation getter missing")
 	}
 	if c.Server == nil {
-		return trace.BadParameter("server is missing")
+		return trace.BadParameter("server missing")
 	}
 
 	return nil

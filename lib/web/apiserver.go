@@ -2186,7 +2186,6 @@ func (h *Handler) WithClusterAuth(fn ClusterHandler) httprouter.Handle {
 
 			clusterName = res.GetClusterName()
 		}
-
 		site, err := h.cfg.Proxy.GetSite(clusterName)
 		if err != nil {
 			log.Warn(err)

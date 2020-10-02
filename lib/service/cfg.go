@@ -320,12 +320,6 @@ type ProxyConfig struct {
 	// SSHAddr is address of ssh proxy
 	SSHAddr utils.NetAddr
 
-	//// TLSKey is a base64 encoded private key used by web portal
-	//TLSKey string
-
-	//// TLSCert is a base64 encoded certificate used by web portal
-	//TLSCert string
-
 	Limiter limiter.LimiterConfig
 
 	// PublicAddrs is a list of the public addresses the proxy advertises

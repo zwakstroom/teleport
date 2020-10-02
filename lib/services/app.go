@@ -154,13 +154,13 @@ func (s *AppSessionV3) CheckAndSetDefaults() error {
 	}
 
 	if s.Spec.PublicAddr == "" {
-		return trace.BadParameter("app session is missing public address")
+		return trace.BadParameter("public address missing")
 	}
 	if s.Spec.Username == "" {
-		return trace.BadParameter("app session is missing username")
+		return trace.BadParameter("username missing")
 	}
 	if len(s.Spec.Roles) == 0 {
-		return trace.BadParameter("app session is missing roles")
+		return trace.BadParameter("roles missing")
 	}
 
 	return nil
@@ -198,15 +198,15 @@ func (m *appSessionMarshaler) UnmarshalAppSession(raw []byte, opts ...MarshalOpt
 		return nil, trace.Wrap(err)
 	}
 	var data AppSessionV3
-	//if cfg.SkipValidation {
-	if err := utils.FastUnmarshal(raw, &data); err != nil {
-		return nil, trace.Wrap(err)
+	if cfg.SkipValidation {
+		if err := utils.FastUnmarshal(raw, &data); err != nil {
+			return nil, trace.Wrap(err)
+		}
+	} else {
+		if err := utils.UnmarshalWithSchema(GetAppSessionSchema(), &data, raw); err != nil {
+			return nil, trace.Wrap(err)
+		}
 	}
-	//} else {
-	//	if err := utils.UnmarshalWithSchema(GetAppSessionSchema(), &data, raw); err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-	//}
 	if err := data.CheckAndSetDefaults(); err != nil {
 		return nil, trace.Wrap(err)
 	}

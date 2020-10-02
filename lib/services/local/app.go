@@ -35,7 +35,7 @@ func (s *IdentityService) GetAppWebSession(ctx context.Context, req services.Get
 		return nil, trace.Wrap(err)
 	}
 
-	session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
+	session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value, services.SkipValidation())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -51,7 +51,7 @@ func (s *IdentityService) GetAppWebSessions(ctx context.Context) ([]services.Web
 
 	out := make([]services.WebSession, len(result.Items))
 	for i, item := range result.Items {
-		session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value)
+		session, err := services.GetWebSessionMarshaler().UnmarshalWebSession(item.Value, services.SkipValidation())
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
@@ -98,7 +98,7 @@ func (s *IdentityService) GetAppSession(ctx context.Context, sessionID string) (
 		return nil, trace.Wrap(err)
 	}
 
-	session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value)
+	session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value, services.SkipValidation())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -114,7 +114,7 @@ func (s *IdentityService) GetAppSessions(ctx context.Context) ([]services.AppSes
 
 	out := make([]services.AppSession, len(result.Items))
 	for i, item := range result.Items {
-		session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value)
+		session, err := services.GetAppSessionMarshaler().UnmarshalAppSession(item.Value, services.SkipValidation())
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}

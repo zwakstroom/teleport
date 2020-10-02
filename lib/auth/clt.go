@@ -2998,16 +2998,8 @@ type WebService interface {
 	// caller signed and embedded inside.
 	GenerateAppToken(context.Context, services.AppTokenParams) (string, error)
 
+	// AppIdentity defines application and application web session features.
 	services.AppIdentity
-
-	//GetAppWebSession(context.Context, services.GetAppWebSessionRequest) (services.WebSession, error)
-
-	//// CreateAppSession takes an existing web session and uses it to create a
-	//// new application session.
-	//CreateAppSession(context.Context, services.CreateAppSessionRequest) (services.WebSession, error)
-	//// GetAppSession returns the requested application specific session to
-	//// the caller.
-	//GetAppSession(context.Context, services.GetAppSessionRequest) (services.WebSession, error)
 }
 
 // IdentityService manages identities and users

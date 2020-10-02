@@ -1628,6 +1628,16 @@ func (a *AuthServer) GetApps(ctx context.Context, namespace string, opts ...serv
 	return a.GetCache().GetApps(ctx, namespace, opts...)
 }
 
+// GetApps is a part of the auth.AccessPoint implementation..
+func (a *AuthServer) GetAppWebSession(ctx context.Context, req services.GetAppWebSessionRequest) (services.WebSession, error) {
+	return a.GetCache().GetAppWebSession(ctx, req)
+}
+
+// GetApps is a part of the auth.AccessPoint implementation..
+func (a *AuthServer) GetAppSession(ctx context.Context, sessionID string) (services.AppSession, error) {
+	return a.GetCache().GetAppSession(ctx, sessionID)
+}
+
 // authKeepAliver is a keep aliver using auth server directly
 type authKeepAliver struct {
 	sync.RWMutex

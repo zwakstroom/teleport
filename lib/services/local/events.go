@@ -767,8 +767,6 @@ func (p *appParser) parse(event backend.Event) (services.Resource, error) {
 	return parseServer(event, services.KindApp)
 }
 
-//////////////////
-
 func newAppWebSessionParser() *appWebSessionParser {
 	return &appWebSessionParser{
 		matchPrefix: backend.Key(webPrefix, sessionsPrefix, appsPrefix),
@@ -805,8 +803,6 @@ func (p *appWebSessionParser) parse(event backend.Event) (services.Resource, err
 	}
 }
 
-//////////////////
-
 func newAppSessionParser() *appSessionParser {
 	return &appSessionParser{
 		matchPrefix: backend.Key(sessionsPrefix, appsPrefix),
@@ -842,26 +838,6 @@ func (p *appSessionParser) parse(event backend.Event) (services.Resource, error)
 		return nil, trace.BadParameter("event %v is not supported", event.Type)
 	}
 }
-
-//func parseApp(event backend.Event, kind string) (services.Resource, error) {
-//	switch event.Type {
-//	case backend.OpDelete:
-//		return resourceHeader(event, kind, services.V3, 0)
-//	case backend.OpPut:
-//		resource, err := services.GetServerMarshaler().UnmarshalServer(event.Item.Value,
-//			kind,
-//			services.WithResourceID(event.Item.ID),
-//			services.WithExpires(event.Item.Expires),
-//			services.SkipValidation(),
-//		)
-//		if err != nil {
-//			return nil, trace.Wrap(err)
-//		}
-//		return resource, nil
-//	default:
-//		return nil, trace.BadParameter("event %v is not supported", event.Type)
-//	}
-//}
 
 func parseServer(event backend.Event, kind string) (services.Resource, error) {
 	switch event.Type {

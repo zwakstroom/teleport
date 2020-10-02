@@ -79,7 +79,7 @@ func (l *localSite) printDebug() {
 			fmt.Printf("--> localSite [%v/%v]: key(uuid: %v, connType: %v).\n", i, len(l.remoteConns), key.uuid, key.connType)
 			i += 1
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 }
 
