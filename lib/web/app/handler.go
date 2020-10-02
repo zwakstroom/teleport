@@ -132,6 +132,11 @@ func (h *Handler) IsUnauthenticatedApp(r *http.Request, publicAddr string) (stri
 		return "", false
 	}
 
+	// TODO(russjones): Benchmark time to loop over all applications and look
+	// for a match.
+	if utils.IsLocalhost(requestedHost.Host()) {
+		return "", false
+	}
 	if net.ParseIP(requestedHost.Host()) != nil {
 		return "", false
 	}

@@ -18,17 +18,23 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"time"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/jwt"
 	"github.com/gravitational/teleport/lib/services"
 	"github.com/gravitational/teleport/lib/utils"
+	"github.com/gravitational/teleport/lib/wrappers"
 	"github.com/gravitational/trace"
+	"github.com/pborman/uuid"
 )
 
+// CreateAppSession checks if the callers identity has access to an
+// application, and if it does, creates an application session. Application
+// sessions allow requests to be forwarded from Teleport application proxy
+// services to the target application.
 func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAppSessionRequest, user services.User, checker services.AccessChecker) (services.AppSession, error) {
 	if err := req.Check(); err != nil {
 		return nil, trace.Wrap(err)
@@ -42,28 +48,25 @@ func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAp
 
 	// Check if the caller has access to the requested application.
 	if err := checker.CheckAccessToApp(server.GetNamespace(), app); err != nil {
-		// TODO(russjones): Emit an audit event here.
 		log.Warnf("Access to %v denied: %v.", err)
+		// TODO(russjones): Hook audit log here.
+
 		return nil, trace.AccessDenied("access denied")
 	}
 
-	// TODO(russjones): This ends up being 30 hours, does this make sense?
-	expires := s.clock.Now().Add(checker.AdjustSessionTTL(defaults.MaxCertDuration))
+	// Synchronize expiration of JWT token and application session.
+	ttl := checker.AdjustSessionTTL(defaults.CertDuration)
+	expires := s.clock.Now().Add(ttl)
 
 	// Generate a JWT that can be re-used during the lifetime of this
 	// session to pass authentication information to the target application.
-	jwt, err := s.generateAppToken(tokenRequest{
-		username:   user.GetName(),
-		roles:      user.GetRoles(),
-		publicAddr: req.PublicAddr,
-		expires:    expires,
-	})
+	jwt, err := s.generateJWT(user.GetName(), user.GetRoles(), req.PublicAddr, expires)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	// Create a new application session.
-	session, err := services.NewAppSession(services.AppSessionSpecV3{
+	session, err := services.NewAppSession(expires, services.AppSessionSpecV3{
 		PublicAddr: req.PublicAddr,
 		Username:   user.GetName(),
 		Roles:      user.GetRoles(),
@@ -72,14 +75,19 @@ func (s *AuthServer) CreateAppSession(ctx context.Context, req services.CreateAp
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	session.SetExpiry(expires)
 	if err := s.UpsertAppSession(ctx, session); err != nil {
 		return nil, trace.Wrap(err)
 	}
+	log.Debugf("Generated application session for %v for %v with TTL %v.", req.PublicAddr, user.GetName(), ttl)
 
 	return session, nil
 }
 
+// CreateAppWebSession creates and application specific web session. This
+// session does not give the caller access to an application, it simply allows
+// the proxy to forward the request to the Teleport application proxy service.
+// That service checks if the matching session exists and will forward the
+// request to the target application.
 func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.CreateAppWebSessionRequest, user services.User, checker services.AccessChecker) (services.WebSession, error) {
 	// Check that a matching web session exists in the backend.
 	parentSession, err := s.GetWebSession(req.Username, req.ParentSession)
@@ -87,33 +95,10 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 		return nil, trace.Wrap(err)
 	}
 
-	//	// Create a new session for the application.
-	//	session, err := s.NewAppSession("rjones", []string{"admin"}, map[string][]string{"logins": []string{"foo"}})
-	//	if err != nil {
-	//		return nil, trace.Wrap(err)
-	//	}
-	//	// TODO(russjones): set session id and server id here.
-	//	//session.SetType(services.WebSessionSpecV2_App)
-	//	//session.SetPublicAddr(req.PublicAddr)
-	//	session.SetParentHash(services.SessionHash(parentSession.GetName()))
-	//	session.SetClusterName(req.ClusterName)
-	//
-	//	// TODO(russjones): This should be passed in the request and shoud be picked from appsession.
-	//	session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
-
-	//user, err := s.GetUser(username, false)
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-	//checker, err := services.FetchRoles(roles, s.Access, traits)
-	//if err != nil {
-	//	return nil, trace.Wrap(err)
-	//}
-
-	// TODO(russjones): Does this TTL make sense, is it 30 hours?
-	fmt.Printf("--> req.Expires: %v.\n", req.Expires)
-	fmt.Printf("--> s.clock.Now(): %v.\n", s.clock.Now())
-	fmt.Printf("--> Requesting ttl: %v.\n", req.Expires.Sub(s.clock.Now()))
+	// Set the TTL to be no longer than what is allowed by the role within the
+	// root cluster. This means even if a leaf cluster allows a longer login,
+	// the session will be shorter.
+	ttl := checker.AdjustSessionTTL(req.Expires.Sub(s.clock.Now()))
 
 	// Generate certificate for this session.
 	privateKey, publicKey, err := s.GetNewKeyPairFromPool()
@@ -124,16 +109,18 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 		user:      user,
 		publicKey: publicKey,
 		checker:   checker,
-		// TODO(russjones): What should the traits be?
-		traits:          map[string][]string{"logins": []string{"foo"}},
-		ttl:             req.Expires.Sub(s.clock.Now()),
-		overrideRoleTTL: true,
+		// Set the login to be a random string. Even if this certificate is stolen,
+		// limits its use.
+		traits: wrappers.Traits(map[string][]string{
+			teleport.TraitLogins: []string{uuid.New()},
+		}),
+		ttl: ttl,
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	// Create session.
+	// Create new application web session.
 	sessionID, err := utils.CryptoRandomHex(SessionTokenBytes)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -143,8 +130,9 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 		Priv:    privateKey,
 		Pub:     certs.ssh,
 		TLSCert: certs.tls,
-		Expires: req.Expires,
-		// Set web application specific fields.
+		Expires: s.clock.Now().Add(ttl),
+
+		// Application specific fields.
 		ParentHash:  services.SessionHash(parentSession.GetName()),
 		ServerID:    req.ServerID,
 		ClusterName: req.ClusterName,
@@ -153,8 +141,7 @@ func (s *AuthServer) CreateAppWebSession(ctx context.Context, req services.Creat
 	if err = s.Identity.UpsertAppWebSession(ctx, session); err != nil {
 		return nil, trace.Wrap(err)
 	}
-
-	fmt.Printf("--> Successfully created appwebsession.\n")
+	log.Debugf("Generated application web session for %v with TTL %v.", req.Username, ttl)
 
 	return session, nil
 }
@@ -191,20 +178,16 @@ func (s *AuthServer) getApp(ctx context.Context, publicAddr string) (*services.A
 	return am[index], sm[index], nil
 }
 
-type tokenRequest struct {
-	username   string
-	roles      []string
-	publicAddr string
-	expires    time.Time
-}
-
-func (s *AuthServer) generateAppToken(r tokenRequest) (string, error) {
+// generateJWT generates an JWT token that will be passed along with every
+// application request. It's cached within services.AppSession so it only
+// needs to be generated once when the session is created.
+func (s *AuthServer) generateJWT(username string, roles []string, publicAddr string, expires time.Time) (string, error) {
 	// Get the CA with which this JWT will be signed.
 	clusterName, err := s.GetDomainName()
 	if err != nil {
 		return "", trace.Wrap(err)
 	}
-	ca, err := s.Trust.GetCertAuthority(services.CertAuthID{
+	ca, err := s.GetCertAuthority(services.CertAuthID{
 		Type:       services.JWTSigner,
 		DomainName: clusterName,
 	}, true)
@@ -218,10 +201,11 @@ func (s *AuthServer) generateAppToken(r tokenRequest) (string, error) {
 		return "", trace.Wrap(err)
 	}
 	token, err := privateKey.Sign(jwt.SignParams{
-		Username: r.username,
-		Roles:    r.roles,
-		AppName:  r.publicAddr,
-		Expires:  r.expires,
+		Username: username,
+		Roles:    roles,
+		// TODO(russjones): Rename this to PublicAddr.
+		AppName: publicAddr,
+		Expires: expires,
 	})
 	if err != nil {
 		return "", trace.Wrap(err)
@@ -229,41 +213,3 @@ func (s *AuthServer) generateAppToken(r tokenRequest) (string, error) {
 
 	return token, nil
 }
-
-//func (s *AuthServer) createAppSession(ctx context.Context, identity tlsca.Identity, req services.CreateAppSessionRequest) (services.WebSession, error) {
-//	if err := req.Check(); err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	// Check that a matching web session exists in the backend.
-//	parentSession, err := s.GetWebSession(identity.Username, req.SessionID)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//	//if subtle.ConstantTimeCompare([]byte(parentSession.GetBearerToken()), []byte(req.BearerToken)) == 0 {
-//	//	return nil, trace.BadParameter("invalid session")
-//	//}
-//
-//	// Create a new session for the application.
-//	session, err := s.NewWebSession(identity.Username, identity.Groups, identity.Traits)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//	session.SetType(services.WebSessionSpecV2_App)
-//	session.SetPublicAddr(req.PublicAddr)
-//	session.SetParentHash(services.SessionHash(parentSession.GetName()))
-//	session.SetClusterName(req.ClusterName)
-//
-//	// TODO(russjones): The proxy should use it's access to the AccessPoint of
-//	// the remote host to provide the maximum length of the session here.
-//	// However, enforcement of that session length should occur in lib/srv/app.
-//	session.SetExpiryTime(s.clock.Now().Add(defaults.CertDuration))
-//
-//	// Create session in backend.
-//	err = s.Identity.UpsertAppSession(ctx, session)
-//	if err != nil {
-//		return nil, trace.Wrap(err)
-//	}
-//
-//	return session, nil
-//}

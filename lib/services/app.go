@@ -47,13 +47,14 @@ type AppSession interface {
 	CheckAndSetDefaults() error
 }
 
-func NewAppSession(spec AppSessionSpecV3) (AppSession, error) {
+func NewAppSession(expires time.Time, spec AppSessionSpecV3) (AppSession, error) {
 	session := &AppSessionV3{
 		Kind:    KindAppSession,
 		Version: V3,
 		Metadata: Metadata{
 			Name:      uuid.New(),
 			Namespace: defaults.Namespace,
+			Expires:   &expires,
 		},
 		Spec: spec,
 	}
