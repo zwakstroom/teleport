@@ -84,3 +84,25 @@ func (c *AppsCommand) ListApps(client auth.ClientI) error {
 	}
 	return nil
 }
+
+const appMessage = `The invite token: %v
+This token will expire in %d minutes
+
+Fill out and run this command on a node to make the application available:
+
+> teleport start \
+   --roles=%v \
+   --token=%v \
+   --ca-pin=%v \
+   --auth-server=%v \
+   --app-name=%v \
+   --app-uri=%v \
+   --app-public-addr=%v 
+
+Please note:
+
+  - This invitation token will expire in %d minutes.
+  - %v must be reachable from the new application service..
+  - Update DNS to point %v to the Teleport proxy.
+  - Add a TLS certificate for %v to the Teleport proxy.
+`
