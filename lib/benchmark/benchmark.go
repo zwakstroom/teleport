@@ -17,7 +17,7 @@ type Linear struct {
 	LowerBound         int `yaml:"LowerBound"`
 	UpperBound         int `yaml:"UpperBound"`
 	Step               int `yaml:"Step"`
-	MinimumMeasurments int `yaml:"MinimumMeasurments"`
+	MinimumMeasurment int `yaml:"MinimumMeasurments"`
 	MiminumWindow      int `yaml:"MinimumWindow"`
 }
 

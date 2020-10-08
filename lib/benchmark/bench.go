@@ -61,10 +61,8 @@ type Result struct {
 	LastError error
 }
 
-// Benchmark connects to remote server and executes requests in parallel according
-// to benchmark spec. It returns benchmark result when completed.
-// This is a blocking function that can be cancelled via context argument.
-func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
+// Configure configures the type of benchmark 
+func Configure(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
 	var config *Linear
 	var err error
 	if configPath != "" {
@@ -73,10 +71,18 @@ func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClien
 			log.Fatalf("Unable to parse config file %v", err)
 		}
 	}
-
 	benchConfig.MinimumWindow = config.MiminumWindow  
-	benchConfig.MinimumMeasurments = config.MinimumMeasurments
+	benchConfig.MinimumMeasurments = config.MinimumMeasurment
 
+	result, err := Benchmark(ctx, benchConfig, tc)
+
+	return result, err
+}
+
+// Benchmark connects to remote server and executes requests in parallel according
+// to benchmark spec. It returns benchmark result when completed.
+// This is a blocking function that can be cancelled via context argument.
+func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClient) (*Result, error) {
 	tc.Stdout = ioutil.Discard
 	tc.Stderr = ioutil.Discard
 	tc.Stdin = &bytes.Buffer{}
