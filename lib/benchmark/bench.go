@@ -14,22 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package client
+package benchmark
 
 import (
 	"bytes"
 	"context"
 	"io"
 	"io/ioutil"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
 	"github.com/HdrHistogram/hdrhistogram-go"
+	"github.com/gravitational/teleport/lib/client"
 	"github.com/gravitational/trace"
 )
 
-// Benchmark specifies benchmark requests to run
-type Benchmark struct {
+// BenchmarkConfig specifies benchmark requests to run
+type BenchmarkConfig struct {
 	// Threads is amount of concurrent execution threads to run
 	Threads int
 	// Rate is requests per second origination rate
@@ -40,6 +42,10 @@ type Benchmark struct {
 	Command []string
 	// Interactive turns on interactive sessions
 	Interactive bool
+	//MinimumWindow is the min duration
+	MinimumWindow int
+	//MinimumMeasurments is the min amount of requests
+	MinimumMeasurments int
 }
 
 // BenchmarkResult is a result of the benchmark
@@ -57,7 +63,7 @@ type BenchmarkResult struct {
 // Benchmark connects to remote server and executes requests in parallel according
 // to benchmark spec. It returns benchmark result when completed.
 // This is a blocking function that can be cancelled via context argument.
-func (tc *TeleportClient) Benchmark(ctx context.Context, bench Benchmark) (*BenchmarkResult, error) {
+func Benchmark(ctx context.Context, bench BenchmarkConfig, tc *client.TeleportClient) (*BenchmarkResult, error) {
 	tc.Stdout = ioutil.Discard
 	tc.Stderr = ioutil.Discard
 	tc.Stdin = &bytes.Buffer{}
@@ -157,7 +163,7 @@ type benchMeasure struct {
 type benchmarkThread struct {
 	id          int
 	ctx         context.Context
-	client      *TeleportClient
+	client      *client.TeleportClient
 	command     []string
 	interactive bool
 	receiveC    chan *benchMeasure
@@ -175,7 +181,7 @@ func (b *benchmarkThread) execute(measure *benchMeasure) {
 		return
 	}
 	config := b.client.Config
-	client, err := NewClient(&config)
+	client, err := client.NewClient(&config)
 	reader, writer := io.Pipe()
 	client.Stdin = reader
 	out := &bytes.Buffer{}
