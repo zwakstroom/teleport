@@ -26,16 +26,16 @@ func (l *Linear) Generate() bool {
 
 // GetBenchmark returns the benchmark for the current generation.
 // If called after Generate() returns false, this will result in an error.
-func (l *Linear) GetBenchmark() (context.Context, BenchmarkConfig, error) {
+func (l *Linear) GetBenchmark() (context.Context, Config, error) {
 	
-	return nil, BenchmarkConfig{}, nil
+	return nil, Config{}, nil
 }
 
 // SetBenchmarkResults  provides the results
 // from the current generation to the generator, so that it may adapt future
 // generations based on the latency profile of the current generation.
 // Not all BenchmarkGenerators need this functionality, and may ignore the data if so.
-func (l *Linear) SetBenchmarkResults(br BenchmarkResult) error {
+func (l *Linear) SetBenchmarkResults(br Result) error {
 
 	return nil
 }

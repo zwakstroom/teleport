@@ -21,17 +21,18 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
 	"github.com/HdrHistogram/hdrhistogram-go"
 	"github.com/gravitational/teleport/lib/client"
 	"github.com/gravitational/trace"
+	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 )
 
-// BenchmarkConfig specifies benchmark requests to run
-type BenchmarkConfig struct {
+// Config specifies benchmark requests to run
+type Config struct {
 	// Threads is amount of concurrent execution threads to run
 	Threads int
 	// Rate is requests per second origination rate
@@ -48,8 +49,8 @@ type BenchmarkConfig struct {
 	MinimumMeasurments int
 }
 
-// BenchmarkResult is a result of the benchmark
-type BenchmarkResult struct {
+// Result is a result of the benchmark
+type Result struct {
 	// RequestsOriginated is amount of reuqests originated
 	RequestsOriginated int
 	// RequestsFailed is amount of requests failed
@@ -63,25 +64,37 @@ type BenchmarkResult struct {
 // Benchmark connects to remote server and executes requests in parallel according
 // to benchmark spec. It returns benchmark result when completed.
 // This is a blocking function that can be cancelled via context argument.
-func Benchmark(ctx context.Context, bench BenchmarkConfig, tc *client.TeleportClient) (*BenchmarkResult, error) {
+func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
+	var config *Linear
+	var err error
+	if configPath != "" {
+		config, err = parseConfig(configPath)
+		if err != nil {
+			log.Fatalf("Unable to parse config file %v", err)
+		}
+	}
+
+	benchConfig.MinimumWindow = config.MiminumWindow  
+	benchConfig.MinimumMeasurments = config.MinimumMeasurments
+
 	tc.Stdout = ioutil.Discard
 	tc.Stderr = ioutil.Discard
 	tc.Stdin = &bytes.Buffer{}
 
-	ctx, cancel := context.WithTimeout(ctx, bench.Duration)
+	ctx, cancel := context.WithTimeout(ctx, benchConfig.Duration)
 	defer cancel()
 
 	requestC := make(chan *benchMeasure)
-	responseC := make(chan *benchMeasure, bench.Threads)
+	responseC := make(chan *benchMeasure, benchConfig.Threads)
 
 	// create goroutines for concurrency
-	for i := 0; i < bench.Threads; i++ {
+	for i := 0; i < benchConfig.Threads; i++ {
 		thread := &benchmarkThread{
 			id:          i,
 			ctx:         ctx,
 			client:      tc,
-			command:     bench.Command,
-			interactive: bench.Interactive,
+			command:     benchConfig.Command,
+			interactive: benchConfig.Interactive,
 			receiveC:    requestC,
 			sendC:       responseC,
 		}
@@ -90,7 +103,7 @@ func Benchmark(ctx context.Context, bench BenchmarkConfig, tc *client.TeleportCl
 
 	// producer goroutine
 	go func() {
-		interval := time.Duration(float64(1) / float64(bench.Rate) * float64(time.Second))
+		interval := time.Duration(float64(1) / float64(benchConfig.Rate) * float64(time.Second))
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for {
@@ -113,7 +126,7 @@ func Benchmark(ctx context.Context, bench BenchmarkConfig, tc *client.TeleportCl
 		}
 	}()
 
-	var result BenchmarkResult
+	var result Result
 	// from one millisecond to 60000 milliseconds (minute) with 3 digits precision
 	result.Histogram = hdrhistogram.New(1, 60000, 3)
 
@@ -123,7 +136,7 @@ func Benchmark(ctx context.Context, bench BenchmarkConfig, tc *client.TeleportCl
 	for {
 		select {
 		case <-timeoutC:
-			result.LastError = trace.BadParameter("several requests hang: timeout waiting for %v threads to finish", bench.Threads-doneThreads)
+			result.LastError = trace.BadParameter("several requests hang: timeout waiting for %v threads to finish", benchConfig.Threads-doneThreads)
 			return &result, nil
 		case <-doneC:
 			// give it a couple of seconds to wrap up the goroutines,
@@ -135,16 +148,16 @@ func Benchmark(ctx context.Context, bench BenchmarkConfig, tc *client.TeleportCl
 			timeoutC = time.After(waitTime)
 		case measure := <-responseC:
 			if measure.ThreadCompleted {
-				doneThreads += 1
-				if doneThreads == bench.Threads {
+				doneThreads++
+				if doneThreads == benchConfig.Threads {
 					return &result, nil
 				}
 			} else {
 				if measure.Error != nil {
-					result.RequestsFailed += 1
+					result.RequestsFailed++
 					result.LastError = measure.Error
 				}
-				result.RequestsOriginated += 1
+				result.RequestsOriginated++
 				result.Histogram.RecordValue(int64(measure.End.Sub(measure.Start) / time.Millisecond))
 			}
 		}
@@ -232,4 +245,17 @@ func (b *benchmarkThread) run() {
 			return
 		}
 	}
+}
+
+func parseConfig(path string) (*Linear, error) {
+	linearConfig := &Linear{}
+	yamlFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlFile, linearConfig)
+	if err != nil {
+		return nil, err
+	}
+	return linearConfig, nil
 }

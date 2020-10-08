@@ -7,8 +7,8 @@ import (
 //Generator provides a standardized way to get successive benchmarks from a consistent interface
 type Generator interface {
 	Generator() bool
-	GetBenchmark() (context.Context, BenchmarkConfig, error)
-	SetBenchmarkResults(BenchmarkResult) error
+	GetBenchmark() (context.Context, Config, error)
+	SetBenchmarkResults(Result) error
 }
 
 // Linear generator will generate benchmarks between a

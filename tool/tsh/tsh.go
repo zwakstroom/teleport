@@ -936,13 +936,16 @@ func onBenchmark(cf *CLIConf) {
 	if err != nil {
 		utils.FatalError(err)
 	}
-
-	result, err := benchmark.Benchmark(cf.Context, benchmark.BenchmarkConfig{
+	path := ""
+	if cf.BenchGeneratorConfig != "" {
+		path = cf.BenchGeneratorConfig
+	}
+	result, err := benchmark.Benchmark(cf.Context, benchmark.Config{
 		Command:  cf.RemoteCommand,
 		Threads:  cf.BenchThreads,
 		Duration: cf.BenchDuration,
 		Rate:     cf.BenchRate,
-	}, tc)
+	}, tc, path)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, utils.UserMessageFromError(err))
 		os.Exit(255)
