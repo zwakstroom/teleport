@@ -37,14 +37,12 @@ type Config struct {
 	Threads int
 	// Rate is requests per second origination rate
 	Rate int
-	// Duration is test duration
-	Duration time.Duration
 	// Command is a command to run
 	Command []string
 	// Interactive turns on interactive sessions
 	Interactive bool
 	//MinimumWindow is the min duration
-	MinimumWindow int
+	MinimumWindow time.Duration
 	//MinimumMeasurments is the min amount of requests
 	MinimumMeasurments int
 }
@@ -61,20 +59,37 @@ type Result struct {
 	LastError error
 }
 
-// Configure configures the type of benchmark 
+// Configure configures the type of benchmark
 func Configure(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
 	var config *Linear
+	var result *Result
+	newBenchConfig := Config{}
 	var err error
 	if configPath != "" {
 		config, err = parseConfig(configPath)
 		if err != nil {
 			log.Fatalf("Unable to parse config file %v", err)
 		}
+		newBenchConfig.MinimumWindow = config.MinimumWindow
+		newBenchConfig.MinimumMeasurments = config.MinimumMeasurment
 	}
-	benchConfig.MinimumWindow = config.MiminumWindow  
-	benchConfig.MinimumMeasurments = config.MinimumMeasurment
 
-	result, err := Benchmark(ctx, benchConfig, tc)
+	newBenchConfig.Threads = benchConfig.Threads
+	newBenchConfig.Rate = benchConfig.Rate
+	newBenchConfig.Interactive = benchConfig.Interactive
+	// loop should be here
+	// have a generator from config
+	for config.Generate() {
+		c, benchmark, err := config.GetBenchmark()
+		_ = c
+		_ = benchmark
+		if err != nil {
+			// handle
+		}
+
+		result, err = Benchmark(ctx, newBenchConfig, tc)
+		//sleep
+	}
 
 	return result, err
 }
@@ -87,7 +102,7 @@ func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClien
 	tc.Stderr = ioutil.Discard
 	tc.Stdin = &bytes.Buffer{}
 
-	ctx, cancel := context.WithTimeout(ctx, benchConfig.Duration)
+	ctx, cancel := context.WithTimeout(ctx, benchConfig.MinimumWindow) //TODO
 	defer cancel()
 
 	requestC := make(chan *benchMeasure)
@@ -253,7 +268,7 @@ func (b *benchmarkThread) run() {
 	}
 }
 
-func parseConfig(path string) (*Linear, error) {
+func parseConfig(path string) (*Linear, error) { //return generator
 	linearConfig := &Linear{}
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {

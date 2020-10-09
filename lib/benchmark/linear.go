@@ -2,33 +2,50 @@ package benchmark
 
 import (
 	"context"
+	"errors"
+	"time"
 )
+
+// Linear generator will generate benchmarks between a
+// lower and upper bound using a fixed step.
+type Linear struct {
+	LowerBound        int           `yaml:"LowerBound"`
+	UpperBound        int           `yaml:"UpperBound"`
+	Step              int           `yaml:"Step"`
+	MinimumMeasurment int           `yaml:"MinimumMeasurments"`
+	MinimumWindow     time.Duration `yaml:"MinimumWindow"`
+	currentRPS        int
+	config            Config
+}
 
 // Generate advances the Generator to the next generation.
 // It returns false when the generator no longer has configurations to run.
 func (l *Linear) Generate() bool {
 
+	if l.currentRPS < l.LowerBound {
+		l.currentRPS = l.LowerBound
+		return true
+	}
 	
+	l.currentRPS += l.Step
 
-	// will need to create 5 benchmark structs, run them after another
-
-	return false
+	if l.currentRPS > l.UpperBound {
+		return false
+	}
+	return true
 }
-
-
-// linear:
-//   lowerBound: 10rps
-//   upperBound: 50rps
-//   step: 10rps
-//   minimumMeasurements: 1000
-//   minimumWindow: 30s
-
 
 // GetBenchmark returns the benchmark for the current generation.
 // If called after Generate() returns false, this will result in an error.
 func (l *Linear) GetBenchmark() (context.Context, Config, error) {
-	
-	return nil, Config{}, nil
+	if l.currentRPS > l.UpperBound {
+		return nil, Config{}, errors.New("No more generations")
+	}
+	var currentConfig Config
+	currentConfig = l.config
+	currentConfig.Rate = l.currentRPS
+
+	return context.TODO(), currentConfig, nil
 }
 
 // SetBenchmarkResults  provides the results
