@@ -940,10 +940,11 @@ func onBenchmark(cf *CLIConf) {
 	if cf.BenchGeneratorConfig != "" {
 		path = cf.BenchGeneratorConfig
 	}
+
 	result, err := benchmark.ConfigureAndRun(cf.Context, benchmark.Config{
 		Command:  cf.RemoteCommand,
 		Threads:  cf.BenchThreads,
-		Duration: cf.BenchDuration,
+		//Duration: cf.BenchDuration,
 		Rate:     cf.BenchRate,
 	}, tc, path)
 	if err != nil {

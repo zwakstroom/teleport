@@ -19,6 +19,7 @@ package benchmark
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -44,7 +45,7 @@ type Config struct {
 	//MinimumWindow is the min duration
 	MinimumWindow time.Duration
 	//MinimumMeasurments is the min amount of requests
-	MinimumMeasurments int
+	MinimumMeasurment int
 }
 
 // Result is a result of the benchmark
@@ -61,36 +62,37 @@ type Result struct {
 
 // ConfigureAndRun configures the type of benchmark
 func ConfigureAndRun(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
-	var config *Linear
+	var linearConfig *Linear
 	var result *Result
-	newBenchConfig := Config{}
 	var err error
+
 	if configPath != "" {
-		config, err = parseConfig(configPath)
+		linearConfig, err = parseConfig(configPath)
+
+		fmt.Println("!!!!!!!", linearConfig.currentRPS)
+		fmt.Println("!!!!!!! Lower Bound", linearConfig.LowerBound)
+
 		if err != nil {
 			log.Fatalf("Unable to parse config file %v", err)
 		}
-		newBenchConfig.MinimumWindow = config.MinimumWindow
-		newBenchConfig.MinimumMeasurments = config.MinimumMeasurment
-	}
 
-	newBenchConfig.Threads = benchConfig.Threads
-	newBenchConfig.Rate = benchConfig.Rate
-	newBenchConfig.Interactive = benchConfig.Interactive
-	// loop should be here
-	// have a generator from config
-	for config.Generate() {
-		c, benchmark, err := config.GetBenchmark()
-		_ = c
-		_ = benchmark
-		if err != nil {
-			// handle
+		for linearConfig.Generate() { // generating, this checking for min measurments
+			c, benchmarkC, err := linearConfig.GetBenchmark() //gets current config
+			if err != nil {
+				continue // do I skip if there is an error
+			}
+			fmt.Println(benchmarkC.Rate)
+			benchmarkC.Threads = benchConfig.Threads
+			benchmarkC.Interactive = benchConfig.Interactive
+			benchmarkC.Command = benchConfig.Command
+			result, err = Benchmark(c, benchmarkC, tc)
+			time.Sleep(5 * time.Second)
 		}
 
-		result, err = Benchmark(ctx, newBenchConfig, tc)
-		//sleep
+		return result, err
 	}
 
+	result, err = Benchmark(ctx, benchConfig, tc)
 	return result, err
 }
 
@@ -102,7 +104,7 @@ func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClien
 	tc.Stderr = ioutil.Discard
 	tc.Stdin = &bytes.Buffer{}
 
-	ctx, cancel := context.WithTimeout(ctx, benchConfig.MinimumWindow) //TODO
+	ctx, cancel := context.WithTimeout(ctx, benchConfig.MinimumWindow)
 	defer cancel()
 
 	requestC := make(chan *benchMeasure)
