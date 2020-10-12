@@ -44,15 +44,5 @@ func (l *Linear) GetBenchmark() (context.Context, Config, error) {
 	var currentConfig Config
 	currentConfig = l.config
 	currentConfig.Rate = l.currentRPS
-
 	return context.TODO(), currentConfig, nil
-}
-
-// SetBenchmarkResults  provides the results
-// from the current generation to the generator, so that it may adapt future
-// generations based on the latency profile of the current generation.
-// Not all BenchmarkGenerators need this functionality, and may ignore the data if so.
-func (l *Linear) SetBenchmarkResults(br Result) error {
-
-	return nil
 }

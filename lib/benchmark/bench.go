@@ -59,8 +59,8 @@ type Result struct {
 	LastError error
 }
 
-// Configure configures the type of benchmark
-func Configure(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
+// ConfigureAndRun configures the type of benchmark
+func ConfigureAndRun(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
 	var config *Linear
 	var result *Result
 	newBenchConfig := Config{}
