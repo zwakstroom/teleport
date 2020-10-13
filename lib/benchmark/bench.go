@@ -19,7 +19,6 @@ package benchmark
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -38,6 +37,8 @@ type Config struct {
 	Threads int
 	// Rate is requests per second origination rate
 	Rate int
+	// Duration is the test duration, used to run original benchmark
+	Duration time.Duration
 	// Command is a command to run
 	Command []string
 	// Interactive turns on interactive sessions
@@ -80,7 +81,6 @@ func ConfigureAndRun(ctx context.Context, benchConfig Config, tc *client.Telepor
 				continue // do I skip if there is an error
 			}
 			benchmarkC.Threads = benchConfig.Threads
-			fmt.Println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!", benchmarkC.Threads, "threads !!!!!")
 			benchmarkC.Interactive = benchConfig.Interactive
 			benchmarkC.Command = benchConfig.Command
 			result, err = Benchmark(c, benchmarkC, tc)
@@ -101,8 +101,14 @@ func Benchmark(ctx context.Context, benchConfig Config, tc *client.TeleportClien
 	tc.Stdout = ioutil.Discard
 	tc.Stderr = ioutil.Discard
 	tc.Stdin = &bytes.Buffer{}
+	var cancel context.CancelFunc
+	
+	if benchConfig.Duration == 0 {
+		ctx, cancel = context.WithTimeout(ctx, benchConfig.MinimumWindow)
+	} else {
+		ctx, cancel = context.WithTimeout(ctx, benchConfig.Duration)
+	}
 
-	ctx, cancel := context.WithTimeout(ctx, benchConfig.MinimumWindow)
 	defer cancel()
 
 	requestC := make(chan *benchMeasure)
