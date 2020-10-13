@@ -230,7 +230,8 @@ func New(ctx context.Context, params backend.Params) (*EtcdBackend, error) {
 	for _, n := range cfg.Nodes {
 		status, err := b.client.Status(timeout, n)
 		if err != nil {
-			return nil, trace.Wrap(err)
+			b.Warnf("Failed to get status for etcd node %q: %v", n, err)
+			continue
 		}
 
 		ver := semver.New(status.Version)
