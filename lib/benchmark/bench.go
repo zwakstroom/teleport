@@ -60,7 +60,7 @@ type Result struct {
 	LastError error
 }
 
-// ConfigureAndRun configures the type of benchmark
+// ConfigureAndRun configures the type of benchmark and runs it
 func ConfigureAndRun(ctx context.Context, benchConfig Config, tc *client.TeleportClient, configPath string) (*Result, error) {
 	var linearConfig *Linear
 	var result *Result
@@ -69,20 +69,18 @@ func ConfigureAndRun(ctx context.Context, benchConfig Config, tc *client.Telepor
 	if configPath != "" {
 		linearConfig, err = parseConfig(configPath)
 
-		fmt.Println("!!!!!!!", linearConfig.currentRPS)
-		fmt.Println("!!!!!!! Lower Bound", linearConfig.LowerBound)
-
 		if err != nil {
 			log.Fatalf("Unable to parse config file %v", err)
 		}
-
-		for linearConfig.Generate() { // generating, this checking for min measurments
+		// Generate increases the RPS based in config rate until upper bound is exceeded
+		// find bench measures to print, print out the duration it takes to complete one generation
+		for linearConfig.Generate() {
 			c, benchmarkC, err := linearConfig.GetBenchmark() //gets current config
 			if err != nil {
 				continue // do I skip if there is an error
 			}
-			fmt.Println(benchmarkC.Rate)
 			benchmarkC.Threads = benchConfig.Threads
+			fmt.Println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!", benchmarkC.Threads, "threads !!!!!")
 			benchmarkC.Interactive = benchConfig.Interactive
 			benchmarkC.Command = benchConfig.Command
 			result, err = Benchmark(c, benchmarkC, tc)

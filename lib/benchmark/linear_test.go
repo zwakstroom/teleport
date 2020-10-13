@@ -18,7 +18,7 @@ func TestGenerate(t *testing.T) {
 		Command:            []string{"ls"},
 		Interactive:        false,
 		MinimumWindow:      d,
-		MinimumMeasurments: 0,
+		MinimumMeasurment: 0,
 	}
 
 	linearConfig := Linear{
@@ -117,7 +117,7 @@ func TestGenerateNotEvenMultiple(t *testing.T) {
 		Command:            []string{"ls"},
 		Interactive:        false,
 		MinimumWindow:      d,
-		MinimumMeasurments: 0,
+		MinimumMeasurment: 0,
 	}
 
 	linearConfig := Linear{

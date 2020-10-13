@@ -21,7 +21,6 @@ type Linear struct {
 // Generate advances the Generator to the next generation.
 // It returns false when the generator no longer has configurations to run.
 func (l *Linear) Generate() bool {
-
 	if l.currentRPS < l.LowerBound {
 		l.currentRPS = l.LowerBound
 		return true
