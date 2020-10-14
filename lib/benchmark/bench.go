@@ -78,7 +78,7 @@ func ConfigureAndRun(ctx context.Context, benchConfig Config, tc *client.Telepor
 		for linearConfig.Generate() {
 			c, benchmarkC, err := linearConfig.GetBenchmark() //gets current config
 			if err != nil {
-				continue // do I skip if there is an error
+				break // do I skip if there is an error
 			}
 			benchmarkC.Threads = benchConfig.Threads
 			benchmarkC.Interactive = benchConfig.Interactive

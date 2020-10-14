@@ -47,3 +47,5 @@ func (l *Linear) GetBenchmark() (context.Context, Config, error) {
 	currentConfig.Rate = l.currentRPS
 	return context.TODO(), currentConfig, nil
 }
+
+

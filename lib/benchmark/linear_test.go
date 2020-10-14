@@ -167,3 +167,47 @@ func TestGenerateNotEvenMultiple(t *testing.T) {
 	expected.Rate = 17
 	assert.Empty(t, cmp.Diff(expected, bm))
 }
+
+func TestGetBenchmark(t *testing.T) {
+	d, _ := time.ParseDuration("30s")
+	initial := Config{
+		Threads:            10,
+		Rate:               0,
+		Command:            []string{"ls"},
+		Interactive:        false,
+		MinimumWindow:      d,
+		MinimumMeasurment: 0,
+	}
+	linearConfig := Linear{
+		LowerBound:        10,
+		UpperBound:        20,
+		Step:              10,
+		MinimumMeasurment: 1000,
+		MinimumWindow:     d,
+		config:            initial,
+	}
+
+	// GetBenchmark with current generation
+	res := linearConfig.Generate()
+	assert.Equal(t, res, true)
+	_, conf, err := linearConfig.GetBenchmark()
+	if err != nil {
+		t.Errorf("expected benchmark, got error: %v", err)
+	}
+	assert.Equal(t, conf.Rate, linearConfig.currentRPS)
+
+	res = linearConfig.Generate()
+	assert.Equal(t, res, true)
+	
+	// GetBenchmark when Generate return false
+	res = linearConfig.Generate()
+	assert.Equal(t, res, false)
+
+	_, conf, err = linearConfig.GetBenchmark()
+	if err == nil {
+		t.Errorf("There should be no current generations, expected error")
+	}
+
+}
+
+
